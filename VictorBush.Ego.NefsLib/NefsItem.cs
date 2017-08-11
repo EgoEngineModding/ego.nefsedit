@@ -2,6 +2,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.Compression;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -370,9 +371,8 @@ namespace VictorBush.Ego.NefsLib
         public void Inject(string inputFilePath, NefsProgressInfo p)
         {
             float taskWeightPrep = 0.05f;
-            float taskWeightSplit = 0.15f;
-            float taskWeightCompress = 0.6f;
-            float taskWeightJoin = 0.15f;
+            float taskWeightCompress = 0.85f;
+            float taskWeightUpdateMetadata = 0.05f;
             float taskWeightCleanup = 0.05f;
 
             p.BeginTask(taskWeightPrep, "Preparing file injection...");
@@ -390,12 +390,6 @@ namespace VictorBush.Ego.NefsLib
             /* Temp working directory */
             var workDir = Path.Combine(FilePathHelper.TempDirectory, _archive.FilePathHash, FilePathInArchiveHash);
 
-            /* Dir for uncompressed chunks */
-            var u_chunks_dir = Path.Combine(workDir, "u_chunks");
-
-            /* Dir for compressed chunks */
-            var c_chunks_dir = Path.Combine(workDir, "c_chunks");
-
             /* Delete the working directory if exists and recreate it */
             if (Directory.Exists(workDir))
             {
@@ -403,143 +397,87 @@ namespace VictorBush.Ego.NefsLib
             }
 
             Directory.CreateDirectory(workDir);
-            Directory.CreateDirectory(u_chunks_dir);
-            Directory.CreateDirectory(c_chunks_dir);
 
             p.EndTask();
 
             /*
-             * SPLIT INPUT FILE INTO CHUNKS
+             * SPLIT INPUT FILE INTO CHUNKS AND COMPRESS THEM
              */
-            p.BeginTask(taskWeightSplit, "Splitting input file into chunks...");
+            p.BeginTask(taskWeightCompress, "Compressing file...");
 
+            int compressedSizeDiff = 0;
+            int currentChunk = 0;
+            var destFilePath = Path.Combine(workDir, "inject.dat");
             int numChunks = 0;
-            int fileNum = 0;
+            int numChunksDiff = 0;
+            int oldNumChunks = ChunkSizes.Count();
 
             /* Open the input file */
             using (var inputFile = new FileStream(inputFilePath, FileMode.Open))
             {
+                inputFile.Seek(0, SeekOrigin.Begin);
+
                 /* Determine how many chunks to split file into */
                 numChunks = (int)Math.Ceiling(inputFile.Length / (double)CHUNK_SIZE);
                 _extractedSize = (UInt32)inputFile.Length;
 
-                /* Read in each chunk and write to the uncompressed dir */
-                var temp = new byte[CHUNK_SIZE];
+                /* Clear out chunk sizes list so we can rebuild it */
+                ChunkSizes.Clear();
+
                 int lastBytesRead = 0;
                 int totalBytesRead = 0;
+                int lastChunkSize = 0;
+                int totalChunkSize = 0;
 
-                do
+                using (var outputFile = new FileStream(destFilePath, FileMode.Create))
                 {
-                    p.BeginTask(1.0f / (float)numChunks, String.Format("Creating chunk {0}/{1}...", fileNum + 1, numChunks));
+                    do
+                    {
+                        p.BeginTask(1.0f / (float)numChunks, String.Format("Compressing chunk {0}/{1}...", currentChunk + 1, numChunks));
 
-                    /* Read the chunk from input file */
-                    inputFile.Seek(totalBytesRead, SeekOrigin.Begin);
-                    lastBytesRead = inputFile.Read(temp, 0, CHUNK_SIZE);
+                        /* Compress this chunk and write it to the output file */
+                        lastBytesRead = DeflateHelper.DeflateToFile(inputFile, CHUNK_SIZE, outputFile, out lastChunkSize);
 
-                    /* Write chunk to its own output file. It is important
-                     * that chunks are named alphabetically so that later
-                     * they are read in order. */
-                    var uChunkFilePath = Path.Combine(u_chunks_dir, "u_" + fileNum.ToString("00000000") + ".dat");
+                        totalBytesRead += lastBytesRead;
+                        totalChunkSize += lastChunkSize;
+                        currentChunk++;
 
-                    var outBytes = new byte[lastBytesRead];
-                    Array.Copy(temp, outBytes, lastBytesRead);
-                    File.WriteAllBytes(uChunkFilePath, outBytes);
+                        /* Record the total compressed size after this chunk */
+                        ChunkSizes.Add((uint)totalChunkSize);
 
-                    fileNum++;
-                    totalBytesRead += lastBytesRead;
+                        p.EndTask();
 
-                    p.EndTask();
+                    } while (lastBytesRead == CHUNK_SIZE);
 
-                } while (lastBytesRead == CHUNK_SIZE);
+                    /* Get difference in number of chunks compared to item we replaced */
+                    numChunksDiff = numChunks - oldNumChunks;
+
+                    /* Get the difference in compressed size */
+                    compressedSizeDiff = (int)outputFile.Length - (int)_compressedSize;
+
+                    /* Update new compressed size */
+                    _compressedSize = (uint)outputFile.Length;
+
+                    /* Quick sanity check */
+                    if (_compressedSize != totalChunkSize)
+                    {
+                        log.Error("Compressed file size different than what was expected.");
+                    }
+                }
             }
 
             /* Quick sanity check */
-            if (fileNum != numChunks)
+            if (currentChunk != numChunks)
             {
-                throw new Exception("Did not create the expected number of uncompressed chunks.");
+                log.Error("Did not create the expected number of chunks.");
             }
 
             p.EndTask();
 
             /*
-             * COMPRESS EACH CHUNK WITH PACKZIP
+             * UPDATE METADATA FOR ITEMS AFTER THIS ONE
              */
-            p.BeginTask(taskWeightCompress, "Compressing chunks...");
-
-            for (int i = 0; i < fileNum; i++)
-            {
-                p.BeginTask(1.0f / (float)fileNum, String.Format("Compressing chunk {0}/{1}...", i + 1, fileNum));
-
-                var inf = Path.Combine(u_chunks_dir, "u_" + i.ToString("00000000") + ".dat");
-                var outf = Path.Combine(c_chunks_dir, "c_" + i.ToString("00000000") + ".dat");
-                var args = String.Format("-o 0x0 -w -15 \"{0}\" \"{1}\"", inf, outf);
-
-                /* Spawn a packzip.exe process to do the compression */
-                ProcessHelper.Run(FilePathHelper.PackzipPath, args);
-
-                p.EndTask();
-            }
-
-            p.EndTask();
-
-            /*
-             * COMBINE COMPRESSED CHUNKS AND UPDATE CHUNK SIZE LIST
-             */
-            p.BeginTask(taskWeightJoin, "Combining compressed chunks...");
-
-            int compressedSizeDiff = 0;
-            int numChunksDiff = 0;
-            int oldNumChunks = ChunkSizes.Count();
-            var destFilePath = Path.Combine(workDir, "inject.dat");
-
-            using (var destFile = new FileStream(destFilePath, FileMode.Create))
-            {
-                var lastChunkSize = 0;
-                ChunkSizes.Clear();
-
-                /* Get the list of compressed chunks - files should be in order alphabetically */
-                string[] chunkFiles = Directory.GetFiles(c_chunks_dir);
-
-                /* Quick sanity check */
-                if (chunkFiles.Length != numChunks)
-                {
-                    throw new Exception("Did not find expected number of compressed chunks.");
-                }
-
-                /* Read in each compressed chunk and add it to the output file */
-                for (int i = 0; i < numChunks; i++)
-                {
-                    p.BeginTask(1.0f / (float)numChunks, String.Format("Combining chunk {0}/{1}...", i + 1, numChunks));
-
-                    /* Open the chunk file */
-                    using (var chunk = new FileStream(chunkFiles[i], FileMode.Open))
-                    {
-                        /* Get the chunk size */
-                        int chunkSize = (int)chunk.Length;
-
-                        /* Read in the chunk */
-                        var chunkBytes = new byte[chunkSize];
-                        chunk.Seek(0, SeekOrigin.Begin);
-                        chunk.Read(chunkBytes, 0, chunkSize);
-
-                        /* Write chunk to output injection file */
-                        destFile.Write(chunkBytes, 0, chunkSize);
-
-                        /* Update our list of chunk sizes (remember they are cumulative) */
-                        lastChunkSize += chunkSize;
-                        ChunkSizes.Add((uint)lastChunkSize);
-                    }
-
-                    p.EndTask();
-                }
-
-                /* Get different in number of chunks compared to item we replaced */
-                numChunksDiff = numChunks - oldNumChunks;
-                
-                /* Get the difference in compressed size */
-                compressedSizeDiff = (int)destFile.Length - (int)_compressedSize;
-                _compressedSize = (uint)destFile.Length;
-            }
+            p.BeginTask(taskWeightUpdateMetadata, "Updating archive metadata...");
 
             /* Update data offsets for each item AFTER this one */
             for (int i = (int)Id + 1; i < Archive.Items.Count; i++)
@@ -601,18 +539,12 @@ namespace VictorBush.Ego.NefsLib
              */
             p.BeginTask(taskWeightCleanup, "Cleaning up...");
 
-            Directory.Delete(u_chunks_dir, true);
-            Directory.Delete(c_chunks_dir, true);
-
             /* Whenever the archive is saved, this data will be injected */
             _pendingInjection = true;
             _fileToInject = destFilePath;
             _archive.Modified = true;
 
             p.EndTask();
-
-            // TODO : HANDLE CASES WHEN # OF CHUNKS CHANGED!!!!!!!!!!!!!!!
-
         }
 
         /// <summary>

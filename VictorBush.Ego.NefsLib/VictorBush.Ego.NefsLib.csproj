@@ -67,6 +67,7 @@
     <Compile Include="NefsProgress.cs" />
     <Compile Include="NefsProgressInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Utility\DeflateHelper.cs" />
     <Compile Include="Utility\FilePathHelper.cs" />
     <Compile Include="Utility\FormatHelper.cs" />
     <Compile Include="Utility\LogHelper.cs" />

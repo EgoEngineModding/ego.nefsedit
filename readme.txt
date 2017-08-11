@@ -2,6 +2,9 @@ NeFS Edit
 
 *** Use at your own risk. Backup your files. ***
 
+Version 0.1.2
+- Using .NET compression library instead of spawning packzip processes.
+
 Version 0.1.1
 - Fixed some issues related to replacing files in archive with larger files.
 
