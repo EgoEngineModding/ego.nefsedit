@@ -40,5 +40,4 @@ Version 0.1.1
 - Fixed some issues related to replacing files in archive with larger files.
 
 Version 0.1.0
-
-Initial release. Limited functionality and little polish.
+- Initial release. Limited functionality and little polish.
