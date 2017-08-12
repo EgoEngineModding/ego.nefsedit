@@ -56,7 +56,6 @@ namespace VictorBush.Ego.NefsEdit.UI
             {
                 /* Create a progress dialog form */
                 var progressDialog = new ProgressDialogForm();
-                progressDialog.SetStyle(ProgressBarStyle.Marquee);
 
                 /* Show the loading dialog asnyc */
                 var progressDialogTask = progressDialog.ShowDialogAsync();
@@ -205,7 +204,31 @@ namespace VictorBush.Ego.NefsEdit.UI
                 itemToolStripMenuItem.Visible = false;
             }
         }
-        
+
+        /// <summary>
+        /// Opens the item context menu if there is an item selected.
+        /// </summary>
+        /// <param name="position">Where to open the menu at.</param>
+        public void ShowItemContextMenu(Point position)
+        {
+            if (_selectedItem == null)
+            {
+                return;
+            }
+
+            /* File specified actions */
+            if (_selectedItem.Type == NefsItem.NefsItemType.File)
+            {
+                itemContextMenuStrip.Show(position);
+            }
+
+            /* Directory specified actions */
+            if (_selectedItem.Type == NefsItem.NefsItemType.Directory)
+            {
+                /* Nothing for now */
+            }
+        }
+
         private void Form1_Load(object sender, EventArgs e)
         {
             // TODO : Startup items
@@ -413,6 +436,16 @@ namespace VictorBush.Ego.NefsEdit.UI
         private void EditorForm_FormClosing(object sender, FormClosingEventArgs e)
         {
             quit(e);
+        }
+
+        private void extractToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            ExtractItemTo(_selectedItem);
+        }
+
+        private void replaceToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            ReplaceItem(_selectedItem);
         }
     }
 }

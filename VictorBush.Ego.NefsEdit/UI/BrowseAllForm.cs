@@ -78,7 +78,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 
                 // The list item is actually the first column
                 listItem.Text = item.Id.ToString("X");
-
+                
                 // Save a reference to the item object
                 listItem.Tag = item;
 
@@ -137,6 +137,15 @@ namespace VictorBush.Ego.NefsEdit.UI
             // Notify the editor that a new NeFS item was selected
             NefsItem item =  itemsListView.SelectedItems[0].Tag as NefsItem;
             _editor.SelectNefsItem(item);
+        }
+
+        private void itemsListView_MouseUp(object sender, MouseEventArgs e)
+        {
+            /* Show context menu if an item is right-clicked */
+            if (e.Button == MouseButtons.Right)
+            {
+                _editor.ShowItemContextMenu(Cursor.Position);
+            }
         }
     }
 }

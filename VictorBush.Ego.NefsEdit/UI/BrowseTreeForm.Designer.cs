@@ -58,6 +58,7 @@
             this.filesListView.View = System.Windows.Forms.View.Details;
             this.filesListView.SelectedIndexChanged += new System.EventHandler(this.filesListView_SelectedIndexChanged);
             this.filesListView.DoubleClick += new System.EventHandler(this.filesListView_DoubleClick);
+            this.filesListView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.filesListView_MouseUp);
             // 
             // directoryTreeView
             // 

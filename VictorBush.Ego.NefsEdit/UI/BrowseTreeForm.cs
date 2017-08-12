@@ -218,5 +218,14 @@ namespace VictorBush.Ego.NefsEdit.UI
                 OpenDirectory(parent);
             }
         }
+
+        private void filesListView_MouseUp(object sender, MouseEventArgs e)
+        {
+            /* Show context menu if an item is right-clicked */
+            if (e.Button == MouseButtons.Right)
+            {
+                _editor.ShowItemContextMenu(Cursor.Position);
+            }
+        }
     }
 }
