@@ -136,12 +136,12 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// Saves the specified archive to a location chosen by the user.
         /// </summary>
         /// <param name="archive">The archive to save.</param>
-        public async void SaveArchiveAsAsync(NefsArchive archive)
+        public async Task<bool> SaveArchiveAsAsync(NefsArchive archive)
         {
             if (archive == null)
             {
                 MessageBox.Show("No archive selected to save.");
-                return;
+                return false;
             }
 
             /*
@@ -154,36 +154,54 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             if (result == DialogResult.OK)
             {
-                /* Create a progress dialog form */
-                var progressDialog = new ProgressDialogForm();
-
-                /* Show the progress dialog asnyc */
-                var progressDialogTask = progressDialog.ShowDialogAsync();
-
-                /* Replace the item */
-                await Task.Run(() =>
-                {
-                    try
-                    {
-                        log.Info("----------------------------");
-                        log.Info(String.Format("Saving archive to {0}...", sfd.FileName));
-                        archive.Save(sfd.FileName, progressDialog.ProgressInfo);
-                        log.Info("Item successfully saved: " + sfd.FileName);
-                    }
-                    catch (Exception ex)
-                    {
-                        log.Error("Error saving archive.", ex);
-                    }
-                });
-
-                /* Update editor */
-                setArchive(archive);
-                SelectNefsItem(_selectedItem);
-                updateTitle();
-
-                /* Close the progress dialog */
-                progressDialog.Close();
+                var success = await SaveArchiveAsync(archive, sfd.FileName);
+                return success;
             }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Saves the specified archive to the specified location.
+        /// </summary>
+        /// <param name="archive">The archive to save.</param>
+        /// <param name="filename">Location to save to.</param>
+        public async Task<bool> SaveArchiveAsync(NefsArchive archive, string filename)
+        {
+            var success = false;
+
+            /* Create a progress dialog form */
+            var progressDialog = new ProgressDialogForm();
+
+            /* Show the progress dialog asnyc */
+            var progressDialogTask = progressDialog.ShowDialogAsync();
+
+            /* Replace the item */
+            await Task.Run(() =>
+            {
+                try
+                {
+                    log.Info("----------------------------");
+                    log.Info(String.Format("Saving archive to {0}...", filename));
+                    archive.Save(filename, progressDialog.ProgressInfo);
+                    log.Info("Item successfully saved: " + filename);
+                    success = true;
+                }
+                catch (Exception ex)
+                {
+                    log.Error("Error saving archive.", ex);
+                }
+            });
+
+            /* Update editor */
+            setArchive(archive);
+            SelectNefsItem(_selectedItem);
+            updateTitle();
+
+            /* Close the progress dialog */
+            progressDialog.Close();
+
+            return success;
         }
 
         /// <summary>
@@ -348,23 +366,31 @@ namespace VictorBush.Ego.NefsEdit.UI
             SaveArchiveAsAsync(_archive);
         }
 
-        private void quit(FormClosingEventArgs e)
+        private async void quit(FormClosingEventArgs e)
         {
-            // TODO : Cleanup this function
-
             if (_archive != null && _archive.Modified)
             {
+                /* Archive has been modified; prompt to save before exit */
                 var result = MessageBox.Show(String.Format("Save archive {0}?", _archive.FilePath), 
                                             "Save?", 
                                             MessageBoxButtons.YesNoCancel);
+
                 if (result == DialogResult.Yes)
                 {
-                    SaveArchiveAsAsync(_archive);
+                    /* Cancel exiting the application - we need to wait for the save to finish */
                     if (e != null)
                     {
                         e.Cancel = true;
                     }
-                    return; // TODO : Check if save was successful, then exit
+
+                    /* Trigger the save */
+                    var saved = await SaveArchiveAsync(_archive, _archive.FilePath);
+                    
+                    if (saved)
+                    {
+                        /* Saved successfully, quit now */
+                        Application.Exit();
+                    }
                 }
                 else if (result == DialogResult.Cancel)
                 {
@@ -372,7 +398,6 @@ namespace VictorBush.Ego.NefsEdit.UI
                     {
                         e.Cancel = true;
                     }
-                    return;
                 }
             }
         }
@@ -446,6 +471,11 @@ namespace VictorBush.Ego.NefsEdit.UI
         private void replaceToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             ReplaceItem(_selectedItem);
+        }
+
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            SaveArchiveAsync(_archive, _archive.FilePath);   
         }
     }
 }
