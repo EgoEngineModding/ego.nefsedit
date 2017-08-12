@@ -2,6 +2,34 @@ NeFS Edit
 
 *** Use at your own risk. Backup your files. ***
 
+Features:
+- Open a NeFS archive and browse contents.
+- Extract files (individually) from an archive.
+- Replace files in an archive.
+- Save archives.
+
+What's NOT supported:
+- A lot of things.
+- Multiple extraction of files, extraction of directories, etc.
+- Sorting items in editor.
+- Adding items to an archive.
+- Creating new archives from scratch.
+- A lot more.
+
+Other notes:
+- game.nefs not guaranteed to work.
+- Items aren't sorted by type or by filename.
+
+
+CHANGELOG
+
+Version 0.2.0
+- Added context menu when right-clicking items.
+- Added keyboard shortcut keys.
+- Added ability to save archive in place (in addition to Save As).
+- Using .NET compression library for extraction now.
+- Removed dependency on offzip and packzip.
+
 Version 0.1.2
 - Using .NET compression library instead of spawning packzip processes.
 
@@ -11,31 +39,3 @@ Version 0.1.1
 Version 0.1.0
 
 Initial release. Limited functionality and little polish.
-
-Features:
-- Open a NeFS archive and browse contents.
-- Extract files (individually) from an archive.
-- Replace files (individually) in an archive.
-- Save archive to a chosen location.
-
-What's NOT supported:
-- A lot of things.
-- Multiple extraction of files, extraction of directories, etc.
-- Saving an archive in place (can do a Save As and overwrite the existing file though).
-- Sorting items in editor.
-- Adding items to an archive.
-- Creating new archives from scratch.
-- A lot more.
-
-Other notes:
-- Extracting files and replacing files are not as efficient as they could be. Currently
-    the application uses offzip/packzip and simply spawns new processes. When replacing
-	large files, this is very slow since we have to compress each chunk. Lots of room
-	for improvement here since this work can be parallelized.
-- game.nefs not guaranteed to work.
-- Items aren't sorted by type or by filename.
-
-Credits:
-- This application utilizes offzip.exe and packzip.exe.
-	- http://aluigi.altervista.org/mytoolz.htm
-	- NeFS Edit is not afiliated with the author of these utilities.
