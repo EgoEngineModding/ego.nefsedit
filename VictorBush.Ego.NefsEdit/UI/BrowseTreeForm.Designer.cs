@@ -50,7 +50,6 @@
             this.filesListView.GridLines = true;
             this.filesListView.Location = new System.Drawing.Point(0, 25);
             this.filesListView.Margin = new System.Windows.Forms.Padding(2);
-            this.filesListView.MultiSelect = false;
             this.filesListView.Name = "filesListView";
             this.filesListView.Size = new System.Drawing.Size(665, 649);
             this.filesListView.TabIndex = 3;

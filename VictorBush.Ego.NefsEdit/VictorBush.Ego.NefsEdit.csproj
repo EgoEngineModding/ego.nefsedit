@@ -100,6 +100,7 @@
     </Compile>
     <Compile Include="Utility\LogHelper.cs" />
     <Compile Include="Utility\RichTextWriter.cs" />
+    <Compile Include="Utility\Settings.cs" />
     <EmbeddedResource Include="UI\EditorForm.resx">
       <DependentUpon>EditorForm.cs</DependentUpon>
     </EmbeddedResource>

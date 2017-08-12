@@ -132,9 +132,16 @@ namespace VictorBush.Ego.NefsEdit.UI
                 return;
             }
 
-            // Notify the editor that a new NeFS item was selected
-            NefsItem item =  itemsListView.SelectedItems[0].Tag as NefsItem;
-            _editor.SelectNefsItem(item);
+            /* Build a list of selected NefsItems */
+            var selectedNefsItems = new List<NefsItem>();
+
+            foreach (ListViewItem item in itemsListView.SelectedItems)
+            {
+                selectedNefsItems.Add(item.Tag as NefsItem);
+            }
+
+            /* Tell the editor what items are selected */
+            _editor.SelectNefsItem(selectedNefsItems);
         }
 
         private void itemsListView_MouseUp(object sender, MouseEventArgs e)

@@ -25,7 +25,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         BrowseTreeForm _browseTreeForm;
         ConsoleForm _consoleForm;
         PropertyGridForm _selectedFilePropertyForm;
-        NefsItem _selectedItem;
+        List<NefsItem> _selectedItems = new List<NefsItem>();
 
         public EditorForm()
         {
@@ -33,54 +33,133 @@ namespace VictorBush.Ego.NefsEdit.UI
         }
 
         /// <summary>
-        /// Extracts the specified item to a location chosen by the user.
+        /// Extracts the specified items.
         /// </summary>
-        /// <param name="item">The item to extract.</param>
-        public async void ExtractItemTo(NefsItem item)
+        /// <param name="items">The items to extract.</param>
+        /// <param name="useQuickExtract">Whether or not to extract to the quick extract directory.</param>
+        public async void ExtractItems(List<NefsItem> items, bool useQuickExtract)
         {
-            if (item == null)
+            if (items == null || items.Count == 0)
             {
-                MessageBox.Show("No item selected to extract.");
+                MessageBox.Show("No items selected to selected.");
                 return;
             }
 
-            /*
-             * Open a save file dialog and get the output location
-             */
-            var sfd = new SaveFileDialog();
-            sfd.OverwritePrompt = true;
-            sfd.FileName = item.Filename;
-            var result = sfd.ShowDialog();
+            var outputDir = "";
+            var outputFile = "";
 
-            if (result == DialogResult.OK)
+            if (useQuickExtract)
             {
-                /* Create a progress dialog form */
-                var progressDialog = new ProgressDialogForm();
-
-                /* Show the loading dialog asnyc */
-                var progressDialogTask = progressDialog.ShowDialogAsync();
-
-                /* Extract the item */
-                await Task.Run(() =>
+                /*
+                 * Use the quick extraction directory
+                 */
+                if (!Directory.Exists(Settings.QuickExtractDir))
                 {
-                    try
+                    /* Quick extract dir not set, have user choose one */
+                    if (!Settings.ChooseQuickExtractDir())
                     {
-                        log.Info("----------------------------");
-                        log.Info(String.Format("Extracting {0} to {1}...", item.Filename, sfd.FileName));
-                        item.Extract(sfd.FileName, progressDialog.ProgressInfo);
-                        log.Info("Item extracted successfully: " + sfd.FileName);
+                        /* User cancelled the directory selection */
+                        return;
                     }
-                    catch (Exception ex)
-                    {
-                        log.Error("Error extracting file.", ex);
-                    }
-                });
+                }
 
-                /* Close the progress dialog */
-                progressDialog.Close();
+                outputDir = Settings.QuickExtractDir;
             }
-        }
+            else
+            {
+                /*
+                 * Have user choose where to save the items
+                 */
+                var result = DialogResult.Cancel;
 
+                /* Show either a directory chooser or a save file dialog */
+                if (items.Count > 1 || items[0].Type == NefsItem.NefsItemType.Directory)
+                {
+                    /* Extracting multiple files or a directory - show folder browser */
+                    var fbd = new FolderBrowserDialog();
+                    fbd.Description = "Choose where to extract the items to.";
+                    fbd.ShowNewFolderButton = true;
+
+                    result = fbd.ShowDialog();
+                    outputDir = fbd.SelectedPath;
+                }
+                else
+                {
+                    /* Extracting a file - show a save file dialog*/
+                    var sfd = new SaveFileDialog();
+                    sfd.OverwritePrompt = true;
+                    sfd.FileName = items[0].Filename;
+
+                    result = sfd.ShowDialog();
+                    outputDir = Path.GetDirectoryName(sfd.FileName);
+                    outputFile = Path.GetFileName(sfd.FileName);
+                }
+
+                if (result != DialogResult.OK)
+                {
+                    /* Use canceled the dialog box */
+                    return;
+                }
+            }
+
+            /* Create a progress dialog form */
+            var progressDialog = new ProgressDialogForm();
+
+            /* Show the loading dialog asnyc */
+            var progressDialogTask = progressDialog.ShowDialogAsync();
+
+            /* Extract the item */
+            await Task.Run(() =>
+            {
+                try
+                {
+                    var p = progressDialog.ProgressInfo;
+                    var numItems = _selectedItems.Count;
+
+                    log.Info("----------------------------");
+                    p.BeginTask(1.0f);
+
+                    /* Extract each item */
+                    for (int i = 0; i < numItems; i++)
+                    {
+                        var item = _selectedItems[i];
+                        var dir = outputDir;
+                        var file = outputFile;
+
+                        /* When extracting multiple items or using the quick extraction 
+                         * directory, use the original filenames and directory structure
+                         * of the archive */
+                        if (numItems > 0 || useQuickExtract)
+                        {
+                            var dirInArchive = Path.GetDirectoryName(item.FilePathInArchive);
+                            dir = Path.Combine(outputDir, dirInArchive);
+                            file = Path.GetFileName(item.FilePathInArchive);
+                        }
+
+                        log.Info(String.Format("Extracting {0} to {1}...", item.FilePathInArchive, Path.Combine(dir, file)));
+                        try
+                        {
+                            item.Extract(dir, file, p);
+                        }
+                        catch (Exception ex)
+                        {
+                            log.Error(String.Format("Error extracting item {0}.", item.FilePathInArchive));
+                        }
+                    }
+
+                    p.EndTask();
+                    log.Info("Extraction finished.");
+                }
+                catch (Exception ex)
+                {
+                    log.Error("Error extracting items.", ex);
+                }
+            });
+
+            /* Close the progress dialog */
+            progressDialog.Close();
+        }
+        
         /// <summary>
         /// Replaces the selected item with a new item.
         /// </summary>
@@ -130,6 +209,32 @@ namespace VictorBush.Ego.NefsEdit.UI
                 /* Close the progress dialog */
                 progressDialog.Close();
             }
+        }
+
+        /// <summary>
+        /// Replaces the selected item with a file the user chooses.
+        /// </summary>
+        public void ReplaceSelectedItem()
+        {
+            if (_selectedItems.Count == 0)
+            {
+                MessageBox.Show("No item selected to replace.");
+                return;
+            }
+
+            if (_selectedItems.Count > 1 )
+            {
+                MessageBox.Show("Replacing multiple files not supported.");
+                return;
+            }
+
+            if (_selectedItems[0].Type == NefsItem.NefsItemType.Directory)
+            {
+                MessageBox.Show("Replacing directories not supported.");
+                return;
+            }
+
+            ReplaceItem(_selectedItems[0]);
         }
 
         /// <summary>
@@ -195,7 +300,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             /* Update editor */
             setArchive(archive);
-            SelectNefsItem(_selectedItem);
+            SelectNefsItem(_selectedItems);
             updateTitle();
 
             /* Close the progress dialog */
@@ -220,19 +325,47 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// <summary>
         /// Indicate that an item has been selected and allow appropriate parties to take action.
         /// </summary>
-        /// <param name="item">The item that has been selected.</param>
-        public void SelectNefsItem(NefsItem item)
+        /// <param name="item">List of selected items.</param>
+        public void SelectNefsItem(List<NefsItem> items)
         {
-            _selectedItem = item;
-            _selectedFilePropertyForm.SetSelectedObject(item);
-            
-            if (item != null && item.Type == NefsItem.NefsItemType.File)
+            if (items == null)
             {
-                itemToolStripMenuItem.Visible = true;
+                throw new ArgumentNullException("Cannot provide a null list of items to select.");
+            }
+
+            _selectedItems = items;
+
+            /* Set which item shows up in the Item's property window */
+            if (_selectedItems.Count == 1)
+            {
+                _selectedFilePropertyForm.SetSelectedObject(_selectedItems[0]);
             }
             else
             {
-                itemToolStripMenuItem.Visible = false;
+                _selectedFilePropertyForm.SetSelectedObject(null);
+            }
+
+            /* Set "Item" menu visibility */
+            itemToolStripMenuItem.Visible = (items.Count > 0);
+
+            if (items.Count == 0)
+            {
+                return;
+            }
+
+            /* Set visibility of the Replace menu option */
+            if (_selectedItems.Count > 1
+             || _selectedItems[0].Type == NefsItem.NefsItemType.Directory)
+            {
+                /* Can't replace directories or multiple files right now */
+                replaceContextMenuItem.Visible = false;
+                replaceToolStripMenuItem.Enabled = false;
+            }
+            else
+            {
+                /* Single file selected, can replace */
+                replaceContextMenuItem.Visible = true;
+                replaceToolStripMenuItem.Enabled = true;
             }
         }
 
@@ -242,29 +375,23 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// <param name="position">Where to open the menu at.</param>
         public void ShowItemContextMenu(Point position)
         {
-            if (_selectedItem == null)
+            if (_selectedItems.Count == 0)
             {
                 return;
             }
 
-            /* File specified actions */
-            if (_selectedItem.Type == NefsItem.NefsItemType.File)
-            {
-                itemContextMenuStrip.Show(position);
-            }
-
-            /* Directory specified actions */
-            if (_selectedItem.Type == NefsItem.NefsItemType.Directory)
-            {
-                /* Nothing for now */
-            }
+            /* Show the context menu */
+            itemContextMenuStrip.Show(position);
         }
 
-        private void Form1_Load(object sender, EventArgs e)
+        private void EditorForm_Load(object sender, EventArgs e)
         {
             // TODO : Startup items
             //  - verify write access / admin privellegeee?
             // - try to find location of DiRT 4 in steamapps folder? https://stackoverflow.com/questions/29036572/how-to-find-the-path-to-steams-sourcemods-folder
+
+            /* Load settings */
+            Settings.LoadSettings();
 
             /* Set the dockpanel theme */
             var theme = new WeifenLuo.WinFormsUI.Docking.VS2015LightTheme();
@@ -284,7 +411,13 @@ namespace VictorBush.Ego.NefsEdit.UI
             resetToDefaultLayout();
 
             /* Clear the selected nefs archive */
-            SelectNefsItem(null);
+            _selectedItems = new List<NefsItem>();
+            SelectNefsItem(_selectedItems);
+        }
+        
+        private void EditorForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            quit(e);
         }
 
         /// <summary>
@@ -323,10 +456,6 @@ namespace VictorBush.Ego.NefsEdit.UI
             _consoleForm.HideOnClose = true;
         }
 
-        private void extractToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            ExtractItemTo(_selectedItem);
-        }
 
 
         private async void loadNefsAsync(string filePath)
@@ -351,7 +480,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         {
             var ofd = new OpenFileDialog();
             ofd.Multiselect = false;
-
+            
             var result = ofd.ShowDialog();
             if (result == DialogResult.OK)
             {
@@ -371,7 +500,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void replaceToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ReplaceItem(_selectedItem);
+            ReplaceSelectedItem();
         }
 
         private void saveAsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -441,16 +570,10 @@ namespace VictorBush.Ego.NefsEdit.UI
             _archivePropertyForm.Focus();
         }
 
-        private void itemDetailsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void consoleToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            _selectedFilePropertyForm.Show();
-            _selectedFilePropertyForm.Focus();
-        }
-
-        private void treeViewToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            _browseTreeForm.Show();
-            _browseTreeForm.Focus();
+            _consoleForm.Show();
+            _consoleForm.Focus();
         }
 
         private void debugViewToolStripMenuItem_Click(object sender, EventArgs e)
@@ -459,36 +582,57 @@ namespace VictorBush.Ego.NefsEdit.UI
             _browseAllForm.Focus();
         }
 
-        private void consoleToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            _consoleForm.Show();
-            _consoleForm.Focus();
-        }
-
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             /* Quit the application */
             Application.Exit();
         }
-
-        private void EditorForm_FormClosing(object sender, FormClosingEventArgs e)
+        
+        private void quickExtractContextMenuItem_Click(object sender, EventArgs e)
         {
-            quit(e);
+            ExtractItems(_selectedItems, true);
         }
 
-        private void extractToolStripMenuItem1_Click(object sender, EventArgs e)
+        private void quickExtractToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            ExtractItemTo(_selectedItem);
+            ExtractItems(_selectedItems, true);
+        }
+
+        private void extractToContextMenuItem_Click(object sender, EventArgs e)
+        {
+            ExtractItems(_selectedItems, false);
+        }
+
+        private void extractToToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ExtractItems(_selectedItems, false);
+        }
+        
+        private void itemDetailsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _selectedFilePropertyForm.Show();
+            _selectedFilePropertyForm.Focus();
         }
 
         private void replaceToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            ReplaceItem(_selectedItem);
+            ReplaceSelectedItem();
         }
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             SaveCurrentArchive();
+        }
+
+        private void treeViewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            _browseTreeForm.Show();
+            _browseTreeForm.Focus();
+        }
+
+        private void setExtractionDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.ChooseQuickExtractDir();
         }
     }
 }

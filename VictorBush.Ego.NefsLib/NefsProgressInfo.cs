@@ -20,6 +20,9 @@ namespace VictorBush.Ego.NefsLib
         /// <summary>The current status message.</summary>
         string _currentMessage;
 
+        /// <summary>The current sub-status message.</summary>
+        string _currentSubMessage;
+
         /// <summary>Total percent complete so far (0.0 to 1.0).</summary>
         float _totalPercent;
 
@@ -82,12 +85,41 @@ namespace VictorBush.Ego.NefsLib
             BeginTask(weight);
 
             _currentMessage = message;
+            _currentSubMessage = "";
 
             /* A status message was provided, so report it */
             Progress.Report(new NefsProgress()
             {
                 Progress = _totalPercent,
                 Message = _currentMessage
+            });
+        }
+
+        /// <summary>
+        /// Adds a task to the task list and sends a progress report with the specified message.
+        /// The only difference between a task and a sub task is that a sub task's message is 
+        /// placed underneath the main status message.
+        /// </summary>
+        /// <param name="weight">The weight of this task relative to its parent task.</param>
+        /// <param name="message">A status message to report.</param>
+        public void BeginSubTask(float weight, string message)
+        {
+            BeginTask(weight);
+
+            _currentSubMessage = message;
+
+            /* If current message is not empty, the sub task message should be 
+             * placed underneath of the current message */
+            if (_currentMessage != "")
+            {
+                _currentSubMessage = "\r\n" + _currentSubMessage;
+            }
+
+            /* A status message was provided, so report it */
+            Progress.Report(new NefsProgress()
+            {
+                Progress = _totalPercent,
+                Message = _currentMessage + _currentSubMessage
             });
         }
 
@@ -124,7 +156,7 @@ namespace VictorBush.Ego.NefsLib
             {
                 progressMade *= _tasks[i].Weight;
             }
-
+            
             _totalPercent += progressMade;
             _totalPercent = Math.Min(_totalPercent, 1.0f);
             _totalPercent = Math.Max(_totalPercent, 0.0f);

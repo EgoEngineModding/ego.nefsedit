@@ -360,17 +360,76 @@ namespace VictorBush.Ego.NefsLib
         }
 
         /// <summary>
-        /// Extracts this file from the archive.
+        /// Extracts this item from the archive.
         /// </summary>
-        /// <param name="outputFilePath">The file path where to put the extracted file.</param>
+        /// <param name="outputFileName">Full output filename (including directory).</param>
         /// <param name="p">Progress info.</param>
-        public void Extract(string outputFilePath, NefsProgressInfo p)
+        public void Extract(string outputFileName, NefsProgressInfo p)
         {
-            p.BeginTask(1.0f, "Extracting " + this.Filename + "...");
+            var outputDir = Path.GetDirectoryName(outputFileName);
+            var outputFile = Path.GetFileName(outputFileName);
+            Extract(outputDir, outputFile, p);
+        }
 
-            using (var inFile = new FileStream(this.Archive.FilePath, FileMode.Open))
-            using (var outFile = new FileStream(outputFilePath, FileMode.Create))
+        /// <summary>
+        /// Extracts this item from the archive.
+        /// </summary>
+        /// <param name="outputDir">The directory where to put the extracted file.</param>
+        /// <param name="outputFileName">The name of the extracted file (without the directory).</param>
+        /// <param name="p">Progress info.</param>
+        public void Extract(string outputDir, string outputFileName, NefsProgressInfo p)
+        {
+            /* Create output dir if doesn't exist */
+            if (!Directory.Exists(outputDir))
             {
+                Directory.CreateDirectory(outputDir);
+            }
+
+            /*
+             * Handle directories
+             */
+            if (Type == NefsItemType.Directory)
+            {
+                p.BeginTask(1.0f, String.Format("Extracting {0}...", FilePathInArchive));
+
+                /* Get a list of items in this directory */
+                var children = GetChildren();
+
+                var i = 0;
+                var numChildren = children.Count();
+
+                foreach (var child in children)
+                {
+                    p.BeginSubTask(1.0f / numChildren, String.Format("Extracting child {0}/{1}...", i + 1, numChildren));
+
+                    /* Since this is a directory, Filename will be the directory name */
+                    var dir = Path.Combine(outputDir, Filename);
+
+                    try
+                    {
+                        child.Extract(dir, child.Filename, p);
+                    }
+                    catch (Exception ex)
+                    {
+                        log.Error(String.Format("Error extracting item {0}.", child.FilePathInArchive));
+                    }
+
+                    i++;
+                    p.EndTask();
+                }
+
+                p.EndTask();
+                return;
+            }
+
+            /*
+             * Item is file, extract it
+             */
+            using (var inFile = new FileStream(Archive.FilePath, FileMode.Open))
+            using (var outFile = new FileStream(Path.Combine(outputDir, outputFileName), FileMode.Create))
+            {
+                p.BeginTask(1.0f, String.Format("Extracting {0}...", FilePathInArchive));
+
                 /* Seek to the compressed data in the archive */
                 inFile.Seek((long)this.DataOffset, SeekOrigin.Begin);
 
@@ -379,7 +438,7 @@ namespace VictorBush.Ego.NefsLib
                 /* For each compressed chunk, decompress it and write it to the output file */
                 for (int i = 0; i < numChunks; i++)
                 {
-                    p.BeginTask(1.0f / (float)numChunks, String.Format("Extracting chunk {0}/{1}...", i + 1, numChunks));
+                    p.BeginSubTask(1.0f / numChunks, String.Format("Extracting chunk {0}/{1}...", i + 1, numChunks));
 
                     /* Get chunk size */
                     var chunkSize = ChunkSizes[i];
@@ -405,9 +464,21 @@ namespace VictorBush.Ego.NefsLib
 
                     p.EndTask();
                 }
-            }
 
-            p.EndTask();
+                p.EndTask();
+            }
+        }
+
+        /// <summary>
+        /// Gets children of this item.
+        /// </summary>
+        public IEnumerable<NefsItem> GetChildren()
+        {
+            var children = from child in Archive.Items
+                           where child.DirectoryId == Id && child.Id != Id
+                           select child;
+
+            return children;
         }
 
         /// <summary>
