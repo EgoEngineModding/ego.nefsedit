@@ -25,28 +25,6 @@ namespace VictorBush.Ego.NefsLib.Utility
         }
 
         /// <summary>
-        /// Path to offzip.exe.
-        /// </summary>
-        public static string OffzipPath
-        {
-            get
-            {
-                return Path.Combine(ExeDirectory, "offzip.exe");
-            }
-        }
-
-        /// <summary>
-        /// Path to packzip.exe.
-        /// </summary>
-        public static string PackzipPath
-        {
-            get
-            {
-                return Path.Combine(ExeDirectory, "packzip.exe");
-            }
-        }
-
-        /// <summary>
         /// Path to a temporary working directory.
         /// </summary>
         public static string TempDirectory

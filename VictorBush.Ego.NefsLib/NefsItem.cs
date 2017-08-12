@@ -349,15 +349,46 @@ namespace VictorBush.Ego.NefsLib
         /// <param name="p">Progress info.</param>
         public void Extract(string outputFilePath, NefsProgressInfo p)
         {
-            p.BeginTask(1, "Extracting " + this.Filename + "...");
+            p.BeginTask(1.0f, "Extracting " + this.Filename + "...");
 
-            var fullInPath = Path.GetFullPath(Archive.FilePath);
-            var fullOutPath = Path.GetFullPath(outputFilePath);
-            var offset = DataOffset.ToHexString();
-            var args = String.Format("-a -1 -o -z -15 -c 0x10000 \"{0}\" \"{1}\" {2}", fullInPath, fullOutPath, offset);
+            using (var inFile = new FileStream(this.Archive.FilePath, FileMode.Open))
+            using (var outFile = new FileStream(outputFilePath, FileMode.Create))
+            {
+                /* Seek to the compressed data in the archive */
+                inFile.Seek(this.DataOffset, SeekOrigin.Begin);
 
-            /* Spawn a offzip.exe process to do the extraction */
-            ProcessHelper.Run(FilePathHelper.OffzipPath, args);
+                var numChunks = ChunkSizes.Count;
+
+                /* For each compressed chunk, decompress it and write it to the output file */
+                for (int i = 0; i < numChunks; i++)
+                {
+                    p.BeginTask(1.0f / (float)numChunks, String.Format("Extracting chunk {0}/{1}...", i + 1, numChunks));
+
+                    /* Get chunk size */
+                    var chunkSize = ChunkSizes[i];
+
+                    /* Remember that values in the ChunkSize list are cumulative, so to get the 
+                     * actual chunk size we need to subtract the previous ChunkSize entry */
+                    if (i > 0)
+                    {
+                        chunkSize = chunkSize - ChunkSizes[i - 1];
+                    }
+
+                    /* Read in the comrpessed chunk */
+                    var chunk = new byte[chunkSize];
+                    inFile.Read(chunk, 0, (int)chunkSize);
+
+                    /* Copy the comrpessed chunk to a memory stream and decompress (inflate) it */
+                    using (var ms = new MemoryStream(chunk))
+                    using (var inflater = new DeflateStream(ms, CompressionMode.Decompress))
+                    {
+                        /* Decompress the chunk and write it to the output file */
+                        inflater.CopyTo(outFile);
+                    }
+
+                    p.EndTask();
+                }
+            }
 
             p.EndTask();
         }

@@ -210,7 +210,6 @@ namespace VictorBush.Ego.NefsEdit.UI
         {
             // TODO : Startup items
             //  - verify write access / admin privellegeee?
-            // - verify location of binaries like offzip and packzip
             // - try to find location of DiRT 4 in steamapps folder? https://stackoverflow.com/questions/29036572/how-to-find-the-path-to-steams-sourcemods-folder
 
             /* Set the dockpanel theme */
@@ -415,69 +414,5 @@ namespace VictorBush.Ego.NefsEdit.UI
         {
             quit(e);
         }
-
-        //private void zlibButton_Click(object sender, EventArgs e)
-        //{
-        //    //ICSharpCode.SharpZipLib.Zip.Compression.Deflater d = new ICSharpCode.SharpZipLib.Zip.Compression.Deflater();
-
-        //    //String path = Path.Combine(@"F:\Desktop", "templol", "test", "int_fr2.xml");
-        //    //String outPath = Path.Combine(@"F:\Desktop", "templol", "test", "test.xml");
-
-        //    //FileStream f = new FileStream(path, FileMode.Open);
-        //    //int len = (int)f.Length;
-        //    //var temp = new byte[len];
-        //    //f.Read(temp, 0, len);
-        //    //f.Close();
-
-        //    //var output = new byte[len];
-
-        //    //d.SetInput(temp);
-        //    //d.Deflate(output);
-
-        //    //f = new FileStream(outPath, FileMode.Create);
-        //    //f.Seek(0, SeekOrigin.Begin);
-        //    //f.Write(output, 0, (int)d.TotalOut);
-        //    //f.Close();
-
-
-        //    //d.Finish();
-
-
-        //    //return;
-
-
-
-
-
-
-
-
-
-
-        //    ICSharpCode.SharpZipLib.Zip.Compression.Deflater d = new ICSharpCode.SharpZipLib.Zip.Compression.Deflater();
-
-        //    String path = Path.Combine(@"F:\Desktop", "templol", "test", "int_fr2.xml");
-        //    String outPath = Path.Combine(@"F:\Desktop", "templol", "test", "test.xml");
-
-        //    FileStream f = new FileStream(path, FileMode.Open);
-        //    int len = (int)f.Length;
-        //    var temp = new byte[len];
-        //    f.Read(temp, 0, len);
-        //    f.Close();
-
-
-        //    FileStream out_fs = new FileStream(outPath, FileMode.Create);
-        //    ICSharpCode.SharpZipLib.Zip.Compression.Streams.DeflaterOutputStream ds = new ICSharpCode.SharpZipLib.Zip.Compression.Streams.DeflaterOutputStream(out_fs);
-
-
-        //    out_fs.Seek(0, SeekOrigin.Begin);
-        //    //out_fs.Write(temp, 0, (int)d.TotalOut);
-        //    ds.Write(temp, 0, len);
-
-        //    ds.Close();
-        //    out_fs.Close();
-
-        //    d.Finish();
-        //}
     }
 }
