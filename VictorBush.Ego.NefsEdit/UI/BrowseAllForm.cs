@@ -36,7 +36,6 @@ namespace VictorBush.Ego.NefsEdit.UI
             var debugColumns = new ColumnHeader[]
             {
                 new ColumnHeader() { Name = "pt1.0x00", Text = "[pt1.0x00] Offset to Data" },
-                new ColumnHeader() { Name = "pt1.0x04", Text = "[pt1.0x04] Unkown" },
                 new ColumnHeader() { Name = "pt1.0x08", Text = "[pt1.0x08] Offset into pt2" },
                 new ColumnHeader() { Name = "pt1.0x0c", Text = "[pt1.0x0c] Offset into pt4 (chunk sizes)" },
                 new ColumnHeader() { Name = "pt1.0x10", Text = "[pt1.0x10] Id" },
@@ -88,7 +87,6 @@ namespace VictorBush.Ego.NefsEdit.UI
                 addSubItem(listItem, "extractedSize", item.ExtractedSize.ToString("X"));
 
                 addSubItem(listItem, "pt1.0x00", item.Part1Entry.OffsetToData.ToString("X"));
-                addSubItem(listItem, "pt1.0x04", item.Part1Entry.Unkown_0x04.ToString("X"));
                 addSubItem(listItem, "pt1.0x08", item.Part1Entry.OffsetIntoPt2Raw.ToString("X"));
                 addSubItem(listItem, "pt1.0x0c", item.Part1Entry.OffsetIntoPt4Raw.ToString("X"));
                 addSubItem(listItem, "pt1.0x10", item.Part1Entry.Id.ToString("X"));

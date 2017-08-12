@@ -26,7 +26,7 @@ namespace VictorBush.Ego.NefsLib
         NefsArchive _archive;
         List<UInt32> _chunkSizes = new List<uint>();
         UInt32 _compressedSize;
-        UInt32 _dataOffset;
+        UInt64 _dataOffset;
         UInt32 _extractedSize;
         string _fileName;
         string _fileNameHash;
@@ -74,9 +74,25 @@ namespace VictorBush.Ego.NefsLib
 
             /* Get header entries related to this item */
             _pt1Entry = archive.Header.Part1.GetEntry(id);
-            _pt2Entry = archive.Header.Part2.GetEntry(id);
+            _pt2Entry = archive.Header.Part2.GetEntry(_pt1Entry);
             _pt5Entry = archive.Header.Part5.GetEntry(id);
-            _pt6Entry = archive.Header.Part6.GetEntry(id);
+            try
+            {
+                _pt6Entry = archive.Header.Part6.GetEntry(id);
+            }
+            catch (Exception ex)
+            {
+                try
+                {
+                    /* Some items share a part 2 entry, so try to find the corresponding part 6 entry */
+                    _pt6Entry = archive.Header.Part6.GetEntry(_pt2Entry.Id);
+                }
+                catch (Exception ex2)
+                {
+                    // TODO : Handle when an item doesn't have a part 6 entry
+                    _pt6Entry = archive.Header.Part6.GetEntry(0);
+                }
+            }
 
             /* Determine item type */
             _type = (_pt1Entry.OffsetToData == 0) 
@@ -102,12 +118,13 @@ namespace VictorBush.Ego.NefsLib
              * for example: "rootDir/childDir/file.xml". 
              */
             _filePathInArchive = _fileName;
-            var currentItem = archive.Header.Part2.GetEntry(Id);
+            var currentItem = _pt2Entry;
 
             /* The root directory's id is equal to its parent directory id */
             while (currentItem.Id != currentItem.DirectoryId)
             {
-                var dir = archive.Header.Part2.GetEntry(currentItem.DirectoryId);
+                var pt1Entry = archive.Header.Part1.GetEntry(currentItem.DirectoryId);
+                var dir = archive.Header.Part2.GetEntry(pt1Entry);
                 var dirName = archive.Header.Part3.GetFilename(dir.FilenameOffset);
                 _filePathInArchive = Path.Combine(dirName, _filePathInArchive);
 
@@ -179,7 +196,7 @@ namespace VictorBush.Ego.NefsLib
         /// <summary>
         /// Absolute offset to the item's compressed data in the archive.
         /// </summary>
-        public UInt32 DataOffset
+        public UInt64 DataOffset
         {
             get { return _dataOffset; }
             internal set { _dataOffset = value; }
@@ -355,7 +372,7 @@ namespace VictorBush.Ego.NefsLib
             using (var outFile = new FileStream(outputFilePath, FileMode.Create))
             {
                 /* Seek to the compressed data in the archive */
-                inFile.Seek(this.DataOffset, SeekOrigin.Begin);
+                inFile.Seek((long)this.DataOffset, SeekOrigin.Begin);
 
                 var numChunks = ChunkSizes.Count;
 
@@ -511,56 +528,55 @@ namespace VictorBush.Ego.NefsLib
             p.BeginTask(taskWeightUpdateMetadata, "Updating archive metadata...");
 
             /* Update data offsets for each item AFTER this one */
-            for (int i = (int)Id + 1; i < Archive.Items.Count; i++)
+            for (int i = 0; i < Archive.Items.Count; i++)
             {
                 var item = Archive.Items[i];
-
-                /* Sanity check on the id */
-                if (i != item.Id)
-                {
-                    throw new Exception(String.Format(
-                        "Item's id does not match index in items list. [i={0}, id={1}]",
-                        i.ToString("X"),
-                        Archive.Items[i].Id.ToString("X")));
-                }
-
+                
                 /* Directories don't have data offsets, skip them */
                 if (item.Type == NefsItemType.Directory)
                 {
                     continue;
                 }
 
-                /* Update the data offset */
-                int prevOffset = (int)item.DataOffset;
-                int newOffset = prevOffset + compressedSizeDiff;
-
-                if (newOffset < 0)
+                /* Update an item's data offset if it was after the item we are updating now */
+                if (item.DataOffset > this.DataOffset)
                 {
-                    throw new Exception(String.Format(
-                        "New data offset less than zero. [file={0}]", 
-                        item.Filename));
+                    /* Update the data offset */
+                    UInt64 prevOffset = item.DataOffset;
+                    UInt64 newOffset = (ulong)((long)prevOffset + (long)compressedSizeDiff);
+
+                    if (newOffset < 0)
+                    {
+                        throw new Exception(String.Format(
+                            "New data offset less than zero. [file={0}]",
+                            item.Filename));
+                    }
+
+                    item.DataOffset = newOffset;
                 }
-
-                item.DataOffset = (UInt32)newOffset;
-
+                                
                 /* Skip the weird 0xFFFFFFFF offsets into pt 4 */
                 if (item.OffsetIntoPt4Raw == 0xFFFFFFFF)
                 {
                     continue;
                 }
 
-                /* Update the header part 4 offset */
-                int prevOffsetIntoPt4Raw = (int)item.OffsetIntoPt4Raw;
-                int newOffsetIntoPt4Raw = prevOffsetIntoPt4Raw + numChunksDiff;
-
-                if (newOffsetIntoPt4Raw < 0)
+                /* Update an item's part 4 offset if it was after the item we are updating now */
+                if (item.OffsetIntoPt4Raw > this.OffsetIntoPt4Raw)
                 {
-                    throw new Exception(String.Format(
-                        "New offset into part 4 less than zero. [file={0}]",
-                        item.Filename));
-                }
+                    /* Update the header part 4 offset */
+                    int prevOffsetIntoPt4Raw = (int)item.OffsetIntoPt4Raw;
+                    int newOffsetIntoPt4Raw = prevOffsetIntoPt4Raw + numChunksDiff;
 
-                item.OffsetIntoPt4Raw = (UInt32)newOffsetIntoPt4Raw;
+                    if (newOffsetIntoPt4Raw < 0)
+                    {
+                        throw new Exception(String.Format(
+                            "New offset into part 4 less than zero. [file={0}]",
+                            item.Filename));
+                    }
+
+                    item.OffsetIntoPt4Raw = (UInt32)newOffsetIntoPt4Raw;
+                }
             }
             
             p.EndTask();
@@ -621,7 +637,7 @@ namespace VictorBush.Ego.NefsLib
                     fileToInject.Read(temp, 0, (int)fileToInject.Length);
 
                     /* Write the new compressed data to the destination */
-                    destFile.Seek(DataOffset, SeekOrigin.Begin);
+                    destFile.Seek((long)DataOffset, SeekOrigin.Begin);
                     destFile.Write(temp, 0, (int)CompressedSize);
                 }
             }
@@ -635,10 +651,10 @@ namespace VictorBush.Ego.NefsLib
                 using (var sourceFile = new FileStream(Archive.FilePath, FileMode.Open))
                 {
                     /* Read the source file from the original data offset */
-                    sourceFile.Seek(_pt1Entry.OffsetToData, SeekOrigin.Begin);
+                    sourceFile.Seek((long)_pt1Entry.OffsetToData, SeekOrigin.Begin);
 
                     /* Write to the dest with the updated data offset */
-                    destFile.Seek(DataOffset, SeekOrigin.Begin);
+                    destFile.Seek((long)DataOffset, SeekOrigin.Begin);
 
                     /* Read from source nefs file */
                     var size = CompressedSize;

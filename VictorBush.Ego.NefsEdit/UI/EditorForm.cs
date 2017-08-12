@@ -205,6 +205,19 @@ namespace VictorBush.Ego.NefsEdit.UI
         }
 
         /// <summary>
+        /// Saves the current archive if one is open.
+        /// </summary>
+        public void SaveCurrentArchive()
+        {
+            if (_archive == null)
+            {
+                return;
+            }
+
+            SaveArchiveAsync(_archive, _archive.FilePath);
+        }
+
+        /// <summary>
         /// Indicate that an item has been selected and allow appropriate parties to take action.
         /// </summary>
         /// <param name="item">The item that has been selected.</param>
@@ -475,7 +488,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SaveArchiveAsync(_archive, _archive.FilePath);   
+            SaveCurrentArchive();
         }
     }
 }

@@ -64,13 +64,13 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Absolute offset to first compressed data in the archive.
         /// </summary>
-        public UInt32 FirstItemDataOffset
+        public UInt64 FirstItemDataOffset
         {
             get
             {
-                UInt32 firstItemOffset = (from e in _entries
-                                          where e.OffsetToData != 0
-                                          select e.OffsetToData).FirstOrDefault();
+                var firstItemOffset = (from e in _entries
+                                       where e.OffsetToData != 0
+                                       select e.OffsetToData).FirstOrDefault();
                 return firstItemOffset;
             }
         }

@@ -66,21 +66,44 @@ namespace VictorBush.Ego.NefsLib.Header
         }
 
         /// <summary>
+        /// Gets a Part 2 entry corresponding to the specified Part 1 entry.
+        /// </summary>
+        /// <param name="pt1Entry">The Part 1 entry to get the matching Part 2 entry for.</param>
+        public NefsHeaderPt2Entry GetEntry(NefsHeaderPt1Entry pt1Entry)
+        {
+            return GetEntry(pt1Entry.Id, pt1Entry.OffsetIntoPt2);
+        }
+
+        /// <summary>
         /// Gets a part 2 header entry by the item's id number.
         /// </summary>
         /// <param name="id">The id of the entry to get.</param>
-        public NefsHeaderPt2Entry GetEntry(UInt32 id)
+        /// <param name="offsetIntoPt2">The relative offset into Part 2 where this entry begins.</param>
+        public NefsHeaderPt2Entry GetEntry(UInt32 id, UInt32 offsetIntoPt2)
         {
+            /* First try to get an entry based on Id */
             var entry = from e in _entries
                         where e.Id == id
                         select e;
 
-            if (entry.Count() == 0)
+            if (entry.Count() > 0)
             {
-                throw new ArgumentException("Couldn't find a part 2 entry for id " + id);
+                return entry.First();
+            }         
+
+            /* If that fails, try to get the entry based on offset.
+             *  It is possible that some items share Part 2 entries. */
+            entry = from e in _entries
+                    where e.Offset == this.Offset + offsetIntoPt2
+                    select e;
+
+            if (entry.Count() > 0)
+            {
+                return entry.First();
             }
 
-            return entry.First();
+            /* Could not find a Part 2 entry */
+            throw new ArgumentException("Couldn't find a part 2 entry for id " + id);
         }
 
         /// <summary>

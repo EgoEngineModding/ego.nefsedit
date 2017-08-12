@@ -20,9 +20,7 @@ namespace VictorBush.Ego.NefsLib.Header
         UInt32 _offset;
 
         [FileData]
-        UInt32Type off_0x00_offset_to_data = new UInt32Type(0x00);
-        [FileData]
-        UInt32Type off_0x04 = new UInt32Type(0x04);
+        UInt64Type off_0x00_offset_to_data = new UInt64Type(0x00);
         [FileData]
         UInt32Type off_0x08_offset_in_hdr_pt2 = new UInt32Type(0x08);
         [FileData]
@@ -54,7 +52,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Absolute offset to the compressed data for this item in the archive.
         /// </summary>
-        public UInt32 OffsetToData
+        public UInt64 OffsetToData
         {
             get { return off_0x00_offset_to_data.Value; }
         }
@@ -91,14 +89,6 @@ namespace VictorBush.Ego.NefsLib.Header
         public UInt32 OffsetIntoPt4Raw
         {
             get { return off_0x0c_offset_in_hdr_pt4.Value; }
-        }
-
-        /// <summary>
-        /// Unknown value.
-        /// </summary>
-        public UInt32 Unkown_0x04
-        {
-            get { return off_0x04.Value; }
         }
 
         /// <summary>

@@ -217,7 +217,12 @@ namespace VictorBush.Ego.NefsLib
 
                     /* Update the header data for this item */
                     item.Part1Entry.Update(item);
-                    item.Part2Entry.Update(item);
+
+                    /* Since some items share Part 2 entries, only update that entry once */
+                    if (item.Part1Entry.Id == item.Part2Entry.Id)
+                    {
+                        item.Part2Entry.Update(item);
+                    }
                 }
 
                 /* Update the archive file size entry */

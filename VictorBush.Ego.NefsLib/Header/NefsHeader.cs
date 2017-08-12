@@ -55,10 +55,10 @@ namespace VictorBush.Ego.NefsLib.Header
             p.BeginTask(0.10f, "Reading header part 7...");
             // Theres a section of data after header part 6 and the first section of compressed data.
             // I'm not sure what it is. Just copying for now.
-            UInt32 firstItemOffset = _part1.FirstItemDataOffset;
+            var firstItemOffset = _part1.FirstItemDataOffset;
             if( firstItemOffset > 0 && firstItemOffset > _intro.DataOffset)
             {
-                _part7 = new NefsHeaderPt7(file, _intro.DataOffset, firstItemOffset - _intro.DataOffset);
+                _part7 = new NefsHeaderPt7(file, _intro.DataOffset, (uint)firstItemOffset - _intro.DataOffset);
             }
             p.EndTask();
         }
