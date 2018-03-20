@@ -143,7 +143,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                         }
                         catch (Exception ex)
                         {
-                            log.Error(String.Format("Error extracting item {0}.", item.FilePathInArchive));
+                            log.Error(String.Format("Error extracting item {0}.", item.FilePathInArchive), ex);
                         }
                     }
 

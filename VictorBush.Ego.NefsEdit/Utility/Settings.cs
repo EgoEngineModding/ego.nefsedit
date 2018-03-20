@@ -24,6 +24,7 @@ namespace VictorBush.Ego.NefsEdit.Utility
             var ofd = new FolderBrowserDialog();
             ofd.Description = "Pick a directory to use for quick extraction.";
             ofd.ShowNewFolderButton = true;
+            ofd.SelectedPath = QuickExtractDir;
 
             var result = ofd.ShowDialog();
 

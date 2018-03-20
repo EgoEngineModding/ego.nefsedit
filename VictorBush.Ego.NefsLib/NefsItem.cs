@@ -435,6 +435,18 @@ namespace VictorBush.Ego.NefsLib
 
                 var numChunks = ChunkSizes.Count;
 
+                /* Some files may not be compressed in the archive, check that */
+                if ((numChunks == 0 && ExtractedSize > 0)
+                 || (ExtractedSize == CompressedSize))
+                {
+                    /* Just copy the data directly from acrhive without decompression */
+                    var data = new byte[ExtractedSize];
+                    inFile.Read(data, 0, (int)ExtractedSize);
+                    outFile.Write(data, 0, (int)ExtractedSize);
+
+                    return;
+                }
+
                 /* For each compressed chunk, decompress it and write it to the output file */
                 for (int i = 0; i < numChunks; i++)
                 {
@@ -530,6 +542,14 @@ namespace VictorBush.Ego.NefsLib
             int numChunks = 0;
             int numChunksDiff = 0;
             int oldNumChunks = ChunkSizes.Count();
+            bool compressChunks = true;
+            
+            /* is this file a non-compressed file? */
+            if (CompressedSize == ExtractedSize)
+            {
+                /* this file should not be compressed */
+                compressChunks = false;
+            }
 
             /* Open the input file */
             using (var inputFile = new FileStream(inputFilePath, FileMode.Open))
@@ -554,8 +574,19 @@ namespace VictorBush.Ego.NefsLib
                     {
                         p.BeginTask(1.0f / (float)numChunks, String.Format("Compressing chunk {0}/{1}...", currentChunk + 1, numChunks));
 
-                        /* Compress this chunk and write it to the output file */
-                        lastBytesRead = DeflateHelper.DeflateToFile(inputFile, CHUNK_SIZE, outputFile, out lastChunkSize);
+                        if (compressChunks)
+                        {
+                            /* Compress this chunk and write it to the output file */
+                            lastBytesRead = DeflateHelper.DeflateToFile(inputFile, CHUNK_SIZE, outputFile, out lastChunkSize);
+                        }
+                        else
+                        {
+                            /* copy extracted chunk to output file */
+                            var bytes = new byte[CHUNK_SIZE];
+                            lastBytesRead = inputFile.Read(bytes, 0, CHUNK_SIZE);
+                            lastChunkSize = lastBytesRead;
+                            outputFile.Write(bytes, 0, lastBytesRead);
+                        }
 
                         totalBytesRead += lastBytesRead;
                         totalChunkSize += lastChunkSize;
@@ -584,7 +615,7 @@ namespace VictorBush.Ego.NefsLib
                     }
                 }
             }
-
+            
             /* Quick sanity check */
             if (currentChunk != numChunks)
             {
