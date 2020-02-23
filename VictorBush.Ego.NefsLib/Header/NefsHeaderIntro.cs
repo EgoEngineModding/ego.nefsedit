@@ -5,7 +5,9 @@ using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Numerics;
 using VictorBush.Ego.NefsLib.DataTypes;
+using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header
 {
@@ -36,7 +38,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>Unknown value</summary>
         [FileData]
         UInt32Type _hdr_006c = new UInt32Type(0x006c);
-        
+
         /// <summary>8 bytes; Another constant; the last four bytes are "zlib" in ASCII.</summary>
         [FileData]
         UInt64Type _hdr_0070_zlib = new UInt64Type(0x0070);
@@ -92,6 +94,25 @@ namespace VictorBush.Ego.NefsLib.Header
         UInt32 _part5_size;
         UInt32 _part6_size;
 
+        byte[] _public_key = {
+            0xCF, 0x19, 0x63, 0x94, 0x1E, 0x0F, 0x42, 0x16, 0x35, 0xDE, 0x51, 0xD0, 0xB3, 0x3A, 0xB7, 0x67,
+            0xC7, 0x1C, 0x8D, 0x3B, 0x27, 0x49, 0x40, 0x9E, 0x58, 0x43, 0xDD, 0x6D, 0xD9, 0xAA, 0xF5, 0x1B,
+            0x94, 0x94, 0xC4, 0x30, 0x49, 0xBA, 0xE7, 0x72, 0x3D, 0xFA, 0xDF, 0x80, 0x17, 0x55, 0xF3, 0xAB,
+            0xF8, 0x97, 0x42, 0xE6, 0xB2, 0xDF, 0x11, 0xE4, 0x93, 0x0E, 0x92, 0x1D, 0xC5, 0x4E, 0x0F, 0x87,
+            0xCD, 0x46, 0x83, 0x06, 0x6B, 0x97, 0xA7, 0x00, 0x42, 0x35, 0xB0, 0x33, 0xEA, 0xEF, 0x68, 0x54,
+            0xA0, 0xF9, 0x03, 0x41, 0xF7, 0x5C, 0xFF, 0xC3, 0x75, 0xE1, 0x1B, 0x00, 0x73, 0x5A, 0x7A, 0x81,
+            0x68, 0xAF, 0xB4, 0x9F, 0x86, 0x3C, 0xD6, 0x09, 0x3A, 0xC0, 0x94, 0x6F, 0x18, 0xE2, 0x03, 0x38,
+            0x14, 0xF7, 0xC5, 0x13, 0x91, 0x4E, 0xD0, 0x4F, 0xAC, 0x46, 0x6C, 0x70, 0x27, 0xED, 0x69, 0x99,
+            00
+        };
+
+        byte[] _exponent = { 01, 00, 01, 00 };
+
+        bool _is_encrypted;
+
+        MemoryStream _decryptedStream;
+
+
         /// <summary>
         /// Parses the introductory section of the NeFS header.
         /// </summary>
@@ -101,6 +122,75 @@ namespace VictorBush.Ego.NefsLib.Header
         {
             /* Read the file data as defined by [FileData] fields */
             FileData.ReadData(file, OFFSET, this);
+            _is_encrypted = false;
+
+            if (MagicNumber != 0x5346654E)
+            {
+                _is_encrypted = true;
+                _decryptedStream = new MemoryStream();
+
+                file.Seek(0, SeekOrigin.Begin);
+                byte[] encryptedHeader = new byte[0x81];
+                file.Read(encryptedHeader, 0, 0x80);
+                encryptedHeader[0x80] = 0;
+
+
+                // Use big integers instead of RSA since the c# implementation forces the
+                // use of padding.
+                BigInteger n = new BigInteger(_public_key);
+                BigInteger e = new BigInteger(_exponent);
+                BigInteger m = new BigInteger(encryptedHeader);
+
+                byte[] decrypted = BigInteger.ModPow(m, e, n).ToByteArray();
+
+                _decryptedStream.Write(decrypted, 0, decrypted.Length);
+
+                if (decrypted.Length != 0x80)
+                {
+                    for (int i = 0; i < (0x80 - decrypted.Length); i++)
+                    {
+                        _decryptedStream.WriteByte(0);
+                    }
+                }
+
+                string asciiKey;
+                UInt32 headerLen;
+                BinaryReader br = new BinaryReader(_decryptedStream);
+                // Read hex key
+                _decryptedStream.Seek(0x24, SeekOrigin.Begin);
+                asciiKey = new string(br.ReadChars(0x40));
+
+                // Read header length
+                _decryptedStream.Seek(0x64, SeekOrigin.Begin);
+                headerLen = br.ReadUInt32();
+
+                _decryptedStream.Seek(0x0, SeekOrigin.End);
+                
+
+
+
+                byte[] key = FormatHelper.FromHexString(asciiKey);
+
+                using (RijndaelManaged rijAlg = new RijndaelManaged())
+                {
+                    rijAlg.KeySize = 256;
+                    rijAlg.Key = key;
+                    rijAlg.Mode = CipherMode.ECB;
+                    rijAlg.BlockSize = 128;
+                    rijAlg.Padding = PaddingMode.Zeros;
+
+                    ICryptoTransform decryptor = rijAlg.CreateDecryptor();
+
+                    CryptoStream csDecrypt = new CryptoStream(file, decryptor, CryptoStreamMode.Read);
+                    byte[] buffer = new byte[headerLen - 0x80];
+                    csDecrypt.Read(buffer, 0, (int)(headerLen - 0x80));
+                    _decryptedStream.Write(buffer, 0, (int)(headerLen - 0x80));
+                }
+                //_decryptedStream.Seek(0, SeekOrigin.End);
+                //file.CopyTo(_decryptedStream);
+                _decryptedStream.Seek(0, SeekOrigin.Begin);
+                FileData.ReadData(_decryptedStream, OFFSET, this);
+            }
 
             /* Calculate the sizes of the different header parts */
             _part1_size = _hdr_008c_offset_to_part_2.Value - _hdr_0084_offset_to_part_1.Value;
@@ -146,6 +236,16 @@ namespace VictorBush.Ego.NefsLib.Header
         {
             get { return _hdr_0000_magic_number.Value; }
         }
+
+
+        /// <summary>
+        /// The archive's encryption key
+        /// </summary>
+        public byte[] EncryptionKey
+        {
+            get { return _hdr_0024_ascii_hex_str.Value; }
+        }
+       
 
         /// <summary>
         /// Unkonwn, some offset into part 5.
@@ -261,6 +361,24 @@ namespace VictorBush.Ego.NefsLib.Header
         {
             get { return _part6_size; }
             internal set { _part6_size = value; }
+        }
+
+        /// <summary>
+        /// Wether the header is encrypted or not
+        /// </summary>
+        public bool IsEncrypted
+        {
+            get { return _is_encrypted; }
+        }
+
+        public byte[] PublicKey
+        {
+            get { return _public_key; }
+        }
+
+        public Stream DecryptedHeader
+        {
+            get { return _decryptedStream; }
         }
 
         /// <summary>

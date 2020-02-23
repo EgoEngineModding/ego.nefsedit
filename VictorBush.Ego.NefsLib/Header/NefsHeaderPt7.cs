@@ -32,7 +32,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="file"></param>
         /// <param name="offset"></param>
         /// <param name="size"></param>
-        public NefsHeaderPt7(FileStream file, UInt32 offset, UInt32 size)
+        public NefsHeaderPt7(Stream file, UInt32 offset, UInt32 size)
         {
             _offset = offset;
             _size = size;

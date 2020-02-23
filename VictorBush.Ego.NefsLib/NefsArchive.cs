@@ -282,13 +282,24 @@ namespace VictorBush.Ego.NefsLib
 
         private bool checkHash(FileStream file)
         {
-            var dataToHash = new byte[Header.Intro.HeaderSize - 0x20];
+            byte[] dataToHash = new byte[Header.Intro.IsEncrypted ? Header.Intro.HeaderSize - 0x22 : Header.Intro.HeaderSize - 0x20];
+            Stream stream = Header.Intro.IsEncrypted ? Header.Intro.DecryptedHeader : file;
 
-            file.Seek(0x0, SeekOrigin.Begin);
-            file.Read(dataToHash, 0, 4);
 
-            file.Seek(0x24, SeekOrigin.Begin);
-            file.Read(dataToHash, 4, (int)Header.Intro.HeaderSize - 0x24);
+            stream.Seek(0x0, SeekOrigin.Begin);
+            stream.Read(dataToHash, 0, 4);
+
+            stream.Seek(0x24, SeekOrigin.Begin);
+            if (!Header.Intro.IsEncrypted) {
+                stream.Read(dataToHash, 4, (int)Header.Intro.HeaderSize - 0x24);
+            }
+            else
+            {
+                stream.Read(dataToHash, 4, 0x5A);
+                stream.Seek(0x80, SeekOrigin.Begin);
+                stream.Read(dataToHash, 0x5E, (int)Header.Intro.HeaderSize - 0x80);
+            }
+
             
             SHA256 hash = SHA256.Create();
             byte[] hashOut = hash.ComputeHash(dataToHash);

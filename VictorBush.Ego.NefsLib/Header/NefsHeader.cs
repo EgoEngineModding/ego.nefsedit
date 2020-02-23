@@ -28,28 +28,34 @@ namespace VictorBush.Ego.NefsLib.Header
             _intro = new NefsHeaderIntro(file, p);
             p.EndTask();
 
+            Stream header;
+            if (_intro.IsEncrypted)
+                header = _intro.DecryptedHeader;
+            else
+                header = file;
+
             p.BeginTask(0.15f, "Reading header part 1...");
-            _part1 = new NefsHeaderPt1(file, _intro.Part1Offset, _intro.Part1Size, p);
+            _part1 = new NefsHeaderPt1(header, _intro.Part1Offset, _intro.Part1Size, p);
             p.EndTask();
 
             p.BeginTask(0.15f, "Reading header part 2...");
-            _part2 = new NefsHeaderPt2(file, _intro.Part2Offset, _intro.Part2Size, p);
+            _part2 = new NefsHeaderPt2(header, _intro.Part2Offset, _intro.Part2Size, p);
             p.EndTask();
 
             p.BeginTask(0.10f, "Reading header part 3...");
-            _part3 = new NefsHeaderPt3(file, _intro.Part3Offset, _intro.Part3Size, p);
+            _part3 = new NefsHeaderPt3(header, _intro.Part3Offset, _intro.Part3Size, p);
             p.EndTask();
 
             p.BeginTask(0.15f, "Reading header part 4...");
-            _part4 = new NefsHeaderPt4(file, _intro.Part4Offset, _intro.Part4Size, p);
+            _part4 = new NefsHeaderPt4(header, _intro.Part4Offset, _intro.Part4Size, p);
             p.EndTask();
 
             p.BeginTask(0.10f, "Reading header part 5...");
-            _part5 = new NefsHeaderPt5(file, _intro.Part5Offset, _intro.Part5Size, p);
+            _part5 = new NefsHeaderPt5(header, _intro.Part5Offset, _intro.Part5Size, p);
             p.EndTask();
 
             p.BeginTask(0.10f, "Reading header part 6...");
-            _part6 = new NefsHeaderPt6(file, _intro.Part6Offset, _intro.Part6Size, p);
+            _part6 = new NefsHeaderPt6(header, _intro.Part6Offset, _intro.Part6Size, p);
             p.EndTask();
 
             p.BeginTask(0.10f, "Reading header part 7...");
@@ -58,7 +64,7 @@ namespace VictorBush.Ego.NefsLib.Header
             var firstItemOffset = _part1.FirstItemDataOffset;
             if( firstItemOffset > 0 && firstItemOffset > _intro.DataOffset)
             {
-                _part7 = new NefsHeaderPt7(file, _intro.DataOffset, (uint)firstItemOffset - _intro.DataOffset);
+                _part7 = new NefsHeaderPt7(header, _intro.DataOffset, (uint)firstItemOffset - _intro.DataOffset);
             }
             p.EndTask();
         }

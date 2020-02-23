@@ -23,7 +23,7 @@ namespace VictorBush.Ego.NefsLib.Tests.DataTypes
                 throw new NotImplementedException();
             }
 
-            public override void Read(FileStream file, uint baseOffset)
+            public override void Read(Stream file, uint baseOffset)
             {
                 readFile(file, baseOffset);
             }

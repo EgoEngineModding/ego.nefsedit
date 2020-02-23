@@ -29,7 +29,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="file">The file stream to load from.</param>
         /// <param name="parent">The part 6 obj this entry belongs to.</param>
         /// <param name="relOffset">The relative offset into part 5 where the entry begins.</param>
-        public NefsHeaderPt6Entry(FileStream file, NefsHeaderPt6 parent, UInt32 relOffset)
+        public NefsHeaderPt6Entry(Stream file, NefsHeaderPt6 parent, UInt32 relOffset)
         {
             _parent = parent;
             _relOffset = relOffset;

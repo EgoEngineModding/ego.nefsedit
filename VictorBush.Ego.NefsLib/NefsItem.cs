@@ -94,11 +94,6 @@ namespace VictorBush.Ego.NefsLib
                 }
             }
 
-            /* Determine item type */
-            _type = (_pt1Entry.OffsetToData == 0) 
-                ? NefsItemType.Directory 
-                : NefsItemType.File;
-
             /* Get the filename */
             _fileName = archive.Header.Part3.GetFilename(_pt2Entry.FilenameOffset);
 
@@ -112,6 +107,11 @@ namespace VictorBush.Ego.NefsLib
 
             /* Get extracted size */
             _extractedSize = _pt2Entry.ExtractedSize;
+
+            /* Determine item type */
+            _type = (_extractedSize == 0)
+                ? NefsItemType.Directory
+                : NefsItemType.File;
 
             /* 
              * Build the file path inside this archive
@@ -454,12 +454,60 @@ namespace VictorBush.Ego.NefsLib
                     var chunk = new byte[chunkSize];
                     inFile.Read(chunk, 0, (int)chunkSize);
 
+
                     /* Copy the comrpessed chunk to a memory stream and decompress (inflate) it */
+                    string asciiKey = System.Text.Encoding.Default.GetString(Archive.Header.Intro.EncryptionKey);
+                    byte[] key = FormatHelper.FromHexString(asciiKey);
                     using (var ms = new MemoryStream(chunk))
-                    using (var inflater = new DeflateStream(ms, CompressionMode.Decompress))
+                    using (RijndaelManaged rijAlg = new RijndaelManaged())
                     {
-                        /* Decompress the chunk and write it to the output file */
-                        inflater.CopyTo(outFile);
+                        rijAlg.KeySize = 256;
+                        rijAlg.Key = key;
+                        rijAlg.Mode = CipherMode.ECB;
+                        rijAlg.BlockSize = 128;
+                        rijAlg.Padding = PaddingMode.Zeros;
+
+                        ICryptoTransform decryptor = rijAlg.CreateDecryptor();
+                        using (CryptoStream csDecrypt = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
+                        {
+                            //csDecrypt.CopyTo(outFile);
+                            /*byte[] decrypted = new byte[csDecrypt.Length];
+                            csDecrypt.Read(decrypted, 0, (int)csDecrypt.Length);
+
+                            UInt32 MOD_ADLER = 65521;
+                            UInt32 a = 1;
+                            UInt32 b = 0;
+                            int streamlen = (int)csDecrypt.Length;
+                            for (int j = 0; j < csDecrypt.Length - 4; j++)
+                            {
+                                a = (a + decrypted[j]) % MOD_ADLER;
+                                b = (b + a) % MOD_ADLER;
+
+                                UInt32 chk = (b << 16) | a;
+
+                                UInt32 curchk = BitConverter.ToUInt32(decrypted, j + 1);
+
+                                if (chk == curchk)
+                                {
+                                    streamlen = j + 4;
+                                    break;
+                                }
+
+                            }
+                            Array.Resize(ref decrypted, streamlen);
+                            */
+                            //using (var decStream = new MemoryStream(decrypted))
+                            Stream correctStream;
+                            if (Archive.Header.Intro.IsEncrypted)
+                                correctStream = csDecrypt;
+                            else
+                                correctStream = ms;
+
+                            using (var inflater = new DeflateStream(correctStream, CompressionMode.Decompress))
+                            {
+                                inflater.CopyTo(outFile);
+                            }
+                        }
                     }
 
                     p.EndTask();

@@ -31,14 +31,14 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         }
 
         abstract public byte[] GetBytes();
-        abstract public void Read(FileStream file, UInt32 baseOffset);
+        abstract public void Read(Stream file, UInt32 baseOffset);
 
         /// <summary>
         /// Writes the stored data in little endian format.
         /// </summary>
         /// <param name="baseOffset">Base offset to write at.</param>
         /// <param name="file">The file stream to write to.</param>
-        public void Write(FileStream file, UInt32 baseOffset)
+        public void Write(Stream file, UInt32 baseOffset)
         {
             int actualOffset = (int)baseOffset + Offset;
 
@@ -67,7 +67,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         /// <param name="baseOffset">The base offset where to read in the file. The 
         ///     offset of the data type instance is added to the base offset.</param>
         /// <returns>Byte array containing the data read from the file.</returns>
-        protected byte[] readFile(FileStream file, UInt32 baseOffset)
+        protected byte[] readFile(Stream file, UInt32 baseOffset)
         {
             int actualOffset = (int)baseOffset + Offset;
             int bytesRead = 0;

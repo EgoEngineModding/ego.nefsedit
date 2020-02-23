@@ -41,7 +41,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         /// <param name="file">The file stream to read from.</param>
         /// <param name="base_offset">Base offset in the file.</param>
         /// <param name="obj">The object whose [FileData] fields to read.</param>
-        public static void ReadData(FileStream file, UInt32 baseOffset, object obj)
+        public static void ReadData(Stream file, UInt32 baseOffset, object obj)
         {
             foreach (var data in GetDataList(obj))
             {
@@ -55,7 +55,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         /// <param name="file">The file stream to write to.</param>
         /// <param name="base_offset">Base offset in the file.</param>
         /// <param name="obj">The object whose [FileData] fields to write.</param>
-        public static void WriteData(FileStream file, UInt32 baseOffset, object obj)
+        public static void WriteData(Stream file, UInt32 baseOffset, object obj)
         {
             foreach (var data in GetDataList(obj))
             {

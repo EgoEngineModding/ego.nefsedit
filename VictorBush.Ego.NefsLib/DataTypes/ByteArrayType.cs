@@ -53,7 +53,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
             return BitConverter.ToUInt32(_value, (int)offset);
         }
 
-        public override void Read(FileStream file, UInt32 baseOffset)
+        public override void Read(Stream file, UInt32 baseOffset)
         {
             _value = this.readFile(file, baseOffset);
         }
