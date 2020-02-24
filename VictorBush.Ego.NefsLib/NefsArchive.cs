@@ -40,7 +40,9 @@ namespace VictorBush.Ego.NefsLib
                 p.BeginTask(taskWeightHeader, "Reading NeFS header...");
                 _header = new NefsHeader(file, this, p);
 
-                if( !checkHash(file) )
+                Stream stream = _header.Intro.IsEncrypted ? _header.Intro.DecryptedHeader : file;
+
+                if( !checkHash(stream) )
                 {
                     log.Error("Header hash does not match expected value.");
                 }
@@ -59,7 +61,7 @@ namespace VictorBush.Ego.NefsLib
 
                     try
                     {
-                        var item = new NefsItem(file, this, entry.Id);
+                        var item = new NefsItem(stream, this, entry.Id);
                         _items.Add(item);
                     }
                     catch (Exception ex)
@@ -280,11 +282,9 @@ namespace VictorBush.Ego.NefsLib
             p.EndTask();
         }
 
-        private bool checkHash(FileStream file)
+        private bool checkHash(Stream stream)
         {
             byte[] dataToHash = new byte[Header.Intro.IsEncrypted ? Header.Intro.HeaderSize - 0x22 : Header.Intro.HeaderSize - 0x20];
-            Stream stream = Header.Intro.IsEncrypted ? Header.Intro.DecryptedHeader : file;
-
 
             stream.Seek(0x0, SeekOrigin.Begin);
             stream.Read(dataToHash, 0, 4);

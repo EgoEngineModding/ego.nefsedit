@@ -56,7 +56,7 @@ namespace VictorBush.Ego.NefsLib
         /// <param name="file">The file stream to load from.</param>
         /// <param name="archive">The NeFS archive this item is in.</param>
         /// <param name="id">The id of the item in the archive to load.</param>
-        public NefsItem(FileStream file, NefsArchive archive, UInt32 id)
+        public NefsItem(Stream file, NefsArchive archive, UInt32 id)
         {
             /* Validate inputs */
             if( file == null)
@@ -497,13 +497,8 @@ namespace VictorBush.Ego.NefsLib
                             Array.Resize(ref decrypted, streamlen);
                             */
                             //using (var decStream = new MemoryStream(decrypted))
-                            Stream correctStream;
-                            if (Archive.Header.Intro.IsEncrypted)
-                                correctStream = csDecrypt;
-                            else
-                                correctStream = ms;
 
-                            using (var inflater = new DeflateStream(correctStream, CompressionMode.Decompress))
+                            using (var inflater = new DeflateStream(Archive.Header.Intro.IsEncrypted ? (Stream)csDecrypt : (Stream)ms, CompressionMode.Decompress))
                             {
                                 inflater.CopyTo(outFile);
                             }
