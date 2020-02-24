@@ -1,4 +1,4 @@
-NeFS Edit
+# NeFS Edit
 
 *** Use at your own risk. Backup your files. ***
 
@@ -12,13 +12,18 @@ What's NOT supported:
 - Sorting items in editor.
 - Adding items to an archive.
 - Creating new archives from scratch.
+- Saving encrypted archives.
 
 Other notes:
 - game.nefs not guaranteed to work.
 - Items aren't sorted by type or by filename.
 
 
-CHANGELOG
+## CHANGELOG
+
+Version 0.4.0
+- Added ability to open encrypted NeFS archives.
+- Fixed issue with extracting non-compressed files.
 
 Version 0.3.0
 - Added ability to extract multiple files at once.
