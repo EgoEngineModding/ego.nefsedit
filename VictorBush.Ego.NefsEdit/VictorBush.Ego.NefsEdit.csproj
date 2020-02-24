@@ -98,6 +98,7 @@
     <Compile Include="UI\PropertyGridForm.Designer.cs">
       <DependentUpon>PropertyGridForm.cs</DependentUpon>
     </Compile>
+    <Compile Include="Utility\ListViewColumnSorter.cs" />
     <Compile Include="Utility\LogHelper.cs" />
     <Compile Include="Utility\RichTextWriter.cs" />
     <Compile Include="Utility\Settings.cs" />

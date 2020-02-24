@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using VictorBush.Ego.NefsEdit.Utility;
 using VictorBush.Ego.NefsLib;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -15,12 +16,16 @@ namespace VictorBush.Ego.NefsEdit.UI
     public partial class BrowseAllForm : DockContent
     {
         EditorForm _editor;
+        ListViewColumnSorter listViewItemSorter;
 
         public BrowseAllForm(EditorForm editor)
         {
             InitializeComponent();
 
             _editor = editor;
+
+            listViewItemSorter = new ListViewColumnSorter();
+            this.itemsListView.ListViewItemSorter = listViewItemSorter;
 
             // Create the columns we want
             var columns = new ColumnHeader[]
@@ -58,6 +63,33 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             itemsListView.Columns.AddRange(columns);
             itemsListView.Columns.AddRange(debugColumns);
+            itemsListView.ColumnClick += ItemsListView_ColumnClick;
+        }
+
+        private void ItemsListView_ColumnClick(object sender, ColumnClickEventArgs e)
+        {
+            // Determine if clicked column is already the column that is being sorted.
+            if (e.Column == listViewItemSorter.SortColumn)
+            {
+                // Reverse the current sort direction for this column.
+                if (listViewItemSorter.Order == SortOrder.Ascending)
+                {
+                    listViewItemSorter.Order = SortOrder.Descending;
+                }
+                else
+                {
+                    listViewItemSorter.Order = SortOrder.Ascending;
+                }
+            }
+            else
+            {
+                // Set the column number that is to be sorted; default to ascending.
+                listViewItemSorter.SortColumn = e.Column;
+                listViewItemSorter.Order = SortOrder.Ascending;
+            }
+
+            // Perform the sort with these new sort options.
+            this.itemsListView.Sort();
         }
 
         public void LoadArchive(NefsArchive archive)
