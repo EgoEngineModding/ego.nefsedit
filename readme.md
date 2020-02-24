@@ -19,7 +19,7 @@ Other notes:
 - Items aren't sorted by type or by filename.
 
 ## Acknowledgements
-Special thanks to Gigi1237.
+Special thanks to [@Gigi1237]( https://github.com/Gigi1237 ) for encryption work.
 
 ## Changelog
 
