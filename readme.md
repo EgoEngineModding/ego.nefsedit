@@ -18,6 +18,9 @@ Other notes:
 - game.nefs not guaranteed to work.
 - Items aren't sorted by type or by filename.
 
+## Acknowledgements
+Special thanks to Gigi1237.
+
 ## Changelog
 
 Version 0.4.0
