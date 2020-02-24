@@ -28,7 +28,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="offset">The absolute offset into the file where part 5 starts.</param>
         /// <param name="size">The size of part 5 in bytes.</param>
         /// <param name="p">Progress info.</param>
-        public NefsHeaderPt5(FileStream file, UInt32 offset, UInt32 size, NefsProgressInfo p)
+        public NefsHeaderPt5(Stream file, UInt32 offset, UInt32 size, NefsProgressInfo p)
         {
             _offset = offset;
             _size = size;

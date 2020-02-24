@@ -34,7 +34,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         /// <param name="file">The file stream to load from.</param>
         /// <param name="offset">The absolute offset into the file where the entry begins.</param>
-        internal NefsHeaderPt2Entry(FileStream file, UInt32 offset)
+        internal NefsHeaderPt2Entry(Stream file, UInt32 offset)
         {
             _offset = offset;
 

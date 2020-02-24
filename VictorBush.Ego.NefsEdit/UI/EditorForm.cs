@@ -319,6 +319,12 @@ namespace VictorBush.Ego.NefsEdit.UI
                 return;
             }
 
+            if (_archive.Header.Intro.IsEncrypted)
+            {
+                MessageBox.Show("Saving encrypted archives is not yet possible!");
+                return;
+            }
+
             SaveArchiveAsync(_archive, _archive.FilePath);
         }
 

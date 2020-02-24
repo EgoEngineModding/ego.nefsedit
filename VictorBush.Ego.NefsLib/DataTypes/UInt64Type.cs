@@ -32,7 +32,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
             return BitConverter.GetBytes(_value);
         }
 
-        public override void Read(FileStream file, UInt32 baseOffset)
+        public override void Read(Stream file, UInt32 baseOffset)
         {
             var temp = this.readFile(file, baseOffset);
             _value = BitConverter.ToUInt64(temp, 0);

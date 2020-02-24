@@ -40,7 +40,9 @@ namespace VictorBush.Ego.NefsLib
                 p.BeginTask(taskWeightHeader, "Reading NeFS header...");
                 _header = new NefsHeader(file, this, p);
 
-                if( !checkHash(file) )
+                Stream stream = _header.Intro.IsEncrypted ? _header.Intro.DecryptedHeader : file;
+
+                if( !checkHash(stream) )
                 {
                     log.Error("Header hash does not match expected value.");
                 }
@@ -59,7 +61,7 @@ namespace VictorBush.Ego.NefsLib
 
                     try
                     {
-                        var item = new NefsItem(file, this, entry.Id);
+                        var item = new NefsItem(stream, this, entry.Id);
                         _items.Add(item);
                     }
                     catch (Exception ex)
@@ -280,15 +282,24 @@ namespace VictorBush.Ego.NefsLib
             p.EndTask();
         }
 
-        private bool checkHash(FileStream file)
+        private bool checkHash(Stream stream)
         {
-            var dataToHash = new byte[Header.Intro.HeaderSize - 0x20];
+            byte[] dataToHash = new byte[Header.Intro.IsEncrypted ? Header.Intro.HeaderSize - 0x22 : Header.Intro.HeaderSize - 0x20];
 
-            file.Seek(0x0, SeekOrigin.Begin);
-            file.Read(dataToHash, 0, 4);
+            stream.Seek(0x0, SeekOrigin.Begin);
+            stream.Read(dataToHash, 0, 4);
 
-            file.Seek(0x24, SeekOrigin.Begin);
-            file.Read(dataToHash, 4, (int)Header.Intro.HeaderSize - 0x24);
+            stream.Seek(0x24, SeekOrigin.Begin);
+            if (!Header.Intro.IsEncrypted) {
+                stream.Read(dataToHash, 4, (int)Header.Intro.HeaderSize - 0x24);
+            }
+            else
+            {
+                stream.Read(dataToHash, 4, 0x5A);
+                stream.Seek(0x80, SeekOrigin.Begin);
+                stream.Read(dataToHash, 0x5E, (int)Header.Intro.HeaderSize - 0x80);
+            }
+
             
             SHA256 hash = SHA256.Create();
             byte[] hashOut = hash.ComputeHash(dataToHash);
