@@ -18,8 +18,7 @@ Other notes:
 - game.nefs not guaranteed to work.
 - Items aren't sorted by type or by filename.
 
-
-## CHANGELOG
+## Changelog
 
 Version 0.4.0
 - Added ability to open encrypted NeFS archives.
