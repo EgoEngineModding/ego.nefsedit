@@ -12,10 +12,13 @@ using System.Threading.Tasks;
 using System.Windows.Forms;
 using VictorBush.Ego.NefsEdit.Utility;
 using VictorBush.Ego.NefsLib;
+using VictorBush.Ego.NefsLib.DataSource;
+using VictorBush.Ego.NefsLib.Item;
+using VictorBush.Ego.NefsLib.Progress;
 
 namespace VictorBush.Ego.NefsEdit.UI
 {
-    public partial class EditorForm : Form
+    internal partial class EditorForm : Form
     {
         private static readonly ILog log = LogHelper.GetLogger();
 
@@ -27,9 +30,14 @@ namespace VictorBush.Ego.NefsEdit.UI
         PropertyGridForm _selectedFilePropertyForm;
         List<NefsItem> _selectedItems = new List<NefsItem>();
 
-        public EditorForm()
+
+        INefsEditWorkspace Workspace { get; }
+
+        public EditorForm(INefsEditWorkspace workspace)
         {
             InitializeComponent();
+
+            this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
         }
 
         /// <summary>
@@ -73,7 +81,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                 var result = DialogResult.Cancel;
 
                 /* Show either a directory chooser or a save file dialog */
-                if (items.Count > 1 || items[0].Type == NefsItem.NefsItemType.Directory)
+                if (items.Count > 1 || items[0].Type == NefsItemType.Directory)
                 {
                     /* Extracting multiple files or a directory - show folder browser */
                     var fbd = new FolderBrowserDialog();
@@ -88,7 +96,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                     /* Extracting a file - show a save file dialog*/
                     var sfd = new SaveFileDialog();
                     sfd.OverwritePrompt = true;
-                    sfd.FileName = items[0].Filename;
+                    sfd.FileName = items[0].FileName;
 
                     result = sfd.ShowDialog();
                     outputDir = Path.GetDirectoryName(sfd.FileName);
@@ -109,52 +117,52 @@ namespace VictorBush.Ego.NefsEdit.UI
             var progressDialogTask = progressDialog.ShowDialogAsync();
 
             /* Extract the item */
-            await Task.Run(() =>
-            {
-                try
-                {
-                    var p = progressDialog.ProgressInfo;
-                    var numItems = _selectedItems.Count;
+            //await Task.Run(() =>
+            //{
+            //    try
+            //    {
+            //        var p = progressDialog.ProgressInfo;
+            //        var numItems = _selectedItems.Count;
 
-                    log.Info("----------------------------");
-                    p.BeginTask(1.0f);
+            //        log.Info("----------------------------");
+            //        p.BeginTask(1.0f);
 
-                    /* Extract each item */
-                    for (int i = 0; i < numItems; i++)
-                    {
-                        var item = _selectedItems[i];
-                        var dir = outputDir;
-                        var file = outputFile;
+            //        /* Extract each item */
+            //        for (int i = 0; i < numItems; i++)
+            //        {
+            //            var item = _selectedItems[i];
+            //            var dir = outputDir;
+            //            var file = outputFile;
 
-                        /* When extracting multiple items or using the quick extraction 
-                         * directory, use the original filenames and directory structure
-                         * of the archive */
-                        if (numItems > 0 || useQuickExtract)
-                        {
-                            var dirInArchive = Path.GetDirectoryName(item.FilePathInArchive);
-                            dir = Path.Combine(outputDir, dirInArchive);
-                            file = Path.GetFileName(item.FilePathInArchive);
-                        }
+            //            /* When extracting multiple items or using the quick extraction 
+            //             * directory, use the original filenames and directory structure
+            //             * of the archive */
+            //            if (numItems > 0 || useQuickExtract)
+            //            {
+            //                var dirInArchive = Path.GetDirectoryName(item.FilePathInArchive);
+            //                dir = Path.Combine(outputDir, dirInArchive);
+            //                file = Path.GetFileName(item.FilePathInArchive);
+            //            }
 
-                        log.Info(String.Format("Extracting {0} to {1}...", item.FilePathInArchive, Path.Combine(dir, file)));
-                        try
-                        {
-                            item.Extract(dir, file, p);
-                        }
-                        catch (Exception ex)
-                        {
-                            log.Error(String.Format("Error extracting item {0}.", item.FilePathInArchive), ex);
-                        }
-                    }
+            //            log.Info(String.Format("Extracting {0} to {1}...", item.FilePathInArchive, Path.Combine(dir, file)));
+            //            try
+            //            {
+            //                item.Extract(dir, file, p);
+            //            }
+            //            catch (Exception ex)
+            //            {
+            //                log.Error(String.Format("Error extracting item {0}.", item.FilePathInArchive), ex);
+            //            }
+            //        }
 
-                    p.EndTask();
-                    log.Info("Extraction finished.");
-                }
-                catch (Exception ex)
-                {
-                    log.Error("Error extracting items.", ex);
-                }
-            });
+            //        p.EndTask();
+            //        log.Info("Extraction finished.");
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        log.Error("Error extracting items.", ex);
+            //    }
+            //});
 
             /* Close the progress dialog */
             progressDialog.Close();
@@ -187,28 +195,39 @@ namespace VictorBush.Ego.NefsEdit.UI
                 /* Show the progress dialog asnyc */
                 var progressDialogTask = progressDialog.ShowDialogAsync();
 
+                // Determine file size
+                var fileLength = this.Workspace.FileSystem.FileInfo.FromFileName(ofd.FileName).Length;
+                var itemSize = new NefsItemSize((uint)fileLength);
+
+                // Create data source
+                var newDataSource = new NefsFileDataSource(ofd.FileName, 0, itemSize, item.DataSource.Size.IsCompressed);
+
+                // Mark item as replaced
+                item.ReplaceFile(newDataSource);
+
+
                 /* Replace the item */
-                await Task.Run(() =>
-                {
-                    try
-                    {
-                        log.Info("----------------------------");
-                        log.Info(String.Format("Replacing {0} with {1}...", item.Filename, ofd.FileName));
-                        item.Inject(ofd.FileName, progressDialog.ProgressInfo);
-                        log.Info("Item successfully replaced with: " + ofd.FileName);
-                    }
-                    catch (Exception ex)
-                    {
-                        log.Error("Error replacing file.", ex);
-                    }
-                });
+                //await Task.Run(() =>
+                //{
+                //    try
+                //    {
+                //        log.Info("----------------------------");
+                //        log.Info(String.Format("Replacing {0} with {1}...", item.FileName, ofd.FileName));
+                //        item.Inject(ofd.FileName, progressDialog.ProgressInfo);
+                //        log.Info("Item successfully replaced with: " + ofd.FileName);
+                //    }
+                //    catch (Exception ex)
+                //    {
+                //        log.Error("Error replacing file.", ex);
+                //    }
+                //});
 
                 /* Post-replace activites */
-                updateTitle();
+                //updateTitle();
 
                 /* Close the progress dialog */
                 progressDialog.Close();
-            }
+            }   
         }
 
         /// <summary>
@@ -228,7 +247,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                 return;
             }
 
-            if (_selectedItems[0].Type == NefsItem.NefsItemType.Directory)
+            if (_selectedItems[0].Type == NefsItemType.Directory)
             {
                 MessageBox.Show("Replacing directories not supported.");
                 return;
@@ -252,16 +271,16 @@ namespace VictorBush.Ego.NefsEdit.UI
             /*
              * Open an open file dialog and get file to inject
              */
-            var sfd = new SaveFileDialog();
-            sfd.OverwritePrompt = true;
-            sfd.FileName = Path.GetFileName(archive.FilePath);
-            var result = sfd.ShowDialog();
+            //var sfd = new SaveFileDialog();
+            //sfd.OverwritePrompt = true;
+            //sfd.FileName = Path.GetFileName(archive.FilePath);
+            //var result = sfd.ShowDialog();
 
-            if (result == DialogResult.OK)
-            {
-                var success = await SaveArchiveAsync(archive, sfd.FileName);
-                return success;
-            }
+            //if (result == DialogResult.OK)
+            //{
+            //    var success = await SaveArchiveAsync(archive, sfd.FileName);
+            //    return success;
+            //}
 
             return false;
         }
@@ -275,36 +294,36 @@ namespace VictorBush.Ego.NefsEdit.UI
         {
             var success = false;
 
-            /* Create a progress dialog form */
-            var progressDialog = new ProgressDialogForm();
+            ///* Create a progress dialog form */
+            //var progressDialog = new ProgressDialogForm();
 
-            /* Show the progress dialog asnyc */
-            var progressDialogTask = progressDialog.ShowDialogAsync();
+            ///* Show the progress dialog asnyc */
+            //var progressDialogTask = progressDialog.ShowDialogAsync();
 
-            /* Replace the item */
-            await Task.Run(() =>
-            {
-                try
-                {
-                    log.Info("----------------------------");
-                    log.Info(String.Format("Saving archive to {0}...", filename));
-                    archive.Save(filename, progressDialog.ProgressInfo);
-                    log.Info("Item successfully saved: " + filename);
-                    success = true;
-                }
-                catch (Exception ex)
-                {
-                    log.Error("Error saving archive.", ex);
-                }
-            });
+            ///* Replace the item */
+            //await Task.Run(() =>
+            //{
+            //    try
+            //    {
+            //        log.Info("----------------------------");
+            //        log.Info(String.Format("Saving archive to {0}...", filename));
+            //        archive.Save(filename, progressDialog.ProgressInfo);
+            //        log.Info("Item successfully saved: " + filename);
+            //        success = true;
+            //    }
+            //    catch (Exception ex)
+            //    {
+            //        log.Error("Error saving archive.", ex);
+            //    }
+            //});
 
-            /* Update editor */
-            setArchive(archive);
-            SelectNefsItem(_selectedItems);
-            updateTitle();
+            ///* Update editor */
+            //setArchive(archive);
+            //SelectNefsItem(_selectedItems);
+            //updateTitle();
 
-            /* Close the progress dialog */
-            progressDialog.Close();
+            ///* Close the progress dialog */
+            //progressDialog.Close();
 
             return success;
         }
@@ -314,18 +333,18 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// </summary>
         public void SaveCurrentArchive()
         {
-            if (_archive == null)
-            {
-                return;
-            }
+            //if (_archive == null)
+            //{
+            //    return;
+            //}
 
-            if (_archive.Header.Intro.IsEncrypted)
-            {
-                MessageBox.Show("Saving encrypted archives is not yet possible!");
-                return;
-            }
+            //if (_archive.Header.Intro.IsEncrypted)
+            //{
+            //    MessageBox.Show("Saving encrypted archives is not yet possible!");
+            //    return;
+            //}
 
-            SaveArchiveAsync(_archive, _archive.FilePath);
+            //SaveArchiveAsync(_archive, _archive.FilePath);
         }
 
         /// <summary>
@@ -361,7 +380,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             /* Set visibility of the Replace menu option */
             if (_selectedItems.Count > 1
-             || _selectedItems[0].Type == NefsItem.NefsItemType.Directory)
+             || _selectedItems[0].Type == NefsItemType.Directory)
             {
                 /* Can't replace directories or multiple files right now */
                 replaceContextMenuItem.Visible = false;
@@ -423,7 +442,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         
         private void EditorForm_FormClosing(object sender, FormClosingEventArgs e)
         {
-            quit(e);
+            //quit(e);
         }
 
         /// <summary>
@@ -473,25 +492,50 @@ namespace VictorBush.Ego.NefsEdit.UI
             var progressDialogTask = progressDialog.ShowDialogAsync();
             
             /* Load the archive */
-            var archive = await NefsArchive.LoadAsync(filePath, progressDialog.ProgressInfo);
+            //var archive = await NefsArchive.LoadAsync(filePath, progressDialog.ProgressInfo);
 
             /* Close the progress dialog */
             progressDialog.Close();
 
             /* After loading activities */
-            setArchive(archive);
+            //setArchive(archive);
         }
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var ofd = new OpenFileDialog();
-            ofd.Multiselect = false;
-            
-            var result = ofd.ShowDialog();
-            if (result == DialogResult.OK)
+            // TODO TEMP TEMP TEMP TEMP
+            this.Workspace.ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
             {
-                loadNefsAsync(ofd.FileName);
-            }
+                using (var tt = p.BeginTask(1.0f))
+                {
+                    using (var t = p.BeginTask(0.5f, "Part 1"))
+                    {
+                        await Task.Delay(2000);
+                    }
+                    using (var t = p.BeginTask(0.5f, "Part 2"))
+                    {
+                        await Task.Delay(2000);
+                    }
+                }
+
+
+            }));
+
+
+
+
+
+
+
+
+            //var ofd = new OpenFileDialog();
+            //ofd.Multiselect = false;
+            
+            //var result = ofd.ShowDialog();
+            //if (result == DialogResult.OK)
+            //{
+            //    loadNefsAsync(ofd.FileName);
+            //}
         }
 
         private void setArchive(NefsArchive archive)
@@ -501,7 +545,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             _browseAllForm.LoadArchive(archive);
             _browseTreeForm.LoadArchive(archive);
 
-            updateTitle();
+            //updateTitle();
         }    
 
         private void replaceToolStripMenuItem_Click(object sender, EventArgs e)
@@ -514,56 +558,56 @@ namespace VictorBush.Ego.NefsEdit.UI
             SaveArchiveAsAsync(_archive);
         }
 
-        private async void quit(FormClosingEventArgs e)
-        {
-            if (_archive != null && _archive.Modified)
-            {
-                /* Archive has been modified; prompt to save before exit */
-                var result = MessageBox.Show(String.Format("Save archive {0}?", _archive.FilePath), 
-                                            "Save?", 
-                                            MessageBoxButtons.YesNoCancel);
+        //private async void quit(FormClosingEventArgs e)
+        //{
+        //    if (_archive != null && _archive.Modified)
+        //    {
+        //        /* Archive has been modified; prompt to save before exit */
+        //        var result = MessageBox.Show(String.Format("Save archive {0}?", _archive.FilePath), 
+        //                                    "Save?", 
+        //                                    MessageBoxButtons.YesNoCancel);
 
-                if (result == DialogResult.Yes)
-                {
-                    /* Cancel exiting the application - we need to wait for the save to finish */
-                    if (e != null)
-                    {
-                        e.Cancel = true;
-                    }
+        //        if (result == DialogResult.Yes)
+        //        {
+        //            /* Cancel exiting the application - we need to wait for the save to finish */
+        //            if (e != null)
+        //            {
+        //                e.Cancel = true;
+        //            }
 
-                    /* Trigger the save */
-                    var saved = await SaveArchiveAsync(_archive, _archive.FilePath);
+        //            /* Trigger the save */
+        //            var saved = await SaveArchiveAsync(_archive, _archive.FilePath);
                     
-                    if (saved)
-                    {
-                        /* Saved successfully, quit now */
-                        Application.Exit();
-                    }
-                }
-                else if (result == DialogResult.Cancel)
-                {
-                    if (e != null)
-                    {
-                        e.Cancel = true;
-                    }
-                }
-            }
-        }
+        //            if (saved)
+        //            {
+        //                /* Saved successfully, quit now */
+        //                Application.Exit();
+        //            }
+        //        }
+        //        else if (result == DialogResult.Cancel)
+        //        {
+        //            if (e != null)
+        //            {
+        //                e.Cancel = true;
+        //            }
+        //        }
+        //    }
+        //}
 
-        private void updateTitle()
-        {
-            this.Text = "NeFS Edit";
+        //private void updateTitle()
+        //{
+        //    this.Text = "NeFS Edit";
 
-            if (_archive != null)
-            {
-                this.Text += " - ";
+        //    if (_archive != null)
+        //    {
+        //        this.Text += " - ";
 
-                if (_archive.Modified)
-                    this.Text += "*";
+        //        if (_archive.Modified)
+        //            this.Text += "*";
 
-                this.Text += _archive.FilePath;
-            }
-        }
+        //        this.Text += _archive.FilePath;
+        //    }
+        //}
 
         private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
         {

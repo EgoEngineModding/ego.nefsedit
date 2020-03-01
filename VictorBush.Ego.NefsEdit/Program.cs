@@ -20,9 +20,18 @@ namespace VictorBush.Ego.NefsEdit
             // Need to do this to get log4net to work in release builds
             log4net.Config.XmlConfigurator.Configure();
 
+            // Setup nefs lib logging
+            // TODO
+            //NefsLib.NefsLib.LogFactory = new 
+
+            // Setup workspace and services
+            var progressService = new ProgressService();
+            var workspace = new NefsEditWorkspace(progressService);
+
+            // Run application
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new EditorForm());
+            Application.Run(new EditorForm(workspace));
         }
     }
 }

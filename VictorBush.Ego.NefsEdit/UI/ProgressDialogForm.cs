@@ -8,7 +8,9 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using System.Windows.Threading;
 using VictorBush.Ego.NefsLib;
+using VictorBush.Ego.NefsLib.Progress;
 
 namespace VictorBush.Ego.NefsEdit.UI
 {
@@ -17,45 +19,39 @@ namespace VictorBush.Ego.NefsEdit.UI
     /// </summary>
     /// <remarks>
     /// Usage:
-    ///     var progressReporter = new Progress<NefsProgress>();
-    ///     var progressDialog = new ProgressDialogForm(p);
-    ///     
+    ///     var progressDialog = new ProgressDialogForm();
+    ///     var progressInfo = progressDialog.ProgressInfo;    
+    /// 
     ///     // Show the modal dialog asynchronously (just using ShowDialog() would block
     ///     //  and prevent the async operation from executing)
     ///     var progressDialogTask = progressDialog.ShowDialogAsync();
     ///     
     ///     // Do the async operation
-    ///     var task = await doSomethingAsync(progressReporter);
+    ///     var task = await doSomethingAsync(progressInfo);
     ///     
     ///     // Close the dialog
     ///     progressDialog.Close();
     /// </remarks>
     public partial class ProgressDialogForm : Form
     {
-        CancellationTokenSource _ctSource;
-        Progress<NefsProgress> _progress;
-        NefsProgressInfo _progressInfo;
+        public NefsProgress ProgressInfo { get; }
+
+        private CancellationTokenSource cancelSource;
+
+        private Dispatcher dispatcher;
 
         public ProgressDialogForm()
         {
-            InitializeComponent();
-            
+            this.InitializeComponent();
+
+            this.dispatcher = Dispatcher.CurrentDispatcher;
+
+            /* Setup cancellation */
+            this.cancelSource = new CancellationTokenSource();
+
             /* Create a progress reporter */
-            _progress = new Progress<NefsProgress>();
-            _progress.ProgressChanged += onProgress;
-
-            /* Create a cancellation source */
-            _ctSource = new CancellationTokenSource();
-
-            /* Create the nefs progress info */
-            _progressInfo = new NefsProgressInfo();
-            _progressInfo.CancellationToken = _ctSource.Token;
-            _progressInfo.Progress = _progress;
-        }
-
-        public NefsProgressInfo ProgressInfo
-        {
-            get { return _progressInfo; }
+            this.ProgressInfo = new NefsProgress(this.cancelSource.Token);
+            this.ProgressInfo.ProgressChanged += onProgress;
         }
 
         public void SetStyle(ProgressBarStyle style)
@@ -66,18 +62,21 @@ namespace VictorBush.Ego.NefsEdit.UI
         private void cancelButton_Click(object sender, EventArgs e)
         {
             /* Set the cancellation token to cancel */
-            _ctSource.Cancel();
+            this.cancelSource.Cancel();
         }
 
-        private void onProgress(object sender, NefsProgress e)
+        private void onProgress(object sender, NefsProgressEventArgs e)
         {
             /* Constrain the progress percentage to appropriate range */
-            var value = Math.Min((int)(e.Progress * 100), progressBar.Maximum);
+            var value = Math.Min((int)(e.Progress * 100), this.progressBar.Maximum);
             value = Math.Max(value, 0);
 
-            /* Update the form controls */
-            progressBar.Value = value;
-            statusLabel.Text = e.Message;
+            /* Update the form controls - must do on UI thread */
+            this.dispatcher.Invoke(() =>
+            {
+                this.progressBar.Value = value;
+                this.statusLabel.Text = e.Message;
+            });
         }
     }
 

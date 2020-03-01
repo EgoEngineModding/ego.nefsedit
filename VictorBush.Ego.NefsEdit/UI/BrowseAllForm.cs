@@ -13,12 +13,12 @@ using WeifenLuo.WinFormsUI.Docking;
 
 namespace VictorBush.Ego.NefsEdit.UI
 {
-    public partial class BrowseAllForm : DockContent
+    internal partial class BrowseAllForm : DockContent
     {
         EditorForm _editor;
         ListViewColumnSorter listViewItemSorter;
 
-        public BrowseAllForm(EditorForm editor)
+        internal BrowseAllForm(EditorForm editor)
         {
             InitializeComponent();
 
@@ -94,56 +94,56 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         public void LoadArchive(NefsArchive archive)
         {
-            if (archive == null)
-            {
-                return;
-            }
+            //if (archive == null)
+            //{
+            //    return;
+            //}
 
-            // Clear current list
-            itemsListView.Items.Clear();
+            //// Clear current list
+            //itemsListView.Items.Clear();
 
-            // Load all items in the NeFS archive into the listview
-            foreach (var item in archive.Items)
-            {
-                ListViewItem listItem = new ListViewItem();
+            //// Load all items in the NeFS archive into the listview
+            //foreach (var item in archive.Items)
+            //{
+            //    ListViewItem listItem = new ListViewItem();
 
-                // The list item is actually the first column
-                listItem.Text = item.Id.ToString("X");
+            //    // The list item is actually the first column
+            //    listItem.Text = item.Id.ToString("X");
                 
-                // Save a reference to the item object
-                listItem.Tag = item;
+            //    // Save a reference to the item object
+            //    listItem.Tag = item;
 
-                addSubItem(listItem, "filename", item.Filename);
-                addSubItem(listItem, "directoryId", item.DirectoryId.ToString("X"));
-                addSubItem(listItem, "compressedSize", item.CompressedSize.ToString("X"));
-                addSubItem(listItem, "extractedSize", item.ExtractedSize.ToString("X"));
+            //    addSubItem(listItem, "filename", item.Filename);
+            //    addSubItem(listItem, "directoryId", item.DirectoryId.ToString("X"));
+            //    addSubItem(listItem, "compressedSize", item.CompressedSize.ToString("X"));
+            //    addSubItem(listItem, "extractedSize", item.ExtractedSize.ToString("X"));
 
-                addSubItem(listItem, "pt1.0x00", item.Part1Entry.OffsetToData.ToString("X"));
-                addSubItem(listItem, "pt1.0x08", item.Part1Entry.OffsetIntoPt2Raw.ToString("X"));
-                addSubItem(listItem, "pt1.0x0c", item.Part1Entry.OffsetIntoPt4Raw.ToString("X"));
-                addSubItem(listItem, "pt1.0x10", item.Part1Entry.Id.ToString("X"));
+            //    addSubItem(listItem, "pt1.0x00", item.Part1Entry.OffsetToData.ToString("X"));
+            //    addSubItem(listItem, "pt1.0x08", item.Part1Entry.OffsetIntoPt2Raw.ToString("X"));
+            //    addSubItem(listItem, "pt1.0x0c", item.Part1Entry.OffsetIntoPt4Raw.ToString("X"));
+            //    addSubItem(listItem, "pt1.0x10", item.Part1Entry.Id.ToString("X"));
 
-                addSubItem(listItem, "pt2.0x00", item.Part2Entry.DirectoryId.ToString("X"));
-                addSubItem(listItem, "pt2.0x04", item.Part2Entry.FirstChildId.ToString("X"));
-                addSubItem(listItem, "pt2.0x08", item.Part2Entry.FilenameOffset.ToString("X"));
-                addSubItem(listItem, "pt2.0x0c", item.Part2Entry.ExtractedSize.ToString("X"));
-                addSubItem(listItem, "pt2.0x10", item.Part2Entry.Id.ToString("X"));
+            //    addSubItem(listItem, "pt2.0x00", item.Part2Entry.DirectoryId.ToString("X"));
+            //    addSubItem(listItem, "pt2.0x04", item.Part2Entry.FirstChildId.ToString("X"));
+            //    addSubItem(listItem, "pt2.0x08", item.Part2Entry.FilenameOffset.ToString("X"));
+            //    addSubItem(listItem, "pt2.0x0c", item.Part2Entry.ExtractedSize.ToString("X"));
+            //    addSubItem(listItem, "pt2.0x10", item.Part2Entry.Id.ToString("X"));
 
-                addSubItem(listItem, "pt5.0x00", item.Part5Entry.Byte1.ToString("X"));
-                addSubItem(listItem, "pt5.0x01", item.Part5Entry.Byte2.ToString("X"));
-                addSubItem(listItem, "pt5.0x02", item.Part5Entry.Byte3.ToString("X"));
-                addSubItem(listItem, "pt5.0x03", item.Part5Entry.Byte4.ToString("X"));
+            //    addSubItem(listItem, "pt5.0x00", item.Part5Entry.Byte1.ToString("X"));
+            //    addSubItem(listItem, "pt5.0x01", item.Part5Entry.Byte2.ToString("X"));
+            //    addSubItem(listItem, "pt5.0x02", item.Part5Entry.Byte3.ToString("X"));
+            //    addSubItem(listItem, "pt5.0x03", item.Part5Entry.Byte4.ToString("X"));
 
-                addSubItem(listItem, "pt6.0x00", item.Part6Entry.Off_0x00.ToString("X"));
-                addSubItem(listItem, "pt6.0x04", item.Part6Entry.Off_0x04.ToString("X"));
+            //    addSubItem(listItem, "pt6.0x00", item.Part6Entry.Off_0x00.ToString("X"));
+            //    addSubItem(listItem, "pt6.0x04", item.Part6Entry.Off_0x04.ToString("X"));
 
-                if (item.Type == NefsItem.NefsItemType.Directory)
-                {
-                    listItem.BackColor = Color.LightBlue;
-                }
+            //    if (item.Type == NefsItem.NefsItemType.Directory)
+            //    {
+            //        listItem.BackColor = Color.LightBlue;
+            //    }
 
-                itemsListView.Items.Add(listItem);
-            }
+            //    itemsListView.Items.Add(listItem);
+            //}
         }
 
         private void addSubItem(ListViewItem item, string name, string text)
@@ -157,23 +157,23 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void itemsListView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            var selectedItems = itemsListView.SelectedItems;
+            //var selectedItems = itemsListView.SelectedItems;
 
-            if (selectedItems.Count == 0)
-            {
-                return;
-            }
+            //if (selectedItems.Count == 0)
+            //{
+            //    return;
+            //}
 
-            /* Build a list of selected NefsItems */
-            var selectedNefsItems = new List<NefsItem>();
+            ///* Build a list of selected NefsItems */
+            //var selectedNefsItems = new List<NefsItem>();
 
-            foreach (ListViewItem item in itemsListView.SelectedItems)
-            {
-                selectedNefsItems.Add(item.Tag as NefsItem);
-            }
+            //foreach (ListViewItem item in itemsListView.SelectedItems)
+            //{
+            //    selectedNefsItems.Add(item.Tag as NefsItem);
+            //}
 
-            /* Tell the editor what items are selected */
-            _editor.SelectNefsItem(selectedNefsItems);
+            ///* Tell the editor what items are selected */
+            //_editor.SelectNefsItem(selectedNefsItems);
         }
 
         private void itemsListView_MouseUp(object sender, MouseEventArgs e)
