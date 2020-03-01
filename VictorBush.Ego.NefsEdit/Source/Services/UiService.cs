@@ -1,12 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
+﻿// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsEdit.Source
+namespace VictorBush.Ego.NefsEdit.Services
 {
+    using System;
+    using System.Windows.Forms;
+
+    /// <summary>
+    /// UI service implementation.
+    /// </summary>
     internal class UiService : IUiService
     {
         /// <inheritdoc/>

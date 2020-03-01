@@ -1,9 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using VictorBush.Ego.NefsLib.Progress;
+﻿// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsEdit
+namespace VictorBush.Ego.NefsEdit.Services
 {
+    using System;
+    using System.Threading.Tasks;
+    using VictorBush.Ego.NefsLib.Progress;
+
     /// <summary>
     /// Provides task execution and progress display services.
     /// </summary>
@@ -15,6 +17,6 @@ namespace VictorBush.Ego.NefsEdit
         /// </summary>
         /// <param name="task">The task to execute.</param>
         /// <returns>The <see cref="Task"/>.</returns>
-        Task RunModalTaskAsync(Func<NefsProgress, Task> task)
+        Task RunModalTaskAsync(Func<NefsProgress, Task> task);
     }
 }

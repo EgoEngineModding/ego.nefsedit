@@ -1,0 +1,3 @@
+TODO
+- Update assembly info.
+- Double check LICENSE, README, etc

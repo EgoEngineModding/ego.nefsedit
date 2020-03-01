@@ -11,6 +11,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using VictorBush.Ego.NefsEdit.Utility;
+using VictorBush.Ego.NefsEdit.Workspace;
 using VictorBush.Ego.NefsLib;
 using VictorBush.Ego.NefsLib.DataSource;
 using VictorBush.Ego.NefsLib.Item;

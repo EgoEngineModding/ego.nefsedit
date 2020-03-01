@@ -1,39 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO.Abstractions;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using log4net;
-using VictorBush.Ego.NefsEdit.Source;
-using VictorBush.Ego.NefsEdit.Utility;
-using VictorBush.Ego.NefsLib;
-using VictorBush.Ego.NefsLib.IO;
+﻿// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsEdit
+namespace VictorBush.Ego.NefsEdit.Workspace
 {
+    using System;
+    using System.IO.Abstractions;
+    using System.Threading.Tasks;
+    using System.Windows.Forms;
+    using log4net;
+    using VictorBush.Ego.NefsEdit.Services;
+    using VictorBush.Ego.NefsEdit.Utility;
+    using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.IO;
+
     internal class NefsEditWorkspace : INefsEditWorkspace
     {
         private static readonly ILog Log = LogHelper.GetLogger();
 
-        public NefsEditWorkspace(IProgressService progressService)
+        public NefsEditWorkspace(
+            IFileSystem fileSystem,
+            IProgressService progressService,
+            IUiService uiService,
+            INefsCompressor nefsCompressor)
         {
+            this.FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             this.ProgressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
+            this.UiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
+            this.NefsCompressor = nefsCompressor ?? throw new ArgumentNullException(nameof(nefsCompressor));
         }
 
-        public IProgressService ProgressService { get; }
+        public event EventHandler ArchiveClosed;
 
-        public NefsWriter NefsWriter => throw new NotImplementedException();
+        public event EventHandler ArchiveOpened;
 
-        public NefsReader NefsReader => throw new NotImplementedException();
-        public IUiService UiService { get; }
-        public INefsCompressor NefsCompressor => throw new NotImplementedException();
-
-        public IFileSystem FileSystem => throw new NotImplementedException();
-
-        // TODO ??
-        public bool ArchiveIsModified { get; set; }
+        public event EventHandler SelectedItemsChanged;
 
         /// <summary>
         /// Gets the current archive.
@@ -42,11 +41,27 @@ namespace VictorBush.Ego.NefsEdit
 
         public string ArchiveFileName { get; private set; }
 
-        public event EventHandler ArchiveOpened;
-        public event EventHandler ArchiveClosed;
-        public event EventHandler SelectedItemsChanged;
+        // TODO ??
+        public bool ArchiveIsModified { get; set; }
 
-        public bool CloseArchive()
+        /// <inheritdoc/>
+        public IFileSystem FileSystem { get; }
+
+        /// <inheritdoc/>
+        public INefsCompressor NefsCompressor { get; }
+
+        public NefsReader NefsReader => throw new NotImplementedException();
+
+        public NefsWriter NefsWriter => throw new NotImplementedException();
+
+        /// <inheritdoc/>
+        public IProgressService ProgressService { get; }
+
+        /// <inheritdoc/>
+        public IUiService UiService { get; }
+
+        /// <inheritdoc/>
+        public async Task<bool> CloseArchiveAsync()
         {
             if (this.Archive == null)
             {
@@ -66,8 +81,7 @@ namespace VictorBush.Ego.NefsEdit
                 }
                 else if (result == DialogResult.Yes)
                 {
-                    // Save archive before closing
-                    // TODO
+                    // Save archive before closing TODO
                     throw new NotImplementedException("TODO");
                 }
             }
@@ -83,8 +97,11 @@ namespace VictorBush.Ego.NefsEdit
             return true;
         }
 
-        public async Task OpenArchiveAsync(string filePath)
+        /// <inheritdoc/>
+        public async Task<bool> OpenArchiveAsync(string filePath)
         {
+            var result = false;
+
             await this.ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
             {
                 using (var tt = p.BeginTask(1.0f))
@@ -101,16 +118,19 @@ namespace VictorBush.Ego.NefsEdit
                     {
                         this.Archive = await this.NefsReader.ReadArchiveAsync(filePath, p);
                         this.ArchiveOpened?.Invoke(this, EventArgs.Empty);
+                        result = true;
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
                         Log.Error($"Failed to open archive {filePath}.\r\n{ex.Message}");
                     }
                 }
             }));
+
+            return result;
         }
 
-        public Task OpenArchiveByDialogAsync()
+        public Task<bool> OpenArchiveByDialogAsync()
         {
             throw new NotImplementedException();
         }
