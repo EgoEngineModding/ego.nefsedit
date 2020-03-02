@@ -13,8 +13,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
         [Fact]
         public async Task Read_NegativeOffset_DataRead()
         {
-            var fs = TestHelper.CreateDataTypesTestFileSystem();
-            using (var file = fs.File.OpenRead(TestHelper.DataTypesTestFilePath))
+            var fs = TestHelpers.CreateDataTypesTestFileSystem();
+            using (var file = fs.File.OpenRead(TestHelpers.DataTypesTestFilePath))
             {
                 var data = new UInt64Type(-8);
                 await data.ReadAsync(file, 8, new NefsProgress());
@@ -26,8 +26,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
         [Fact]
         public async Task Read_PositveOffset_DataRead()
         {
-            var fs = TestHelper.CreateDataTypesTestFileSystem();
-            using (var file = fs.File.OpenRead(TestHelper.DataTypesTestFilePath))
+            var fs = TestHelpers.CreateDataTypesTestFileSystem();
+            using (var file = fs.File.OpenRead(TestHelpers.DataTypesTestFilePath))
             {
                 var data = new UInt64Type(8);
                 await data.ReadAsync(file, 0, new NefsProgress());
@@ -39,8 +39,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
         [Fact]
         public async Task Read_ZeroOffset_DataRead()
         {
-            var fs = TestHelper.CreateDataTypesTestFileSystem();
-            using (var file = fs.File.OpenRead(TestHelper.DataTypesTestFilePath))
+            var fs = TestHelpers.CreateDataTypesTestFileSystem();
+            using (var file = fs.File.OpenRead(TestHelpers.DataTypesTestFilePath))
             {
                 var data = new UInt64Type(0x0);
                 await data.ReadAsync(file, 0, new NefsProgress());

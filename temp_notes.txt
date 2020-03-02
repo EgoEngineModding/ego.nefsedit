@@ -1,3 +1,4 @@
 TODO
 - Update assembly info.
 - Double check LICENSE, README, etc
+- Namespace cleanup

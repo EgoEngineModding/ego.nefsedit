@@ -7,16 +7,20 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
     using Moq;
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Tests.Services;
+    using VictorBush.Ego.NefsEdit.Tests.Source;
     using VictorBush.Ego.NefsEdit.Workspace;
+    using VictorBush.Ego.NefsLib;
     using VictorBush.Ego.NefsLib.IO;
+    using VictorBush.Ego.NefsLib.Progress;
     using Xunit;
 
     public class NefsEditWorkspaceTests
     {
         private readonly MockFileSystem fileSystem = new MockFileSystem();
-        private readonly Mock<INefsCompressor> nefsCompressorMock = new Mock<INefsCompressor>();
         private readonly IProgressService progressService = new InvisibleProgressService();
         private readonly Mock<IUiService> uiServiceMock = new Mock<IUiService>();
+        private readonly Mock<INefsReader> nefsReaderMock = new Mock<INefsReader>();
+        private readonly Mock<INefsWriter> nefsWriterMock = new Mock<INefsWriter>();
 
         [Fact]
         public async Task CloseArchiveAsync_NoArchiveOpen_TrueReturned()
@@ -72,7 +76,28 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
         [Fact]
         public async Task OpenArchiveAsync_FileExists_ArchiveOpened()
         {
-            Assert.True(false);
+            const string filePath = @"C:\archive.nefs";
+            var archive = TestHelpers.CreateTestArchive(filePath);
+
+            var w = this.CreateWorkspace();
+            var opened = false;
+            w.ArchiveOpened += (o, e) => opened = true;
+
+            // File exists
+            this.fileSystem.AddFile(filePath, new MockFileData("hi"));
+
+            // Mock read archive
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(filePath, It.IsAny<NefsProgress>()))
+                .ReturnsAsync(archive);
+
+            // Test
+            var result = await w.OpenArchiveAsync(filePath);
+
+            // Verify
+            Assert.True(result);
+            Assert.Same(archive, w.Archive);
+            Assert.True(opened);
+            Assert.Equal(filePath, w.ArchiveFilePath);
         }
 
         private NefsEditWorkspace CreateWorkspace()
@@ -81,7 +106,8 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
                 this.fileSystem,
                 this.progressService,
                 this.uiServiceMock.Object,
-                this.nefsCompressorMock.Object);
+                this.nefsReaderMock.Object,
+                this.nefsWriterMock.Object);
         }
     }
 }

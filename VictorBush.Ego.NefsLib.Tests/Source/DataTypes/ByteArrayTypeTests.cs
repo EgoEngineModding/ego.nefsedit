@@ -27,8 +27,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
         [Fact]
         public async Task GetBytes_DataRead_DataReturned()
         {
-            var fs = TestHelper.CreateDataTypesTestFileSystem();
-            using (var file = fs.File.OpenRead(TestHelper.DataTypesTestFilePath))
+            var fs = TestHelpers.CreateDataTypesTestFileSystem();
+            using (var file = fs.File.OpenRead(TestHelpers.DataTypesTestFilePath))
             {
                 var data = new ByteArrayType(0, 6);
                 await data.ReadAsync(file, 0, new NefsProgress());
@@ -49,8 +49,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
         [Fact]
         public async Task GetUInt32_NoOffset_ValueReturned()
         {
-            var fs = TestHelper.CreateDataTypesTestFileSystem();
-            using (var file = fs.File.OpenRead(TestHelper.DataTypesTestFilePath))
+            var fs = TestHelpers.CreateDataTypesTestFileSystem();
+            using (var file = fs.File.OpenRead(TestHelpers.DataTypesTestFilePath))
             {
                 var data = new ByteArrayType(0, 6);
                 await data.ReadAsync(file, 0, new NefsProgress());
@@ -61,8 +61,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
         [Fact]
         public async Task GetUInt32_ValidOffset_ValueReturned()
         {
-            var fs = TestHelper.CreateDataTypesTestFileSystem();
-            using (var file = fs.File.OpenRead(TestHelper.DataTypesTestFilePath))
+            var fs = TestHelpers.CreateDataTypesTestFileSystem();
+            using (var file = fs.File.OpenRead(TestHelpers.DataTypesTestFilePath))
             {
                 var data = new ByteArrayType(0, 6);
                 await data.ReadAsync(file, 0, new NefsProgress());
@@ -73,8 +73,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
         [Fact]
         public async Task GetUInt32_OffsetTwoBytesFromEnd_ArgumentOutOfRangeExceptionThrown()
         {
-            var fs = TestHelper.CreateDataTypesTestFileSystem();
-            using (var file = fs.File.OpenRead(TestHelper.DataTypesTestFilePath))
+            var fs = TestHelpers.CreateDataTypesTestFileSystem();
+            using (var file = fs.File.OpenRead(TestHelpers.DataTypesTestFilePath))
             {
                 var data = new ByteArrayType(0, 6);
                 await data.ReadAsync(file, 0, new NefsProgress());
@@ -87,8 +87,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
         [Fact]
         public async Task GetUInt32_OffsetOutOfBounds_ArgumentOutOfRangeExceptionThrown()
         {
-            var fs = TestHelper.CreateDataTypesTestFileSystem();
-            using (var file = fs.File.OpenRead(TestHelper.DataTypesTestFilePath))
+            var fs = TestHelpers.CreateDataTypesTestFileSystem();
+            using (var file = fs.File.OpenRead(TestHelpers.DataTypesTestFilePath))
             {
                 var data = new ByteArrayType(0, 6);
                 await data.ReadAsync(file, 0, new NefsProgress());
@@ -101,14 +101,14 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
         [Fact]
         public async Task Read_VariousTests()
         {
-            var fs = TestHelper.CreateDataTypesTestFileSystem();
+            var fs = TestHelpers.CreateDataTypesTestFileSystem();
 
             /*
              *  Data size: 0x3
              *  Data offset: 0x2
              *  Base offset: 0x10
              */
-            using (var file = fs.File.OpenRead(TestHelper.DataTypesTestFilePath))
+            using (var file = fs.File.OpenRead(TestHelpers.DataTypesTestFilePath))
             {
                 var data = new ByteArrayType(0x2, 0x3);
                 await data.ReadAsync(file, 0x10, new NefsProgress());
@@ -121,7 +121,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
              * Data offset: -4
              * Base offset: 0x10
              */
-            using (var file = fs.File.OpenRead(TestHelper.DataTypesTestFilePath))
+            using (var file = fs.File.OpenRead(TestHelpers.DataTypesTestFilePath))
             {
                 var data = new ByteArrayType(-4, 5);
                 await data.ReadAsync(file, 0x10, new NefsProgress());

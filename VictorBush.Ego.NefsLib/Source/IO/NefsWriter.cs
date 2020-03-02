@@ -17,7 +17,7 @@ namespace VictorBush.Ego.NefsLib.IO
     /// <summary>
     /// Writes NeFS archives.
     /// </summary>
-    public class NefsWriter
+    public class NefsWriter : INefsWriter
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsWriter"/> class.
@@ -50,13 +50,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </summary>
         private string TempDirectoryPath { get; }
 
-        /// <summary>
-        /// Writes the archive to the specified desintation.
-        /// </summary>
-        /// <param name="destFilePath">The path to write the file to.</param>
-        /// <param name="nefs">The archive to write.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>An updated archive object containing updated metadata.</returns>
+        /// <inheritdoc/>
         public async Task<NefsArchive> WriteArchiveAsync(string destFilePath, NefsArchive nefs, NefsProgress p)
         {
             NefsArchive newArchive = null;

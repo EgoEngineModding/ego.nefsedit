@@ -36,19 +36,14 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         IFileSystem FileSystem { get; }
 
         /// <summary>
-        /// Gets the nefs compressor.
-        /// </summary>
-        INefsCompressor NefsCompressor { get; }
-
-        /// <summary>
         /// Gets the nefs reader.
         /// </summary>
-        NefsReader NefsReader { get; }
+        INefsReader NefsReader { get; }
 
         /// <summary>
         /// Gets the nefs writer.
         /// </summary>
-        NefsWriter NefsWriter { get; }
+        INefsWriter NefsWriter { get; }
 
         /// <summary>
         /// Gets the progress service.

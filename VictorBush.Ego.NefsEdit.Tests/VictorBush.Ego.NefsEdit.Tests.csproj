@@ -46,6 +46,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Source\Services\InvisibleProgressService.cs" />
+    <Compile Include="Source\TestHelpers.cs" />
     <Compile Include="Source\Workspace\NefsEditWorkspaceTests.cs" />
   </ItemGroup>
   <ItemGroup>

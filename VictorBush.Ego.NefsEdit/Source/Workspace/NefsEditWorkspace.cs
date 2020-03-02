@@ -20,12 +20,14 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             IFileSystem fileSystem,
             IProgressService progressService,
             IUiService uiService,
-            INefsCompressor nefsCompressor)
+            INefsReader nefsReader,
+            INefsWriter nefsWriter)
         {
             this.FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             this.ProgressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
             this.UiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
-            this.NefsCompressor = nefsCompressor ?? throw new ArgumentNullException(nameof(nefsCompressor));
+            this.NefsReader = nefsReader ?? throw new ArgumentNullException(nameof(nefsReader));
+            this.NefsWriter = nefsWriter ?? throw new ArgumentNullException(nameof(nefsWriter));
         }
 
         public event EventHandler ArchiveClosed;
@@ -39,7 +41,10 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// </summary>
         public NefsArchive Archive { get; private set; }
 
-        public string ArchiveFileName { get; private set; }
+        /// <summary>
+        /// Gest the path to the archive file.
+        /// </summary>
+        public string ArchiveFilePath { get; private set; }
 
         // TODO ??
         public bool ArchiveIsModified { get; set; }
@@ -48,11 +53,10 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         public IFileSystem FileSystem { get; }
 
         /// <inheritdoc/>
-        public INefsCompressor NefsCompressor { get; }
+        public INefsReader NefsReader { get; }
 
-        public NefsReader NefsReader => throw new NotImplementedException();
-
-        public NefsWriter NefsWriter => throw new NotImplementedException();
+        /// <inheritdoc/>
+        public INefsWriter NefsWriter { get; }
 
         /// <inheritdoc/>
         public IProgressService ProgressService { get; }
@@ -72,7 +76,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             // Check if there are pending changes
             if (this.ArchiveIsModified)
             {
-                var fileName = this.FileSystem.Path.GetFileName(this.ArchiveFileName);
+                var fileName = this.FileSystem.Path.GetFileName(this.ArchiveFilePath);
                 var result = this.UiService.ShowMessageBox($"Save changes to {fileName}?", null, MessageBoxButtons.YesNoCancel);
                 if (result == DialogResult.Cancel)
                 {
@@ -89,7 +93,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             // Close archive
             this.Archive = null;
             this.ArchiveIsModified = false;
-            this.ArchiveFileName = "";
+            this.ArchiveFilePath = "";
 
             // Notify archive closed
             this.ArchiveClosed?.Invoke(this, EventArgs.Empty);
@@ -117,6 +121,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                     try
                     {
                         this.Archive = await this.NefsReader.ReadArchiveAsync(filePath, p);
+                        this.ArchiveFilePath = filePath;
                         this.ArchiveOpened?.Invoke(this, EventArgs.Empty);
                         result = true;
                     }

@@ -19,7 +19,7 @@ namespace VictorBush.Ego.NefsLib.IO
     /// <summary>
     /// Reads NeFS archives.
     /// </summary>
-    public class NefsReader
+    public class NefsReader : INefsReader
     {
         private static readonly ILogger Log = NefsLib.LogFactory.CreateLogger<NefsReader>();
 
@@ -37,12 +37,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </summary>
         private IFileSystem FileSystem { get; }
 
-        /// <summary>
-        /// Reads a NeFS archive from the file system.
-        /// </summary>
-        /// <param name="filePath">The path to the archive to load.</param>
-        /// <param name="p">Progress information.</param>
-        /// <returns>The loaded <see cref="NefsArchive"/>.</returns>
+        /// <inheritdoc/>
         public async Task<NefsArchive> ReadArchiveAsync(string filePath, NefsProgress p)
         {
             // Validate path

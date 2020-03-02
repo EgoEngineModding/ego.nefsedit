@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Source\DataSource\INefsDataSource.cs" />
+    <Compile Include="Source\DataSource\NefsEmptyDataSource.cs" />
     <Compile Include="Source\DataSource\NefsFileDataSource.cs" />
     <Compile Include="Source\DataSource\NefsItemListDataSource.cs" />
     <Compile Include="Source\DataTypes\ByteArrayType.cs" />
@@ -67,6 +68,8 @@
     <Compile Include="Source\Header\NefsHeaderPart7Entry.cs" />
     <Compile Include="Source\Header\NefsHeaderPart8.cs" />
     <Compile Include="Source\IO\INefsCompressor.cs" />
+    <Compile Include="Source\IO\INefsReader.cs" />
+    <Compile Include="Source\IO\INefsWriter.cs" />
     <Compile Include="Source\IO\NefsCompressor.cs" />
     <Compile Include="Source\IO\NefsReader.cs" />
     <Compile Include="Source\IO\NefsWriter.cs" />

@@ -1,6 +1,7 @@
 ﻿// See LICENSE.txt for license information.
 
 using System;
+using System.IO;
 using System.IO.Abstractions;
 using System.Windows.Forms;
 using VictorBush.Ego.NefsEdit.Services;
@@ -25,6 +26,16 @@ namespace VictorBush.Ego.NefsEdit
     internal static class Program
     {
         /// <summary>
+        /// Gets the directory where the application exe is located.
+        /// </summary>
+        internal static string ExeDirectory => Path.GetDirectoryName(typeof(Program).Assembly.Location);
+
+        /// <summary>
+        /// Gets the directory used by the application for writing temporary files.
+        /// </summary>
+        internal static string TempDirectory => Path.Combine(ExeDirectory, "temp");
+
+        /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
@@ -40,11 +51,14 @@ namespace VictorBush.Ego.NefsEdit
             var progressService = new ProgressService();
             var uiService = new UiService();
             var nefsCompressor = new NefsCompressor(fileSystem);
+            var nefsReader = new NefsReader(fileSystem);
+            var nefsWriter = new NefsWriter(TempDirectory, fileSystem, nefsCompressor);
             var workspace = new NefsEditWorkspace(
                 fileSystem,
                 progressService,
                 uiService,
-                nefsCompressor);
+                nefsReader,
+                nefsWriter);
 
             // Run application
             Application.EnableVisualStyles();

@@ -51,7 +51,7 @@
     <Compile Include="Source\IO\NefsReaderTests.cs" />
     <Compile Include="Source\IO\NefsWriterTests.cs" />
     <Compile Include="Source\Progress\NefsProgressTests.cs" />
-    <Compile Include="Source\TestHelper.cs" />
+    <Compile Include="Source\TestHelpers.cs" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="stylecop.json" />
