@@ -21,38 +21,6 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         private readonly NefsProgress p = new NefsProgress(CancellationToken.None);
 
         [Fact]
-        public async void IntegrationTest_CarArchive()
-        {
-            var fs = new FileSystem();
-            var reader = new NefsReader(fs);
-            var path = @"E:\Applications\Steam\steamapps\common\DiRT Rally 2.0\cars\fr5.nefs";
-            NefsArchive nefs = null;
-
-            using (var stream = fs.File.OpenRead(path))
-            {
-                nefs = await reader.ReadArchiveAsync(path, this.p);
-            }
-
-            Assert.Equal(98, nefs.Items.Count);
-        }
-
-        [Fact]
-        public async void IntegrationTest_EncrpytedCarArchive()
-        {
-            var fs = new FileSystem();
-            var reader = new NefsReader(fs);
-            var path = @"E:\Applications\Steam\steamapps\common\DiRT Rally 2.0\cars\c4r.nefs";
-            NefsArchive nefs = null;
-
-            using (var stream = fs.File.OpenRead(path))
-            {
-                nefs = await reader.ReadArchiveAsync(path, this.p);
-            }
-
-            Assert.Equal(98, nefs.Items.Count);
-        }
-
-        [Fact]
         public async void ReadHeaderPart1Async_ExtraBytesAtEnd_ExtraBytesIgnored()
         {
             byte[] bytes =

@@ -13,17 +13,6 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         private readonly NefsProgress p = new NefsProgress(CancellationToken.None);
 
         //[Fact]
-        //public async void CompressFileAsync_1Chunk_FileCompressed()
-        //{
-        //    var input = @"C:\Users\Victor\Desktop\nefswork\1 chunk\int_fr5.xml";
-        //    var output = @"C:\Users\Victor\Desktop\nefswork\1 chunk\lol_lol.dat";
-        //    var temp = @"C:\Users\Victor\Desktop\nefswork\1 chunk\temp\";
-
-        //    var writer = new NefsWriter(temp, new FileSystem());
-        //    await writer.CompressFileAsync(input, output, NefsArchive.ChunkSize, this.p);
-        //}
-
-        //[Fact]
         //public async void IDK_LOL()
         //{
         //    var input = @"E:\Applications\Steam\steamapps\common\DiRT Rally 2.0\cars\fr2.nefs";

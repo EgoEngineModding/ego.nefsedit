@@ -48,6 +48,8 @@
     <Compile Include="Source\DataTypes\FileDataTests.cs" />
     <Compile Include="Source\DataTypes\UInt32TypeTests.cs" />
     <Compile Include="Source\DataTypes\UInt64TypeTests.cs" />
+    <Compile Include="Source\Integration\DirtRally2Tests.cs" />
+    <Compile Include="Source\IO\NefsCompressorTests.cs" />
     <Compile Include="Source\IO\NefsReaderTests.cs" />
     <Compile Include="Source\IO\NefsWriterTests.cs" />
     <Compile Include="Source\Progress\NefsProgressTests.cs" />

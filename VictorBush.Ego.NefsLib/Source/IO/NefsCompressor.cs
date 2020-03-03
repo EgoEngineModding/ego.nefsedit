@@ -49,29 +49,30 @@ namespace VictorBush.Ego.NefsLib.IO
             // Split file into chunks and compress them
             using (var t = p.BeginTask(1.0f, $"Compressing stream"))
             {
-                int lastBytesRead = 0;
-                int lastChunkSize = 0;
-                int totalChunkSize = 0;
-                var currentChunk = 0;
+                var lastChunkSize = 0;
+                var totalChunkSize = 0;
+                var lastBytesRead = 0;
+                var bytesRemaining = (int)inputLength;
 
                 // Determine how many chunks to split file into
                 var numChunks = (int)Math.Ceiling(inputLength / (double)chunkSize);
 
-                do
+                for (var i = 0; i < numChunks; ++i)
                 {
-                    using (var st = p.BeginSubTask(1.0f / numChunks, $"Compressing chunk {currentChunk + 1}/{numChunks}"))
+                    using (var st = p.BeginSubTask(1.0f / numChunks, $"Compressing chunk {i + 1}/{numChunks}"))
                     {
+                        var nextBytes = Math.Min(chunkSize, bytesRemaining);
+
                         // Compress this chunk and write it to the output file
-                        (lastBytesRead, lastChunkSize) = await DeflateHelper.DeflateAsync(input, (int)chunkSize, output, p.CancellationToken);
+                        (lastBytesRead, lastChunkSize) = await DeflateHelper.DeflateAsync(input, (int)nextBytes, output, p.CancellationToken);
 
                         totalChunkSize += lastChunkSize;
-                        currentChunk++;
+                        bytesRemaining -= lastBytesRead;
 
                         // Record the total compressed size after this chunk
                         chunkSizes.Add((UInt32)totalChunkSize);
                     }
                 }
-                while (lastBytesRead == chunkSize);
             }
 
             // Return item size
@@ -79,31 +80,31 @@ namespace VictorBush.Ego.NefsLib.IO
         }
 
         /// <inheritdoc/>
-        public Task<NefsItemSize> CompressFileAsync(
+        public async Task<NefsItemSize> CompressFileAsync(
             string inputFile,
             string outputFile,
             UInt32 chunkSize,
             NefsProgress p)
         {
             using (var inputStream = this.FileSystem.File.OpenRead(inputFile))
-            using (var outputStream = this.FileSystem.File.OpenRead(outputFile))
+            using (var outputStream = this.FileSystem.File.OpenWrite(outputFile))
             {
-                return this.CompressAsync(inputStream, 0, (uint)inputStream.Length, outputStream, 0, chunkSize, p);
+                return await this.CompressAsync(inputStream, 0, (uint)inputStream.Length, outputStream, 0, chunkSize, p);
             }
         }
 
         /// <inheritdoc/>
-        public Task<NefsItemSize> CompressFileAsync(
+        public async Task<NefsItemSize> CompressFileAsync(
             INefsDataSource input,
             string outputFile,
             UInt32 chunkSize,
             NefsProgress p)
         {
-            return this.CompressFileAsync(input.FilePath, outputFile, chunkSize, p);
+            return await this.CompressFileAsync(input.FilePath, outputFile, chunkSize, p);
         }
 
         /// <inheritdoc/>
-        public Task<NefsItemSize> CompressFileAsync(
+        public async Task<NefsItemSize> CompressFileAsync(
             string inputFile,
             Int64 inputOffset,
             UInt32 inputLength,
@@ -114,12 +115,12 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             using (var inputStream = this.FileSystem.File.OpenRead(inputFile))
             {
-                return this.CompressAsync(inputStream, inputOffset, inputLength, output, outputOffset, chunkSize, p);
+                return await this.CompressAsync(inputStream, inputOffset, inputLength, output, outputOffset, chunkSize, p);
             }
         }
 
         /// <inheritdoc/>
-        public Task<NefsItemSize> CompressFileAsync(
+        public async Task<NefsItemSize> CompressFileAsync(
             string inputFile,
             Int64 inputOffset,
             UInt32 inputLength,
@@ -129,9 +130,9 @@ namespace VictorBush.Ego.NefsLib.IO
             NefsProgress p)
         {
             using (var inputStream = this.FileSystem.File.OpenRead(inputFile))
-            using (var outputStream = this.FileSystem.File.OpenRead(outputFile))
+            using (var outputStream = this.FileSystem.File.OpenWrite(outputFile))
             {
-                return this.CompressAsync(inputStream, inputOffset, inputLength, outputStream, outputOffset, chunkSize, p);
+                return await this.CompressAsync(inputStream, inputOffset, inputLength, outputStream, outputOffset, chunkSize, p);
             }
         }
     }
