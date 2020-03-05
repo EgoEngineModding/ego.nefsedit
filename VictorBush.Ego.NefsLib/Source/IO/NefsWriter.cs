@@ -280,10 +280,10 @@ namespace VictorBush.Ego.NefsLib.IO
 
             // Determine first data offset. There are two known offset values. If the header is
             // large enough, the second (larger) offset is used.
-            var firstDataOffset = 0x10000U;
+            var firstDataOffset = NefsHeader.DataOffsetDefault;
             if (headerSize > firstDataOffset)
             {
-                firstDataOffset = 0x50000U;
+                firstDataOffset = NefsHeader.DataOffsetLarge;
             }
 
             // Write item data

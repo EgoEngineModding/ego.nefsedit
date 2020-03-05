@@ -123,7 +123,8 @@ namespace VictorBush.Ego.NefsLib.Header
         }
 
         /// <summary>
-        /// Gets the index into part 4 for the specified item.
+        /// Gets the index into part 4 for the specified item. The index into part 4 is potentially
+        /// different from the item's id.
         /// </summary>
         /// <param name="item">The item to get the index for.</param>
         /// <returns>The index into part 4.</returns>

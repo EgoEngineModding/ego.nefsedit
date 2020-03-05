@@ -36,6 +36,8 @@ namespace VictorBush.Ego.NefsLib.Header
                 entry.Byte1.Value[0] = item.Part6Unknown0x01;
                 entry.Byte2.Value[0] = item.Part6Unknown0x02;
                 entry.Byte3.Value[0] = item.Part6Unknown0x03;
+
+                this.entries.Add(entry);
             }
         }
 

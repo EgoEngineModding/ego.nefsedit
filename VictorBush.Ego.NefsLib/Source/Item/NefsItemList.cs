@@ -24,7 +24,7 @@ namespace VictorBush.Ego.NefsLib.Item
         }
 
         /// <inheritdoc/>
-        public int Count => throw new NotImplementedException();
+        public int Count => this.items.Count;
 
         /// <summary>
         /// Gets the path to the file that contains the item data for the archive. Usually this is
@@ -33,7 +33,7 @@ namespace VictorBush.Ego.NefsLib.Item
         public string DataFilePath { get; }
 
         /// <inheritdoc/>
-        public bool IsReadOnly => throw new NotImplementedException();
+        public bool IsReadOnly => false;
 
         /// <inheritdoc/>
         public NefsItem this[int index] { get => this.items[index]; set => this.items[index] = value; }

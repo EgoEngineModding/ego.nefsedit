@@ -12,6 +12,16 @@ namespace VictorBush.Ego.NefsLib.Header
     public class NefsHeader
     {
         /// <summary>
+        /// Offset to the first data item used in most archives.
+        /// </summary>
+        public const UInt32 DataOffsetDefault = 0x10000U;
+
+        /// <summary>
+        /// Offset to the first data item used in large archives where header needs more room.
+        /// </summary>
+        public const UInt32 DataOffsetLarge = 0x50000U;
+
+        /// <summary>
         /// Offset to the header intro.
         /// </summary>
         public const uint IntroOffset = 0x0;
@@ -148,7 +158,7 @@ namespace VictorBush.Ego.NefsLib.Header
             var path = this.GetItemFileName(id);
 
             var dirId = this.GetItemDirectoryId(id);
-            var prevDirId = dirId;
+            var prevDirId = id;
 
             while (dirId != prevDirId)
             {

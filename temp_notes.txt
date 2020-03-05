@@ -2,3 +2,10 @@ TODO
 - Update assembly info.
 - Double check LICENSE, README, etc
 - Namespace cleanup
+
+
+
+Notes
+- Need to double-check out-of-order items (i.e., if an item can come before its parent directory).
+I think nefslib can handle if they are not in order. I don't know if the game expects that or not.
+My guess would be it does. So probably want nefslib to write out items to meet that assumption?

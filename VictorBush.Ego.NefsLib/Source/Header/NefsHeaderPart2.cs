@@ -37,14 +37,17 @@ namespace VictorBush.Ego.NefsLib.Header
                 entry.DirectoryId.Value = item.DirectoryId.Value;
                 entry.FirstChildId.Value = item.Id.Value;
                 entry.ExtractedSize.Value = item.DataSource.Size.ExtractedSize;
+                entry.OffsetIntoPart3.Value = part3.OffsetsByFileName[item.FileName];
                 entry.Id.Value = item.Id.Value;
 
                 // Find first child item
-                var firstChild = items.Where(i => i.DirectoryId == item.DirectoryId).OrderBy(i => i.Id.Value).FirstOrDefault();
+                var firstChild = items.Where(i => i.DirectoryId == item.Id && i != item).OrderBy(i => i.Id.Value).FirstOrDefault();
                 if (firstChild != null)
                 {
                     entry.FirstChildId.Value = firstChild.Id.Value;
                 }
+
+                this.entries.Add(item.Id, entry);
             }
         }
 

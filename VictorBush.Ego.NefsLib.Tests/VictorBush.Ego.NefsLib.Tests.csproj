@@ -43,16 +43,27 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Source\DataTypes\ByteArrayTypeTests.cs" />
-    <Compile Include="Source\DataTypes\DataTypeTests.cs" />
-    <Compile Include="Source\DataTypes\FileDataTests.cs" />
-    <Compile Include="Source\DataTypes\UInt32TypeTests.cs" />
-    <Compile Include="Source\DataTypes\UInt64TypeTests.cs" />
+    <Compile Include="Source\TestArchives\TestArchiveModified.cs" />
+    <Compile Include="Source\TestArchives\TestArchiveLargeDataOffset.cs" />
+    <Compile Include="Source\TestArchives\TestArchiveNotModified.cs" />
+    <Compile Include="Source\TestArchives\TestArchiveNoItems.cs" />
+    <Compile Include="Source\Tests\DataTypes\ByteArrayTypeTests.cs" />
+    <Compile Include="Source\Tests\DataTypes\DataTypeTests.cs" />
+    <Compile Include="Source\Tests\DataTypes\FileDataTests.cs" />
+    <Compile Include="Source\Tests\DataTypes\UInt32TypeTests.cs" />
+    <Compile Include="Source\Tests\DataTypes\UInt64TypeTests.cs" />
+    <Compile Include="Source\Tests\Header\NefsHeaderPart7Tests.cs" />
+    <Compile Include="Source\Tests\Header\NefsHeaderPart6Tests.cs" />
+    <Compile Include="Source\Tests\Header\NefsHeaderPart2Tests.cs" />
+    <Compile Include="Source\Tests\Header\NefsHeaderPart1Tests.cs" />
+    <Compile Include="Source\Tests\Header\NefsHeaderPart4Tests.cs" />
+    <Compile Include="Source\Tests\Header\NefsHeaderPart3Tests.cs" />
+    <Compile Include="Source\Tests\Header\NefsHeaderTests.cs" />
     <Compile Include="Source\Integration\DirtRally2Tests.cs" />
-    <Compile Include="Source\IO\NefsCompressorTests.cs" />
-    <Compile Include="Source\IO\NefsReaderTests.cs" />
-    <Compile Include="Source\IO\NefsWriterTests.cs" />
-    <Compile Include="Source\Progress\NefsProgressTests.cs" />
+    <Compile Include="Source\Tests\IO\NefsCompressorTests.cs" />
+    <Compile Include="Source\Tests\IO\NefsReaderTests.cs" />
+    <Compile Include="Source\Tests\IO\NefsWriterTests.cs" />
+    <Compile Include="Source\Tests\Progress\NefsProgressTests.cs" />
     <Compile Include="Source\TestHelpers.cs" />
   </ItemGroup>
   <ItemGroup>

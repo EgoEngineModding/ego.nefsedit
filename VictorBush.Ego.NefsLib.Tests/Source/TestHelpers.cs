@@ -2,7 +2,12 @@
 
 namespace VictorBush.Ego.NefsLib.Tests
 {
+    using System;
+    using System.Collections.Generic;
     using System.IO.Abstractions.TestingHelpers;
+    using VictorBush.Ego.NefsLib.DataSource;
+    using VictorBush.Ego.NefsLib.Header;
+    using VictorBush.Ego.NefsLib.Item;
 
     internal static class TestHelpers
     {
@@ -32,6 +37,23 @@ namespace VictorBush.Ego.NefsLib.Tests
             var fs = new MockFileSystem();
             fs.AddFile(DataTypesTestFilePath, new MockFileData(DataTypesTestData));
             return fs;
+        }
+
+        /// <summary>
+        /// Creates empty unknown header data.
+        /// </summary>
+        /// <returns>An empty <see cref="NefsItemUnknownData"/>.</returns>
+        internal static NefsItemUnknownData CreateUnknownData()
+        {
+            return new NefsItemUnknownData
+            {
+                Part6Unknown0x00 = 0,
+                Part6Unknown0x01 = 0,
+                Part6Unknown0x02 = 0,
+                Part6Unknown0x03 = 0,
+                Part7Unknown0x00 = 0,
+                Part7Unknown0x04 = 0,
+            };
         }
     }
 }

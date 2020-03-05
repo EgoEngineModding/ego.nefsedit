@@ -33,6 +33,7 @@ namespace VictorBush.Ego.NefsLib.Header
             foreach (var item in items)
             {
                 var entry = new NefsHeaderPart1Entry();
+
                 entry.Id.Value = item.Id.Value;
                 entry.OffsetToData.Value = item.DataSource.Offset;
                 entry.IndexIntoPart4.Value = part4.GetIndexForItem(item);
@@ -40,6 +41,8 @@ namespace VictorBush.Ego.NefsLib.Header
                 // Get index into part 2. When NefsLib writes the header, it will always write part
                 // 1 and part 2 ordered by item id.
                 entry.IndexIntoPart2.Value = item.Id.Value;
+
+                this.entries.Add(item.Id, entry);
             }
         }
 
