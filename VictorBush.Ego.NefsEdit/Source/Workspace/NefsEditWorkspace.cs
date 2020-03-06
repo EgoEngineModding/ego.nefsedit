@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsEdit.Workspace
 {
     using System;
+    using System.Collections.Generic;
     using System.IO.Abstractions;
     using System.Threading.Tasks;
     using System.Windows.Forms;
@@ -11,6 +12,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsLib;
     using VictorBush.Ego.NefsLib.IO;
+    using VictorBush.Ego.NefsLib.Item;
 
     internal class NefsEditWorkspace : INefsEditWorkspace
     {
@@ -110,6 +112,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             {
                 using (var tt = p.BeginTask(1.0f))
                 {
+                    Log.Info($"Opening archive: {filePath}.");
+
                     // Verify file exists
                     if (!this.FileSystem.File.Exists(filePath))
                     {
@@ -124,6 +128,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                         this.ArchiveFilePath = filePath;
                         this.ArchiveOpened?.Invoke(this, EventArgs.Empty);
                         result = true;
+
+                        Log.Info($"Archive opened.");
                     }
                     catch (Exception ex)
                     {
@@ -135,9 +141,26 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             return result;
         }
 
-        public Task<bool> OpenArchiveByDialogAsync()
+        /// <inheritdoc/>
+        public async Task<bool> OpenArchiveByDialogAsync()
         {
-            throw new NotImplementedException();
+            (var result, var fileName) = this.UiService.ShowOpenFileDialog();
+            if (result == DialogResult.OK)
+            {
+                return await this.OpenArchiveAsync(fileName);
+            }
+
+            return false;
+        }
+
+        public void SelectItem(IEnumerable<NefsItem> items)
+        {
+            Log.Debug("TODO : SelectItem() not implemented.");
+        }
+
+        public void SelectItems(IEnumerable<NefsItem> items)
+        {
+            Log.Debug("TODO : SelectItems() not implemented.");
         }
     }
 }

@@ -143,7 +143,7 @@ namespace VictorBush.Ego.NefsLib.IO
             // returned that removes deleted items and has updated metadata for the other items.
             var items = sourceItems.Clone() as NefsItemList;
 
-            for (int i = items.Count; i >= 0; --i)
+            for (int i = items.Count - 1; i >= 0; --i)
             {
                 var item = items[i];
 

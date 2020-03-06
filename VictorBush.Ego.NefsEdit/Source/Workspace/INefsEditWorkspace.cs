@@ -3,11 +3,13 @@
 namespace VictorBush.Ego.NefsEdit.Workspace
 {
     using System;
+    using System.Collections.Generic;
     using System.IO.Abstractions;
     using System.Threading.Tasks;
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsLib;
     using VictorBush.Ego.NefsLib.IO;
+    using VictorBush.Ego.NefsLib.Item;
 
     /// <summary>
     /// Workspace that provides operations for opening, editing, and saving archives. Exposes
@@ -73,5 +75,17 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// </summary>
         /// <returns>True if archive was opened.</returns>
         Task<bool> OpenArchiveByDialogAsync();
+
+        /// <summary>
+        /// Selects a single item in the workspace.
+        /// </summary>
+        /// <param name="items">The item that is now selected.</param>
+        void SelectItem(IEnumerable<NefsItem> items);
+
+        /// <summary>
+        /// Selects multiple items in the workspace.
+        /// </summary>
+        /// <param name="items">The items that are now selected.</param>
+        void SelectItems(IEnumerable<NefsItem> items);
     }
 }

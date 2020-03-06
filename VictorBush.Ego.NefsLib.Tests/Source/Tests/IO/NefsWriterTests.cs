@@ -2,28 +2,38 @@
 
 namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 {
-    using System.IO.Abstractions;
-    using System.Threading;
+    using System.IO.Abstractions.TestingHelpers;
+    using System.Threading.Tasks;
     using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Progress;
+    using VictorBush.Ego.NefsLib.Tests.TestArchives;
     using Xunit;
 
     public class NefsWriterTests
     {
-        private readonly NefsProgress p = new NefsProgress(CancellationToken.None);
+        private const string TempDir = @"C:\temp";
+        private readonly INefsCompressor compressor;
+        private readonly MockFileSystem fileSystem = new MockFileSystem();
 
-        //[Fact]
-        //public async void IDK_LOL()
-        //{
-        //    var input = @"E:\Applications\Steam\steamapps\common\DiRT Rally 2.0\cars\fr2.nefs";
-        //    var output = @"E:\Libraries\Desktop\Temp\dirt\lol.nefs";
-        //    var temp = @"E:\Libraries\Desktop\Temp\dirt\temp\";
+        public NefsWriterTests()
+        {
+            this.fileSystem.AddDirectory(TempDir);
+            this.compressor = new NefsCompressor(this.fileSystem);
+        }
 
-        //    var reader = new NefsReader(new FileSystem());
-        //    var nefs = await reader.ReadArchiveAsync(input, new NefsProgress(new CancellationTokenSource().Token));
+        [Fact]
+        public async Task WriteArchiveAsync_ArchiveNotModified_ArchiveWritten()
+        {
+            var sourceArchive = TestArchiveNotModified.Create(@"C:\archive.nefs");
+            var writer = this.CreateWriter();
+            var archive = await writer.WriteArchiveAsync(@"C:\dest.nefs", sourceArchive, new NefsProgress());
 
-        //    var writer = new NefsWriter(temp, new FileSystem());
-        //    await writer.WriteArchiveAsync(output, nefs, new NefsProgress(new CancellationTokenSource().Token));
-        //}
+            Assert.Equal(sourceArchive.Items.Count, archive.Items.Count);
+        }
+
+        private NefsWriter CreateWriter()
+        {
+            return new NefsWriter(TempDir, this.fileSystem, this.compressor);
+        }
     }
 }

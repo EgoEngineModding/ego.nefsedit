@@ -4,6 +4,7 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Windows.Forms;
+using System.Windows.Threading;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.UI;
 using VictorBush.Ego.NefsEdit.Workspace;
@@ -48,8 +49,8 @@ namespace VictorBush.Ego.NefsEdit
 
             // Setup workspace and services
             var fileSystem = new FileSystem();
-            var progressService = new ProgressService();
-            var uiService = new UiService();
+            var uiService = new UiService(Dispatcher.CurrentDispatcher);
+            var progressService = new ProgressService(uiService);
             var nefsCompressor = new NefsCompressor(fileSystem);
             var nefsReader = new NefsReader(fileSystem);
             var nefsWriter = new NefsWriter(TempDirectory, fileSystem, nefsCompressor);

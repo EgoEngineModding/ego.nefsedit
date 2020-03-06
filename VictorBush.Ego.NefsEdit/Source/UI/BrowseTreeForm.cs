@@ -8,22 +8,35 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using VictorBush.Ego.NefsEdit.Utility;
+using VictorBush.Ego.NefsEdit.Workspace;
 using VictorBush.Ego.NefsLib;
+using VictorBush.Ego.NefsLib.Item;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace VictorBush.Ego.NefsEdit.UI
 {
     internal partial class BrowseTreeForm : DockContent
     {
-        NefsArchive _archive;
+        //NefsArchive _archive;
         //NefsItem _dir;
-        EditorForm _editor;
+        
 
-        internal BrowseTreeForm(EditorForm editor)
+        /// <summary>
+        /// Gets the current directory. Will be null if the root directory.
+        /// </summary>
+        private NefsItem Directory { get; set; }
+
+        private INefsEditWorkspace Workspace { get; }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BrowseTreeForm"/> class.
+        /// </summary>
+        /// <param name="workspace">The workspace to use.</param>
+        internal BrowseTreeForm(INefsEditWorkspace workspace)
         {
-            InitializeComponent();
-
-            _editor = editor;
+            this.InitializeComponent();
+            this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+            this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
 
             // Create the columns we want
             var columns = new ColumnHeader[]
@@ -35,130 +48,140 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             };
 
-            filesListView.Columns.AddRange(columns);
+            this.filesListView.Columns.AddRange(columns);
         }
 
-        public void LoadArchive(NefsArchive archive)
+        private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
         {
-            //if (archive == null)
-            //{
-            //    return;
-            //}
+            this.Workspace.UiService.Dispatcher.Invoke(() =>
+            {
+                this.LoadArchive(this.Workspace.Archive);
+            });
+        }
 
-            //_archive = archive;
-            //directoryTreeView.Nodes.Clear();
+        private void LoadArchive(NefsArchive archive)
+        {
+            if (archive == null)
+            {
+                return;
+            }
 
-            //// TODO : Change the root node to the name of the archive?
-            //var root = directoryTreeView.Nodes.Add("root");
+            this.directoryTreeView.Nodes.Clear();
 
-            //foreach (var item in archive.Items)
-            //{
-            //    if (item.Type == NefsItem.NefsItemType.Directory)
-            //    {
-            //        if (item.Id == item.DirectoryId)
-            //        {
-            //            /* This directory is at the root level */
-            //            var newNode = root.Nodes.Add(item.Filename);
-            //            newNode.Tag = item;
-            //        }
-            //        else
-            //        {
-            //            /* Find this directory's parent directory */
-            //            var parent = (from n in root.DescendantNodes()
-            //                          where n.Tag != null && ((NefsItem)n.Tag).Id == item.DirectoryId
-            //                          select n).FirstOrDefault();
+            // TODO : Change the root node to the name of the archive?
+            var root = this.directoryTreeView.Nodes.Add("root");
 
-            //            if (parent == null)
-            //            {
-            //                // TODO : FIX THIS
-            //                MessageBox.Show("LOL");
-            //            }
+            foreach (var item in archive.Items)
+            {
+                if (item.Type == NefsItemType.Directory)
+                {
+                    if (item.Id == item.DirectoryId)
+                    {
+                        // This directory is at the root level
+                        var newNode = root.Nodes.Add(item.FileName);
+                        newNode.Tag = item;
+                    }
+                    else
+                    {
+                        /* Find this directory's parent directory */
+                        var parent = (from n in root.DescendantNodes()
+                                      where n.Tag != null && ((NefsItem)n.Tag).Id == item.DirectoryId
+                                      select n).FirstOrDefault();
 
-            //            var newNode = parent.Nodes.Add(item.Filename);
-            //            newNode.Tag = item;
-            //        }
-            //    }
-            //}
+                        if (parent == null)
+                        {
+                            // TODO : FIX THIS
+                            MessageBox.Show("LOL");
+                        }
 
-            //root.Expand();
+                        var newNode = parent.Nodes.Add(item.FileName);
+                        newNode.Tag = item;
+                    }
+                }
+            }
 
-            //OpenDirectory(null);
+            root.Expand();
+
+            this.OpenDirectory(null);
         }
 
 
-        // Use null for root directory
-        //public void OpenDirectory(NefsItem dir)
-        //{
-        //    List<NefsItem> itemsInDir;
+        /// <summary>
+        /// Opens a directory in the archive for viewing.
+        /// </summary>
+        /// <param name="dir">The directory to view. Use null for root directory.</param>
+        private void OpenDirectory(NefsItem dir)
+        {
+            List<NefsItem> itemsInDir;
+            var archive = this.Workspace.Archive;
 
-        //    _dir = dir;
+            this.Directory = dir;
+            if (dir == null)
+            {
+                /* Display contents of root */
+                itemsInDir = (from item in archive.Items
+                              where item.Id == item.DirectoryId
+                              select item).ToList();
 
-        //    if (dir == null)
-        //    {
-        //        /* Display contents of root */
-        //        itemsInDir = (from item in _archive.Items
-        //                      where item.Id == item.DirectoryId
-        //                      select item).ToList();
+                /* Clear the directory contents list view */
+                this.filesListView.Items.Clear();
 
-        //        /* Clear the directory contents list view */
-        //        filesListView.Items.Clear();
+                /* This is the root of the archive */
+                this.pathLabel.Text = @"\";
+            }
+            else
+            {
+                if (dir.Type != NefsItemType.Directory)
+                {
+                    // TODO : FIX
+                    MessageBox.Show("TODO: Log this --- can't browse a file.");
+                }
 
-        //        /* This is the root of the archive */
-        //        pathLabel.Text = @"\";
-        //    }
-        //    else
-        //    {
-        //        if (dir.Type != NefsItem.NefsItemType.Directory)
-        //        {
-        //            // TODO : FIX
-        //            MessageBox.Show("TODO: Log this --- can't browse a file.");
-        //        }
+                /* Display contents of specified directory */
+                itemsInDir = (from item in archive.Items
+                              where item.DirectoryId == dir.Id && item.DirectoryId != item.Id
+                              select item).ToList();
 
-        //        /* Display contents of specified directory */
-        //        itemsInDir = (from item in _archive.Items
-        //                      where item.DirectoryId == dir.Id && item.DirectoryId != item.Id
-        //                      select item).ToList();
+                this.pathLabel.Text = @"\" + dir.FilePathInArchive;
+            }
 
-        //        pathLabel.Text = @"\" + dir.FilePathInArchive;
-        //    }
+            /* Clear the directory contents list view */
+            this.filesListView.Items.Clear();
 
-        //    /* Clear the directory contents list view */
-        //    filesListView.Items.Clear();
+            // Load all items in the NeFS archive into the listview
+            foreach (var item in itemsInDir)
+            {
+                var listItem = new ListViewItem();
 
-        //    // Load all items in the NeFS archive into the listview
-        //    foreach (var item in itemsInDir)
-        //    {
-        //        var listItem = new ListViewItem();
+                // The list item is actually the first column
+                listItem.Text = item.Id.Value.ToString("X");
 
-        //        // The list item is actually the first column
-        //        listItem.Text = item.Id.ToString("X");
+                // Save a reference to the item object
+                listItem.Tag = item;
 
-        //        // Save a reference to the item object
-        //        listItem.Tag = item;
+                this.AddSubItem(listItem, "filename", item.FileName);
 
-        //        addSubItem(listItem, "filename", item.Filename);
+                if (item.Type == NefsItemType.File)
+                {
+                    this.AddSubItem(listItem, "compressedSize", item.CompressedSize.ToString("X"));
+                    this.AddSubItem(listItem, "extractedSize", item.ExtractedSize.ToString("X"));
+                }
 
-        //        if (item.Type == NefsItem.NefsItemType.File)
-        //        {
-        //            addSubItem(listItem, "compressedSize", item.CompressedSize.ToString("X"));
-        //            addSubItem(listItem, "extractedSize", item.ExtractedSize.ToString("X"));
-        //        }
+                if (item.Type == NefsItemType.Directory)
+                {
+                    listItem.BackColor = Color.LightBlue;
+                }
 
-        //        if (item.Type == NefsItem.NefsItemType.Directory)
-        //        {
-        //            listItem.BackColor = Color.LightBlue;
-        //        }
+                this.filesListView.Items.Add(listItem);
+            }
+        }
 
-        //        filesListView.Items.Add(listItem);
-        //    }
-        //}
-
-        private void addSubItem(ListViewItem item, string name, string text)
+        private void AddSubItem(ListViewItem item, string name, string text)
         {
             item.SubItems.Add(new ListViewItem.ListViewSubItem()
             {
                 Name = name,
-                Text = text
+                Text = text,
             });
         }
 
@@ -166,54 +189,52 @@ namespace VictorBush.Ego.NefsEdit.UI
         {
             if (e.Node != null)
             {
-                //OpenDirectory((NefsItem)e.Node.Tag);
+                this.OpenDirectory((NefsItem)e.Node.Tag);
             }
         }
 
         private void filesListView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            //var selectedItems = filesListView.SelectedItems;
+            var selectedItems = this.filesListView.SelectedItems;
+            if (selectedItems.Count == 0)
+            {
+                return;
+            }
 
-            //if (selectedItems.Count == 0)
-            //{
-            //    return;
-            //}
+            /* Build a list of selected NefsItems */
+            var selectedNefsItems = new List<NefsItem>();
 
-            ///* Build a list of selected NefsItems */
-            //var selectedNefsItems = new List<NefsItem>();
+            foreach (ListViewItem item in this.filesListView.SelectedItems)
+            {
+                selectedNefsItems.Add(item.Tag as NefsItem);
+            }
 
-            //foreach (ListViewItem item in filesListView.SelectedItems)
-            //{
-            //    selectedNefsItems.Add(item.Tag as NefsItem);
-            //}
-
-            ///* Tell the editor what items are selected */
-            //_editor.SelectNefsItem(selectedNefsItems);
+            // Tell the editor what items are selected
+            this.Workspace.SelectItems(selectedNefsItems);
         }
 
         private void filesListView_DoubleClick(object sender, EventArgs e)
         {
-            //if (filesListView.SelectedItems.Count > 0)
-            //{
-            //    var item = filesListView.SelectedItems[0].Tag as NefsItem;
-
-            //    if (item.Type == NefsItem.NefsItemType.Directory)
-            //    {
-            //        OpenDirectory(item);
-            //    }
-            //}
+            if (this.filesListView.SelectedItems.Count > 0)
+            {
+                var item = this.filesListView.SelectedItems[0].Tag as NefsItem;
+                if (item.Type == NefsItemType.Directory)
+                {
+                    this.OpenDirectory(item);
+                }
+            }
         }
 
         private void upButton_Click(object sender, EventArgs e)
         {
-            //if (_dir == null)
+            //if (this.Directory == null)
             //{
             //    /* Can't go up a directory */
             //    return;
             //}
 
             ///* Find the parent directory */
-            //var parent = _archive.GetItem(_dir.DirectoryId);
+            //var parent = this.Workspace.Archive.Items.GetItem(_dir.DirectoryId);
 
             //if (parent == _dir)
             //{
@@ -224,15 +245,19 @@ namespace VictorBush.Ego.NefsEdit.UI
             //{
             //    OpenDirectory(parent);
             //}
+
+            // TODO : Fixme
         }
 
         private void filesListView_MouseUp(object sender, MouseEventArgs e)
         {
-            /* Show context menu if an item is right-clicked */
-            if (e.Button == MouseButtons.Right)
-            {
-                _editor.ShowItemContextMenu(Cursor.Position);
-            }
+            ///* Show context menu if an item is right-clicked */
+            //if (e.Button == MouseButtons.Right)
+            //{
+            //    _editor.ShowItemContextMenu(Cursor.Position);
+            //}
+
+            // TODO : Fixme
         }
     }
 }

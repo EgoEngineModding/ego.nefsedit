@@ -3,8 +3,6 @@
 namespace VictorBush.Ego.NefsLib.Header
 {
     using System;
-    using System.IO;
-    using System.Security.Cryptography;
     using VictorBush.Ego.NefsLib.DataTypes;
 
     /// <summary>
@@ -21,6 +19,14 @@ namespace VictorBush.Ego.NefsLib.Header
         /// The size of the header intro.
         /// </summary>
         public const uint Size = 0x100;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="NefsHeaderIntro"/> class.
+        /// </summary>
+        public NefsHeaderIntro()
+        {
+            this.MagicNumber.Value = NefsMagicNumber;
+        }
 
         /// <summary>File magic number; "NeFS" or 0x5346654E.</summary>
         [FileData]

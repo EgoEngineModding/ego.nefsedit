@@ -36,7 +36,11 @@ namespace VictorBush.Ego.NefsLib.Item
         public bool IsReadOnly => false;
 
         /// <inheritdoc/>
-        public NefsItem this[int index] { get => this.items[index]; set => this.items[index] = value; }
+        public NefsItem this[int index]
+        {
+            get => this.items[index];
+            set => this.items[index] = value;
+        }
 
         /// <inheritdoc/>
         public void Add(NefsItem item) => this.items.Add(item);

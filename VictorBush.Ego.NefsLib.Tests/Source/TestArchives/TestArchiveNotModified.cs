@@ -109,6 +109,7 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
             Assert.Equal((int)NumItems, items.Count);
 
             var intro = new NefsHeaderIntro();
+            intro.NumberOfItems.Value = (uint)items.Count;
             var header = new NefsHeader(intro, items);
 
             return new NefsArchive(header, items);

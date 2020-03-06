@@ -36,9 +36,21 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         public EditorForm(INefsEditWorkspace workspace)
         {
-            InitializeComponent();
+            this.InitializeComponent();
 
             this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+            this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
+            this.Workspace.ArchiveClosed += this.OnWorkspaceArchiveClosed;
+        }
+
+        private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+        {
+            throw new NotImplementedException();
+        }
+
+        private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+        {
+            // TODO ??
         }
 
         /// <summary>
@@ -112,7 +124,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
 
             /* Create a progress dialog form */
-            var progressDialog = new ProgressDialogForm();
+            var progressDialog = new ProgressDialogForm(this.Workspace.UiService);
 
             /* Show the loading dialog asnyc */
             var progressDialogTask = progressDialog.ShowDialogAsync();
@@ -191,7 +203,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             if (result == DialogResult.OK)
             {
                 /* Create a progress dialog form */
-                var progressDialog = new ProgressDialogForm();
+                var progressDialog = new ProgressDialogForm(this.Workspace.UiService);
 
                 /* Show the progress dialog asnyc */
                 var progressDialogTask = progressDialog.ShowDialogAsync();
@@ -424,8 +436,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             browserDockPanel.Theme = theme;
 
             /* Create the different forms for the editor */
-            _browseAllForm = new BrowseAllForm(this);
-            _browseTreeForm = new BrowseTreeForm(this);
+            _browseAllForm = new BrowseAllForm(this.Workspace);
+            _browseTreeForm = new BrowseTreeForm(this.Workspace);
             _selectedFilePropertyForm = new PropertyGridForm();
             _archivePropertyForm = new UI.PropertyGridForm();
             _consoleForm = new ConsoleForm();
@@ -487,7 +499,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         private async void loadNefsAsync(string filePath)
         {
             /* Create a progress dialog form */
-            var progressDialog = new ProgressDialogForm();
+            var progressDialog = new ProgressDialogForm(this.Workspace.UiService);
 
             /* Show the loading dialog asnyc */
             var progressDialogTask = progressDialog.ShowDialogAsync();
@@ -502,49 +514,17 @@ namespace VictorBush.Ego.NefsEdit.UI
             //setArchive(archive);
         }
 
-        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // TODO TEMP TEMP TEMP TEMP
-            this.Workspace.ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
-            {
-                using (var tt = p.BeginTask(1.0f))
-                {
-                    using (var t = p.BeginTask(0.5f, "Part 1"))
-                    {
-                        await Task.Delay(2000);
-                    }
-                    using (var t = p.BeginTask(0.5f, "Part 2"))
-                    {
-                        await Task.Delay(2000);
-                    }
-                }
-
-
-            }));
-
-
-
-
-
-
-
-
-            //var ofd = new OpenFileDialog();
-            //ofd.Multiselect = false;
-            
-            //var result = ofd.ShowDialog();
-            //if (result == DialogResult.OK)
-            //{
-            //    loadNefsAsync(ofd.FileName);
-            //}
+            await this.Workspace.OpenArchiveByDialogAsync();
         }
 
         private void setArchive(NefsArchive archive)
         {
             _archive = archive;
             _archivePropertyForm.SetSelectedObject(archive);
-            _browseAllForm.LoadArchive(archive);
-            _browseTreeForm.LoadArchive(archive);
+            //_browseAllForm.LoadArchive(archive);
+            //_browseTreeForm.LoadArchive(archive);
 
             //updateTitle();
         }    

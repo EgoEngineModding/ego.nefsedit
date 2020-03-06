@@ -1,31 +1,35 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using VictorBush.Ego.NefsEdit.Utility;
-using VictorBush.Ego.NefsLib;
-using WeifenLuo.WinFormsUI.Docking;
+﻿// See LICENSE.txt for license information.
 
 namespace VictorBush.Ego.NefsEdit.UI
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Drawing;
+    using System.Windows.Forms;
+    using VictorBush.Ego.NefsEdit.Utility;
+    using VictorBush.Ego.NefsEdit.Workspace;
+    using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.Item;
+    using WeifenLuo.WinFormsUI.Docking;
+
+    /// <summary>
+    /// Form that displays all items in the archive in a single list.
+    /// </summary>
     internal partial class BrowseAllForm : DockContent
     {
-        EditorForm _editor;
-        ListViewColumnSorter listViewItemSorter;
+        private readonly ListViewColumnSorter listViewItemSorter = new ListViewColumnSorter();
 
-        internal BrowseAllForm(EditorForm editor)
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BrowseAllForm"/> class.
+        /// </summary>
+        /// <param name="workspace">The workspace to use.</param>
+        internal BrowseAllForm(INefsEditWorkspace workspace)
         {
-            InitializeComponent();
+            this.InitializeComponent();
+            this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+            this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
 
-            _editor = editor;
-
-            listViewItemSorter = new ListViewColumnSorter();
-            this.itemsListView.ListViewItemSorter = listViewItemSorter;
+            this.itemsListView.ListViewItemSorter = this.listViewItemSorter;
 
             // Create the columns we want
             var columns = new ColumnHeader[]
@@ -35,14 +39,13 @@ namespace VictorBush.Ego.NefsEdit.UI
                 new ColumnHeader() { Name = "directoryId", Text = "Directory Id" },
                 new ColumnHeader() { Name = "compressedSize", Text = "Compressed Size" },
                 new ColumnHeader() { Name = "extractedSize", Text = "Extracted Size" },
-
             };
 
             var debugColumns = new ColumnHeader[]
             {
                 new ColumnHeader() { Name = "pt1.0x00", Text = "[pt1.0x00] Offset to Data" },
-                new ColumnHeader() { Name = "pt1.0x08", Text = "[pt1.0x08] Offset into pt2" },
-                new ColumnHeader() { Name = "pt1.0x0c", Text = "[pt1.0x0c] Offset into pt4 (chunk sizes)" },
+                new ColumnHeader() { Name = "pt1.0x08", Text = "[pt1.0x08] Index into pt2" },
+                new ColumnHeader() { Name = "pt1.0x0c", Text = "[pt1.0x0c] Index into pt4 (chunk sizes)" },
                 new ColumnHeader() { Name = "pt1.0x10", Text = "[pt1.0x10] Id" },
 
                 new ColumnHeader() { Name = "pt2.0x00", Text = "[pt2.0x00] Directory Id" },
@@ -51,138 +54,152 @@ namespace VictorBush.Ego.NefsEdit.UI
                 new ColumnHeader() { Name = "pt2.0x0c", Text = "[pt2.0x0c] Extracted size" },
                 new ColumnHeader() { Name = "pt2.0x10", Text = "[pt2.0x10] Id" },
 
+                new ColumnHeader() { Name = "pt6.0x00", Text = "[pt5.0x00]" },
+                new ColumnHeader() { Name = "pt6.0x01", Text = "[pt5.0x01]" },
+                new ColumnHeader() { Name = "pt6.0x02", Text = "[pt5.0x02]" },
+                new ColumnHeader() { Name = "pt6.0x13", Text = "[pt5.0x03]" },
 
-                new ColumnHeader() { Name = "pt5.0x00", Text = "[pt5.0x00]" },
-                new ColumnHeader() { Name = "pt5.0x01", Text = "[pt5.0x01]" },
-                new ColumnHeader() { Name = "pt5.0x02", Text = "[pt5.0x02]" },
-                new ColumnHeader() { Name = "pt5.0x13", Text = "[pt5.0x03]" },
-
-                new ColumnHeader() { Name = "pt6.0x00", Text = "[pt6.0x00]" },
-                new ColumnHeader() { Name = "pt6.0x04", Text = "[pt6.0x04]" },
+                new ColumnHeader() { Name = "pt7.0x00", Text = "[pt6.0x00]" },
+                new ColumnHeader() { Name = "pt7.0x04", Text = "[pt6.0x04]" },
             };
 
-            itemsListView.Columns.AddRange(columns);
-            itemsListView.Columns.AddRange(debugColumns);
-            itemsListView.ColumnClick += ItemsListView_ColumnClick;
+            this.itemsListView.Columns.AddRange(columns);
+            this.itemsListView.Columns.AddRange(debugColumns);
+            this.itemsListView.ColumnClick += this.ItemsListView_ColumnClick;
+        }
+
+        private INefsEditWorkspace Workspace { get; }
+
+        private void AddSubItem(ListViewItem item, string name, string text)
+        {
+            item.SubItems.Add(new ListViewItem.ListViewSubItem()
+            {
+                Name = name,
+                Text = text,
+            });
         }
 
         private void ItemsListView_ColumnClick(object sender, ColumnClickEventArgs e)
         {
             // Determine if clicked column is already the column that is being sorted.
-            if (e.Column == listViewItemSorter.SortColumn)
+            if (e.Column == this.listViewItemSorter.SortColumn)
             {
                 // Reverse the current sort direction for this column.
-                if (listViewItemSorter.Order == SortOrder.Ascending)
+                if (this.listViewItemSorter.Order == SortOrder.Ascending)
                 {
-                    listViewItemSorter.Order = SortOrder.Descending;
+                    this.listViewItemSorter.Order = SortOrder.Descending;
                 }
                 else
                 {
-                    listViewItemSorter.Order = SortOrder.Ascending;
+                    this.listViewItemSorter.Order = SortOrder.Ascending;
                 }
             }
             else
             {
                 // Set the column number that is to be sorted; default to ascending.
-                listViewItemSorter.SortColumn = e.Column;
-                listViewItemSorter.Order = SortOrder.Ascending;
+                this.listViewItemSorter.SortColumn = e.Column;
+                this.listViewItemSorter.Order = SortOrder.Ascending;
             }
 
             // Perform the sort with these new sort options.
             this.itemsListView.Sort();
         }
 
-        public void LoadArchive(NefsArchive archive)
+        private void itemsListView_MouseUp(object sender, MouseEventArgs e)
         {
-            //if (archive == null)
+            /* Show context menu if an item is right-clicked */
+            //if (e.Button == MouseButtons.Right)
             //{
-            //    return;
+            //    _editor.ShowItemContextMenu(Cursor.Position);
             //}
 
-            //// Clear current list
-            //itemsListView.Items.Clear();
-
-            //// Load all items in the NeFS archive into the listview
-            //foreach (var item in archive.Items)
-            //{
-            //    ListViewItem listItem = new ListViewItem();
-
-            //    // The list item is actually the first column
-            //    listItem.Text = item.Id.ToString("X");
-                
-            //    // Save a reference to the item object
-            //    listItem.Tag = item;
-
-            //    addSubItem(listItem, "filename", item.Filename);
-            //    addSubItem(listItem, "directoryId", item.DirectoryId.ToString("X"));
-            //    addSubItem(listItem, "compressedSize", item.CompressedSize.ToString("X"));
-            //    addSubItem(listItem, "extractedSize", item.ExtractedSize.ToString("X"));
-
-            //    addSubItem(listItem, "pt1.0x00", item.Part1Entry.OffsetToData.ToString("X"));
-            //    addSubItem(listItem, "pt1.0x08", item.Part1Entry.OffsetIntoPt2Raw.ToString("X"));
-            //    addSubItem(listItem, "pt1.0x0c", item.Part1Entry.OffsetIntoPt4Raw.ToString("X"));
-            //    addSubItem(listItem, "pt1.0x10", item.Part1Entry.Id.ToString("X"));
-
-            //    addSubItem(listItem, "pt2.0x00", item.Part2Entry.DirectoryId.ToString("X"));
-            //    addSubItem(listItem, "pt2.0x04", item.Part2Entry.FirstChildId.ToString("X"));
-            //    addSubItem(listItem, "pt2.0x08", item.Part2Entry.FilenameOffset.ToString("X"));
-            //    addSubItem(listItem, "pt2.0x0c", item.Part2Entry.ExtractedSize.ToString("X"));
-            //    addSubItem(listItem, "pt2.0x10", item.Part2Entry.Id.ToString("X"));
-
-            //    addSubItem(listItem, "pt5.0x00", item.Part5Entry.Byte1.ToString("X"));
-            //    addSubItem(listItem, "pt5.0x01", item.Part5Entry.Byte2.ToString("X"));
-            //    addSubItem(listItem, "pt5.0x02", item.Part5Entry.Byte3.ToString("X"));
-            //    addSubItem(listItem, "pt5.0x03", item.Part5Entry.Byte4.ToString("X"));
-
-            //    addSubItem(listItem, "pt6.0x00", item.Part6Entry.Off_0x00.ToString("X"));
-            //    addSubItem(listItem, "pt6.0x04", item.Part6Entry.Off_0x04.ToString("X"));
-
-            //    if (item.Type == NefsItem.NefsItemType.Directory)
-            //    {
-            //        listItem.BackColor = Color.LightBlue;
-            //    }
-
-            //    itemsListView.Items.Add(listItem);
-            //}
-        }
-
-        private void addSubItem(ListViewItem item, string name, string text)
-        {
-            item.SubItems.Add(new ListViewItem.ListViewSubItem()
-            {
-                Name = name,
-                Text = text
-            });
+            // TODO : Fixme
         }
 
         private void itemsListView_SelectedIndexChanged(object sender, EventArgs e)
         {
-            //var selectedItems = itemsListView.SelectedItems;
+            var selectedItems = this.itemsListView.SelectedItems;
+            if (selectedItems.Count == 0)
+            {
+                return;
+            }
 
-            //if (selectedItems.Count == 0)
-            //{
-            //    return;
-            //}
+            // Build a list of selected NefsItems
+            var selectedNefsItems = new List<NefsItem>();
 
-            ///* Build a list of selected NefsItems */
-            //var selectedNefsItems = new List<NefsItem>();
+            foreach (ListViewItem item in this.itemsListView.SelectedItems)
+            {
+                selectedNefsItems.Add(item.Tag as NefsItem);
+            }
 
-            //foreach (ListViewItem item in itemsListView.SelectedItems)
-            //{
-            //    selectedNefsItems.Add(item.Tag as NefsItem);
-            //}
-
-            ///* Tell the editor what items are selected */
-            //_editor.SelectNefsItem(selectedNefsItems);
+            // Tell the editor what items are selected
+            this.Workspace.SelectItems(selectedNefsItems);
         }
 
-        private void itemsListView_MouseUp(object sender, MouseEventArgs e)
+        private void LoadArchive(NefsArchive archive)
         {
-            /* Show context menu if an item is right-clicked */
-            if (e.Button == MouseButtons.Right)
+            if (archive == null)
             {
-                _editor.ShowItemContextMenu(Cursor.Position);
+                return;
             }
+
+            // Clear current list
+            this.itemsListView.Items.Clear();
+
+            // Load all items in the NeFS archive into the listview
+            foreach (var item in archive.Items)
+            {
+                var listItem = new ListViewItem();
+
+                // The list item is actually the first column
+                listItem.Text = item.Id.Value.ToString("X");
+
+                // Save a reference to the item object
+                listItem.Tag = item;
+
+                this.AddSubItem(listItem, "filename", item.FileName);
+                this.AddSubItem(listItem, "directoryId", item.DirectoryId.Value.ToString("X"));
+                this.AddSubItem(listItem, "compressedSize", item.CompressedSize.ToString("X"));
+                this.AddSubItem(listItem, "extractedSize", item.ExtractedSize.ToString("X"));
+
+                var p1 = archive.Header.Part1.EntriesById[item.Id];
+                this.AddSubItem(listItem, "pt1.0x00", p1.OffsetToData.Value.ToString("X"));
+                this.AddSubItem(listItem, "pt1.0x08", p1.IndexIntoPart2.Value.ToString("X"));
+                this.AddSubItem(listItem, "pt1.0x0c", p1.IndexIntoPart4.Value.ToString("X"));
+                this.AddSubItem(listItem, "pt1.0x10", p1.Id.Value.ToString("X"));
+
+                var p2 = archive.Header.Part2.EntriesById[item.Id];
+                this.AddSubItem(listItem, "pt2.0x00", p2.DirectoryId.Value.ToString("X"));
+                this.AddSubItem(listItem, "pt2.0x04", p2.FirstChildId.Value.ToString("X"));
+                this.AddSubItem(listItem, "pt2.0x08", p2.OffsetIntoPart3.Value.ToString("X"));
+                this.AddSubItem(listItem, "pt2.0x0c", p2.ExtractedSize.Value.ToString("X"));
+                this.AddSubItem(listItem, "pt2.0x10", p2.Id.Value.ToString("X"));
+
+                var p6 = archive.Header.Part6.Entries[(int)item.Id.Value];
+                this.AddSubItem(listItem, "pt6.0x00", p6.Byte0.Value[0].ToString("X"));
+                this.AddSubItem(listItem, "pt6.0x01", p6.Byte1.Value[0].ToString("X"));
+                this.AddSubItem(listItem, "pt6.0x02", p6.Byte2.Value[0].ToString("X"));
+                this.AddSubItem(listItem, "pt6.0x03", p6.Byte3.Value[0].ToString("X"));
+
+                var p7 = archive.Header.Part7.Entries[(int)item.Id.Value];
+                this.AddSubItem(listItem, "pt7.0x00", p7.Unknown0x00.Value.ToString("X"));
+                this.AddSubItem(listItem, "pt7.0x04", p7.Unknown0x04.Value.ToString("X"));
+
+                if (item.Type == NefsItemType.Directory)
+                {
+                    listItem.BackColor = Color.LightBlue;
+                }
+
+                this.itemsListView.Items.Add(listItem);
+            }
+        }
+
+        private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+        {
+            this.Workspace.UiService.Dispatcher.Invoke(() =>
+            {
+                this.LoadArchive(this.Workspace.Archive);
+            });
         }
     }
 }

@@ -1,13 +1,30 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// See LICENSE.txt for license information.
 
 namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 {
+    using VictorBush.Ego.NefsLib.Header;
+    using VictorBush.Ego.NefsLib.Item;
+    using Xunit;
+
     internal class TestArchiveNoItems
     {
-        // TODO
+        /// <summary>
+        /// Creates a test archive. Does not write an archive to disk. Just creates a <see
+        /// cref="NefsArchive"/> object.
+        /// </summary>
+        /// <param name="filePath">The file path to use for the archive.</param>
+        /// <returns>A <see cref="NefsArchive"/>.</returns>
+        public static NefsArchive Create(string filePath)
+        {
+            var items = new NefsItemList(filePath);
+
+            Assert.Empty(items);
+
+            var intro = new NefsHeaderIntro();
+            intro.NumberOfItems.Value = (uint)items.Count;
+            var header = new NefsHeader(intro, items);
+
+            return new NefsArchive(header, items);
+        }
     }
 }

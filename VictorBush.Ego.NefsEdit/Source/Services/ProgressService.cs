@@ -16,11 +16,22 @@ namespace VictorBush.Ego.NefsEdit.Services
     {
         private static readonly ILog Log = LogHelper.GetLogger();
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProgressService"/> class.
+        /// </summary>
+        /// <param name="uiService">The UI service to use.</param>
+        public ProgressService(IUiService uiService)
+        {
+            this.UiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
+        }
+
+        private IUiService UiService { get; }
+
         /// <inheritdoc/>
         public async Task RunModalTaskAsync(Func<NefsProgress, Task> task)
         {
             // Create a progress dialog
-            var progressForm = new ProgressDialogForm();
+            var progressForm = new ProgressDialogForm(this.UiService);
 
             // Show the progress dialog. Don't await this call. Need to allow dialog to show
             // modally, but want to continue execution.

@@ -1,19 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Windows.Threading;
-using VictorBush.Ego.NefsLib;
-using VictorBush.Ego.NefsLib.Progress;
+﻿// See LICENSE.txt for license information.
 
 namespace VictorBush.Ego.NefsEdit.UI
 {
+    using System;
+    using System.Collections.Generic;
+    using System.ComponentModel;
+    using System.Data;
+    using System.Drawing;
+    using System.Linq;
+    using System.Text;
+    using System.Threading;
+    using System.Threading.Tasks;
+    using System.Windows.Forms;
+    using System.Windows.Threading;
+    using VictorBush.Ego.NefsEdit.Services;
+    using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.Progress;
+
     /// <summary>
     /// Form that monitors progress reporting for the provided progress reporter.
     /// </summary>
@@ -32,26 +35,29 @@ namespace VictorBush.Ego.NefsEdit.UI
     ///     // Close the dialog
     ///     progressDialog.Close();
     /// </remarks>
-    public partial class ProgressDialogForm : Form
+    internal partial class ProgressDialogForm : Form
     {
         public NefsProgress ProgressInfo { get; }
 
         private CancellationTokenSource cancelSource;
 
-        private Dispatcher dispatcher;
+        private IUiService UiService { get; }
 
-        public ProgressDialogForm()
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ProgressDialogForm"/> class.
+        /// </summary>
+        /// <param name="uiService">The UI service to use.</param>
+        public ProgressDialogForm(IUiService uiService)
         {
             this.InitializeComponent();
-
-            this.dispatcher = Dispatcher.CurrentDispatcher;
+            this.UiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
 
             /* Setup cancellation */
             this.cancelSource = new CancellationTokenSource();
 
             /* Create a progress reporter */
             this.ProgressInfo = new NefsProgress(this.cancelSource.Token);
-            this.ProgressInfo.ProgressChanged += onProgress;
+            this.ProgressInfo.ProgressChanged += this.OnProgress;
         }
 
         public void SetStyle(ProgressBarStyle style)
@@ -65,14 +71,14 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.cancelSource.Cancel();
         }
 
-        private void onProgress(object sender, NefsProgressEventArgs e)
+        private void OnProgress(object sender, NefsProgressEventArgs e)
         {
             /* Constrain the progress percentage to appropriate range */
             var value = Math.Min((int)(e.Progress * 100), this.progressBar.Maximum);
             value = Math.Max(value, 0);
 
             /* Update the form controls - must do on UI thread */
-            this.dispatcher.Invoke(() =>
+            this.UiService.Dispatcher.Invoke(() =>
             {
                 this.progressBar.Value = value;
                 this.statusLabel.Text = e.Message;
