@@ -63,6 +63,7 @@
     <Compile Include="Source\Tests\IO\NefsCompressorTests.cs" />
     <Compile Include="Source\Tests\IO\NefsReaderTests.cs" />
     <Compile Include="Source\Tests\IO\NefsWriterTests.cs" />
+    <Compile Include="Source\Tests\Item\NefsItemTests.cs" />
     <Compile Include="Source\Tests\Progress\NefsProgressTests.cs" />
     <Compile Include="Source\TestHelpers.cs" />
   </ItemGroup>

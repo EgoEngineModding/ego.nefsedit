@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsLib.DataSource
 {
     using System;
+    using System.Collections.Generic;
     using VictorBush.Ego.NefsLib.Item;
 
     /// <summary>
@@ -20,6 +21,6 @@ namespace VictorBush.Ego.NefsLib.DataSource
         public Boolean ShouldCompress => false;
 
         /// <inheritdoc/>
-        public NefsItemSize Size => new NefsItemSize(0);
+        public NefsItemSize Size => new NefsItemSize(0, new List<UInt32>());
     }
 }

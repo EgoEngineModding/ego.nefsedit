@@ -74,7 +74,6 @@ namespace VictorBush.Ego.NefsLib.Header
 
             this.Part1 = new NefsHeaderPart1(items, this.Part4);
             this.Part2 = new NefsHeaderPart2(items, this.Part3);
-            this.Part4 = new NefsHeaderPart4(items);
             this.Part5 = new NefsHeaderPart5();
             this.Part6 = new NefsHeaderPart6(items);
             this.Part7 = new NefsHeaderPart7(items);

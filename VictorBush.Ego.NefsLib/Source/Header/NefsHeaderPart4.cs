@@ -50,7 +50,7 @@ namespace VictorBush.Ego.NefsLib.Header
             var nextIdx = 0;
             foreach (var item in items)
             {
-                if (item.DataSource.Size.IsCompressed)
+                if (!item.DataSource.Size.IsCompressed)
                 {
                     // Item does not have a part 4 entry since it has no compressed data
                     continue;

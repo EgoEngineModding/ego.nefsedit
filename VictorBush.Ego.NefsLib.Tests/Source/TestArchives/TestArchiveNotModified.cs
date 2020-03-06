@@ -12,13 +12,21 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
     internal class TestArchiveNotModified
     {
+        /*
+        Directory 1 - in root of archive.
+        */
+
         public static UInt32 Dir1DirectoryId => Dir1ItemId;
 
-        public static UInt32 Dir1ItemId => File1ItemId + 1;
+        public static UInt32 Dir1ItemId => 1;
 
         public static string Dir1Name => "dir1";
 
-        public static string Dir1PathInArchive => "dir";
+        public static string Dir1PathInArchive => Dir1Name;
+
+        /*
+        File 1 - in root of archive.
+        */
 
         public static IReadOnlyList<UInt32> File1ChunkSizes { get; } = new List<UInt32> { 10, 20, 30 };
 
@@ -32,7 +40,11 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
         public static UInt64 File1Offset => NefsHeader.DataOffsetDefault;
 
-        public static string File1PathInArchive => "file1.txt";
+        public static string File1PathInArchive => File1Name;
+
+        /*
+        File 2 - inside directory "dir1".
+        */
 
         public static IReadOnlyList<UInt32> File2ChunkSizes { get; } = new List<UInt32> { 5, 15, 25 };
 
@@ -40,15 +52,33 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
         public static UInt32 File2ExtractedSize => 50;
 
-        public static UInt32 File2ItemId => Dir1ItemId + 1;
+        public static UInt32 File2ItemId => 2;
 
         public static string File2Name => "file2.txt";
 
         public static UInt64 File2Offset => File1Offset + File1ChunkSizes.Last();
 
-        public static string File2PathInArchive => "dir1/file2.txt";
+        public static string File2PathInArchive => $@"{Dir1PathInArchive}\{File2Name}";
 
-        public static UInt32 NumItems => 3;
+        /*
+        File 3 - Not compressed. In directory "dir1".
+        */
+
+        public static IReadOnlyList<UInt32> File3ChunkSizes { get; } = new List<UInt32> { 31 };
+
+        public static UInt32 File3DirectoryId => Dir1ItemId;
+
+        public static UInt32 File3ExtractedSize => 31;
+
+        public static UInt32 File3ItemId => 3;
+
+        public static string File3Name => "file3.txt";
+
+        public static UInt64 File3Offset => File2Offset + File2ChunkSizes.Last();
+
+        public static string File3PathInArchive => $@"{Dir1PathInArchive}\{File3Name}";
+
+        public static UInt32 NumItems => 4;
 
         /// <summary>
         /// Creates a test archive. Does not write an archive to disk. Just creates a <see
@@ -71,6 +101,10 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
             var file2DataSource = new NefsItemListDataSource(items, File2Offset, new NefsItemSize(File2ExtractedSize, File2ChunkSizes));
             var file2 = new NefsItem(new NefsItemId(File2ItemId), File2Name, File2PathInArchive, new NefsItemId(File2DirectoryId), NefsItemType.File, file2DataSource, TestHelpers.CreateUnknownData());
             items.Add(file2);
+
+            var file3DataSource = new NefsItemListDataSource(items, File3Offset, new NefsItemSize(File3ExtractedSize, File3ChunkSizes));
+            var file3 = new NefsItem(new NefsItemId(File3ItemId), File3Name, File3PathInArchive, new NefsItemId(File3DirectoryId), NefsItemType.File, file3DataSource, TestHelpers.CreateUnknownData());
+            items.Add(file3);
 
             Assert.Equal((int)NumItems, items.Count);
 

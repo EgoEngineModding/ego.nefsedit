@@ -60,7 +60,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <summary>
         /// Gets a value indicating whether the item's data is compressed in the archive.
         /// </summary>
-        public bool IsCompressed => this.Size == this.ExtractedSize;
+        public bool IsCompressed => this.Size != this.ExtractedSize;
 
         /// <summary>
         /// Gets the size of the data in bytes.

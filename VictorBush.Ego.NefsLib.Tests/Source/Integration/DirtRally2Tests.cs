@@ -3,7 +3,7 @@
 // #define ENABLE_INTEGRATION_TESTS
 #if ENABLE_INTEGRATION_TESTS
 
-namespace VictorBush.Ego.NefsLib.Tests.Source.Integration
+namespace VictorBush.Ego.NefsLib.Tests.Integration
 {
     using System.IO;
     using System.IO.Abstractions;

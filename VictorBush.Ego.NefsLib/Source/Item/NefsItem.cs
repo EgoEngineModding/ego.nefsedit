@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsLib.Item
 {
     using System;
+    using System.Diagnostics;
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.Header;
     using VictorBush.Ego.NefsLib.Utility;
@@ -146,7 +147,6 @@ namespace VictorBush.Ego.NefsLib.Item
         {
             var p1 = header.Part1.EntriesById[id];
             var p2 = header.Part2.EntriesById[id];
-            var p4 = header.Part4.EntriesByIndex[id.Value];
             var p6 = header.Part6.Entries[(int)id.Value];
 
             // Determine type
@@ -158,14 +158,31 @@ namespace VictorBush.Ego.NefsLib.Item
             // Offset and size
             var dataOffset = p1.OffsetToData.Value;
             var extractedSize = p2.ExtractedSize.Value;
-            var size = new NefsItemSize(extractedSize, p4.ChunkSizes);
 
-            // Get file name
+            // Data source
+            INefsDataSource dataSource;
+            if (type == NefsItemType.Directory)
+            {
+                // Item is a directory
+                dataSource = new NefsEmptyDataSource();
+            }
+            else if (p1.IndexIntoPart4.Value == 0xFFFFFFFFU)
+            {
+                // Item is not compressed
+                var size = new NefsItemSize(extractedSize);
+                dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
+            }
+            else
+            {
+                // Item is compressed
+                var p4 = header.Part4.EntriesByIndex[p1.IndexIntoPart4.Value];
+                var size = new NefsItemSize(extractedSize, p4.ChunkSizes);
+                dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
+            }
+
+            // File name and path
             var fileName = header.GetItemFileName(id);
             var filePath = header.GetItemFilePath(id);
-
-            // Create data source
-            var dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
 
             // Gather unknown metadata
             var unknown = new NefsItemUnknownData
