@@ -43,8 +43,8 @@
             this.itemsListView.TabIndex = 0;
             this.itemsListView.UseCompatibleStateImageBehavior = false;
             this.itemsListView.View = System.Windows.Forms.View.Details;
-            this.itemsListView.SelectedIndexChanged += new System.EventHandler(this.itemsListView_SelectedIndexChanged);
-            this.itemsListView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.itemsListView_MouseUp);
+            this.itemsListView.SelectedIndexChanged += new System.EventHandler(this.ItemsListView_SelectedIndexChanged);
+            this.itemsListView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.ItemsListView_MouseUp);
             // 
             // BrowseAllForm
             // 

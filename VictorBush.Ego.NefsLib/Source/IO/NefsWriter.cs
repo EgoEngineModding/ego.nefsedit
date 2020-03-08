@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsLib.IO
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.IO.Abstractions;
     using System.Security.Cryptography;
@@ -121,7 +122,8 @@ namespace VictorBush.Ego.NefsLib.IO
                 var newSize = await this.Compressor.CompressFileAsync(item.DataSource, destFilePath, NefsArchive.ChunkSize, p);
 
                 // Update data source to point to the compressed temp file
-                item.DataSource = new NefsFileDataSource(destFilePath, 0, newSize, false);
+                var dataSource = new NefsFileDataSource(destFilePath, 0, newSize, false);
+                item.UpdateDataSource(dataSource, NefsItemState.Replaced);
             }
         }
 
@@ -142,21 +144,26 @@ namespace VictorBush.Ego.NefsLib.IO
             // Create a new items list - original source list is not modified. The new list is
             // returned that removes deleted items and has updated metadata for the other items.
             var items = sourceItems.Clone() as NefsItemList;
+            var itemsToRemove = new List<NefsItem>();
 
-            for (int i = items.Count - 1; i >= 0; --i)
+            foreach (var item in items)
             {
-                var item = items[i];
-
                 if (item.State == NefsItemState.Removed)
                 {
                     // Item was deleted; remove item from list
-                    items.RemoveAt(i);
+                    itemsToRemove.Add(item);
                 }
                 else
                 {
                     // Compress any new or replaced files and update chunk sizes
                     await this.PrepareItemAsync(item, workDir, p);
                 }
+            }
+
+            // Remove deleted items
+            foreach (var item in itemsToRemove)
+            {
+                items.Remove(item.Id);
             }
 
             // Return the new list
@@ -428,9 +435,6 @@ namespace VictorBush.Ego.NefsLib.IO
                 throw new ArgumentException("Trying to write a removed item.", nameof(item));
             }
 
-            // Reset item state
-            item.State = NefsItemState.None;
-
             // Nothing to write for directories
             if (item.Type == NefsItemType.Directory)
             {
@@ -493,12 +497,12 @@ namespace VictorBush.Ego.NefsLib.IO
             stream.Seek((long)firstDataOffset, SeekOrigin.Begin);
 
             // Update item info and write out item data
-            for (var i = 0; i < items.Count; ++i)
+            var i = 1;
+            foreach (var item in items)
             {
                 using (var t = p.BeginSubTask(1.0f / items.Count, $"Writing data for item {i}/{items.Count}"))
                 {
                     // Get item
-                    var item = items[i];
                     var itemOffset = nextDataOffset;
                     var itemSize = item.DataSource.Size;
 
@@ -506,8 +510,11 @@ namespace VictorBush.Ego.NefsLib.IO
                     nextDataOffset = await this.WriteItemAsync(stream, itemOffset, item, p);
 
                     // Update item data source to point to the newly written data
-                    item.DataSource = new NefsItemListDataSource(items, itemOffset, itemSize);
+                    var dataSource = new NefsItemListDataSource(items, itemOffset, itemSize);
+                    item.UpdateDataSource(dataSource, NefsItemState.None);
                 }
+
+                i++;
             }
 
             // Return the next data offset, which is the end of the written data

@@ -13,10 +13,11 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
         public void CreateHeaderFromFile_ItemIsCompressed_ItemCreated()
         {
             var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
-            var item = NefsItem.CreateFromHeader(new NefsItemId(TestArchiveNotModified.File2ItemId), nefs.Header, nefs.Items);
+            var itemId = new NefsItemId(TestArchiveNotModified.File2ItemId);
+            var item = NefsItem.CreateFromHeader(itemId, nefs.Header, nefs.Items);
 
             // File2 is compressed
-            var expected = nefs.Items[(int)TestArchiveNotModified.File2ItemId];
+            var expected = nefs.Items[itemId];
             Assert.Equal(expected.CompressedSize, item.CompressedSize);
             Assert.Equal(expected.DirectoryId, item.DirectoryId);
             Assert.Equal(expected.ExtractedSize, item.ExtractedSize);
@@ -40,9 +41,10 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
         public void CreateHeaderFromFile_ItemIsDirectory_ItemCreated()
         {
             var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
-            var item = NefsItem.CreateFromHeader(new NefsItemId(TestArchiveNotModified.Dir1ItemId), nefs.Header, nefs.Items);
+            var itemId = new NefsItemId(TestArchiveNotModified.Dir1ItemId);
+            var item = NefsItem.CreateFromHeader(itemId, nefs.Header, nefs.Items);
 
-            var expected = nefs.Items[(int)TestArchiveNotModified.Dir1ItemId];
+            var expected = nefs.Items[itemId];
             Assert.Equal(0U, item.CompressedSize);
             Assert.Equal(expected.DirectoryId, item.DirectoryId);
             Assert.Equal(0U, item.ExtractedSize);
@@ -65,10 +67,11 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
         public void CreateHeaderFromFile_ItemIsNotCompressed_ItemCreated()
         {
             var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
-            var item = NefsItem.CreateFromHeader(new NefsItemId(TestArchiveNotModified.File3ItemId), nefs.Header, nefs.Items);
+            var itemId = new NefsItemId(TestArchiveNotModified.File3ItemId);
+            var item = NefsItem.CreateFromHeader(itemId, nefs.Header, nefs.Items);
 
             // File3 is not compressed
-            var expected = nefs.Items[(int)TestArchiveNotModified.File3ItemId];
+            var expected = nefs.Items[itemId];
             Assert.Equal(expected.CompressedSize, item.CompressedSize);
             Assert.Equal(expected.DirectoryId, item.DirectoryId);
             Assert.Equal(expected.ExtractedSize, item.ExtractedSize);

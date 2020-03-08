@@ -7,7 +7,7 @@ namespace VictorBush.Ego.NefsLib.Item
     /// <summary>
     /// A unique identifier for an item in a NeFS archive.
     /// </summary>
-    public struct NefsItemId
+    public struct NefsItemId : IComparable<NefsItemId>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsItemId"/> struct.
@@ -38,6 +38,12 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <param name="b">The second id.</param>
         /// <returns>True if the ids are equal.</returns>
         public static bool operator ==(NefsItemId a, NefsItemId b) => a.Value == b.Value;
+
+        /// <inheritdoc/>
+        public Int32 CompareTo(NefsItemId other)
+        {
+            return this.Value.CompareTo(other.Value);
+        }
 
         /// <inheritdoc/>
         public override bool Equals(object obj) => obj is NefsItemId id && id == this;

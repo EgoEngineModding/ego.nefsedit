@@ -1,19 +1,23 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using System.Xml;
+﻿// See LICENSE.txt for license information.
 
 namespace VictorBush.Ego.NefsEdit.Utility
 {
-    class Settings
-    {
-        public static string QuickExtractDir = "";
+    using System;
+    using System.IO;
+    using System.Windows.Forms;
+    using System.Xml;
 
-        private static string _settingsFileName = Path.Combine(Application.StartupPath, "settings.xml");
+    /// <summary>
+    /// Settings things.
+    /// </summary>
+    internal class Settings
+    {
+        private static string settingsFileName = Path.Combine(Application.StartupPath, "settings.xml");
+
+        /// <summary>
+        /// Quick extract.
+        /// </summary>
+        public static string QuickExtractDir { get; private set; }
 
         /// <summary>
         /// Prompts user to select a directory to use for quick extraction.
@@ -45,14 +49,14 @@ namespace VictorBush.Ego.NefsEdit.Utility
         {
             var settingsFileNeedsCleaned = false;
 
-            if (!File.Exists(_settingsFileName))
+            if (!File.Exists(settingsFileName))
             {
                 /* Settings file doesn't exist, create it */
                 ResetSettings();
             }
 
             var xmlDoc = new XmlDocument();
-            xmlDoc.Load(_settingsFileName);
+            xmlDoc.Load(settingsFileName);
 
             try
             {
@@ -71,6 +75,15 @@ namespace VictorBush.Ego.NefsEdit.Utility
         }
 
         /// <summary>
+        /// Resets application settings to default.
+        /// </summary>
+        public static void ResetSettings()
+        {
+            QuickExtractDir = "";
+            SaveSettings();
+        }
+
+        /// <summary>
         /// Saves the current settings to the settings file.
         /// </summary>
         public static void SaveSettings()
@@ -85,16 +98,7 @@ namespace VictorBush.Ego.NefsEdit.Utility
 
             /* Save */
             xmlDoc.AppendChild(settingsElement);
-            xmlDoc.Save(_settingsFileName);
-        }
-
-        /// <summary>
-        /// Resets application settings to default.
-        /// </summary>
-        public static void ResetSettings()
-        {
-            QuickExtractDir = "";
-            SaveSettings();
+            xmlDoc.Save(settingsFileName);
         }
     }
 }

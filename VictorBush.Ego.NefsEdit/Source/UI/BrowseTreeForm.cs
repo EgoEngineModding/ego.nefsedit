@@ -1,40 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using VictorBush.Ego.NefsEdit.Utility;
-using VictorBush.Ego.NefsEdit.Workspace;
-using VictorBush.Ego.NefsLib;
-using VictorBush.Ego.NefsLib.Item;
-using WeifenLuo.WinFormsUI.Docking;
+﻿// See LICENSE.txt for license information.
 
 namespace VictorBush.Ego.NefsEdit.UI
 {
+    using System;
+    using System.Collections.Generic;
+    using System.Data;
+    using System.Drawing;
+    using System.Linq;
+    using System.Windows.Forms;
+    using VictorBush.Ego.NefsEdit.Utility;
+    using VictorBush.Ego.NefsEdit.Workspace;
+    using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.Item;
+    using WeifenLuo.WinFormsUI.Docking;
+
+    /// <summary>
+    /// Displays archive with tree browser.
+    /// </summary>
     internal partial class BrowseTreeForm : DockContent
     {
-        //NefsArchive _archive;
-        //NefsItem _dir;
-        
-
-        /// <summary>
-        /// Gets the current directory. Will be null if the root directory.
-        /// </summary>
-        private NefsItem Directory { get; set; }
-
-        private INefsEditWorkspace Workspace { get; }
-
         /// <summary>
         /// Initializes a new instance of the <see cref="BrowseTreeForm"/> class.
         /// </summary>
         /// <param name="workspace">The workspace to use.</param>
-        internal BrowseTreeForm(INefsEditWorkspace workspace)
+        /// <param name="editorForm">The editor form.</param>
+        internal BrowseTreeForm(INefsEditWorkspace workspace, EditorForm editorForm)
         {
             this.InitializeComponent();
+            this.EditorForm = editorForm ?? throw new ArgumentNullException(nameof(editorForm));
             this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
             this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
 
@@ -45,18 +38,76 @@ namespace VictorBush.Ego.NefsEdit.UI
                 new ColumnHeader() { Name = "filename", Text = "Name", Width = 200 },
                 new ColumnHeader() { Name = "compressedSize", Text = "Compressed Size" },
                 new ColumnHeader() { Name = "extractedSize", Text = "Extracted Size" },
-
             };
 
             this.filesListView.Columns.AddRange(columns);
         }
 
-        private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+        /// <summary>
+        /// Gets the current directory. Will be null if the root directory.
+        /// </summary>
+        private NefsItem Directory { get; set; }
+
+        private EditorForm EditorForm { get; }
+
+        private INefsEditWorkspace Workspace { get; }
+
+        private void AddSubItem(ListViewItem item, string name, string text)
         {
-            this.Workspace.UiService.Dispatcher.Invoke(() =>
+            item.SubItems.Add(new ListViewItem.ListViewSubItem()
             {
-                this.LoadArchive(this.Workspace.Archive);
+                Name = name,
+                Text = text,
             });
+        }
+
+        private void DirectoryTreeView_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            if (e.Node != null)
+            {
+                this.OpenDirectory((NefsItem)e.Node.Tag);
+            }
+        }
+
+        private void FilesListView_DoubleClick(object sender, EventArgs e)
+        {
+            if (this.filesListView.SelectedItems.Count > 0)
+            {
+                var item = this.filesListView.SelectedItems[0].Tag as NefsItem;
+                if (item.Type == NefsItemType.Directory)
+                {
+                    this.OpenDirectory(item);
+                }
+            }
+        }
+
+        private void FilesListView_MouseUp(object sender, MouseEventArgs e)
+        {
+            // Show context menu if an item is right-clicked
+            if (e.Button == MouseButtons.Right)
+            {
+                this.EditorForm.ShowItemContextMenu(Cursor.Position);
+            }
+        }
+
+        private void FilesListView_SelectedIndexChanged(object sender, EventArgs e)
+        {
+            var selectedItems = this.filesListView.SelectedItems;
+            if (selectedItems.Count == 0)
+            {
+                return;
+            }
+
+            /* Build a list of selected NefsItems */
+            var selectedNefsItems = new List<NefsItem>();
+
+            foreach (ListViewItem item in this.filesListView.SelectedItems)
+            {
+                selectedNefsItems.Add(item.Tag as NefsItem);
+            }
+
+            // Tell the editor what items are selected
+            this.Workspace.SelectItems(selectedNefsItems);
         }
 
         private void LoadArchive(NefsArchive archive)
@@ -105,6 +156,13 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.OpenDirectory(null);
         }
 
+        private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+        {
+            this.Workspace.UiService.Dispatcher.Invoke(() =>
+            {
+                this.LoadArchive(this.Workspace.Archive);
+            });
+        }
 
         /// <summary>
         /// Opens a directory in the archive for viewing.
@@ -118,15 +176,15 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.Directory = dir;
             if (dir == null)
             {
-                /* Display contents of root */
+                // Display contents of root
                 itemsInDir = (from item in archive.Items
                               where item.Id == item.DirectoryId
                               select item).ToList();
 
-                /* Clear the directory contents list view */
+                // Clear the directory contents list view
                 this.filesListView.Items.Clear();
 
-                /* This is the root of the archive */
+                // This is the root of the archive
                 this.pathLabel.Text = @"\";
             }
             else
@@ -137,7 +195,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                     MessageBox.Show("TODO: Log this --- can't browse a file.");
                 }
 
-                /* Display contents of specified directory */
+                // Display contents of specified directory
                 itemsInDir = (from item in archive.Items
                               where item.DirectoryId == dir.Id && item.DirectoryId != item.Id
                               select item).ToList();
@@ -145,7 +203,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                 this.pathLabel.Text = @"\" + dir.FilePathInArchive;
             }
 
-            /* Clear the directory contents list view */
+            // Clear the directory contents list view
             this.filesListView.Items.Clear();
 
             // Load all items in the NeFS archive into the listview
@@ -176,88 +234,27 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
         }
 
-        private void AddSubItem(ListViewItem item, string name, string text)
+        private void UpButton_Click(object sender, EventArgs e)
         {
-            item.SubItems.Add(new ListViewItem.ListViewSubItem()
+            if (this.Directory == null)
             {
-                Name = name,
-                Text = text,
-            });
-        }
-
-        private void directoryTreeView_AfterSelect(object sender, TreeViewEventArgs e)
-        {
-            if (e.Node != null)
-            {
-                this.OpenDirectory((NefsItem)e.Node.Tag);
-            }
-        }
-
-        private void filesListView_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            var selectedItems = this.filesListView.SelectedItems;
-            if (selectedItems.Count == 0)
-            {
+                // Can't go up a directory
                 return;
             }
 
-            /* Build a list of selected NefsItems */
-            var selectedNefsItems = new List<NefsItem>();
+            // Find the parent directory
+            var parent = this.Workspace.Archive.Items
+                .Where(i => i.Id == this.Directory.DirectoryId).FirstOrDefault();
 
-            foreach (ListViewItem item in this.filesListView.SelectedItems)
+            if (parent == this.Directory)
             {
-                selectedNefsItems.Add(item.Tag as NefsItem);
+                // If the parent == the current dir, then display root
+                this.OpenDirectory(null);
             }
-
-            // Tell the editor what items are selected
-            this.Workspace.SelectItems(selectedNefsItems);
-        }
-
-        private void filesListView_DoubleClick(object sender, EventArgs e)
-        {
-            if (this.filesListView.SelectedItems.Count > 0)
+            else
             {
-                var item = this.filesListView.SelectedItems[0].Tag as NefsItem;
-                if (item.Type == NefsItemType.Directory)
-                {
-                    this.OpenDirectory(item);
-                }
+                this.OpenDirectory(parent);
             }
-        }
-
-        private void upButton_Click(object sender, EventArgs e)
-        {
-            //if (this.Directory == null)
-            //{
-            //    /* Can't go up a directory */
-            //    return;
-            //}
-
-            ///* Find the parent directory */
-            //var parent = this.Workspace.Archive.Items.GetItem(_dir.DirectoryId);
-
-            //if (parent == _dir)
-            //{
-            //    /* If the parent == the current dir, then display root */
-            //    OpenDirectory(null);
-            //}
-            //else
-            //{
-            //    OpenDirectory(parent);
-            //}
-
-            // TODO : Fixme
-        }
-
-        private void filesListView_MouseUp(object sender, MouseEventArgs e)
-        {
-            ///* Show context menu if an item is right-clicked */
-            //if (e.Button == MouseButtons.Right)
-            //{
-            //    _editor.ShowItemContextMenu(Cursor.Position);
-            //}
-
-            // TODO : Fixme
         }
     }
 }

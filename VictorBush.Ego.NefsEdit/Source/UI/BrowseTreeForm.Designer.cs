@@ -55,9 +55,9 @@
             this.filesListView.TabIndex = 3;
             this.filesListView.UseCompatibleStateImageBehavior = false;
             this.filesListView.View = System.Windows.Forms.View.Details;
-            this.filesListView.SelectedIndexChanged += new System.EventHandler(this.filesListView_SelectedIndexChanged);
-            this.filesListView.DoubleClick += new System.EventHandler(this.filesListView_DoubleClick);
-            this.filesListView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.filesListView_MouseUp);
+            this.filesListView.SelectedIndexChanged += new System.EventHandler(this.FilesListView_SelectedIndexChanged);
+            this.filesListView.DoubleClick += new System.EventHandler(this.FilesListView_DoubleClick);
+            this.filesListView.MouseUp += new System.Windows.Forms.MouseEventHandler(this.FilesListView_MouseUp);
             // 
             // directoryTreeView
             // 
@@ -67,7 +67,7 @@
             this.directoryTreeView.Name = "directoryTreeView";
             this.directoryTreeView.Size = new System.Drawing.Size(226, 674);
             this.directoryTreeView.TabIndex = 2;
-            this.directoryTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.directoryTreeView_AfterSelect);
+            this.directoryTreeView.AfterSelect += new System.Windows.Forms.TreeViewEventHandler(this.DirectoryTreeView_AfterSelect);
             // 
             // splitContainer1
             // 
@@ -129,7 +129,7 @@
             this.upButton.Name = "upButton";
             this.upButton.Size = new System.Drawing.Size(23, 22);
             this.upButton.Text = "toolStripButton1";
-            this.upButton.Click += new System.EventHandler(this.upButton_Click);
+            this.upButton.Click += new System.EventHandler(this.UpButton_Click);
             // 
             // pathLabel
             // 

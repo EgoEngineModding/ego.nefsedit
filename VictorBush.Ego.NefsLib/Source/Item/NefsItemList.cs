@@ -7,11 +7,12 @@ namespace VictorBush.Ego.NefsLib.Item
     using System.Collections.Generic;
 
     /// <summary>
-    /// A list of items in an archive.
+    /// A list of items in an archive. The list is sorted by item id.
     /// </summary>
-    public class NefsItemList : IList<NefsItem>, ICloneable
+    public class NefsItemList : IEnumerable<NefsItem>, ICloneable
     {
-        private List<NefsItem> items;
+        private readonly SortedDictionary<NefsItemId, NefsItem> items =
+            new SortedDictionary<NefsItemId, NefsItem>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsItemList"/> class.
@@ -19,11 +20,12 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <param name="dataFilePath">The path to the file that contains the item data.</param>
         public NefsItemList(string dataFilePath)
         {
-            this.items = new List<NefsItem>();
             this.DataFilePath = dataFilePath;
         }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Gets the number of items in the list.
+        /// </summary>
         public int Count => this.items.Count;
 
         /// <summary>
@@ -32,20 +34,29 @@ namespace VictorBush.Ego.NefsLib.Item
         /// </summary>
         public string DataFilePath { get; }
 
-        /// <inheritdoc/>
-        public bool IsReadOnly => false;
-
-        /// <inheritdoc/>
-        public NefsItem this[int index]
+        /// <summary>
+        /// Gets the item with the specified id.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <returns>The item.</returns>
+        public NefsItem this[NefsItemId id]
         {
-            get => this.items[index];
-            set => this.items[index] = value;
+            get => this.items[id];
+            set => this.items[id] = value;
         }
 
-        /// <inheritdoc/>
-        public void Add(NefsItem item) => this.items.Add(item);
+        /// <summary>
+        /// Adds the item to this list.
+        /// </summary>
+        /// <param name="item">The item to add.</param>
+        public void Add(NefsItem item)
+        {
+            this.items.Add(item.Id, item);
+        }
 
-        /// <inheritdoc/>
+        /// <summary>
+        /// Clears the items list.
+        /// </summary>
         public void Clear() => this.items.Clear();
 
         /// <summary>
@@ -60,35 +71,45 @@ namespace VictorBush.Ego.NefsLib.Item
             // Clone each item and add to new list
             foreach (var item in this.items)
             {
-                var newItem = item.Clone() as NefsItem;
+                var newItem = item.Value.Clone() as NefsItem;
                 newList.Add(newItem);
             }
 
             return newList;
         }
 
-        /// <inheritdoc/>
-        public bool Contains(NefsItem item) => this.items.Contains(item);
+        /// <summary>
+        /// Checks if the item list contains an item with the specified id.
+        /// </summary>
+        /// <param name="id">The id to check.</param>
+        /// <returns>True if the list contains the item id.</returns>
+        public bool ContainsKey(NefsItemId id)
+        {
+            return this.items.ContainsKey(id);
+        }
 
         /// <inheritdoc/>
-        public void CopyTo(NefsItem[] array, int arrayIndex) => this.items.CopyTo(array, arrayIndex);
+        public IEnumerator<NefsItem> GetEnumerator()
+        {
+            return this.items.Values.GetEnumerator();
+        }
 
         /// <inheritdoc/>
-        public IEnumerator<NefsItem> GetEnumerator() => this.items.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
 
-        /// <inheritdoc/>
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
-
-        /// <inheritdoc/>
-        public int IndexOf(NefsItem item) => this.items.IndexOf(item);
-
-        /// <inheritdoc/>
-        public void Insert(int index, NefsItem item) => this.items.Insert(index, item);
-
-        /// <inheritdoc/>
-        public bool Remove(NefsItem item) => this.items.Remove(item);
-
-        /// <inheritdoc/>
-        public void RemoveAt(int index) => this.items.RemoveAt(index);
+        /// <summary>
+        /// Removes the item with the specified id.
+        /// </summary>
+        /// <param name="id">The id of the item to remove.</param>
+        public void Remove(NefsItemId id)
+        {
+            if (this.items.ContainsKey(id))
+            {
+                this.items.Remove(id);
+            }
+        }
     }
 }

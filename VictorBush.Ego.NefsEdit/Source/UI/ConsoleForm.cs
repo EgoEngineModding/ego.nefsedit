@@ -1,37 +1,33 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Reflection;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using VictorBush.Ego.NefsEdit.Utility;
-using WeifenLuo.WinFormsUI.Docking;
+﻿// See LICENSE.txt for license information.
 
 namespace VictorBush.Ego.NefsEdit.UI
 {
+    using System;
+    using VictorBush.Ego.NefsEdit.Utility;
+    using WeifenLuo.WinFormsUI.Docking;
+
+    /// <summary>
+    /// Console output form.
+    /// </summary>
     public partial class ConsoleForm : DockContent
     {
-        RichTextWriter _writer;
+        private RichTextWriter writer;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ConsoleForm"/> class.
+        /// </summary>
         public ConsoleForm()
         {
-            InitializeComponent();
+            this.InitializeComponent();
         }
 
         /// <summary>
-        /// Sets the application's standard output to write to the form's RichTextBox 
-        /// control.
+        /// Sets the application's standard output to write to the form's RichTextBox control.
         /// </summary>
         public void SetupConsole()
         {
-            _writer = new RichTextWriter(richTextBox);
-            Console.SetOut(_writer);
+            this.writer = new RichTextWriter(this.richTextBox);
+            Console.SetOut(this.writer);
         }
     }
 }

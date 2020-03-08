@@ -28,9 +28,29 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         event EventHandler ArchiveOpened;
 
         /// <summary>
+        /// Raised when an archive is saved.
+        /// </summary>
+        event EventHandler ArchiveSaved;
+
+        /// <summary>
+        /// Raised when items are selected or de-selected.
+        /// </summary>
+        event EventHandler SelectedItemsChanged;
+
+        /// <summary>
         /// Gets the current open archive.
         /// </summary>
         NefsArchive Archive { get; }
+
+        /// <summary>
+        /// Gest the path to the archive file.
+        /// </summary>
+        string ArchiveFilePath { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether the archive has unsaved modifications.
+        /// </summary>
+        bool ArchiveIsModified { get; }
 
         /// <summary>
         /// Gets the file system.
@@ -53,6 +73,11 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         IProgressService ProgressService { get; }
 
         /// <summary>
+        /// Gets the list of currently selected items.
+        /// </summary>
+        IReadOnlyList<NefsItem> SelectedItems { get; }
+
+        /// <summary>
         /// Gets the UI service.
         /// </summary>
         IUiService UiService { get; }
@@ -62,6 +87,14 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// </summary>
         /// <returns>True if the archive was closed; false otherwise.</returns>
         Task<bool> CloseArchiveAsync();
+
+        /// <summary>
+        /// Shows a dialog to allow the user to choose where to save the file(s) and extracts them
+        /// to the desired location.
+        /// </summary>
+        /// <param name="items">The items to extract.</param>
+        /// <returns>True if the items are extracted.</returns>
+        Task<bool> ExtractItemsByDialogAsync(IReadOnlyList<NefsItem> items);
 
         /// <summary>
         /// Opens the specified archive.
@@ -77,10 +110,43 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         Task<bool> OpenArchiveByDialogAsync();
 
         /// <summary>
+        /// Shows an open file dialog so the user can choose a file to replace the specified item with.
+        /// </summary>
+        /// <param name="item">The item to replace.</param>
+        /// <returns>True if item was marked for replacement.</returns>
+        bool ReplaceItemByDialog(NefsItem item);
+
+        /// <summary>
+        /// Shows an open file dialog so the user can choose a file to replace the currently
+        /// selected item with.
+        /// </summary>
+        /// <returns>True if item was marked for replacement.</returns>
+        bool ReplaceSeletedItemByDialog();
+
+        /// <summary>
+        /// Saves the currently open archive to the last known location.
+        /// </summary>
+        /// <returns>True if the archive is saved.</returns>
+        Task<bool> SaveArchiveAsync();
+
+        /// <summary>
+        /// Saves the currently open archive to the specified location.
+        /// </summary>
+        /// <param name="destFilePath">The file path to save to.</param>
+        /// <returns>True if the archive is saved.</returns>
+        Task<bool> SaveArchiveAsync(string destFilePath);
+
+        /// <summary>
+        /// Shows a save file dialog to allow the user to choose where to save the archive file.
+        /// </summary>
+        /// <returns>True if the archive is saved.</returns>
+        Task<bool> SaveArchiveByDialogAsync();
+
+        /// <summary>
         /// Selects a single item in the workspace.
         /// </summary>
-        /// <param name="items">The item that is now selected.</param>
-        void SelectItem(IEnumerable<NefsItem> items);
+        /// <param name="item">The item that is now selected.</param>
+        void SelectItem(NefsItem item);
 
         /// <summary>
         /// Selects multiple items in the workspace.

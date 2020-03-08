@@ -49,6 +49,13 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Source\Commands\RemoveFileCommand.cs" />
+    <Compile Include="Source\Commands\UndoBuffer.cs" />
+    <Compile Include="Source\Commands\INefsEditCommand.cs" />
+    <Compile Include="Source\Commands\ReplaceFileCommand.cs" />
+    <Compile Include="Source\Services\ISettingsService.cs" />
+    <Compile Include="Source\Services\SettingsService.cs" />
+    <Compile Include="Source\Utility\DialogExtensions.cs" />
     <Compile Include="Source\Workspace\INefsEditWorkspace.cs" />
     <Compile Include="Source\Services\IProgressService.cs" />
     <Compile Include="Source\Services\IUiService.cs" />
@@ -61,7 +68,7 @@
     <Compile Include="Source\UI\EditorForm.Designer.cs">
       <DependentUpon>EditorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Source\Utility\Helpers.cs" />
+    <Compile Include="Source\Utility\TreeNodeExtensions.cs" />
     <Compile Include="Source\Utility\HexStringTypeConverter.cs" />
     <Compile Include="Source\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

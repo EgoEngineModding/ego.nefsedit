@@ -23,9 +23,11 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// Initializes a new instance of the <see cref="BrowseAllForm"/> class.
         /// </summary>
         /// <param name="workspace">The workspace to use.</param>
-        internal BrowseAllForm(INefsEditWorkspace workspace)
+        /// <param name="editorForm">The editor form.</param>
+        internal BrowseAllForm(INefsEditWorkspace workspace, EditorForm editorForm)
         {
             this.InitializeComponent();
+            this.EditorForm = editorForm ?? throw new ArgumentNullException(nameof(editorForm));
             this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
             this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
 
@@ -68,6 +70,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.itemsListView.ColumnClick += this.ItemsListView_ColumnClick;
         }
 
+        private EditorForm EditorForm { get; }
+
         private INefsEditWorkspace Workspace { get; }
 
         private void AddSubItem(ListViewItem item, string name, string text)
@@ -105,18 +109,16 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.itemsListView.Sort();
         }
 
-        private void itemsListView_MouseUp(object sender, MouseEventArgs e)
+        private void ItemsListView_MouseUp(object sender, MouseEventArgs e)
         {
-            /* Show context menu if an item is right-clicked */
-            //if (e.Button == MouseButtons.Right)
-            //{
-            //    _editor.ShowItemContextMenu(Cursor.Position);
-            //}
-
-            // TODO : Fixme
+            // Show context menu if an item is right-clicked
+            if (e.Button == MouseButtons.Right)
+            {
+                this.EditorForm.ShowItemContextMenu(Cursor.Position);
+            }
         }
 
-        private void itemsListView_SelectedIndexChanged(object sender, EventArgs e)
+        private void ItemsListView_SelectedIndexChanged(object sender, EventArgs e)
         {
             var selectedItems = this.itemsListView.SelectedItems;
             if (selectedItems.Count == 0)

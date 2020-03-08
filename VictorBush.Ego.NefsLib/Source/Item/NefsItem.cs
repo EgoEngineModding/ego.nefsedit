@@ -3,7 +3,6 @@
 namespace VictorBush.Ego.NefsLib.Item
 {
     using System;
-    using System.Diagnostics;
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.Header;
     using VictorBush.Ego.NefsLib.Utility;
@@ -35,7 +34,7 @@ namespace VictorBush.Ego.NefsLib.Item
             this.Id = id;
             this.DirectoryId = directoryId;
             this.Type = type;
-            this.DataSource = dataSource;
+            this.DataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
 
             // Unknown data
             this.Part6Unknown0x00 = unknownData.Part6Unknown0x00;
@@ -46,8 +45,8 @@ namespace VictorBush.Ego.NefsLib.Item
             this.Part7Unknown0x04 = unknownData.Part7Unknown0x04;
 
             // Save file name
-            this.FileName = fileName;
-            this.FilePathInArchive = filePathInArchive;
+            this.FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
+            this.FilePathInArchive = filePathInArchive ?? throw new ArgumentNullException(nameof(filePathInArchive));
 
             // Compute file path hash
             this.FilePathInArchiveHash = HashHelper.HashStringMD5(this.FilePathInArchive);
@@ -59,9 +58,9 @@ namespace VictorBush.Ego.NefsLib.Item
         public UInt32 CompressedSize => this.DataSource?.Size.Size ?? 0;
 
         /// <summary>
-        /// The data source for the new data for this item.
+        /// The current data source for this item.
         /// </summary>
-        public INefsDataSource DataSource { get; internal set; }
+        public INefsDataSource DataSource { get; private set; }
 
         /// <summary>
         /// The id of the directory item this item is in. When the item is in the root directory,
@@ -129,7 +128,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// The modification state of the item. Represents any pending changes to this item. Pending
         /// changes are applied when the archive is saved.
         /// </summary>
-        public NefsItemState State { get; internal set; }
+        public NefsItemState State { get; private set; }
 
         /// <summary>
         /// The type of item this is.
@@ -224,19 +223,30 @@ namespace VictorBush.Ego.NefsLib.Item
         }
 
         /// <summary>
-        /// Flags the item to have it's file data replaced when the archive is written. If
-        /// compression is desired, the file data will be compressed when the archive is written.
+        /// Updates the data source for the item and the item's state. If the data source has
+        /// changed, the new item data will be written to the archive when it is saved. If
+        /// compression is required, the file data will be compressed when the archive is written.
         /// </summary>
-        /// <param name="dataSource">The new data source for the item.</param>
-        public void ReplaceFile(INefsDataSource dataSource)
+        /// <param name="dataSource">The new data source to use.</param>
+        /// <param name="state">The new item state.</param>
+        public void UpdateDataSource(INefsDataSource dataSource, NefsItemState state)
         {
             if (this.Type == NefsItemType.Directory)
             {
-                throw new InvalidOperationException($"Cannot perform {nameof(this.ReplaceFile)} on a directory.");
+                throw new InvalidOperationException($"Cannot perform {nameof(this.UpdateDataSource)} on a directory.");
             }
 
-            this.DataSource = dataSource;
-            this.State = NefsItemState.Replaced;
+            this.DataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
+            this.State = state;
+        }
+
+        /// <summary>
+        /// Updates the item state.
+        /// </summary>
+        /// <param name="state">The new state.</param>
+        public void UpdateState(NefsItemState state)
+        {
+            this.State = state;
         }
     }
 }
