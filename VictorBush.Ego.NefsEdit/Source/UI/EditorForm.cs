@@ -1,54 +1,159 @@
-﻿using log4net;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using VictorBush.Ego.NefsEdit.Utility;
-using VictorBush.Ego.NefsEdit.Workspace;
-using VictorBush.Ego.NefsLib;
-using VictorBush.Ego.NefsLib.DataSource;
-using VictorBush.Ego.NefsLib.Item;
-using VictorBush.Ego.NefsLib.Progress;
+﻿// See LICENSE.txt for license information.
 
 namespace VictorBush.Ego.NefsEdit.UI
 {
+    using System;
+    using System.Drawing;
+    using System.Windows.Forms;
+    using VictorBush.Ego.NefsEdit.Services;
+    using VictorBush.Ego.NefsEdit.Utility;
+    using VictorBush.Ego.NefsEdit.Workspace;
+    using VictorBush.Ego.NefsLib.Item;
+
+    /// <summary>
+    /// Main application form.
+    /// </summary>
     internal partial class EditorForm : Form
     {
-        private static readonly ILog Log = LogHelper.GetLogger();
-
         private PropertyGridForm archivePropertyForm;
         private BrowseAllForm browseAllForm;
         private BrowseTreeForm browseTreeForm;
         private ConsoleForm consoleForm;
-
         private PropertyGridForm selectedFilePropertyForm;
-
-        /// <summary>
-        /// Gets the workspace.
-        /// </summary>
-        private INefsEditWorkspace Workspace { get; }
-
 
         /// <summary>
         /// Initializes a new instance of the <see cref="EditorForm"/> class.
         /// </summary>
         /// <param name="workspace">The workspace to use.</param>
-        public EditorForm(INefsEditWorkspace workspace)
+        /// <param name="uiService">The UI service to use.</param>
+        /// <param name="settingsService">The settings service to use.</param>
+        public EditorForm(
+            INefsEditWorkspace workspace,
+            IUiService uiService,
+            ISettingsService settingsService)
         {
             this.InitializeComponent();
+            this.UiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
+            this.SettingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
 
             this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
             this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
             this.Workspace.ArchiveClosed += this.OnWorkspaceArchiveClosed;
             this.Workspace.ArchiveSaved += this.OnWorkspaceArchiveSaved;
             this.Workspace.SelectedItemsChanged += this.OnWorkspaceSelectedItemsChanged;
+        }
+
+        private ISettingsService SettingsService { get; }
+
+        private IUiService UiService { get; }
+
+        /// <summary>
+        /// Gets the workspace.
+        /// </summary>
+        private INefsEditWorkspace Workspace { get; }
+
+        /// <summary>
+        /// Opens the item context menu if there is an item selected.
+        /// </summary>
+        /// <param name="position">Where to open the menu at.</param>
+        public void ShowItemContextMenu(Point position)
+        {
+            if (this.Workspace.SelectedItems.Count == 0)
+            {
+                return;
+            }
+
+            /* Show the context menu */
+            this.itemContextMenuStrip.Show(position);
+        }
+
+        private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.UiService.ShowMessageBox($"Version {Application.ProductVersion}");
+        }
+
+        private void ArchiveDetailsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.archivePropertyForm.Show();
+            this.archivePropertyForm.Focus();
+        }
+
+        private void ConsoleToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.consoleForm.Show();
+            this.consoleForm.Focus();
+        }
+
+        private void DebugViewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.browseAllForm.Show();
+            this.browseAllForm.Focus();
+        }
+
+        private void EditorForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            this.Quit(e);
+        }
+
+        private void EditorForm_Load(object sender, EventArgs e)
+        {
+            // TODO : Startup items
+            // - verify write access / admin privellegeee?
+            // - try to find location of DiRT 4 in steamapps folder? https://stackoverflow.com/questions/29036572/how-to-find-the-path-to-steams-sourcemods-folder
+
+            // Load settings
+            Settings.LoadSettings();
+
+            // Set the dockpanel theme
+            var theme = new WeifenLuo.WinFormsUI.Docking.VS2015LightTheme();
+            this.browserDockPanel.Theme = theme;
+
+            // Create the different forms for the editor
+            this.browseAllForm = new BrowseAllForm(this.Workspace, this, this.UiService);
+            this.browseTreeForm = new BrowseTreeForm(this.Workspace, this, this.UiService);
+            this.selectedFilePropertyForm = new PropertyGridForm();
+            this.archivePropertyForm = new PropertyGridForm();
+            this.consoleForm = new ConsoleForm();
+
+            // Redirect standard output to our console form
+            this.consoleForm.SetupConsole();
+
+            // Reset the form layout to the default layout
+            this.ResetToDefaultLayout();
+        }
+
+        private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // Quit the application
+            Application.Exit();
+        }
+
+        private void ExtractToContextMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Workspace.ExtractItemsByDialogAsync(this.Workspace.SelectedItems);
+        }
+
+        private void ExtractToToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Workspace.ExtractItemsByDialogAsync(this.Workspace.SelectedItems);
+        }
+
+        private void ItemDetailsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.selectedFilePropertyForm.Show();
+            this.selectedFilePropertyForm.Focus();
+        }
+
+        private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+        {
+            this.archivePropertyForm.SetSelectedObject(null);
+            this.UpdateTitle();
+        }
+
+        private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+        {
+            this.archivePropertyForm.SetSelectedObject(this.Workspace.Archive);
+            this.UpdateTitle();
         }
 
         private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
@@ -93,70 +198,65 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
         }
 
-        private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+        private async void OpenToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.archivePropertyForm.SetSelectedObject(null);
-            this.UpdateTitle();
+            await this.Workspace.OpenArchiveByDialogAsync();
         }
 
-        private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+        private async void QuickExtractContextMenuItem_Click(object sender, EventArgs e)
         {
-            this.archivePropertyForm.SetSelectedObject(this.Workspace.Archive);
-            this.UpdateTitle();
+            await this.Workspace.ExtractItemsByQuickExtractAsync(this.Workspace.SelectedItems);
         }
 
-
-
-        /// <summary>
-        /// Opens the item context menu if there is an item selected.
-        /// </summary>
-        /// <param name="position">Where to open the menu at.</param>
-        public void ShowItemContextMenu(Point position)
+        private async void QuickExtractToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            if (this.Workspace.SelectedItems.Count == 0)
+            await this.Workspace.ExtractItemsByQuickExtractAsync(this.Workspace.SelectedItems);
+        }
+
+        private async void Quit(FormClosingEventArgs e)
+        {
+            if (this.Workspace.Archive == null || !this.Workspace.ArchiveIsModified)
             {
                 return;
             }
 
-            /* Show the context menu */
-            this.itemContextMenuStrip.Show(position);
+            // Archive has been modified; prompt to save before exit
+            var result = this.UiService.ShowMessageBox(
+                $"Save archive {this.Workspace.ArchiveFilePath}?", "Save?", MessageBoxButtons.YesNoCancel);
+
+            if (result == DialogResult.Yes)
+            {
+                // Cancel exiting the application - we need to wait for the save to finish
+                if (e != null)
+                {
+                    e.Cancel = true;
+                }
+
+                /* Trigger the save */
+                var saved = await this.Workspace.SaveArchiveAsync();
+                if (saved)
+                {
+                    /* Saved successfully, quit now */
+                    Application.Exit();
+                }
+            }
+            else if (result == DialogResult.Cancel)
+            {
+                if (e != null)
+                {
+                    e.Cancel = true;
+                }
+            }
         }
 
-        private void EditorForm_Load(object sender, EventArgs e)
+        private void ReplaceToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // TODO : Startup items
-            //  - verify write access / admin privellegeee?
-            // - try to find location of DiRT 4 in steamapps folder? https://stackoverflow.com/questions/29036572/how-to-find-the-path-to-steams-sourcemods-folder
-
-            // Load settings
-            Settings.LoadSettings();
-
-            // Set the dockpanel theme
-            var theme = new WeifenLuo.WinFormsUI.Docking.VS2015LightTheme();
-            this.browserDockPanel.Theme = theme;
-
-            // Create the different forms for the editor
-            this.browseAllForm = new BrowseAllForm(this.Workspace, this);
-            this.browseTreeForm = new BrowseTreeForm(this.Workspace, this);
-            this.selectedFilePropertyForm = new PropertyGridForm();
-            this.archivePropertyForm = new PropertyGridForm();
-            this.consoleForm = new ConsoleForm();
-
-            // Redirect standard output to our console form
-            this.consoleForm.SetupConsole();
-
-            // Reset the form layout to the default layout
-            this.ResetToDefaultLayout();
-        }
-
-        private void EditorForm_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            //quit(e);
+            this.Workspace.ReplaceSeletedItemByDialog();
         }
 
         /// <summary>
-        /// Resets the editor form to the default layout with the default windows open
-        /// and docked in their default locations.
+        /// Resets the editor form to the default layout with the default windows open and docked in
+        /// their default locations.
         /// </summary>
         private void ResetToDefaultLayout()
         {
@@ -190,58 +290,26 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.consoleForm.HideOnClose = true;
         }
 
-
-        private async void OpenToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            await this.Workspace.OpenArchiveByDialogAsync();
-        }
-
-
-        private void replaceToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            this.Workspace.ReplaceSeletedItemByDialog();
-        }
-
         private async void SaveAsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             await this.Workspace.SaveArchiveByDialogAsync();
         }
 
-        //private async void quit(FormClosingEventArgs e)
-        //{
-        //    if (_archive != null && _archive.Modified)
-        //    {
-        //        /* Archive has been modified; prompt to save before exit */
-        //        var result = MessageBox.Show(String.Format("Save archive {0}?", _archive.FilePath), 
-        //                                    "Save?", 
-        //                                    MessageBoxButtons.YesNoCancel);
+        private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.Workspace.SaveArchiveAsync();
+        }
 
-        //        if (result == DialogResult.Yes)
-        //        {
-        //            /* Cancel exiting the application - we need to wait for the save to finish */
-        //            if (e != null)
-        //            {
-        //                e.Cancel = true;
-        //            }
+        private void SetExtractionDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.SettingsService.ChooseQuickExtractDir();
+        }
 
-        //            /* Trigger the save */
-        //            var saved = await SaveArchiveAsync(_archive, _archive.FilePath);
-
-        //            if (saved)
-        //            {
-        //                /* Saved successfully, quit now */
-        //                Application.Exit();
-        //            }
-        //        }
-        //        else if (result == DialogResult.Cancel)
-        //        {
-        //            if (e != null)
-        //            {
-        //                e.Cancel = true;
-        //            }
-        //        }
-        //    }
-        //}
+        private void TreeViewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            this.browseTreeForm.Show();
+            this.browseTreeForm.Focus();
+        }
 
         private void UpdateTitle()
         {
@@ -258,82 +326,6 @@ namespace VictorBush.Ego.NefsEdit.UI
 
                 this.Text += this.Workspace.ArchiveFilePath;
             }
-        }
-
-        private void aboutToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            MessageBox.Show(String.Format("Version {0}", Application.ProductVersion));
-        }
-
-        private void archiveDetailsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            archivePropertyForm.Show();
-            archivePropertyForm.Focus();
-        }
-
-        private void consoleToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            consoleForm.Show();
-            consoleForm.Focus();
-        }
-
-        private void debugViewToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            browseAllForm.Show();
-            browseAllForm.Focus();
-        }
-
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            /* Quit the application */
-            Application.Exit();
-        }
-        
-        private void quickExtractContextMenuItem_Click(object sender, EventArgs e)
-        {
-            //ExtractItems(_selectedItems, true);
-        }
-
-        private void quickExtractToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //ExtractItems(_selectedItems, true);
-        }
-
-        private void extractToContextMenuItem_Click(object sender, EventArgs e)
-        {
-            //ExtractItems(_selectedItems, false);
-        }
-
-        private void extractToToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            //ExtractItems(_selectedItems, false);
-        }
-        
-        private void itemDetailsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            selectedFilePropertyForm.Show();
-            selectedFilePropertyForm.Focus();
-        }
-
-        private void ReplaceToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            this.Workspace.ReplaceSeletedItemByDialog();
-        }
-
-        private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            this.Workspace.SaveArchiveAsync();
-        }
-
-        private void TreeViewToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            this.browseTreeForm.Show();
-            this.browseTreeForm.Focus();
-        }
-
-        private void setExtractionDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Settings.ChooseQuickExtractDir();
         }
     }
 }

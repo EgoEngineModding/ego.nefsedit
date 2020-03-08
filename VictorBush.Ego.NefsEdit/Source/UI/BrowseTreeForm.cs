@@ -8,6 +8,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using System.Drawing;
     using System.Linq;
     using System.Windows.Forms;
+    using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsEdit.Workspace;
     using VictorBush.Ego.NefsLib;
@@ -24,10 +25,14 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// </summary>
         /// <param name="workspace">The workspace to use.</param>
         /// <param name="editorForm">The editor form.</param>
-        internal BrowseTreeForm(INefsEditWorkspace workspace, EditorForm editorForm)
+        internal BrowseTreeForm(
+            INefsEditWorkspace workspace,
+            EditorForm editorForm,
+            IUiService uiService)
         {
             this.InitializeComponent();
             this.EditorForm = editorForm ?? throw new ArgumentNullException(nameof(editorForm));
+            this.UiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
             this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
             this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
 
@@ -42,6 +47,8 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             this.filesListView.Columns.AddRange(columns);
         }
+
+        public IUiService UiService { get; }
 
         /// <summary>
         /// Gets the current directory. Will be null if the root directory.
@@ -158,7 +165,8 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
         {
-            this.Workspace.UiService.Dispatcher.Invoke(() =>
+            // Update items list - must do on UI thread
+            this.UiService.Dispatcher.Invoke(() =>
             {
                 this.LoadArchive(this.Workspace.Archive);
             });

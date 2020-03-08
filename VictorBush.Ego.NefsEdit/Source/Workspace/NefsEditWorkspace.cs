@@ -54,8 +54,6 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             this.UndoBuffer = new UndoBuffer();
         }
 
-        private ISettingsService SettingsService { get; }
-
         /// <inheritdoc/>
         public event EventHandler ArchiveClosed;
 
@@ -63,10 +61,10 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         public event EventHandler ArchiveOpened;
 
         /// <inheritdoc/>
-        public event EventHandler SelectedItemsChanged;
+        public event EventHandler ArchiveSaved;
 
         /// <inheritdoc/>
-        public event EventHandler ArchiveSaved;
+        public event EventHandler SelectedItemsChanged;
 
         /// <inheritdoc/>
         public NefsArchive Archive { get; private set; }
@@ -87,43 +85,18 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         public INefsWriter NefsWriter { get; }
 
         /// <inheritdoc/>
-        public IProgressService ProgressService { get; }
-
-        /// <inheritdoc/>
         public IReadOnlyList<NefsItem> SelectedItems => this.selectedItems;
 
-        /// <inheritdoc/>
-        public IUiService UiService { get; }
+        private IProgressService ProgressService { get; }
+
+        private ISettingsService SettingsService { get; }
+
+        private IUiService UiService { get; }
 
         /// <summary>
         /// Gets the undo buffer.
         /// </summary>
         private UndoBuffer UndoBuffer { get; }
-
-        /// <summary>
-        /// Executes a command and adds to the undo buffer.
-        /// </summary>
-        /// <param name="command">The command to execute.</param>
-        public void Execute(INefsEditCommand command)
-        {
-            this.UndoBuffer.Execute(command);
-        }
-
-        /// <summary>
-        /// Performs an undo operation if available.
-        /// </summary>
-        public void Undo()
-        {
-            this.UndoBuffer.Undo();
-        }
-
-        /// <summary>
-        /// Performs a redo operation if available.
-        /// </summary>
-        public void Redo()
-        {
-            this.UndoBuffer.Redo();
-        }
 
         /// <inheritdoc/>
         public async Task<bool> CloseArchiveAsync()
@@ -166,29 +139,10 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             return true;
         }
 
-        //public async Task<bool> ExtractItemsByQuickExtractAsync(IReadOnlyList<NefsItem> items)
-        //{
-        //    throw new NotImplementedException();
-
-        //    // If the quick extract dir doesn't exist, have user choose one
-        //    if (!this.FileSystem.Directory.Exists(this.SettingsService.QuickExtractDir))
-        //    {
-        //        if (!this.SettingsService.ChooseQuickExtractDir())
-        //        {
-        //            // User cancelled the directory selection
-        //            return false;
-        //        }
-        //    }
-        //}
-
-        private async Task<bool> ExtractDirectoryAsync(NefsItem item, string outputDirPath)
+        /// <inheritdoc/>
+        public void Execute(INefsEditCommand command)
         {
-            throw new NotImplementedException();
-        }
-
-        private async Task<bool> ExtractFileAsync(NefsItem item, string outputFilePath)
-        {
-            throw new NotImplementedException();
+            this.UndoBuffer.Execute(command);
         }
 
         /// <inheritdoc/>
@@ -229,28 +183,17 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             //     */
             //    var result = DialogResult.Cancel;
 
-            //    /* Show either a directory chooser or a save file dialog */
-            //    if (items.Count > 1 || items[0].Type == NefsItemType.Directory)
-            //    {
-            //        /* Extracting multiple files or a directory - show folder browser */
-            //        var fbd = new FolderBrowserDialog();
-            //        fbd.Description = "Choose where to extract the items to.";
-            //        fbd.ShowNewFolderButton = true;
+            // /* Show either a directory chooser or a save file dialog */ if (items.Count > 1 ||
+            // items[0].Type == NefsItemType.Directory) { /* Extracting multiple files or a
+            // directory - show folder browser */ var fbd = new FolderBrowserDialog();
+            // fbd.Description = "Choose where to extract the items to."; fbd.ShowNewFolderButton = true;
 
-            //        result = fbd.ShowDialog();
-            //        outputDir = fbd.SelectedPath;
-            //    }
-            //    else
-            //    {
-            //        /* Extracting a file - show a save file dialog*/
-            //        var sfd = new SaveFileDialog();
-            //        sfd.OverwritePrompt = true;
-            //        sfd.FileName = items[0].FileName;
+            // result = fbd.ShowDialog(); outputDir = fbd.SelectedPath; } else { /* Extracting a
+            // file - show a save file dialog*/ var sfd = new SaveFileDialog(); sfd.OverwritePrompt
+            // = true; sfd.FileName = items[0].FileName;
 
-            //        result = sfd.ShowDialog();
-            //        outputDir = Path.GetDirectoryName(sfd.FileName);
-            //        outputFile = Path.GetFileName(sfd.FileName);
-            //    }
+            // result = sfd.ShowDialog(); outputDir = Path.GetDirectoryName(sfd.FileName);
+            // outputFile = Path.GetFileName(sfd.FileName); }
 
             //    if (result != DialogResult.OK)
             //    {
@@ -273,36 +216,20 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             //        var p = progressDialog.ProgressInfo;
             //        var numItems = _selectedItems.Count;
 
-            //        log.Info("----------------------------");
-            //        p.BeginTask(1.0f);
+            // log.Info("----------------------------"); p.BeginTask(1.0f);
 
-            //        /* Extract each item */
-            //        for (int i = 0; i < numItems; i++)
-            //        {
-            //            var item = _selectedItems[i];
-            //            var dir = outputDir;
-            //            var file = outputFile;
+            // /* Extract each item */ for (int i = 0; i < numItems; i++) { var item =
+            // _selectedItems[i]; var dir = outputDir; var file = outputFile;
 
-            //            /* When extracting multiple items or using the quick extraction 
-            //             * directory, use the original filenames and directory structure
-            //             * of the archive */
-            //            if (numItems > 0 || useQuickExtract)
-            //            {
-            //                var dirInArchive = Path.GetDirectoryName(item.FilePathInArchive);
-            //                dir = Path.Combine(outputDir, dirInArchive);
-            //                file = Path.GetFileName(item.FilePathInArchive);
-            //            }
+            // /* When extracting multiple items or using the quick extraction
+            // * directory, use the original filenames and directory structure
+            // * of the archive */ if (numItems > 0 || useQuickExtract) { var dirInArchive =
+            // Path.GetDirectoryName(item.FilePathInArchive); dir = Path.Combine(outputDir,
+            // dirInArchive); file = Path.GetFileName(item.FilePathInArchive); }
 
-            //            log.Info(String.Format("Extracting {0} to {1}...", item.FilePathInArchive, Path.Combine(dir, file)));
-            //            try
-            //            {
-            //                item.Extract(dir, file, p);
-            //            }
-            //            catch (Exception ex)
-            //            {
-            //                log.Error(String.Format("Error extracting item {0}.", item.FilePathInArchive), ex);
-            //            }
-            //        }
+            // log.Info(String.Format("Extracting {0} to {1}...", item.FilePathInArchive,
+            // Path.Combine(dir, file))); try { item.Extract(dir, file, p); } catch (Exception ex) {
+            // log.Error(String.Format("Error extracting item {0}.", item.FilePathInArchive), ex); } }
 
             //        p.EndTask();
             //        log.Info("Extraction finished.");
@@ -315,6 +242,21 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 
             /* Close the progress dialog */
             //progressDialog.Close();
+        }
+
+        public async Task<bool> ExtractItemsByQuickExtractAsync(IReadOnlyList<NefsItem> items)
+        {
+            throw new NotImplementedException();
+
+            // If the quick extract dir doesn't exist, have user choose one
+            if (!this.FileSystem.Directory.Exists(this.SettingsService.QuickExtractDir))
+            {
+                if (!this.SettingsService.ChooseQuickExtractDir())
+                {
+                    // User cancelled the directory selection
+                    return false;
+                }
+            }
         }
 
         /// <inheritdoc/>
@@ -377,6 +319,12 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             }
 
             return await this.OpenArchiveAsync(fileName);
+        }
+
+        /// <inheritdoc/>
+        public void Redo()
+        {
+            this.UndoBuffer.Redo();
         }
 
         /// <inheritdoc/>
@@ -452,6 +400,26 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             throw new NotImplementedException();
         }
 
+        /// <inheritdoc/>
+        public void SelectItem(NefsItem item)
+        {
+            this.SelectItems(new List<NefsItem> { item });
+        }
+
+        /// <inheritdoc/>
+        public void SelectItems(IEnumerable<NefsItem> items)
+        {
+            this.selectedItems = new List<NefsItem>(items);
+            this.SelectedItemsChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+
+        /// <inheritdoc/>
+        public void Undo()
+        {
+            this.UndoBuffer.Undo();
+        }
+
         private async Task<bool> DoSaveArchiveAsync(string destFilePath)
         {
             if (this.Archive == null)
@@ -476,7 +444,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                         this.Archive = await this.NefsWriter.WriteArchiveAsync(destFilePath, this.Archive, p);
                         this.ArchiveFilePath = destFilePath;
 
-                        this.ArchiveOpened?.Invoke(this, EventArgs.Empty);
+                        this.ArchiveSaved?.Invoke(this, EventArgs.Empty);
                         result = true;
 
                         Log.Info($"Archive opened.");
@@ -491,17 +459,14 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             return result;
         }
 
-        /// <inheritdoc/>
-        public void SelectItem(NefsItem item)
+        private async Task<bool> ExtractDirectoryAsync(NefsItem item, string outputDirPath)
         {
-            this.SelectItems(new List<NefsItem> { item });
+            throw new NotImplementedException();
         }
 
-        /// <inheritdoc/>
-        public void SelectItems(IEnumerable<NefsItem> items)
+        private async Task<bool> ExtractFileAsync(NefsItem item, string outputFilePath)
         {
-            this.selectedItems = new List<NefsItem>(items);
-            this.SelectedItemsChanged?.Invoke(this, EventArgs.Empty);
+            throw new NotImplementedException();
         }
     }
 }

@@ -6,6 +6,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using System.Collections.Generic;
     using System.Drawing;
     using System.Windows.Forms;
+    using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsEdit.Workspace;
     using VictorBush.Ego.NefsLib;
@@ -24,10 +25,15 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// </summary>
         /// <param name="workspace">The workspace to use.</param>
         /// <param name="editorForm">The editor form.</param>
-        internal BrowseAllForm(INefsEditWorkspace workspace, EditorForm editorForm)
+        /// <param name="uiService">UI service to use.</param>
+        internal BrowseAllForm(
+            INefsEditWorkspace workspace,
+            EditorForm editorForm,
+            IUiService uiService)
         {
             this.InitializeComponent();
             this.EditorForm = editorForm ?? throw new ArgumentNullException(nameof(editorForm));
+            this.UiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
             this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
             this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
 
@@ -69,6 +75,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.itemsListView.Columns.AddRange(debugColumns);
             this.itemsListView.ColumnClick += this.ItemsListView_ColumnClick;
         }
+
+        public IUiService UiService { get; }
 
         private EditorForm EditorForm { get; }
 
@@ -198,7 +206,8 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
         {
-            this.Workspace.UiService.Dispatcher.Invoke(() =>
+            // Update items list - must do on UI thread
+            this.UiService.Dispatcher.Invoke(() =>
             {
                 this.LoadArchive(this.Workspace.Archive);
             });

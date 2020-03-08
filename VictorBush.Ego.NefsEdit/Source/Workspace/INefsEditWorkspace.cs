@@ -6,7 +6,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
     using System.Collections.Generic;
     using System.IO.Abstractions;
     using System.Threading.Tasks;
-    using VictorBush.Ego.NefsEdit.Services;
+    using VictorBush.Ego.NefsEdit.Commands;
     using VictorBush.Ego.NefsLib;
     using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Item;
@@ -68,19 +68,9 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         INefsWriter NefsWriter { get; }
 
         /// <summary>
-        /// Gets the progress service.
-        /// </summary>
-        IProgressService ProgressService { get; }
-
-        /// <summary>
         /// Gets the list of currently selected items.
         /// </summary>
         IReadOnlyList<NefsItem> SelectedItems { get; }
-
-        /// <summary>
-        /// Gets the UI service.
-        /// </summary>
-        IUiService UiService { get; }
 
         /// <summary>
         /// Closes the current open archive.
@@ -89,12 +79,26 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         Task<bool> CloseArchiveAsync();
 
         /// <summary>
+        /// Executes a command and adds to the undo buffer.
+        /// </summary>
+        /// <param name="command">The command to execute.</param>
+        void Execute(INefsEditCommand command);
+
+        /// <summary>
         /// Shows a dialog to allow the user to choose where to save the file(s) and extracts them
         /// to the desired location.
         /// </summary>
         /// <param name="items">The items to extract.</param>
         /// <returns>True if the items are extracted.</returns>
         Task<bool> ExtractItemsByDialogAsync(IReadOnlyList<NefsItem> items);
+
+        /// <summary>
+        /// Extracts the selected items to the quick extract directory, preserving an directory
+        /// structure from the source archive.
+        /// </summary>
+        /// <param name="items">The items to extract.</param>
+        /// <returns>True if the items were extracted.</returns>
+        Task<bool> ExtractItemsByQuickExtractAsync(IReadOnlyList<NefsItem> items);
 
         /// <summary>
         /// Opens the specified archive.
@@ -108,6 +112,11 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// </summary>
         /// <returns>True if archive was opened.</returns>
         Task<bool> OpenArchiveByDialogAsync();
+
+        /// <summary>
+        /// Performs a redo operation if available.
+        /// </summary>
+        void Redo();
 
         /// <summary>
         /// Shows an open file dialog so the user can choose a file to replace the specified item with.
@@ -153,5 +162,10 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// </summary>
         /// <param name="items">The items that are now selected.</param>
         void SelectItems(IEnumerable<NefsItem> items);
+
+        /// <summary>
+        /// Performs an undo operation if available.
+        /// </summary>
+        void Undo();
     }
 }

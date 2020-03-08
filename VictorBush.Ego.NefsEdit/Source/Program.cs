@@ -66,7 +66,7 @@ namespace VictorBush.Ego.NefsEdit
             // Run application
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new EditorForm(workspace));
+            Application.Run(new EditorForm(workspace, uiService, settingsService));
         }
     }
 }

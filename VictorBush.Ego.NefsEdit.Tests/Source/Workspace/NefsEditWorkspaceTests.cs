@@ -416,9 +416,45 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
         }
 
         [Fact]
-        public void SaveArchiveAsync_SaveFailed_NotSaved()
+        public async Task SaveArchiveAsync_SaveFailed_NotSaved()
         {
-            Assert.True(false);
+            var w = this.CreateWorkspace();
+            var saved = false;
+            w.ArchiveSaved += (o, e) => saved = true;
+
+            // Open an archive
+            var archivePath = @"C:\archive.nefs";
+            var archive = TestHelpers.CreateTestArchive(archivePath);
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archivePath, It.IsAny<NefsProgress>()))
+                .ReturnsAsync(archive);
+            this.fileSystem.AddFile(archivePath, new MockFileData("hi"));
+            await w.OpenArchiveAsync(archivePath);
+
+            Assert.Same(archive, w.Archive);
+            Assert.False(w.ArchiveIsModified);
+
+            // Modify archvie
+            var itemId = new NefsItemId(0);
+            var item = w.Archive.Items[itemId];
+            var cmd = new RemoveFileCommand(item, item.State);
+            w.Execute(cmd);
+
+            // Mock save falied
+            this.nefsWriterMock.Setup(n =>
+                n.WriteArchiveAsync(
+                    It.IsAny<string>(),
+                    It.IsAny<NefsArchive>(),
+                    It.IsAny<NefsProgress>()))
+                .ThrowsAsync(new IOException());
+
+            // Save archive
+            var result = await w.SaveArchiveAsync(archivePath);
+
+            Assert.False(result);
+            Assert.False(saved);
+            Assert.Same(archive, w.Archive);
+            Assert.True(w.ArchiveIsModified);
+            Assert.Equal(archivePath, w.ArchiveFilePath);
         }
 
         [Fact]

@@ -45,7 +45,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             items.Add(this.file3);
 
             var file4DataSource = new NefsItemListDataSource(items, 777, new NefsItemSize(444));
-            this.file4NotCompressed = new NefsItem(new NefsItemId(3), "file4", "file3", this.dir1.Id, NefsItemType.File, file4DataSource, TestHelpers.CreateUnknownData());
+            this.file4NotCompressed = new NefsItem(new NefsItemId(4), "file4", "file3", this.dir1.Id, NefsItemType.File, file4DataSource, TestHelpers.CreateUnknownData());
             items.Add(this.file4NotCompressed);
 
             this.testItems = items;
