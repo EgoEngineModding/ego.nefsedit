@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsLib.IO
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.Threading.Tasks;
     using VictorBush.Ego.NefsLib.DataSource;
@@ -112,6 +113,56 @@ namespace VictorBush.Ego.NefsLib.IO
             string outputFile,
             long outputOffset,
             UInt32 chunkSize,
+            NefsProgress p);
+
+        /// <summary>
+        /// Decompresses a stream of data.
+        /// </summary>
+        /// <param name="input">The input stream to decompress.</param>
+        /// <param name="inputOffset">
+        /// The absolute offset from the beginning of the input stream to decompress.
+        /// </param>
+        /// <param name="chunkSizes">The list of compressed chunk sizes.</param>
+        /// <param name="output">The output stream to write to.</param>
+        /// <param name="outputOffset">
+        /// The absolute offset from the beginning of the output stream to write to.
+        /// </param>
+        /// <param name="p">Progress info.</param>
+        /// <param name="aes256key">The AES 256 key, if the data is encrypted. If not, use null.</param>
+        /// <returns>An async task.</returns>
+        Task DecompressAsync(
+            Stream input,
+            Int64 inputOffset,
+            IReadOnlyList<UInt32> chunkSizes,
+            Stream output,
+            Int64 outputOffset,
+            NefsProgress p,
+            byte[] aes256key = null);
+
+        /// <summary>
+        /// Decompresses a chunk of data.
+        /// </summary>
+        /// <param name="chunk">The compressed chunk.</param>
+        /// <param name="output">The output stream to write to.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>An async Task.</returns>
+        Task DecompressChunkAsync(
+            byte[] chunk,
+            Stream output,
+            NefsProgress p);
+
+        /// <summary>
+        /// Decrypts and decompresses a chunk of data.
+        /// </summary>
+        /// <param name="chunk">The compressed chunk.</param>
+        /// <param name="aes256key">The AES 256 key.</param>
+        /// <param name="output">The output stream to write to.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>An async Task.</returns>
+        Task DecompressChunkAsync(
+            byte[] chunk,
+            byte[] aes256key,
+            Stream output,
             NefsProgress p);
     }
 }
