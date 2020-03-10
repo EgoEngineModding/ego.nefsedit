@@ -17,6 +17,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         internal NefsHeaderPart8()
         {
+            this.AllTheData = new ByteArrayType(0, 4);
         }
 
         /// <summary>

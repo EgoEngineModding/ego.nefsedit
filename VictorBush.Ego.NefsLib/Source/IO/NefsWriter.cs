@@ -506,6 +506,12 @@ namespace VictorBush.Ego.NefsLib.IO
                     var itemOffset = nextDataOffset;
                     var itemSize = item.DataSource.Size;
 
+                    // Nothing to write if item is directory
+                    if (item.Type == NefsItemType.Directory)
+                    {
+                        continue;
+                    }
+
                     // Write out item data
                     nextDataOffset = await this.WriteItemAsync(stream, itemOffset, item, p);
 

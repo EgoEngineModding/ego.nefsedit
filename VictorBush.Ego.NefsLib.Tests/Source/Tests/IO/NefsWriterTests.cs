@@ -24,7 +24,9 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         [Fact]
         public async Task WriteArchiveAsync_ArchiveNotModified_ArchiveWritten()
         {
-            var sourceArchive = TestArchiveNotModified.Create(@"C:\archive.nefs");
+            var sourcePath = @"C:\archive.nefs";
+            this.fileSystem.AddFile(sourcePath, new MockFileData("hi"));
+            var sourceArchive = TestArchiveNotModified.Create(sourcePath);
             var writer = this.CreateWriter();
             var archive = await writer.WriteArchiveAsync(@"C:\dest.nefs", sourceArchive, new NefsProgress());
 
