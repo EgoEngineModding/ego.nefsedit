@@ -136,6 +136,29 @@ namespace VictorBush.Ego.NefsLib.Tests.IO
             }
         }
 
+        [Fact]
+        public async Task DecompressFileAsync_NotEncrypted_DataDecompressed()
+        {
+            const string Data = "Hello. This is the input data. It is not encrypted.";
+            var sourceFilePath = @"C:\source.txt";
+            var compressedFilePath = @"C:\compressed.dat";
+            var destFilePath = @"C:\dest.txt";
+            var chunkSize = 5U;
+
+            this.fileSystem.AddFile(sourceFilePath, new MockFileData(Data));
+
+            // Compress the source data
+            var c = new NefsCompressor(this.fileSystem);
+            var size = await c.CompressFileAsync(sourceFilePath, compressedFilePath, chunkSize, new NefsProgress());
+
+            // Decompress the data
+            await c.DecompressFileAsync(compressedFilePath, 0, size.ChunkSizes, destFilePath, 0, new NefsProgress());
+
+            // Verify
+            var decompressedText = this.fileSystem.File.ReadAllText(destFilePath);
+            Assert.Equal(Data, decompressedText);
+        }
+
         private string PrintByteArray(byte[] bytes)
         {
             var sb = new StringBuilder("new byte[] { ");

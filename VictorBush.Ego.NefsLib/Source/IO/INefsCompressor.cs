@@ -164,5 +164,29 @@ namespace VictorBush.Ego.NefsLib.IO
             byte[] aes256key,
             Stream output,
             NefsProgress p);
+
+        /// <summary>
+        /// Decompresses an input file to an output file.
+        /// </summary>
+        /// <param name="inputFile">The file path that contains the data to decompress.</param>
+        /// <param name="inputOffset">
+        /// The absolute offset from the beginning of the input file to decompress.
+        /// </param>
+        /// <param name="chunkSizes">The list of compressed chunk sizes.</param>
+        /// <param name="outputFile">The output file path to write to.</param>
+        /// <param name="outputOffset">
+        /// The absolute offset from the beginning of the output file to write to.
+        /// </param>
+        /// <param name="p">Progress info.</param>
+        /// <param name="aes256key">The AES 256 key, if the data is encrypted. If not, use null.</param>
+        /// <returns>An async Task.</returns>
+        Task DecompressFileAsync(
+            string inputFile,
+            Int64 inputOffset,
+            IReadOnlyList<UInt32> chunkSizes,
+            string outputFile,
+            Int64 outputOffset,
+            NefsProgress p,
+            byte[] aes256key = null);
     }
 }

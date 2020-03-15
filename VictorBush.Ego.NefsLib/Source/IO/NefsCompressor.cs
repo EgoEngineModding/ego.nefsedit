@@ -227,5 +227,23 @@ namespace VictorBush.Ego.NefsLib.IO
                 }
             }
         }
+
+        /// <inheritdoc/>
+        public async Task DecompressFileAsync(
+            string inputFile,
+            Int64 inputOffset,
+            IReadOnlyList<UInt32> chunkSizes,
+            string outputFile,
+            Int64 outputOffset,
+            NefsProgress p,
+            byte[] aes256key = null)
+        {
+            using (var t = p.BeginTask(1.0f, $"Decompressing file {inputFile}."))
+            using (var inputStream = this.FileSystem.File.OpenRead(inputFile))
+            using (var outputStream = this.FileSystem.File.OpenWrite(outputFile))
+            {
+                await this.DecompressAsync(inputStream, inputOffset, chunkSizes, outputStream, outputOffset, p);
+            }
+        }
     }
 }
