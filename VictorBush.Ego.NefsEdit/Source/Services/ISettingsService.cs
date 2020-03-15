@@ -17,5 +17,15 @@ namespace VictorBush.Ego.NefsEdit.Services
         /// </summary>
         /// <returns>True if the directory was chosen.</returns>
         bool ChooseQuickExtractDir();
+
+        /// <summary>
+        /// Loads settings from disk or loads defaults.
+        /// </summary>
+        void Load();
+
+        /// <summary>
+        /// Saves the settings file to disk.
+        /// </summary>
+        void Save();
     }
 }

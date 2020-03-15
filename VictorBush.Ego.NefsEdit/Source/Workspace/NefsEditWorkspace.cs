@@ -162,10 +162,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 return false;
             }
 
-            // Build a list of items to extract (paired with the path where to extract them)
+            // Build a list of files to extract (paired with the path where to extract them)
             var extractionList = new List<(NefsItem Item, string FilePath)>();
-            var outputDir = "";
-            var result = DialogResult.Cancel;
 
             // Show either a directory chooser or a save file dialog
             if (items.Count == 1 && items[0].Type == NefsItemType.File)
@@ -174,9 +172,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 Extracting a single file
                 */
                 var item = items[0];
-                var outputFilePath = "";
 
-                (result, outputFilePath) = this.UiService.ShowSaveFileDialog(item.FileName);
+                var (result, outputFilePath) = this.UiService.ShowSaveFileDialog(item.FileName);
                 if (result != DialogResult.OK)
                 {
                     // User canceled the dialog box
@@ -190,7 +187,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 /*
                 Extracting multiple items or a single directory, show folder browser dialog
                 */
-                (result, outputDir) = this.UiService.ShowFolderBrowserDialog("Choose where to extract the items to.");
+                var (result, outputDir) = this.UiService.ShowFolderBrowserDialog("Choose where to extract the items to.");
                 if (result != DialogResult.OK)
                 {
                     // User canceled the dialog box
@@ -204,39 +201,13 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 }
             }
 
-            // Create progress dialog
-            await this.ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
-            {
-                var numToExtract = extractionList.Count;
-
-                using (var t = p.BeginTask(1.0f))
-                {
-                    Log.Info("----------------------------");
-                    Log.Info($"Extracting {numToExtract} items...");
-
-                    for (var i = 0; i < extractionList.Count; ++i)
-                    {
-                        var (item, filePath) = extractionList[i];
-                        var dir = Path.GetDirectoryName(filePath);
-
-                        using (var tt = p.BeginTask(1.0f / numToExtract, $"({i + 1}/{numToExtract}) Extracting '{item.FileName}'..."))
-                        {
-                            await this.ExtractFileAsync(item, filePath, p);
-                        }
-                    }
-
-                    Log.Info("Extraction complete.");
-                }
-            }));
-
-            return true;
+            // Extract the files
+            return await this.ExtractFilesAsync(extractionList);
         }
 
         /// <inheritdoc/>
         public async Task<bool> ExtractItemsByQuickExtractAsync(IReadOnlyList<NefsItem> items)
         {
-            throw new NotImplementedException();
-
             // If the quick extract dir doesn't exist, have user choose one
             if (!this.FileSystem.Directory.Exists(this.SettingsService.QuickExtractDir))
             {
@@ -246,6 +217,23 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                     return false;
                 }
             }
+
+            // Build a list of files to extract (paired with the path where to extract them)
+            var extractionList = new List<(NefsItem Item, string FilePath)>();
+            var baseDir = this.SettingsService.QuickExtractDir;
+
+            foreach (var item in items)
+            {
+                // Use the full path in archive to determine where to extract within the quick
+                // extract dir. The quick extract option preserves the structure of the nefs archive
+                // within the quick extract dir.
+                var fullPath = Path.Combine(baseDir, item.FilePathInArchive);
+                var dir = Path.GetDirectoryName(fullPath);
+                extractionList.AddRange(this.GetExtractionList(item, this.Archive.Items, dir));
+            }
+
+            // Extract the files
+            return await this.ExtractFilesAsync(extractionList);
         }
 
         /// <inheritdoc/>
@@ -475,6 +463,35 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 Log.Error($"Failed to extract item {item.FileName}.\r\n{ex.Message}");
                 return false;
             }
+        }
+
+        private async Task<bool> ExtractFilesAsync(IList<(NefsItem Item, string FilePath)> extractionList)
+        {
+            // Create progress dialog
+            await this.ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
+            {
+                var numToExtract = extractionList.Count;
+
+                using (var t = p.BeginTask(1.0f))
+                {
+                    Log.Info("----------------------------");
+                    Log.Info($"Extracting {numToExtract} items...");
+
+                    for (var i = 0; i < extractionList.Count; ++i)
+                    {
+                        var (item, filePath) = extractionList[i];
+
+                        using (var tt = p.BeginTask(1.0f / numToExtract, $"({i + 1}/{numToExtract}) Extracting '{item.FileName}'..."))
+                        {
+                            await this.ExtractFileAsync(item, filePath, p);
+                        }
+                    }
+
+                    Log.Info("Extraction complete.");
+                }
+            }));
+
+            return true;
         }
 
         /// <summary>

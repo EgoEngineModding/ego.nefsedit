@@ -101,9 +101,6 @@ namespace VictorBush.Ego.NefsEdit.UI
             // - verify write access / admin privellegeee?
             // - try to find location of DiRT 4 in steamapps folder? https://stackoverflow.com/questions/29036572/how-to-find-the-path-to-steams-sourcemods-folder
 
-            // Load settings
-            Settings.LoadSettings();
-
             // Set the dockpanel theme
             var theme = new WeifenLuo.WinFormsUI.Docking.VS2015LightTheme();
             this.browserDockPanel.Theme = theme;
@@ -120,6 +117,9 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             // Reset the form layout to the default layout
             this.ResetToDefaultLayout();
+
+            // Load settings
+            this.SettingsService.Load();
         }
 
         private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
