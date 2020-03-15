@@ -238,7 +238,7 @@ namespace VictorBush.Ego.NefsLib.IO
             NefsProgress p,
             byte[] aes256key = null)
         {
-            using (var t = p.BeginTask(1.0f, $"Decompressing file {inputFile}."))
+            using (var t = p.BeginTask(1.0f))
             using (var inputStream = this.FileSystem.File.OpenRead(inputFile))
             using (var outputStream = this.FileSystem.File.OpenWrite(outputFile))
             {
