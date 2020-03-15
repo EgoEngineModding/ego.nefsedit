@@ -21,6 +21,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
     public class NefsEditWorkspaceTests
     {
         private readonly MockFileSystem fileSystem = new MockFileSystem();
+        private readonly Mock<INefsCompressor> nefsCompressorMock = new Mock<INefsCompressor>();
         private readonly Mock<INefsReader> nefsReaderMock = new Mock<INefsReader>();
         private readonly Mock<INefsWriter> nefsWriterMock = new Mock<INefsWriter>();
         private readonly IProgressService progressService = new InvisibleProgressService();
@@ -502,7 +503,8 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
                 this.uiServiceMock.Object,
                 this.settingsServiceMcok.Object,
                 this.nefsReaderMock.Object,
-                this.nefsWriterMock.Object);
+                this.nefsWriterMock.Object,
+                this.nefsCompressorMock.Object);
         }
 
         private void MockMessageBox(DialogResult result)

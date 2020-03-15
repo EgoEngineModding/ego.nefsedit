@@ -24,6 +24,18 @@ namespace VictorBush.Ego.NefsEdit.Services
         public Dispatcher Dispatcher { get; }
 
         /// <inheritdoc/>
+        public (DialogResult Result, string Path) ShowFolderBrowserDialog(string message)
+        {
+            using (var dialog = new FolderBrowserDialog())
+            {
+                dialog.Description = message;
+                dialog.ShowNewFolderButton = true;
+                var result = dialog.ShowDialog();
+                return (result, dialog.SelectedPath);
+            }
+        }
+
+        /// <inheritdoc/>
         public DialogResult ShowMessageBox(String message, String title = null, MessageBoxButtons buttons = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.None)
         {
             return MessageBox.Show(message, title, buttons, icon);
@@ -32,10 +44,24 @@ namespace VictorBush.Ego.NefsEdit.Services
         /// <inheritdoc/>
         public (DialogResult Result, String FileName) ShowOpenFileDialog()
         {
-            var dialog = new OpenFileDialog();
-            dialog.Multiselect = false;
-            var result = dialog.ShowDialog();
-            return (result, dialog.FileName);
+            using (var dialog = new OpenFileDialog())
+            {
+                dialog.Multiselect = false;
+                var result = dialog.ShowDialog();
+                return (result, dialog.FileName);
+            }
+        }
+
+        /// <inheritdoc/>
+        public (DialogResult Result, string FileName) ShowSaveFileDialog(string defaultName)
+        {
+            using (var dialog = new SaveFileDialog())
+            {
+                dialog.OverwritePrompt = true;
+                dialog.FileName = defaultName;
+                var result = dialog.ShowDialog();
+                return (result, dialog.FileName);
+            }
         }
     }
 }

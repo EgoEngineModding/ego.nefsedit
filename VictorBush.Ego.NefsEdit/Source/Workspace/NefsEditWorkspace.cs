@@ -4,7 +4,9 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 {
     using System;
     using System.Collections.Generic;
+    using System.IO;
     using System.IO.Abstractions;
+    using System.Linq;
     using System.Threading.Tasks;
     using System.Windows.Forms;
     using log4net;
@@ -15,6 +17,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Item;
+    using VictorBush.Ego.NefsLib.Progress;
 
     /// <summary>
     /// Handles archive and item operations.
@@ -34,13 +37,15 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// <param name="settingsService">The settings service to use.</param>
         /// <param name="nefsReader">The nefs reader to use.</param>
         /// <param name="nefsWriter">The nefs wrtier to use.</param>
+        /// <param name="nefsCompressor">The nefs compressor to use.</param>
         public NefsEditWorkspace(
             IFileSystem fileSystem,
             IProgressService progressService,
             IUiService uiService,
             ISettingsService settingsService,
             INefsReader nefsReader,
-            INefsWriter nefsWriter)
+            INefsWriter nefsWriter,
+            INefsCompressor nefsCompressor)
         {
             this.FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             this.ProgressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
@@ -48,6 +53,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             this.SettingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
             this.NefsReader = nefsReader ?? throw new ArgumentNullException(nameof(nefsReader));
             this.NefsWriter = nefsWriter ?? throw new ArgumentNullException(nameof(nefsWriter));
+            this.NefsCompressor = nefsCompressor ?? throw new ArgumentNullException(nameof(nefsCompressor));
 
             this.Archive = null;
             this.ArchiveFilePath = "";
@@ -86,6 +92,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 
         /// <inheritdoc/>
         public IReadOnlyList<NefsItem> SelectedItems => this.selectedItems;
+
+        private INefsCompressor NefsCompressor { get; }
 
         private IProgressService ProgressService { get; }
 
@@ -148,102 +156,114 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// <inheritdoc/>
         public async Task<bool> ExtractItemsByDialogAsync(IReadOnlyList<NefsItem> items)
         {
-            throw new NotImplementedException();
+            if (items == null || items.Count == 0)
+            {
+                this.UiService.ShowMessageBox("No items selected to selected.");
+                return false;
+            }
 
-            //if (items == null || items.Count == 0)
-            //{
-            //    MessageBox.Show("No items selected to selected.");
-            //    return false;
-            //}
+            // Show either a directory chooser or a save file dialog
+            if (items.Count > 1)
+            {
+                /*
+                Extracting multiple items, show folder browser dialog
+                */
+                var (result, outputDir) = this.UiService.ShowFolderBrowserDialog("Choose where to extract the items to.");
 
-            //var outputDir = "";
-            //var outputFile = "";
+                if (result != DialogResult.OK)
+                {
+                    // User canceled the dialog box
+                    return false;
+                }
 
-            //if (useQuickExtract)
-            //{
-            //    /*
-            //     * Use the quick extraction directory
-            //     */
-            //    if (!Directory.Exists(Settings.QuickExtractDir))
-            //    {
-            //        /* Quick extract dir not set, have user choose one */
-            //        if (!Settings.ChooseQuickExtractDir())
-            //        {
-            //            /* User cancelled the directory selection */
-            //            return;
-            //        }
-            //    }
+                // Create progress dialog
+                await this.ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
+                {
+                    using (var t = p.BeginTask(1.0f))
+                    {
+                        Log.Info("----------------------------");
+                        Log.Info($"Extracting {items.Count} items to {outputDir}...");
 
-            //    outputDir = Settings.QuickExtractDir;
-            //}
-            //else
-            //{
-            //    /*
-            //     * Have user choose where to save the items
-            //     */
-            //    var result = DialogResult.Cancel;
+                        for (var i = 0; i < items.Count; ++i)
+                        {
+                            using (var tt = p.BeginSubTask(1.0f / items.Count, $"Extracting item {i + 1}/{items.Count}..."))
+                            {
+                                await this.ExtractItemAsync(items[i], this.Archive.Items, outputDir, p);
+                            }
+                        }
 
-            // /* Show either a directory chooser or a save file dialog */ if (items.Count > 1 ||
-            // items[0].Type == NefsItemType.Directory) { /* Extracting multiple files or a
-            // directory - show folder browser */ var fbd = new FolderBrowserDialog();
-            // fbd.Description = "Choose where to extract the items to."; fbd.ShowNewFolderButton = true;
+                        Log.Info("Extracted successfully.");
+                    }
+                }));
+            }
+            else if (items.Count == 1 && items[0].Type == NefsItemType.Directory)
+            {
+                /*
+                Extracting a single directory, show folder browser dialog
+                */
+                var (result, outputDir) = this.UiService.ShowFolderBrowserDialog("Choose where to extract the items to.");
 
-            // result = fbd.ShowDialog(); outputDir = fbd.SelectedPath; } else { /* Extracting a
-            // file - show a save file dialog*/ var sfd = new SaveFileDialog(); sfd.OverwritePrompt
-            // = true; sfd.FileName = items[0].FileName;
+                if (result != DialogResult.OK)
+                {
+                    // User canceled the dialog box
+                    return false;
+                }
 
-            // result = sfd.ShowDialog(); outputDir = Path.GetDirectoryName(sfd.FileName);
-            // outputFile = Path.GetFileName(sfd.FileName); }
+                // Create progress dialog
+                await this.ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
+                {
+                    var item = items[0];
 
-            //    if (result != DialogResult.OK)
-            //    {
-            //        /* Use canceled the dialog box */
-            //        return;
-            //    }
-            //}
+                    using (var t = p.BeginTask(1.0f, $"Extracting directory '{item.FileName}'"))
+                    {
+                        Log.Info("----------------------------");
+                        Log.Info($"Extracting {item.FileName} to {outputDir}...");
 
-            ///* Create a progress dialog form */
-            //var progressDialog = new ProgressDialogForm(this.Workspace.UiService);
+                        outputDir = Path.Combine(outputDir, item.FileName);
+                        await this.ExtractDirectoryAsync(item, this.Archive.Items, outputDir, p);
 
-            ///* Show the loading dialog asnyc */
-            //var progressDialogTask = progressDialog.ShowDialogAsync();
+                        Log.Info("Extracted successfully.");
+                    }
+                }));
+            }
+            else if (items.Count == 1 && items[0].Type == NefsItemType.File)
+            {
+                /*
+                Extracting a single file
+                */
+                var item = items[0];
+                var (result, outputFile) = this.UiService.ShowSaveFileDialog(item.FileName);
 
-            /* Extract the item */
-            //await Task.Run(() =>
-            //{
-            //    try
-            //    {
-            //        var p = progressDialog.ProgressInfo;
-            //        var numItems = _selectedItems.Count;
+                if (result != DialogResult.OK)
+                {
+                    // User canceled the dialog box
+                    return false;
+                }
 
-            // log.Info("----------------------------"); p.BeginTask(1.0f);
+                // Create progress dialog
+                await this.ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
+                {
+                    using (var t = p.BeginTask(1.0f))
+                    {
+                        Log.Info("----------------------------");
+                        Log.Info($"Extracting {item.FileName} to {outputFile}...");
 
-            // /* Extract each item */ for (int i = 0; i < numItems; i++) { var item =
-            // _selectedItems[i]; var dir = outputDir; var file = outputFile;
+                        await this.ExtractFileAsync(item, outputFile, p);
 
-            // /* When extracting multiple items or using the quick extraction
-            // * directory, use the original filenames and directory structure
-            // * of the archive */ if (numItems > 0 || useQuickExtract) { var dirInArchive =
-            // Path.GetDirectoryName(item.FilePathInArchive); dir = Path.Combine(outputDir,
-            // dirInArchive); file = Path.GetFileName(item.FilePathInArchive); }
+                        Log.Info("Extracted successfully.");
+                    }
+                }));
+            }
+            else
+            {
+                Log.Error("Nothing selected to extract.");
+                return false;
+            }
 
-            // log.Info(String.Format("Extracting {0} to {1}...", item.FilePathInArchive,
-            // Path.Combine(dir, file))); try { item.Extract(dir, file, p); } catch (Exception ex) {
-            // log.Error(String.Format("Error extracting item {0}.", item.FilePathInArchive), ex); } }
-
-            //        p.EndTask();
-            //        log.Info("Extraction finished.");
-            //    }
-            //    catch (Exception ex)
-            //    {
-            //        log.Error("Error extracting items.", ex);
-            //    }
-            //});
-
-            /* Close the progress dialog */
-            //progressDialog.Close();
+            return true;
         }
 
+        /// <inheritdoc/>
         public async Task<bool> ExtractItemsByQuickExtractAsync(IReadOnlyList<NefsItem> items)
         {
             throw new NotImplementedException();
@@ -279,6 +299,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             {
                 using (var tt = p.BeginTask(1.0f))
                 {
+                    Log.Info("----------------------------");
                     Log.Info($"Opening archive: {filePath}.");
 
                     // Verify file exists
@@ -413,7 +434,6 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             this.SelectedItemsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-
         /// <inheritdoc/>
         public void Undo()
         {
@@ -459,14 +479,69 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             return result;
         }
 
-        private async Task<bool> ExtractDirectoryAsync(NefsItem item, string outputDirPath)
+        private async Task<bool> ExtractDirectoryAsync(NefsItem item, NefsItemList itemList, string outputDirPath, NefsProgress p)
         {
-            throw new NotImplementedException();
+            if (item.Type != NefsItemType.Directory)
+            {
+                Log.Error($"Attempted to extract directory {item.FileName}, but it is not a directory.");
+                return false;
+            }
+
+            // Create output directory if needed
+            if (!this.FileSystem.Directory.Exists(outputDirPath))
+            {
+                this.FileSystem.Directory.CreateDirectory(outputDirPath);
+            }
+
+            var result = false;
+            var children = itemList.Where(i => i.DirectoryId == item.Id && i != item).ToList();
+
+            for (var i = 0; i < children.Count; ++i)
+            {
+                var child = children[i];
+
+                using (var tt = p.BeginTask(1.0f / children.Count, $"Extracting {i + 1}/{children.Count}."))
+                {
+                    var childPath = Path.Combine(outputDirPath, child.FileName);
+                    result = await this.ExtractItemAsync(child, itemList, childPath, p);
+                }
+            }
+
+            return result;
         }
 
-        private async Task<bool> ExtractFileAsync(NefsItem item, string outputFilePath)
+        private async Task<bool> ExtractFileAsync(NefsItem item, string outputFilePath, NefsProgress p)
         {
-            throw new NotImplementedException();
+            try
+            {
+                await this.NefsCompressor.DecompressFileAsync(
+                    item.DataSource.FilePath,
+                    (Int64)item.DataSource.Offset,
+                    item.DataSource.Size.ChunkSizes,
+                    outputFilePath,
+                    0,
+                    p);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Log.Error($"Failed to extract item {item.FileName}.\r\n{ex.Message}");
+                return false;
+            }
+        }
+
+        private async Task<bool> ExtractItemAsync(NefsItem item, NefsItemList itemsList, string outputDir, NefsProgress p)
+        {
+            if (item.Type == NefsItemType.Directory)
+            {
+                // Extracting a directory
+                return await this.ExtractDirectoryAsync(item, itemsList, outputDir, p);
+            }
+            else
+            {
+                // Extracting a file
+                return await this.ExtractFileAsync(item, outputDir, p);
+            }
         }
     }
 }

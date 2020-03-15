@@ -81,7 +81,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.UiService.Dispatcher.Invoke(() =>
             {
                 this.progressBar.Value = value;
-                this.statusLabel.Text = e.Message;
+                this.statusLabel.Text = $"{e.Message}\r\n{e.SubMessage}";
             });
         }
     }

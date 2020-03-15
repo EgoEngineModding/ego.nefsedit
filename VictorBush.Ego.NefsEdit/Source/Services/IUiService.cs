@@ -16,6 +16,13 @@ namespace VictorBush.Ego.NefsEdit.Services
         Dispatcher Dispatcher { get; }
 
         /// <summary>
+        /// Shows a folder browser dialog.
+        /// </summary>
+        /// <param name="message">A message to show in the dialog.</param>
+        /// <returns>The dialog result and the folder path (if applicable).</returns>
+        (DialogResult Result, string Path) ShowFolderBrowserDialog(string message);
+
+        /// <summary>
         /// Shows a message box.
         /// </summary>
         /// <param name="message">The message to display.</param>
@@ -34,5 +41,12 @@ namespace VictorBush.Ego.NefsEdit.Services
         /// </summary>
         /// <returns>The dialog result and the file name (if applicable).</returns>
         (DialogResult Result, string FileName) ShowOpenFileDialog();
+
+        /// <summary>
+        /// Shows a save file dialog.
+        /// </summary>
+        /// <param name="defaultName">The default file name.</param>
+        /// <returns>The dialog result and the file name (if applicable).</returns>
+        (DialogResult Result, string FileName) ShowSaveFileDialog(string defaultName);
     }
 }

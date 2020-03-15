@@ -61,7 +61,8 @@ namespace VictorBush.Ego.NefsEdit
                 uiService,
                 settingsService,
                 nefsReader,
-                nefsWriter);
+                nefsWriter,
+                nefsCompressor);
 
             // Run application
             Application.EnableVisualStyles();

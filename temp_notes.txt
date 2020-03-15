@@ -9,7 +9,7 @@ Notes
 - Need to double-check out-of-order items (i.e., if an item can come before its parent directory).
 Need to check assumptions about item order.
 - Items list - get by index vs get by id.
-
+- Re-evaluate NefsProgress to see if it makes sense for progress reporting.
 
 
 
@@ -22,3 +22,4 @@ Design decisions
 	- Replacement files aren't compressed until the writer begins to write.
 - The application (NEfsEdit) works with a command buffer approach to allow undo/redo. Also tracks archive modified state.
 	- Should utilize this interface (via workspace) instead of modifying items directly.
+

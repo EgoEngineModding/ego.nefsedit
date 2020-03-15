@@ -152,8 +152,12 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
         {
-            this.archivePropertyForm.SetSelectedObject(this.Workspace.Archive);
-            this.UpdateTitle();
+            // Update - must do on UI thread
+            this.UiService.Dispatcher.Invoke(() =>
+            {
+                this.archivePropertyForm.SetSelectedObject(this.Workspace.Archive);
+                this.UpdateTitle();
+            });
         }
 
         private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
