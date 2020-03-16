@@ -26,6 +26,8 @@ namespace VictorBush.Ego.NefsEdit.UI
     ///
     /// // Close the dialog
     /// progressDialog.Close();
+    ///
+    /// //.
     /// </para>
     /// </remarks>
     internal partial class ProgressDialogForm : Form

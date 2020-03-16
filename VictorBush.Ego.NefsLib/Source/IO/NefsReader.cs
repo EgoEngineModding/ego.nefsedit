@@ -487,7 +487,7 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             // TODO : Load part 8
-            return new NefsHeaderPart8();
+            return await Task.FromResult(new NefsHeaderPart8());
         }
 
         private NefsItemList CreateItems(string dataFilePath, NefsHeader h, NefsProgress p)

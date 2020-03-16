@@ -56,7 +56,7 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
         public static string File1PathInArchive => File1Name;
 
-        public static string File1ReplacementFile = @"C:\file1replace.txt";
+        public static string File1ReplacementFile => @"C:\file1replace.txt";
 
         /*
         File 2 - inside directory "dir1".
@@ -96,7 +96,7 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
         public static string File3PathInArchive => $@"{Dir1PathInArchive}\{File3Name}";
 
-        public static string File3ReplacementFile = @"C:\file3replace.txt";
+        public static string File3ReplacementFile => @"C:\file3replace.txt";
 
         /*
         File 4 - In directory "dir1".

@@ -25,6 +25,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// </summary>
         /// <param name="workspace">The workspace to use.</param>
         /// <param name="editorForm">The editor form.</param>
+        /// <param name="uiService">The UI service.</param>
         internal BrowseTreeForm(
             INefsEditWorkspace workspace,
             EditorForm editorForm,
@@ -48,14 +49,14 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.filesListView.Columns.AddRange(columns);
         }
 
-        public IUiService UiService { get; }
-
         /// <summary>
         /// Gets the current directory. Will be null if the root directory.
         /// </summary>
         private NefsItem Directory { get; set; }
 
         private EditorForm EditorForm { get; }
+
+        private IUiService UiService { get; }
 
         private INefsEditWorkspace Workspace { get; }
 

@@ -375,7 +375,19 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// <inheritdoc/>
         public async Task<bool> SaveArchiveByDialogAsync()
         {
-            throw new NotImplementedException();
+            if (this.Archive == null)
+            {
+                Log.Error("Failed to save archive: no archive open.");
+                return false;
+            }
+
+            var (result, path) = this.UiService.ShowSaveFileDialog(this.Archive.Items.DataFilePath);
+            if (result != DialogResult.OK)
+            {
+                return false;
+            }
+
+            return await this.DoSaveArchiveAsync(path);
         }
 
         /// <inheritdoc/>
@@ -407,6 +419,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 
             // TODO : Don't allow saving encrypted archives
 
+            Log.Info("----------------------------");
             Log.Info($"Writing archive: {destFilePath}.");
             var result = false;
 

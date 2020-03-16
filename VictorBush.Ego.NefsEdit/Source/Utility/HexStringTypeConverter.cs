@@ -1,16 +1,22 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿// See LICENSE.txt for license information.
 
 namespace VictorBush.Ego.NefsEdit.Utility
 {
-    class HexStringTypeConverter : TypeConverter
+    using System;
+    using System.ComponentModel;
+    using System.Globalization;
+
+    /// <summary>
+    /// Hex string formatting utility.
+    /// </summary>
+    internal class HexStringTypeConverter : TypeConverter
     {
-        public override object ConvertTo(ITypeDescriptorContext context, CultureInfo culture, object value, Type destinationType)
+        /// <inheritdoc/>
+        public override object ConvertTo(
+            ITypeDescriptorContext context,
+            CultureInfo culture,
+            object value,
+            Type destinationType)
         {
             if (destinationType == typeof(string) &&
                 (value.GetType() == typeof(int) || value.GetType() == typeof(uint)))

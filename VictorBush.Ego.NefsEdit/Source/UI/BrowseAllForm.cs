@@ -76,9 +76,9 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.itemsListView.ColumnClick += this.ItemsListView_ColumnClick;
         }
 
-        public IUiService UiService { get; }
-
         private EditorForm EditorForm { get; }
+
+        private IUiService UiService { get; }
 
         private INefsEditWorkspace Workspace { get; }
 

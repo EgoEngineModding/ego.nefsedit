@@ -8,7 +8,9 @@ namespace VictorBush.Ego.NefsEdit.Utility
     /// <summary>
     /// This class is an implementation of the 'IComparer' interface.
     /// </summary>
-    /// <remarks>Source: <see cref="https://support.microsoft.com/en-us/help/319401/how-to-sort-a-listview-control-by-a-column-in-visual-c"/>.</remarks>
+    /// <remarks>
+    /// Source: https://support.microsoft.com/en-us/help/319401/how-to-sort-a-listview-control-by-a-column-in-visual-c .
+    /// </remarks>
     public class ListViewColumnSorter : IComparer
     {
         /// <summary>

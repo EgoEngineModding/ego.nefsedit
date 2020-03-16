@@ -24,6 +24,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>VictorBush.Ego.NefsEdit.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\Debug\NefsEdit.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -49,6 +50,9 @@
     <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Source\Commands\RemoveFileCommand.cs" />
     <Compile Include="Source\Commands\UndoBuffer.cs" />
     <Compile Include="Source\Commands\INefsEditCommand.cs" />
