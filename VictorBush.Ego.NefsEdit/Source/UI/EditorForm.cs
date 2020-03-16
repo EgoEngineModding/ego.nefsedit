@@ -162,7 +162,10 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
         {
-            this.UpdateTitle();
+            this.UiService.Dispatcher.Invoke(() =>
+            {
+                this.UpdateTitle();
+            });
         }
 
         private void OnWorkspaceSelectedItemsChanged(Object sender, EventArgs e)

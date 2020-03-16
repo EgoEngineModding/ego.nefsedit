@@ -7,6 +7,7 @@ namespace VictorBush.Ego.NefsLib.IO
     using System.IO;
     using System.IO.Abstractions;
     using System.Security.Cryptography;
+    using System.Text;
     using System.Threading.Tasks;
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.DataTypes;
@@ -61,7 +62,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
             // Write to temp file
             var tempFilePath = Path.Combine(workDir, "temp.nefs");
-            using (var file = this.FileSystem.File.OpenWrite(tempFilePath))
+            using (var file = this.FileSystem.File.Open(tempFilePath, FileMode.Create))
             {
                 newArchive = await this.WriteArchiveAsync(file, nefs.Header, nefs.Items, workDir, p);
             }
@@ -375,25 +376,50 @@ namespace VictorBush.Ego.NefsLib.IO
             using (var t = p.BeginTask(weight, "Writing header part 1"))
             {
                 var offset = headerOffset + header.Intro.OffsetToPart1.Value;
-                await FileData.WriteDataAsync(stream, offset, header.Part1, p);
+                foreach (var entry in header.Part1.Entries)
+                {
+                    await FileData.WriteDataAsync(stream, offset, entry, p);
+                    offset += NefsHeaderPart1Entry.Size;
+                }
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 2"))
             {
                 var offset = headerOffset + header.Intro.OffsetToPart2.Value;
-                await FileData.WriteDataAsync(stream, offset, header.Part2, p);
+                foreach (var entry in header.Part2.Entries)
+                {
+                    await FileData.WriteDataAsync(stream, offset, entry, p);
+                    offset += NefsHeaderPart2Entry.Size;
+                }
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 3"))
             {
                 var offset = headerOffset + header.Intro.OffsetToPart3.Value;
-                await FileData.WriteDataAsync(stream, offset, header.Part3, p);
+                stream.Seek(0, SeekOrigin.Begin);
+
+                foreach (var entry in header.Part3.FileNames)
+                {
+                    var fileNameBytes = Encoding.ASCII.GetBytes(entry);
+                    await stream.WriteAsync(fileNameBytes, 0, fileNameBytes.Length, p.CancellationToken);
+
+                    // Write null terminator
+                    await stream.WriteAsync(new byte[] { 0 }, 0, 1, p.CancellationToken);
+                }
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 4"))
             {
                 var offset = headerOffset + header.Intro.OffsetToPart4.Value;
-                await FileData.WriteDataAsync(stream, offset, header.Part4, p);
+                foreach (var entry in header.Part4.Entries)
+                {
+                    await FileData.WriteDataAsync(stream, offset, entry, p);
+                    offset += (ulong)entry.ChunkSizes.Count * NefsHeaderPart4.DataSize;
+                }
+
+                // Write last four bytes
+                var lastFourBytes = BitConverter.GetBytes(header.Part4.LastFourBytes);
+                await stream.WriteAsync(lastFourBytes, 0, lastFourBytes.Length, p.CancellationToken);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 5"))
@@ -405,13 +431,21 @@ namespace VictorBush.Ego.NefsLib.IO
             using (var t = p.BeginTask(weight, "Writing header part 6"))
             {
                 var offset = headerOffset + header.Intro.OffsetToPart6.Value;
-                await FileData.WriteDataAsync(stream, offset, header.Part6, p);
+                foreach (var entry in header.Part6.Entries)
+                {
+                    await FileData.WriteDataAsync(stream, offset, entry, p);
+                    offset += NefsHeaderPart6Entry.Size;
+                }
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 7"))
             {
                 var offset = headerOffset + header.Intro.OffsetToPart7.Value;
-                await FileData.WriteDataAsync(stream, offset, header.Part7, p);
+                foreach (var entry in header.Part7.Entries)
+                {
+                    await FileData.WriteDataAsync(stream, offset, entry, p);
+                    offset += NefsHeaderPart7Entry.Size;
+                }
             }
         }
 
@@ -468,7 +502,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 inputFile.Seek((long)srcOffset, SeekOrigin.Begin);
 
                 // Copy from source to destination
-                await inputFile.CopyToAsync(stream, (int)srcSize, p.CancellationToken);
+                await inputFile.CopyPartialAsync(stream, srcSize, p.CancellationToken);
             }
 
             // Return the data offset for the next item

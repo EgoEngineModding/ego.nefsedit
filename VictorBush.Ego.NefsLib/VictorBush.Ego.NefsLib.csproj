@@ -92,6 +92,7 @@
     <Compile Include="Source\Utility\DeflateHelper.cs" />
     <Compile Include="Source\Utility\FileSystemExtensions.cs" />
     <Compile Include="Source\Utility\HashHelper.cs" />
+    <Compile Include="Source\Utility\StreamExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
     <AdditionalFiles Include="stylecop.json" />

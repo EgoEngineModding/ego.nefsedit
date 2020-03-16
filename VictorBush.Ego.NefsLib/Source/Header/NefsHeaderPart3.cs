@@ -11,7 +11,7 @@ namespace VictorBush.Ego.NefsLib.Header
     /// </summary>
     public class NefsHeaderPart3
     {
-        private readonly Dictionary<uint, string> fileNamesByOffset = new Dictionary<uint, string>();
+        private readonly SortedDictionary<uint, string> fileNamesByOffset = new SortedDictionary<uint, string>();
 
         private readonly Dictionary<string, uint> offsetsByFileName = new Dictionary<string, uint>();
 
@@ -33,6 +33,11 @@ namespace VictorBush.Ego.NefsLib.Header
             var strings = items.Select(i => i.FileName).Distinct();
             this.Init(strings);
         }
+
+        /// <summary>
+        /// Gets the list of file names sorted in correct order.
+        /// </summary>
+        public IEnumerable<string> FileNames => this.fileNamesByOffset.Values;
 
         /// <summary>
         /// The dictionary of strings in the strings table, keyed by offset. The key is the offset

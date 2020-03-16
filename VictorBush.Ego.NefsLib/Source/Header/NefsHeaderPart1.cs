@@ -10,7 +10,7 @@ namespace VictorBush.Ego.NefsLib.Header
     /// </summary>
     public class NefsHeaderPart1
     {
-        private readonly Dictionary<NefsItemId, NefsHeaderPart1Entry> entries;
+        private readonly SortedDictionary<NefsItemId, NefsHeaderPart1Entry> entries;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart1"/> class.
@@ -18,7 +18,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="entries">A list of entries to instantiate this part with.</param>
         internal NefsHeaderPart1(IDictionary<NefsItemId, NefsHeaderPart1Entry> entries)
         {
-            this.entries = new Dictionary<NefsItemId, NefsHeaderPart1Entry>(entries);
+            this.entries = new SortedDictionary<NefsItemId, NefsHeaderPart1Entry>(entries);
         }
 
         /// <summary>
@@ -28,7 +28,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="part4">Header part 4.</param>
         internal NefsHeaderPart1(NefsItemList items, NefsHeaderPart4 part4)
         {
-            this.entries = new Dictionary<NefsItemId, NefsHeaderPart1Entry>();
+            this.entries = new SortedDictionary<NefsItemId, NefsHeaderPart1Entry>();
 
             foreach (var item in items)
             {
@@ -45,6 +45,11 @@ namespace VictorBush.Ego.NefsLib.Header
                 this.entries.Add(item.Id, entry);
             }
         }
+
+        /// <summary>
+        /// Gets the list of entries sorted by id.
+        /// </summary>
+        public IEnumerable<NefsHeaderPart1Entry> Entries => this.entries.Values;
 
         /// <summary>
         /// The part 1 entries for each item in the archive. The key is the item id; the value is

@@ -18,7 +18,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         public const int DataSize = 0x04;
 
-        private readonly Dictionary<uint, NefsHeaderPart4Entry> entriesByIndex;
+        private readonly SortedDictionary<uint, NefsHeaderPart4Entry> entriesByIndex;
 
         private readonly Dictionary<NefsItemId, uint> indexById;
 
@@ -29,7 +29,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="lastFourBytes">The last four bytes of the header.</param>
         internal NefsHeaderPart4(IDictionary<UInt32, NefsHeaderPart4Entry> entries, UInt32 lastFourBytes)
         {
-            this.entriesByIndex = new Dictionary<UInt32, NefsHeaderPart4Entry>(entries);
+            this.entriesByIndex = new SortedDictionary<UInt32, NefsHeaderPart4Entry>(entries);
             this.indexById = new Dictionary<NefsItemId, UInt32>(this.entriesByIndex.ToDictionary(i => i.Value.Id, i => i.Key));
             this.LastFourBytes = lastFourBytes;
 
@@ -43,7 +43,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="items">The items to initialize from.</param>
         internal NefsHeaderPart4(NefsItemList items)
         {
-            this.entriesByIndex = new Dictionary<UInt32, NefsHeaderPart4Entry>();
+            this.entriesByIndex = new SortedDictionary<UInt32, NefsHeaderPart4Entry>();
             this.indexById = new Dictionary<NefsItemId, UInt32>();
 
             var largestSize = 0U;
@@ -78,6 +78,11 @@ namespace VictorBush.Ego.NefsLib.Header
             // Compute size
             this.ComputeSize();
         }
+
+        /// <summary>
+        /// Gets the list of entries in the correct order.
+        /// </summary>
+        public IEnumerable<NefsHeaderPart4Entry> Entries => this.entriesByIndex.Values;
 
         /// <summary>
         /// The dictionary of chunk sizes lists. The key is the index into the of chunks sizes. The

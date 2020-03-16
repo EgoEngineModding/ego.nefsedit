@@ -68,7 +68,7 @@ namespace VictorBush.Ego.NefsLib.Utility
                 inMemStream.Seek(0, SeekOrigin.Begin);
 
                 // Compress the chunk with deflate stream
-                await inMemStream.CopyToAsync(deflateStream, bytesRead, cancelToken);
+                await inMemStream.CopyPartialAsync(deflateStream, bytesRead, cancelToken);
 
                 // Close deflate stream to finalize compression - breaking the "using()" convention,
                 // but this is needed

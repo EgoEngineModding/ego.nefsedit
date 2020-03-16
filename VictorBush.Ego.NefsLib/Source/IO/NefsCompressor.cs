@@ -196,7 +196,7 @@ namespace VictorBush.Ego.NefsLib.IO
             using (var ms = new MemoryStream(chunk))
             using (var inflater = new DeflateStream(ms, CompressionMode.Decompress))
             {
-                await inflater.CopyToAsync(output, chunk.Length, p.CancellationToken);
+                await inflater.CopyPartialAsync(output, chunk.Length, p.CancellationToken);
             }
         }
 
@@ -223,7 +223,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 using (var cryptoStream = new CryptoStream(ms, decryptor, CryptoStreamMode.Read))
                 using (var inflater = new DeflateStream(cryptoStream, CompressionMode.Decompress))
                 {
-                    await inflater.CopyToAsync(output, chunk.Length, p.CancellationToken);
+                    await inflater.CopyPartialAsync(output, chunk.Length, p.CancellationToken);
                 }
             }
         }

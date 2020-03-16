@@ -2,7 +2,8 @@ TODO
 - Update assembly info.
 - Double check LICENSE, README, etc
 - Namespace cleanup
-
+- Check for modified archive state in app. If not modified, don't allow saving.
+- Show item state in app - replaced items become a certain color, deleted items become red, etc.
 
 
 Notes
@@ -10,7 +11,7 @@ Notes
 Need to check assumptions about item order.
 - Items list - get by index vs get by id.
 - Re-evaluate NefsProgress to see if it makes sense for progress reporting.
-
+- Using sorted dictionary for item lists in header parts. Make note in design decisions.
 
 
 

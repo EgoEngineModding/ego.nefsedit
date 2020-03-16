@@ -25,12 +25,18 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         public async Task WriteArchiveAsync_ArchiveNotModified_ArchiveWritten()
         {
             var sourcePath = @"C:\archive.nefs";
+            var destPath = @"C:\dest.nefs";
             this.fileSystem.AddFile(sourcePath, new MockFileData("hi"));
             var sourceArchive = TestArchiveNotModified.Create(sourcePath);
             var writer = this.CreateWriter();
             var archive = await writer.WriteArchiveAsync(@"C:\dest.nefs", sourceArchive, new NefsProgress());
 
             Assert.Equal(sourceArchive.Items.Count, archive.Items.Count);
+
+            // Try to read archive again
+            var reader = new NefsReader(this.fileSystem);
+            var readArchive = await reader.ReadArchiveAsync(destPath, new NefsProgress());
+            Assert.Equal(sourceArchive.Items.Count, readArchive.Items.Count);
         }
 
         private NefsWriter CreateWriter()

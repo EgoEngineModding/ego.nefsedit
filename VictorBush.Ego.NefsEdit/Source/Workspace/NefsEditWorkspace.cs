@@ -437,7 +437,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                         this.ArchiveSaved?.Invoke(this, EventArgs.Empty);
                         result = true;
 
-                        Log.Info($"Archive opened.");
+                        Log.Info($"Archive saved.");
                     }
                     catch (Exception ex)
                     {
