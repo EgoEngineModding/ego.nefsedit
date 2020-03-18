@@ -5,8 +5,8 @@ namespace VictorBush.Ego.NefsLib.Tests
     using System;
     using System.Collections.Generic;
     using System.IO.Abstractions.TestingHelpers;
+    using System.Linq;
     using VictorBush.Ego.NefsLib.DataSource;
-    using VictorBush.Ego.NefsLib.Header;
     using VictorBush.Ego.NefsLib.Item;
 
     internal static class TestHelpers
@@ -37,6 +37,40 @@ namespace VictorBush.Ego.NefsLib.Tests
             var fs = new MockFileSystem();
             fs.AddFile(DataTypesTestFilePath, new MockFileData(DataTypesTestData));
             return fs;
+        }
+
+        /// <summary>
+        /// Creates an item for testing.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="dirId">The directory id.</param>
+        /// <param name="fileName">The item name.</param>
+        /// <param name="filePathInArchive">The item's path in the archive.</param>
+        /// <param name="dataOffset">Data offset.</param>
+        /// <param name="extractedSize">Extracted size.</param>
+        /// <param name="chunkSizes">Compressed chunks sizes.</param>
+        /// <param name="type">The item type.</param>
+        /// <returns>The new item.</returns>
+        internal static NefsItem CreateItem(
+            uint id,
+            uint dirId,
+            string fileName,
+            string filePathInArchive,
+            UInt64 dataOffset,
+            UInt32 extractedSize,
+            IReadOnlyList<UInt32> chunkSizes,
+            NefsItemType type)
+        {
+            var size = new NefsItemSize(extractedSize, chunkSizes);
+            var dataSource = new NefsFileDataSource(@"C:\source.txt", dataOffset, size, extractedSize != chunkSizes.LastOrDefault());
+            return new NefsItem(
+                new NefsItemId(id),
+                fileName,
+                filePathInArchive,
+                new NefsItemId(dirId),
+                type,
+                dataSource,
+                CreateUnknownData());
         }
 
         /// <summary>

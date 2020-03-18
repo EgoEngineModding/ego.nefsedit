@@ -90,6 +90,62 @@ namespace VictorBush.Ego.NefsLib.IO
         }
 
         /// <summary>
+        /// Writes the header part to an output stream.
+        /// </summary>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="offset">The absolute offset in the stream to write at.</param>
+        /// <param name="part1">The data to write.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>An async task.</returns>
+        internal async Task WriteHeaderPart1Async(Stream stream, UInt64 offset, NefsHeaderPart1 part1, NefsProgress p)
+        {
+            foreach (var entry in part1.Entries)
+            {
+                await FileData.WriteDataAsync(stream, offset, entry, p);
+                offset += NefsHeaderPart1Entry.Size;
+            }
+        }
+
+        /// <summary>
+        /// Writes the header part to an output stream.
+        /// </summary>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="offset">The absolute offset in the stream to write at.</param>
+        /// <param name="part2">The data to write.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>An async task.</returns>
+        internal async Task WriteHeaderPart2Async(Stream stream, UInt64 offset, NefsHeaderPart2 part2, NefsProgress p)
+        {
+            foreach (var entry in part2.Entries)
+            {
+                await FileData.WriteDataAsync(stream, offset, entry, p);
+                offset += NefsHeaderPart2Entry.Size;
+            }
+        }
+
+        /// <summary>
+        /// Writes the header part to an output stream.
+        /// </summary>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="offset">The absolute offset in the stream to write at.</param>
+        /// <param name="part3">The data to write.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>An async task.</returns>
+        internal async Task WriteHeaderPart3Async(Stream stream, UInt64 offset, NefsHeaderPart3 part3, NefsProgress p)
+        {
+            stream.Seek((long)offset, SeekOrigin.Begin);
+
+            foreach (var entry in part3.FileNames)
+            {
+                var fileNameBytes = Encoding.ASCII.GetBytes(entry);
+                await stream.WriteAsync(fileNameBytes, 0, fileNameBytes.Length, p.CancellationToken);
+
+                // Write null terminator
+                await stream.WriteAsync(new byte[] { 0 }, 0, 1, p.CancellationToken);
+            }
+        }
+
+        /// <summary>
         /// Prepares an item's data to be written to the archive.
         /// </summary>
         /// <param name="item">The item to prepare.</param>
@@ -392,36 +448,19 @@ namespace VictorBush.Ego.NefsLib.IO
             using (var t = p.BeginTask(weight, "Writing header part 1"))
             {
                 var offset = headerOffset + header.Intro.OffsetToPart1.Value;
-                foreach (var entry in header.Part1.Entries)
-                {
-                    await FileData.WriteDataAsync(stream, offset, entry, p);
-                    offset += NefsHeaderPart1Entry.Size;
-                }
+                await this.WriteHeaderPart1Async(stream, offset, header.Part1, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 2"))
             {
                 var offset = headerOffset + header.Intro.OffsetToPart2.Value;
-                foreach (var entry in header.Part2.Entries)
-                {
-                    await FileData.WriteDataAsync(stream, offset, entry, p);
-                    offset += NefsHeaderPart2Entry.Size;
-                }
+                await this.WriteHeaderPart2Async(stream, offset, header.Part2, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 3"))
             {
                 var offset = headerOffset + header.Intro.OffsetToPart3.Value;
-                stream.Seek(0, SeekOrigin.Begin);
-
-                foreach (var entry in header.Part3.FileNames)
-                {
-                    var fileNameBytes = Encoding.ASCII.GetBytes(entry);
-                    await stream.WriteAsync(fileNameBytes, 0, fileNameBytes.Length, p.CancellationToken);
-
-                    // Write null terminator
-                    await stream.WriteAsync(new byte[] { 0 }, 0, 1, p.CancellationToken);
-                }
+                await this.WriteHeaderPart3Async(stream, offset, header.Part3, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 4"))
