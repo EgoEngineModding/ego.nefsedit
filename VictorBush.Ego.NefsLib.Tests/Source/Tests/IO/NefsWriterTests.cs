@@ -292,6 +292,80 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         }
 
         [Fact]
+        public async Task WriteHeaderPart4Async_ValidData_Written()
+        {
+            var items = new NefsItemList(@"C:\hi.txt");
+            var file1 = TestHelpers.CreateItem(0, 0, "file1", "file1", 10, 11, new List<UInt32> { 12, 13 }, NefsItemType.File);
+            var file2 = TestHelpers.CreateItem(1, 1, "file2", "file2", 20, 21, new List<UInt32> { 22, 23 }, NefsItemType.File);
+            var dir1 = TestHelpers.CreateItem(2, 2, "dir1", "dir1", 0, 0, new List<UInt32> { 0 }, NefsItemType.Directory);
+            var file3 = TestHelpers.CreateItem(3, 2, "file3", "dir1/file3", 30, 31, new List<UInt32> { 32, 33 }, NefsItemType.File);
+            items.Add(file1);
+            items.Add(file2);
+            items.Add(dir1);
+            items.Add(file3);
+
+            var part4 = new NefsHeaderPart4(items);
+
+            /*
+            Write
+            */
+
+            var writer = this.CreateWriter();
+            byte[] buffer;
+            var offset = 5;
+
+            using (var ms = new MemoryStream())
+            {
+                await writer.WriteHeaderPart4Async(ms, (uint)offset, part4, new NefsProgress());
+                buffer = ms.ToArray();
+            }
+
+            /*
+            Verify
+            */
+
+            Assert.Equal(28 + offset, buffer.Length);
+            Assert.Equal(12, BitConverter.ToInt32(buffer, offset + 0));
+            Assert.Equal(13, BitConverter.ToInt32(buffer, offset + 4));
+            Assert.Equal(22, BitConverter.ToInt32(buffer, offset + 8));
+            Assert.Equal(23, BitConverter.ToInt32(buffer, offset + 12));
+            Assert.Equal(32, BitConverter.ToInt32(buffer, offset + 16));
+            Assert.Equal(33, BitConverter.ToInt32(buffer, offset + 20));
+
+            // Last four bytes - largest compressed size
+            Assert.Equal(33, BitConverter.ToInt32(buffer, offset + 24));
+        }
+
+        [Fact]
+        public async Task WriteHeaderPart5Async_ValidData_Written()
+        {
+            var part5 = new NefsHeaderPart5();
+            part5.ArchiveSize.Value = 1234;
+            part5.UnknownData.Value = 5678;
+
+            /*
+            Write
+            */
+
+            var writer = this.CreateWriter();
+            byte[] buffer;
+            var offset = 5;
+
+            using (var ms = new MemoryStream())
+            {
+                await writer.WriteHeaderPart5Async(ms, (uint)offset, part5, new NefsProgress());
+                buffer = ms.ToArray();
+            }
+
+            /*
+            Verify
+            */
+
+            Assert.Equal(1234, BitConverter.ToInt64(buffer, offset + 0));
+            Assert.Equal(5678, BitConverter.ToInt64(buffer, offset + 8));
+        }
+
+        [Fact]
         public async Task WriterHeaderIntroAsync_ValidData_Written()
         {
             var aes = new byte[] { 0xE5, 0x69, 0x65, 0x23, 0xAB, 0xF5, 0x43, 0xFF, 0xC9, 0xDF, 0xB2, 0x2C, 0x64, 0xD1, 0x11, 0x46, 0xE5, 0x9B, 0xAC, 0xC8, 0xAC, 0x8B, 0xA4, 0x15, 0x9E, 0xE0, 0xE2, 0xBB, 0x54, 0x09, 0x0A, 0x6C, 0x99, 0x30, 0xC6, 0xC1, 0x84, 0x3C, 0x90, 0x29, 0x75, 0xB2, 0xB5, 0x5E, 0x3B, 0x7A, 0x06, 0x3D, 0xE1, 0xD2, 0x1F, 0x6F, 0xB7, 0xDC, 0x57, 0x5A, 0xC4, 0x4F, 0x84, 0xCB, 0x13, 0x87, 0xAB, 0xBF };
