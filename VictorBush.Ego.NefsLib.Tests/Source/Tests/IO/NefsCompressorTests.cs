@@ -139,11 +139,33 @@ namespace VictorBush.Ego.NefsLib.Tests.IO
         [Fact]
         public async Task DecompressFileAsync_NotEncrypted_DataDecompressed()
         {
-            const string Data = "Hello. This is the input data. It is not encrypted.";
+            const string Data = @"Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.
+Hello. This is the input data. It is not encrypted.";
+
             var sourceFilePath = @"C:\source.txt";
             var compressedFilePath = @"C:\compressed.dat";
             var destFilePath = @"C:\dest.txt";
-            var chunkSize = 5U;
+            var chunkSize = 0x10000U;
 
             this.fileSystem.AddFile(sourceFilePath, new MockFileData(Data));
 
