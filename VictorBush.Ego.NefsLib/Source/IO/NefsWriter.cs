@@ -74,6 +74,22 @@ namespace VictorBush.Ego.NefsLib.IO
         }
 
         /// <summary>
+        /// Writes the header intro to an output stream.
+        /// </summary>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="offset">The absolute offset in the stream to write at.</param>
+        /// <param name="intro">The intro to write.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>An async task.</returns>
+        internal async Task WriteHeaderIntroAsync(Stream stream, UInt64 offset, NefsHeaderIntro intro, NefsProgress p)
+        {
+            using (var t = p.BeginTask(1.0f))
+            {
+                await FileData.WriteDataAsync(stream, offset, intro, p);
+            }
+        }
+
+        /// <summary>
         /// Prepares an item's data to be written to the archive.
         /// </summary>
         /// <param name="item">The item to prepare.</param>
@@ -370,7 +386,7 @@ namespace VictorBush.Ego.NefsLib.IO
             using (var t = p.BeginTask(weight, "Writing header intro"))
             {
                 var offset = headerOffset + NefsHeader.IntroOffset;
-                await FileData.WriteDataAsync(stream, offset, header.Intro, p);
+                await this.WriteHeaderIntroAsync(stream, offset, header.Intro, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 1"))
