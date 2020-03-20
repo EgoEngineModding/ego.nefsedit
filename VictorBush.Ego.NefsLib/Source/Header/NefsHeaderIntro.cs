@@ -23,10 +23,17 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderIntro"/> class.
         /// </summary>
-        public NefsHeaderIntro()
+        /// <param name="isEncrpyted">A value indicating whether the header is encrypted.</param>
+        public NefsHeaderIntro(bool isEncrpyted = false)
         {
             this.MagicNumber.Value = NefsMagicNumber;
+            this.IsEncrypted = isEncrpyted;
         }
+
+        /// <summary>
+        /// Gets a value indicating whether the header is encrypted.
+        /// </summary>
+        public bool IsEncrypted { get; }
 
         /// <summary>File magic number; "NeFS" or 0x5346654E.</summary>
         [FileData]
