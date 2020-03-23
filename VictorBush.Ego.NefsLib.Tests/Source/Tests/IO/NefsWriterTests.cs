@@ -376,22 +376,9 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             intro.ExpectedHash.Value = hash;
             intro.HeaderSize.Value = 12345;
             intro.NumberOfItems.Value = 9876;
-            intro.OffsetToPart1.Value = 111;
-            intro.OffsetToPart2.Value = 222;
-            intro.OffsetToPart3.Value = 333;
-            intro.OffsetToPart4.Value = 444;
-            intro.OffsetToPart5.Value = 555;
-            intro.OffsetToPart6.Value = 666;
-            intro.OffsetToPart7.Value = 777;
-            intro.OffsetToPart8.Value = 888;
             intro.Unknown0x68.Value = 101;
             intro.Unknown0x70zlib.Value = 202;
             intro.Unknown0x78.Value = 303;
-            intro.Unknown0x80.Value = 404;
-
-            // This chunk of data is unknown, but it must be 0x5C bytes long
-            intro.Unknown0xa4.Value = new byte[0x5C];
-            intro.Unknown0xa4.Value[0] = 20;
 
             /*
             Write
@@ -433,36 +420,73 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             // 0x78 unknwon (8 bytes)
             Assert.Equal(303, BitConverter.ToInt64(buffer, 0x78));
+        }
 
-            // 0x80 unknwon
-            Assert.Equal(404, BitConverter.ToInt32(buffer, 0x80));
+        [Fact]
+        public async Task WriterHeaderIntroTocAsync_ValidData_Written()
+        {
+            var toc = new NefsHeaderIntroToc();
+            toc.OffsetToPart1.Value = 111;
+            toc.OffsetToPart2.Value = 222;
+            toc.OffsetToPart3.Value = 333;
+            toc.OffsetToPart4.Value = 444;
+            toc.OffsetToPart5.Value = 555;
+            toc.OffsetToPart6.Value = 666;
+            toc.OffsetToPart7.Value = 777;
+            toc.OffsetToPart8.Value = 888;
+            toc.Unknown0x00.Value = 404;
+
+            // This chunk of data is unknown, but it must be 0x5C bytes long
+            toc.Unknown0x24.Value = new byte[0x5C];
+            toc.Unknown0x24.Value[0] = 20;
+
+            /*
+            Write
+            */
+
+            var writer = this.CreateWriter();
+            byte[] buffer;
+            var offset = 10;
+
+            using (var ms = new MemoryStream())
+            {
+                await writer.WriteHeaderIntroTocAsync(ms, (uint)offset, toc, new NefsProgress());
+                buffer = ms.ToArray();
+            }
+
+            /*
+            Verify
+            */
+
+            // 0x00 unknwon
+            Assert.Equal(404, BitConverter.ToInt32(buffer, offset + 0x00));
 
             // Offset to part 1
-            Assert.Equal(111, BitConverter.ToInt32(buffer, 0x84));
+            Assert.Equal(111, BitConverter.ToInt32(buffer, offset + 0x04));
 
             // Offset to part 6
-            Assert.Equal(666, BitConverter.ToInt32(buffer, 0x88));
+            Assert.Equal(666, BitConverter.ToInt32(buffer, offset + 0x08));
 
             // Offset to part 2
-            Assert.Equal(222, BitConverter.ToInt32(buffer, 0x8C));
+            Assert.Equal(222, BitConverter.ToInt32(buffer, offset + 0x0C));
 
             // Offset to part 7
-            Assert.Equal(777, BitConverter.ToInt32(buffer, 0x90));
+            Assert.Equal(777, BitConverter.ToInt32(buffer, offset + 0x10));
 
             // Offset to part 3
-            Assert.Equal(333, BitConverter.ToInt32(buffer, 0x94));
+            Assert.Equal(333, BitConverter.ToInt32(buffer, offset + 0x14));
 
             // Offset to part 4
-            Assert.Equal(444, BitConverter.ToInt32(buffer, 0x98));
+            Assert.Equal(444, BitConverter.ToInt32(buffer, offset + 0x18));
 
             // Offset to part 5
-            Assert.Equal(555, BitConverter.ToInt32(buffer, 0x9C));
+            Assert.Equal(555, BitConverter.ToInt32(buffer, offset + 0x1C));
 
             // Offset to part 8
-            Assert.Equal(888, BitConverter.ToInt32(buffer, 0xA0));
+            Assert.Equal(888, BitConverter.ToInt32(buffer, offset + 0x20));
 
-            // 0xa4 Unknown
-            Assert.Equal(20, buffer[0xa4]);
+            // 0x24 Unknown
+            Assert.Equal(20, buffer[offset + 0x24]);
         }
 
         private NefsWriter CreateWriter()

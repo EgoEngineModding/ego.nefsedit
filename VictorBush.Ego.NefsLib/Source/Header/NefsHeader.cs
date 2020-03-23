@@ -30,6 +30,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Initializes a new instance of the <see cref="NefsHeader"/> class.
         /// </summary>
         /// <param name="intro">Header intro.</param>
+        /// <param name="toc">Header intro table of contents.</param>
         /// <param name="part1">Header part 1.</param>
         /// <param name="part2">Header part 2.</param>
         /// <param name="part3">Header part 3.</param>
@@ -40,6 +41,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="part8">Header part 8.</param>
         public NefsHeader(
             NefsHeaderIntro intro,
+            NefsHeaderIntroToc toc,
             NefsHeaderPart1 part1,
             NefsHeaderPart2 part2,
             NefsHeaderPart3 part3,
@@ -50,6 +52,7 @@ namespace VictorBush.Ego.NefsLib.Header
             NefsHeaderPart8 part8)
         {
             this.Intro = intro ?? throw new ArgumentNullException(nameof(intro));
+            this.TableOfContents = toc ?? throw new ArgumentNullException(nameof(toc));
             this.Part1 = part1 ?? throw new ArgumentNullException(nameof(part1));
             this.Part2 = part2 ?? throw new ArgumentNullException(nameof(part2));
             this.Part3 = part3 ?? throw new ArgumentNullException(nameof(part3));
@@ -64,10 +67,12 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Initializes a new instance of the <see cref="NefsHeader"/> class.
         /// </summary>
         /// <param name="intro">Header intro.</param>
+        /// <param name="toc">Header intro table of contents.</param>
         /// <param name="items">List of items.</param>
-        public NefsHeader(NefsHeaderIntro intro, NefsItemList items)
+        public NefsHeader(NefsHeaderIntro intro, NefsHeaderIntroToc toc, NefsItemList items)
         {
             this.Intro = intro ?? throw new ArgumentNullException(nameof(intro));
+            this.TableOfContents = toc ?? throw new ArgumentNullException(nameof(toc));
 
             this.Part3 = new NefsHeaderPart3(items);
             this.Part4 = new NefsHeaderPart4(items);
@@ -124,6 +129,11 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Header part 8.
         /// </summary>
         public NefsHeaderPart8 Part8 { get; }
+
+        /// <summary>
+        /// The header intro table of contents.
+        /// </summary>
+        public NefsHeaderIntroToc TableOfContents { get; }
 
         /// <summary>
         /// Gets the directory id for an item. If the item is in the root directory, the directory

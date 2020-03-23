@@ -23,8 +23,8 @@ namespace VictorBush.Ego.NefsLib.DataTypes
     public class FileData : Attribute
     {
         /// <summary>
-        /// Gets a list of all private DataType fields in the specified object that have the
-        /// [FileData] attribute.
+        /// Gets a list of all public and private DataType fields and properties in the specified
+        /// object that have the [FileData] attribute.
         /// </summary>
         /// <param name="obj">The object to get [FileData] fields from.</param>
         /// <returns>List of DataType objects.</returns>

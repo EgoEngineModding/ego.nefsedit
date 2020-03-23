@@ -8,6 +8,8 @@ namespace VictorBush.Ego.NefsLib.IO
     using System.Collections.Generic;
     using System.IO;
     using System.IO.Abstractions;
+    using System.Numerics;
+    using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
@@ -15,12 +17,34 @@ namespace VictorBush.Ego.NefsLib.IO
     using VictorBush.Ego.NefsLib.Header;
     using VictorBush.Ego.NefsLib.Item;
     using VictorBush.Ego.NefsLib.Progress;
+    using VictorBush.Ego.NefsLib.Utility;
 
     /// <summary>
     /// Reads NeFS archives.
     /// </summary>
     public class NefsReader : INefsReader
     {
+        /// <summary>
+        /// The default RSA exponent for encrypted headers.
+        /// </summary>
+        public static readonly byte[] DefaultRsaExponent = { 01, 00, 01, 00 };
+
+        /// <summary>
+        /// The default RSA public key for encrypted headers. From DiRT Rally 2.
+        /// </summary>
+        public static readonly byte[] DefaultRsaPublicKey =
+        {
+            0xCF, 0x19, 0x63, 0x94, 0x1E, 0x0F, 0x42, 0x16, 0x35, 0xDE, 0x51, 0xD0, 0xB3, 0x3A, 0xB7, 0x67,
+            0xC7, 0x1C, 0x8D, 0x3B, 0x27, 0x49, 0x40, 0x9E, 0x58, 0x43, 0xDD, 0x6D, 0xD9, 0xAA, 0xF5, 0x1B,
+            0x94, 0x94, 0xC4, 0x30, 0x49, 0xBA, 0xE7, 0x72, 0x3D, 0xFA, 0xDF, 0x80, 0x17, 0x55, 0xF3, 0xAB,
+            0xF8, 0x97, 0x42, 0xE6, 0xB2, 0xDF, 0x11, 0xE4, 0x93, 0x0E, 0x92, 0x1D, 0xC5, 0x4E, 0x0F, 0x87,
+            0xCD, 0x46, 0x83, 0x06, 0x6B, 0x97, 0xA7, 0x00, 0x42, 0x35, 0xB0, 0x33, 0xEA, 0xEF, 0x68, 0x54,
+            0xA0, 0xF9, 0x03, 0x41, 0xF7, 0x5C, 0xFF, 0xC3, 0x75, 0xE1, 0x1B, 0x00, 0x73, 0x5A, 0x7A, 0x81,
+            0x68, 0xAF, 0xB4, 0x9F, 0x86, 0x3C, 0xD6, 0x09, 0x3A, 0xC0, 0x94, 0x6F, 0x18, 0xE2, 0x03, 0x38,
+            0x14, 0xF7, 0xC5, 0x13, 0x91, 0x4E, 0xD0, 0x4F, 0xAC, 0x46, 0x6C, 0x70, 0x27, 0xED, 0x69, 0x99,
+            00,
+        };
+
         private static readonly ILogger Log = NefsLib.LogFactory.CreateLogger<NefsReader>();
 
         /// <summary>
@@ -28,14 +52,31 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </summary>
         /// <param name="fileSystem">The file system used by the factory.</param>
         public NefsReader(IFileSystem fileSystem)
+            : this(fileSystem, null, null)
         {
             this.FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
         /// <summary>
-        /// The file system used by the factory.
+        /// Initializes a new instance of the <see cref="NefsReader"/> class.
         /// </summary>
+        /// <param name="fileSystem">The file system used by the factory.</param>
+        /// <param name="rsaPublicKey">
+        /// Specifies a different RSA public key to use for encrypted headers.
+        /// </param>
+        /// <param name="rsaExponent">Specifies a different RSA exponent to use for encrypted headers.</param>
+        public NefsReader(IFileSystem fileSystem, byte[] rsaPublicKey, byte[] rsaExponent)
+        {
+            this.FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+            this.RsaPublicKey = rsaPublicKey ?? DefaultRsaPublicKey;
+            this.RsaExponent = rsaExponent ?? DefaultRsaExponent;
+        }
+
         private IFileSystem FileSystem { get; }
+
+        private byte[] RsaExponent { get; }
+
+        private byte[] RsaPublicKey { get; }
 
         /// <inheritdoc/>
         public async Task<NefsArchive> ReadArchiveAsync(string filePath, NefsProgress p)
@@ -70,6 +111,7 @@ namespace VictorBush.Ego.NefsLib.IO
         internal async Task<NefsHeader> ReadHeaderAsync(Stream stream, uint offset, NefsProgress p)
         {
             NefsHeaderIntro intro = null;
+            NefsHeaderIntroToc toc = null;
             NefsHeaderPart1 part1 = null;
             NefsHeaderPart2 part2 = null;
             NefsHeaderPart3 part3 = null;
@@ -85,50 +127,51 @@ namespace VictorBush.Ego.NefsLib.IO
             using (p.BeginTask(weight, "Reading header intro"))
             {
                 intro = await this.ReadHeaderIntroAsync(stream, offset, p);
+                toc = await this.ReadHeaderIntroTocAsync(stream, offset + NefsHeaderIntroToc.Offset, intro, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 1"))
             {
-                part1 = await this.ReadHeaderPart1Async(stream, intro.OffsetToPart1.Value, intro.Part1Size, p);
+                part1 = await this.ReadHeaderPart1Async(stream, toc.OffsetToPart1.Value, toc.Part1Size, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 2"))
             {
-                part2 = await this.ReadHeaderPart2Async(stream, intro.OffsetToPart2.Value, intro.Part2Size, p);
+                part2 = await this.ReadHeaderPart2Async(stream, toc.OffsetToPart2.Value, toc.Part2Size, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 3"))
             {
-                part3 = await this.ReadHeaderPart3Async(stream, intro.OffsetToPart3.Value, intro.Part3Size, p);
+                part3 = await this.ReadHeaderPart3Async(stream, toc.OffsetToPart3.Value, toc.Part3Size, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 4"))
             {
-                part4 = await this.ReadHeaderPart4Async(stream, intro.OffsetToPart4.Value, intro.Part4Size, part1, part2, p);
+                part4 = await this.ReadHeaderPart4Async(stream, toc.OffsetToPart4.Value, toc.Part4Size, part1, part2, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 5"))
             {
-                part5 = await this.ReadHeaderPart5Async(stream, intro.OffsetToPart5.Value, intro.Part5Size, p);
+                part5 = await this.ReadHeaderPart5Async(stream, toc.OffsetToPart5.Value, toc.Part5Size, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 6"))
             {
-                part6 = await this.ReadHeaderPart6Async(stream, intro.OffsetToPart6.Value, intro.Part6Size, p);
+                part6 = await this.ReadHeaderPart6Async(stream, toc.OffsetToPart6.Value, toc.Part6Size, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 7"))
             {
-                part7 = await this.ReadHeaderPart7Async(stream, intro.OffsetToPart7.Value, intro.Part7Size, p);
+                part7 = await this.ReadHeaderPart7Async(stream, toc.OffsetToPart7.Value, toc.Part7Size, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 8"))
             {
                 // TODO : Get correct part 8 size
-                part8 = await this.ReadHeaderPart8Async(stream, intro.OffsetToPart8.Value, 0, p);
+                part8 = await this.ReadHeaderPart8Async(stream, toc.OffsetToPart8.Value, 0, p);
             }
 
-            return new NefsHeader(intro, part1, part2, part3, part4, part5, part6, part7, part8);
+            return new NefsHeader(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
         }
 
         /// <summary>
@@ -144,17 +187,118 @@ namespace VictorBush.Ego.NefsLib.IO
             var magicNum = new UInt32Type(0);
             await magicNum.ReadAsync(stream, offset, p);
 
-            // If magic number is incorrect, see if the file is encrpyted
-            if (magicNum.Value != NefsHeaderIntro.NefsMagicNumber)
+            // Check magic number
+            if (magicNum.Value == NefsHeaderIntro.NefsMagicNumber)
             {
-                // RSA 1024 public key. TODO : Don't hard-code key?
-                //byte[] pubk = { 0xCF, 0x19, 0x63, 0x94, 0x1E, 0x0F, 0x42, 0x16, 0x35, 0xDE, 0x51, 0xD0, 0xB3, 0x3A, 0xB7, 0x67, 0xC7, 0x1C, 0x8D, 0x3B, 0x27, 0x49, 0x40, 0x9E, 0x58, 0x43, 0xDD, 0x6D, 0xD9, 0xAA, 0xF5, 0x1B, 0x94, 0x94, 0xC4, 0x30, 0x49, 0xBA, 0xE7, 0x72, 0x3D, 0xFA, 0xDF, 0x80, 0x17, 0x55, 0xF3, 0xAB, 0xF8, 0x97, 0x42, 0xE6, 0xB2, 0xDF, 0x11, 0xE4, 0x93, 0x0E, 0x92, 0x1D, 0xC5, 0x4E, 0x0F, 0x87, 0xCD, 0x46, 0x83, 0x06, 0x6B, 0x97, 0xA7, 0x00, 0x42, 0x35, 0xB0, 0x33, 0xEA, 0xEF, 0x68, 0x54, 0xA0, 0xF9, 0x03, 0x41, 0xF7, 0x5C, 0xFF, 0xC3, 0x75, 0xE1, 0x1B, 0x00, 0x73, 0x5A, 0x7A, 0x81, 0x68, 0xAF, 0xB4, 0x9F, 0x86, 0x3C, 0xD6, 0x09, 0x3A, 0xC0, 0x94, 0x6F, 0x18, 0xE2, 0x03, 0x38, 0x14, 0xF7, 0xC5, 0x13, 0x91, 0x4E, 0xD0, 0x4F, 0xAC, 0x46, 0x6C, 0x70, 0x27, 0xED, 0x69, 0x99 };
-                // TODO
+                // This is a non-encrypted NeFS header
+                var intro = new NefsHeaderIntro();
+                await FileData.ReadDataAsync(stream, offset, intro, p);
+                return intro;
             }
+            else
+            {
+                // Magic number is incorrect, assume file is encrpyted
+                Log.LogInformation("Header magic number mismatch, assuming header is encrypted.");
 
-            var intro = new NefsHeaderIntro();
-            await FileData.ReadDataAsync(stream, offset, intro, p);
-            return intro;
+                // Encrypted headers:
+                // - Headers are "encrypted" in a two-step process. RSA-1024. No padding is used.
+                // - First 0x80 bytes are signed with an RSA private key (data -> decrypt ->
+                //   scrambled data).
+                // - Must use an RSA 1024-bit public key to unscramble the data (scrambled data ->
+                //   encrypt -> data).
+                // - For DiRT Rally 2 this public key is stored in the main executable.
+                stream.Seek(offset, SeekOrigin.Begin);
+                byte[] encryptedHeader = new byte[0x81];
+                stream.Read(encryptedHeader, 0, (int)NefsHeaderIntro.Size);
+                encryptedHeader[NefsHeaderIntro.Size] = 0;
+
+                // Use big integers instead of RSA since the c# implementation forces the use of padding.
+                var n = new BigInteger(this.RsaPublicKey);
+                var e = new BigInteger(this.RsaExponent);
+                var m = new BigInteger(encryptedHeader);
+
+                byte[] decrypted = BigInteger.ModPow(m, e, n).ToByteArray();
+
+                using (var decryptedStream = new MemoryStream())
+                {
+                    decryptedStream.Write(decrypted, 0, decrypted.Length);
+
+                    // Fill any leftover space with zeros
+                    if (decrypted.Length != NefsHeaderIntro.Size)
+                    {
+                        for (int i = 0; i < (NefsHeaderIntro.Size - decrypted.Length); i++)
+                        {
+                            decryptedStream.WriteByte(0);
+                        }
+                    }
+
+                    // Read header intro data from decrypted stream
+                    var intro = new NefsHeaderIntro(isEncrpyted: true);
+                    await FileData.ReadDataAsync(decryptedStream, offset, intro, p);
+                    return intro;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Reads the header intro table of contents from an input stream.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
+        /// <param name="offset">
+        /// The offset to the header intro table of contents from the beginning of the stream.
+        /// </param>
+        /// <param name="intro">The intro data.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>The loaded header intro offets data.</returns>
+        internal async Task<NefsHeaderIntroToc> ReadHeaderIntroTocAsync(Stream stream, uint offset, NefsHeaderIntro intro, NefsProgress p)
+        {
+            if (intro.IsEncrypted)
+            {
+                // Header is encrypted, decrypt using the AES-256 key from the header intro
+                var asciiKey = Encoding.ASCII.GetString(intro.AesKey.Value);
+                byte[] key = HexHelper.FromHexString(asciiKey);
+                var headerLen = intro.HeaderSize.Value;
+                var tocSize = headerLen - NefsHeaderIntro.Size;
+
+                using (var encryptedStream = new MemoryStream())
+                using (var rijAlg = new RijndaelManaged())
+                {
+                    rijAlg.KeySize = 256;
+                    rijAlg.Key = key;
+                    rijAlg.Mode = CipherMode.ECB;
+                    rijAlg.BlockSize = 128;
+                    rijAlg.Padding = PaddingMode.Zeros;
+
+                    var decryptor = rijAlg.CreateDecryptor();
+
+                    // Copy from input stream to a temporary stream (to prevent closing the input stream)
+                    stream.Seek(offset, SeekOrigin.Begin);
+                    await stream.CopyPartialAsync(encryptedStream, tocSize, p.CancellationToken);
+                    encryptedStream.Seek(0, SeekOrigin.Begin);
+
+                    // Decrypt the data
+                    using (var cryptoStream = new CryptoStream(encryptedStream, decryptor, CryptoStreamMode.Read))
+                    using (var decryptedStream = new MemoryStream())
+                    {
+                        // Decrypt data from input stream and copy to an temp output stream
+                        byte[] buffer = new byte[tocSize];
+                        await cryptoStream.ReadAsync(buffer, 0, (int)tocSize, p.CancellationToken);
+                        await decryptedStream.WriteAsync(buffer, 0, (int)tocSize, p.CancellationToken);
+
+                        // Read header data from the decrypted stream
+                        var toc = new NefsHeaderIntroToc();
+                        await FileData.ReadDataAsync(decryptedStream, 0, toc, p);
+                        return toc;
+                    }
+                }
+            }
+            else
+            {
+                // Not encrypted
+                var toc = new NefsHeaderIntroToc();
+                await FileData.ReadDataAsync(stream, offset, toc, p);
+                return toc;
+            }
         }
 
         /// <summary>
@@ -493,7 +637,7 @@ namespace VictorBush.Ego.NefsLib.IO
         private NefsItemList CreateItems(string dataFilePath, NefsHeader h, NefsProgress p)
         {
             var items = new NefsItemList(dataFilePath);
-            var numItems = h.Intro.Part1Size / NefsHeaderPart1Entry.Size;
+            var numItems = h.TableOfContents.Part1Size / NefsHeaderPart1Entry.Size;
 
             for (var i = 0; i < numItems; ++i)
             {

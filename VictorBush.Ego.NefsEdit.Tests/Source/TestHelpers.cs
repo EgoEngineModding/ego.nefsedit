@@ -34,7 +34,8 @@ namespace VictorBush.Ego.NefsEdit.Tests.Source
             items.Add(file2);
 
             var intro = new NefsHeaderIntro();
-            var header = new NefsHeader(intro, items);
+            var toc = new NefsHeaderIntroToc();
+            var header = new NefsHeader(intro, toc, items);
 
             return new NefsArchive(header, items);
         }

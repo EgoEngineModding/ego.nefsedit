@@ -90,6 +90,22 @@ namespace VictorBush.Ego.NefsLib.IO
         }
 
         /// <summary>
+        /// Writes the header intro table of contents to an output stream.
+        /// </summary>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="offset">The absolute offset in the stream to write at.</param>
+        /// <param name="toc">The table of contents to write.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>An async task.</returns>
+        internal async Task WriteHeaderIntroTocAsync(Stream stream, UInt64 offset, NefsHeaderIntroToc toc, NefsProgress p)
+        {
+            using (var t = p.BeginTask(1.0f))
+            {
+                await FileData.WriteDataAsync(stream, offset, toc, p);
+            }
+        }
+
+        /// <summary>
         /// Writes the header part to an output stream.
         /// </summary>
         /// <param name="stream">The stream to write to.</param>
@@ -422,6 +438,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
             // Compute header size
             var introSize = NefsHeaderIntro.Size;
+            var tocSize = NefsHeaderIntroToc.Size;
             var p1Size = numItems * NefsHeaderPart1Entry.Size;
             var p2Size = numItems * NefsHeaderPart2Entry.Size;
             var p3Size = p3.Size;
@@ -429,7 +446,7 @@ namespace VictorBush.Ego.NefsLib.IO
             var p5Size = NefsHeaderPart5.Size;
             var p6Size = numItems * NefsHeaderPart6Entry.Size;
             var p7Size = numItems * NefsHeaderPart7Entry.Size;
-            var headerSize = introSize + p1Size + p2Size + p3Size + p4Size + p5Size + p6Size + p7Size;
+            var headerSize = introSize + tocSize + p1Size + p2Size + p3Size + p4Size + p5Size + p6Size + p7Size;
 
             // Determine first data offset. There are two known offset values. If the header is
             // large enough, the second (larger) offset is used.
@@ -466,16 +483,18 @@ namespace VictorBush.Ego.NefsLib.IO
             intro.NumberOfItems.Value = (uint)numItems;
             intro.Unknown0x70zlib.Value = sourceHeader.Intro.Unknown0x70zlib.Value;
             intro.Unknown0x78.Value = sourceHeader.Intro.Unknown0x78.Value;
-            intro.Unknown0x80.Value = sourceHeader.Intro.Unknown0x80.Value;
-            intro.OffsetToPart1.Value = introSize;
-            intro.OffsetToPart2.Value = intro.OffsetToPart1.Value + (uint)p1Size;
-            intro.OffsetToPart3.Value = intro.OffsetToPart2.Value + (uint)p2Size;
-            intro.OffsetToPart4.Value = intro.OffsetToPart3.Value + (uint)p3Size;
-            intro.OffsetToPart5.Value = intro.OffsetToPart4.Value + (uint)p4Size;
-            intro.OffsetToPart6.Value = intro.OffsetToPart5.Value + (uint)p5Size;
-            intro.OffsetToPart7.Value = intro.OffsetToPart6.Value + (uint)p6Size;
-            intro.OffsetToPart8.Value = intro.OffsetToPart7.Value + (uint)p7Size;
-            intro.Unknown0xa4.Value = sourceHeader.Intro.Unknown0xa4.Value;
+
+            var toc = new NefsHeaderIntroToc();
+            toc.Unknown0x00.Value = sourceHeader.TableOfContents.Unknown0x00.Value;
+            toc.OffsetToPart1.Value = introSize + tocSize;
+            toc.OffsetToPart2.Value = toc.OffsetToPart1.Value + (uint)p1Size;
+            toc.OffsetToPart3.Value = toc.OffsetToPart2.Value + (uint)p2Size;
+            toc.OffsetToPart4.Value = toc.OffsetToPart3.Value + (uint)p3Size;
+            toc.OffsetToPart5.Value = toc.OffsetToPart4.Value + (uint)p4Size;
+            toc.OffsetToPart6.Value = toc.OffsetToPart5.Value + (uint)p5Size;
+            toc.OffsetToPart7.Value = toc.OffsetToPart6.Value + (uint)p6Size;
+            toc.OffsetToPart8.Value = toc.OffsetToPart7.Value + (uint)p7Size;
+            toc.Unknown0x24.Value = sourceHeader.TableOfContents.Unknown0x24.Value;
 
             // Part 8 : TODO ??
             var p8 = new NefsHeaderPart8();
@@ -484,7 +503,7 @@ namespace VictorBush.Ego.NefsLib.IO
             sourceHeader.Part8.AllTheData.Value.CopyTo(p8.AllTheData.Value, 0);
 
             // Create new header object
-            var header = new NefsHeader(intro, p1, p2, p3, p4, p5, p6, p7, p8);
+            var header = new NefsHeader(intro, toc, p1, p2, p3, p4, p5, p6, p7, p8);
 
             // Write the header
             using (var t = p.BeginTask(taskWeightHeader, "Writing header"))
@@ -509,8 +528,11 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>The async task.</returns>
         private async Task WriteHeaderAsync(Stream stream, UInt64 headerOffset, NefsHeader header, NefsProgress p)
         {
-            // Calc weight of each task (7 parts + intro)
-            var weight = 1.0f / 8.0f;
+            // Calc weight of each task (7 parts + intro + table of contents)
+            var weight = 1.0f / 9.0f;
+
+            // Get table of contents
+            var toc = header.TableOfContents;
 
             using (var t = p.BeginTask(weight, "Writing header intro"))
             {
@@ -518,45 +540,51 @@ namespace VictorBush.Ego.NefsLib.IO
                 await this.WriteHeaderIntroAsync(stream, offset, header.Intro, p);
             }
 
+            using (var t = p.BeginTask(weight, "Writing header intro table of contents"))
+            {
+                var offset = headerOffset + NefsHeaderIntroToc.Offset;
+                await this.WriteHeaderIntroTocAsync(stream, offset, header.TableOfContents, p);
+            }
+
             using (var t = p.BeginTask(weight, "Writing header part 1"))
             {
-                var offset = headerOffset + header.Intro.OffsetToPart1.Value;
+                var offset = headerOffset + toc.OffsetToPart1.Value;
                 await this.WriteHeaderPart1Async(stream, offset, header.Part1, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 2"))
             {
-                var offset = headerOffset + header.Intro.OffsetToPart2.Value;
+                var offset = headerOffset + toc.OffsetToPart2.Value;
                 await this.WriteHeaderPart2Async(stream, offset, header.Part2, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 3"))
             {
-                var offset = headerOffset + header.Intro.OffsetToPart3.Value;
+                var offset = headerOffset + toc.OffsetToPart3.Value;
                 await this.WriteHeaderPart3Async(stream, offset, header.Part3, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 4"))
             {
-                var offset = headerOffset + header.Intro.OffsetToPart4.Value;
+                var offset = headerOffset + toc.OffsetToPart4.Value;
                 await this.WriteHeaderPart4Async(stream, offset, header.Part4, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 5"))
             {
-                var offset = headerOffset + header.Intro.OffsetToPart5.Value;
+                var offset = headerOffset + toc.OffsetToPart5.Value;
                 await this.WriteHeaderPart5Async(stream, offset, header.Part5, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 6"))
             {
-                var offset = headerOffset + header.Intro.OffsetToPart6.Value;
+                var offset = headerOffset + toc.OffsetToPart6.Value;
                 await this.WriteHeaderPart6Async(stream, offset, header.Part6, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 7"))
             {
-                var offset = headerOffset + header.Intro.OffsetToPart7.Value;
+                var offset = headerOffset + toc.OffsetToPart7.Value;
                 await this.WriteHeaderPart7Async(stream, offset, header.Part7, p);
             }
         }

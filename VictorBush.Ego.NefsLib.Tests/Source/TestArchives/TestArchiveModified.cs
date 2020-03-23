@@ -149,7 +149,10 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
             var intro = new NefsHeaderIntro();
             intro.NumberOfItems.Value = (uint)items.Count;
-            var header = new NefsHeader(intro, items);
+
+            var toc = new NefsHeaderIntroToc();
+
+            var header = new NefsHeader(intro, toc, items);
 
             return new NefsArchive(header, items);
         }
