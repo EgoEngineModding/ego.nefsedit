@@ -6,6 +6,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
     using System.IO;
     using System.Threading.Tasks;
     using VictorBush.Ego.NefsLib.Progress;
+    using VictorBush.Ego.NefsLib.Utility;
 
     /// <summary>
     /// An array of bytes.
@@ -71,6 +72,12 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         public override async Task ReadAsync(Stream file, UInt64 baseOffset, NefsProgress p)
         {
             this.Value = await this.ReadFileAsync(file, baseOffset, p);
+        }
+
+        /// <inheritdoc/>
+        public override String ToString()
+        {
+            return HexHelper.ByteArrayToString(this.Value);
         }
     }
 }

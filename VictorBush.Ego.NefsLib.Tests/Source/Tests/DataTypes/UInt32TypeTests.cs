@@ -19,7 +19,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
                 var data = new UInt32Type(-8);
                 await data.ReadAsync(file, 8, new NefsProgress());
                 Assert.Equal((UInt32)0x05060708, data.Value);
-                Assert.Equal("5060708", data.ToString());
+                Assert.Equal("0x5060708", data.ToString());
             }
         }
 
@@ -32,7 +32,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
                 var data = new UInt32Type(8);
                 await data.ReadAsync(file, 0, new NefsProgress());
                 Assert.Equal((UInt32)0x15161718, data.Value);
-                Assert.Equal("15161718", data.ToString());
+                Assert.Equal("0x15161718", data.ToString());
             }
         }
 
@@ -45,7 +45,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
                 var data = new UInt32Type(0x0);
                 await data.ReadAsync(file, 0, new NefsProgress());
                 Assert.Equal((UInt32)0x05060708, data.Value);
-                Assert.Equal("5060708", data.ToString());
+                Assert.Equal("0x5060708", data.ToString());
             }
         }
 

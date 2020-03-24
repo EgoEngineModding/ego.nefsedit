@@ -25,12 +25,24 @@ namespace VictorBush.Ego.NefsLib
         /// <param name="headerFilePath">File that contains header data.</param>
         /// <param name="headerOffset">Offset to header data.</param>
         /// <param name="dataFilePath">File that contains item data.</param>
-        public NefsArchiveSource(string headerFilePath, ulong headerOffset, string dataFilePath)
+        /// <param name="assumeDataIsEncrypted">Indicates whether to assume the item data is encrypted.</param>
+        public NefsArchiveSource(
+            string headerFilePath,
+            ulong headerOffset,
+            string dataFilePath,
+            bool assumeDataIsEncrypted)
         {
             this.HeaderFilePath = headerFilePath ?? throw new System.ArgumentNullException(nameof(headerFilePath));
             this.HeaderOffset = headerOffset;
             this.DataFilePath = dataFilePath ?? throw new System.ArgumentNullException(nameof(dataFilePath));
+            this.AssumeDataIsEncrypted = assumeDataIsEncrypted;
         }
+
+        /// <summary>
+        /// Indicates whether to assume the item data is encrypted. If the header is encrypted, this
+        /// value is ignored and the data is assumed to be encrypted as well.
+        /// </summary>
+        public bool AssumeDataIsEncrypted { get; }
 
         /// <summary>
         /// The file that contents the item data.

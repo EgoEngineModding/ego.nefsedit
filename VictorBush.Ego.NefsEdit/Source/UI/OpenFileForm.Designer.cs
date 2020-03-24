@@ -56,6 +56,7 @@
             this.customHeaderOffsetLabel = new System.Windows.Forms.Label();
             this.customDataFileTextBox = new System.Windows.Forms.TextBox();
             this.customDataFileLabel = new System.Windows.Forms.Label();
+            this.customDataIsEncryptedCheckBox = new System.Windows.Forms.CheckBox();
             this.tablessControl1.SuspendLayout();
             this.nefsTabPage.SuspendLayout();
             this.gameDatTabPage.SuspendLayout();
@@ -270,6 +271,7 @@
             // 
             // customTabPage
             // 
+            this.customTabPage.Controls.Add(this.customDataIsEncryptedCheckBox);
             this.customTabPage.Controls.Add(this.customHeaderOffsetTextBox);
             this.customTabPage.Controls.Add(this.customHeaderFileButton);
             this.customTabPage.Controls.Add(this.customHeaderFileTextBox);
@@ -362,6 +364,16 @@
             this.customDataFileLabel.TabIndex = 12;
             this.customDataFileLabel.Text = "Data File";
             // 
+            // customDataIsEncryptedCheckBox
+            // 
+            this.customDataIsEncryptedCheckBox.AutoSize = true;
+            this.customDataIsEncryptedCheckBox.Location = new System.Drawing.Point(10, 138);
+            this.customDataIsEncryptedCheckBox.Name = "customDataIsEncryptedCheckBox";
+            this.customDataIsEncryptedCheckBox.Size = new System.Drawing.Size(110, 17);
+            this.customDataIsEncryptedCheckBox.TabIndex = 23;
+            this.customDataIsEncryptedCheckBox.Text = "Data is Encrypted";
+            this.customDataIsEncryptedCheckBox.UseVisualStyleBackColor = true;
+            // 
             // OpenFileForm
             // 
             this.AcceptButton = this.openButton;
@@ -424,5 +436,6 @@
         private System.Windows.Forms.Button gameDatDirButton;
         private System.Windows.Forms.TextBox gameDatDirTextBox;
         private System.Windows.Forms.Label gameDatDirLabel;
+        private System.Windows.Forms.CheckBox customDataIsEncryptedCheckBox;
     }
 }

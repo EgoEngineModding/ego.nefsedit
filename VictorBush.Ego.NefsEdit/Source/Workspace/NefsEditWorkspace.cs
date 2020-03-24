@@ -510,7 +510,9 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 
         private async Task<bool> ExtractFileAsync(NefsItem item, string outputFilePath, NefsProgress p)
         {
-            var isEncrypted = this.Archive.Header.Intro.IsEncrypted;
+            // If header is encrypted, then assume data is encrypted. For archives like game.dat,
+            // the header isn't encrypted, but the data is.
+            var isEncrypted = this.Archive.Header.Intro.IsEncrypted || this.ArchiveSource.AssumeDataIsEncrypted;
 
             try
             {

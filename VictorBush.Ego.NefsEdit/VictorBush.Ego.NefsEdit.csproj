@@ -57,6 +57,12 @@
     <Compile Include="Source\Commands\UndoBuffer.cs" />
     <Compile Include="Source\Commands\INefsEditCommand.cs" />
     <Compile Include="Source\Commands\ReplaceFileCommand.cs" />
+    <Compile Include="Source\UI\ArchiveDebugForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Source\UI\ArchiveDebugForm.Designer.cs">
+      <DependentUpon>ArchiveDebugForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="Source\Utility\Constants.cs" />
     <Compile Include="Source\Services\ISettingsService.cs" />
     <Compile Include="Source\Services\SettingsService.cs" />
@@ -127,6 +133,9 @@
     <Compile Include="Source\Utility\LogHelper.cs" />
     <Compile Include="Source\Utility\RichTextWriter.cs" />
     <Compile Include="Source\Utility\Settings.cs" />
+    <EmbeddedResource Include="Source\UI\ArchiveDebugForm.resx">
+      <DependentUpon>ArchiveDebugForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Source\UI\EditorForm.resx">
       <DependentUpon>EditorForm.cs</DependentUpon>
     </EmbeddedResource>

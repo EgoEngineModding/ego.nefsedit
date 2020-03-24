@@ -38,7 +38,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             // Open an archive
             var archivePath = @"C:\archive.nefs";
             var archive = TestHelpers.CreateTestArchive(archivePath);
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archivePath, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive);
             this.fileSystem.AddFile(archivePath, new MockFileData("hi"));
             await w.OpenArchiveAsync(archivePath);
@@ -76,7 +76,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             // Open an archive
             var archivePath = @"C:\archive.nefs";
             var archive = TestHelpers.CreateTestArchive(archivePath);
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archivePath, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive);
             this.fileSystem.AddFile(archivePath, new MockFileData("hi"));
             await w.OpenArchiveAsync(archivePath);
@@ -120,7 +120,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             // Open an archive
             var archivePath = @"C:\archive.nefs";
             var archive = TestHelpers.CreateTestArchive(archivePath);
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archivePath, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive);
             this.fileSystem.AddFile(archivePath, new MockFileData("hi"));
             await w.OpenArchiveAsync(archivePath);
@@ -172,7 +172,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             // Open an archive
             var archivePath = @"C:\archive.nefs";
             var archive = TestHelpers.CreateTestArchive(archivePath);
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archivePath, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive);
             this.fileSystem.AddFile(archivePath, new MockFileData("hi"));
             await w.OpenArchiveAsync(archivePath);
@@ -222,7 +222,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             // Open an archive
             var archivePath = @"C:\archive.nefs";
             var archive = TestHelpers.CreateTestArchive(archivePath);
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archivePath, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive);
             this.fileSystem.AddFile(archivePath, new MockFileData("hi"));
             await w.OpenArchiveAsync(archivePath);
@@ -266,7 +266,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             // Open an archive
             var archivePath = @"C:\archive.nefs";
             var archive = TestHelpers.CreateTestArchive(archivePath);
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archivePath, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive);
             this.fileSystem.AddFile(archivePath, new MockFileData("hi"));
             await w.OpenArchiveAsync(archivePath);
@@ -292,7 +292,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             // Open another archive
             var archive2Path = @"C:\archive.nefs";
             var archive2 = TestHelpers.CreateTestArchive(archivePath);
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archive2Path, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive2);
             var result = await w.OpenArchiveAsync(archive2Path);
 
@@ -324,7 +324,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             // Open an archive
             var archivePath = @"C:\archive.nefs";
             var archive = TestHelpers.CreateTestArchive(archivePath);
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archivePath, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive);
             this.fileSystem.AddFile(archivePath, new MockFileData("hi"));
             await w.OpenArchiveAsync(archivePath);
@@ -335,7 +335,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             // Open another archive
             var archive2Path = @"C:\archive.nefs";
             var archive2 = TestHelpers.CreateTestArchive(archivePath);
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archive2Path, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive2);
             var result = await w.OpenArchiveAsync(archive2Path);
 
@@ -382,7 +382,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             this.fileSystem.AddFile(filePath, new MockFileData("hi"));
 
             // Mock read archive
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(filePath, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive);
 
             // Test
@@ -431,7 +431,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             // Open an archive
             var archivePath = @"C:\archive.nefs";
             var archive = TestHelpers.CreateTestArchive(archivePath);
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archivePath, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive);
             this.fileSystem.AddFile(archivePath, new MockFileData("hi"));
             await w.OpenArchiveAsync(archivePath);
@@ -474,7 +474,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             // Open an archive
             var archivePath = @"C:\archive.nefs";
             var archive = TestHelpers.CreateTestArchive(archivePath);
-            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(archivePath, It.IsAny<NefsProgress>()))
+            this.nefsReaderMock.Setup(r => r.ReadArchiveAsync(It.IsAny<NefsArchiveSource>(), It.IsAny<NefsProgress>()))
                 .ReturnsAsync(archive);
             this.fileSystem.AddFile(archivePath, new MockFileData("hi"));
             await w.OpenArchiveAsync(archivePath);

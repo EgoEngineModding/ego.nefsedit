@@ -48,7 +48,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         public override string ToString()
         {
             /* Return value in hex */
-            return this.Value.ToString("X");
+            return "0x" + this.Value.ToString("X");
         }
     }
 }

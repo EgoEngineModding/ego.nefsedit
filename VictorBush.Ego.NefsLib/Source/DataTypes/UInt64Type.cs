@@ -47,7 +47,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         /// <inheritdoc/>
         public override string ToString()
         {
-            return this.Value.ToString("X");
+            return "0x" + this.Value.ToString("X");
         }
     }
 }

@@ -13,7 +13,6 @@ namespace VictorBush.Ego.NefsEdit.UI
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsLib;
-    using VictorBush.Ego.NefsLib.Header;
     using VictorBush.Ego.NefsLib.Progress;
 
     /// <summary>
@@ -73,6 +72,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
 
             this.customDataFileTextBox.Text = path;
+            this.customDataFileTextBox.ScrollToEnd();
         }
 
         private void CustomHeaderFileButton_Click(Object sender, EventArgs e)
@@ -84,6 +84,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
 
             this.customHeaderFileTextBox.Text = path;
+            this.customHeaderFileTextBox.ScrollToEnd();
         }
 
         /// <summary>
@@ -192,7 +193,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             var sources = new List<NefsArchiveSource>();
             for (var i = 0; i < gameDatFiles.Count; ++i)
             {
-                var source = new NefsArchiveSource(gameExePath, (ulong)headerOffsets[i], gameDatFiles[i]);
+                var isDataEncrypted = true;
+                var source = new NefsArchiveSource(gameExePath, (ulong)headerOffsets[i], gameDatFiles[i], isDataEncrypted);
                 sources.Add(source);
             }
 
@@ -208,6 +210,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
 
             this.gameDatDirTextBox.Text = path;
+            this.gameDatDirTextBox.ScrollToEnd();
         }
 
         private async void GameDatRefreshButton_Click(Object sender, EventArgs e)
@@ -242,6 +245,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
 
             this.gameExeFileTextBox.Text = path;
+            this.gameExeFileTextBox.ScrollToEnd();
         }
 
         private void NefsFileButton_Click(Object sender, EventArgs e)
@@ -253,6 +257,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
 
             this.nefsFileTextBox.Text = path;
+            this.nefsFileTextBox.ScrollToEnd();
         }
 
         private void OpenButton_Click(Object sender, EventArgs e)
@@ -353,7 +358,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             return new NefsArchiveSource(
                 this.customHeaderFileTextBox.Text,
                 offset,
-                this.customDataFileTextBox.Text);
+                this.customDataFileTextBox.Text,
+                this.customDataIsEncryptedCheckBox.Checked);
         }
 
         private NefsArchiveSource ValidateGameDat()

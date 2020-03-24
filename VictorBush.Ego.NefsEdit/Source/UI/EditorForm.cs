@@ -14,7 +14,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     /// </summary>
     internal partial class EditorForm : Form
     {
-        private PropertyGridForm archivePropertyForm;
+        private ArchiveDebugForm archiveDebugForm;
         private BrowseAllForm browseAllForm;
         private BrowseTreeForm browseTreeForm;
         private ConsoleForm consoleForm;
@@ -71,10 +71,10 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.UiService.ShowMessageBox($"Version {Application.ProductVersion}");
         }
 
-        private void ArchiveDetailsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void ArchiveDebugMainMenuItem_Click(Object sender, EventArgs e)
         {
-            this.archivePropertyForm.Show();
-            this.archivePropertyForm.Focus();
+            this.archiveDebugForm.Show();
+            this.archiveDebugForm.Focus();
         }
 
         private async void CloseMainMenuItem_Click(Object sender, EventArgs e)
@@ -113,8 +113,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.browseAllForm = new BrowseAllForm(this.Workspace, this, this.UiService);
             this.browseTreeForm = new BrowseTreeForm(this.Workspace, this, this.UiService);
             this.selectedFilePropertyForm = new PropertyGridForm();
-            this.archivePropertyForm = new PropertyGridForm();
             this.consoleForm = new ConsoleForm();
+            this.archiveDebugForm = new ArchiveDebugForm(this.Workspace, this.UiService);
 
             // Redirect standard output to our console form
             this.consoleForm.SetupConsole();
@@ -150,7 +150,6 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
         {
-            this.archivePropertyForm.SetSelectedObject(null);
             this.UpdateTitle();
         }
 
@@ -159,7 +158,6 @@ namespace VictorBush.Ego.NefsEdit.UI
             // Update - must do on UI thread
             this.UiService.Dispatcher.Invoke(() =>
             {
-                this.archivePropertyForm.SetSelectedObject(this.Workspace.Archive);
                 this.UpdateTitle();
             });
         }
@@ -290,15 +288,17 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.browseAllForm.DockAreas = WeifenLuo.WinFormsUI.Docking.DockAreas.Document | WeifenLuo.WinFormsUI.Docking.DockAreas.Float;
             this.browseAllForm.HideOnClose = true;
 
+            this.archiveDebugForm.Show(this.browserDockPanel);
+            this.archiveDebugForm.DockState = WeifenLuo.WinFormsUI.Docking.DockState.Document;
+            this.archiveDebugForm.CloseButton = false;
+            this.archiveDebugForm.CloseButtonVisible = false;
+            this.archiveDebugForm.DockAreas = WeifenLuo.WinFormsUI.Docking.DockAreas.Document | WeifenLuo.WinFormsUI.Docking.DockAreas.Float;
+            this.archiveDebugForm.HideOnClose = true;
+
             this.selectedFilePropertyForm.Show(this.browserDockPanel);
             this.selectedFilePropertyForm.DockState = WeifenLuo.WinFormsUI.Docking.DockState.DockRight;
             this.selectedFilePropertyForm.Text = "Item Details";
             this.selectedFilePropertyForm.HideOnClose = true;
-
-            this.archivePropertyForm.Show(this.browserDockPanel);
-            this.archivePropertyForm.DockState = WeifenLuo.WinFormsUI.Docking.DockState.DockRight;
-            this.archivePropertyForm.Text = "Archive Details";
-            this.archivePropertyForm.HideOnClose = true;
 
             this.consoleForm.Show(this.browserDockPanel);
             this.consoleForm.DockState = WeifenLuo.WinFormsUI.Docking.DockState.DockBottom;

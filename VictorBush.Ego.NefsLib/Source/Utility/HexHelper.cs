@@ -3,12 +3,34 @@
 namespace VictorBush.Ego.NefsLib.Utility
 {
     using System;
+    using System.Text;
 
     /// <summary>
     /// Some hex string utilities.
     /// </summary>
     public static class HexHelper
     {
+        /// <summary>
+        /// Prints a byte array to a string in hex format.
+        /// </summary>
+        /// <param name="bytes">The bytes to print.</param>
+        /// <returns>The string.</returns>
+        public static string ByteArrayToString(byte[] bytes)
+        {
+            if (bytes == null)
+            {
+                return "";
+            }
+
+            var sb = new StringBuilder();
+            foreach (var b in bytes)
+            {
+                sb.Append("0x" + b.ToString("X") + ", ");
+            }
+
+            return sb.ToString();
+        }
+
         /// <summary>
         /// Takes a string representation of a hexademical value and converts it to a byte array.
         /// </summary>

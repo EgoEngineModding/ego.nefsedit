@@ -8,6 +8,7 @@ TODO
 - Show/hide "Item" menu tool strip item.
 - Recent files list.
 - Associate nefs with app.
+- Remove default Save option for safety (to prevent accidently saving over an archive in the game's directory)
 
 Notes
 - Need to double-check out-of-order items (i.e., if an item can come before its parent directory).
