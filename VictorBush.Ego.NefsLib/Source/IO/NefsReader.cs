@@ -104,12 +104,13 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <summary>
         /// Reads the header from an input stream.
         /// </summary>
-        /// <param name="stream">The stream to read from.</param>
+        /// <param name="originalStream">The stream to read from.</param>
         /// <param name="offset">The offset to the header from the beginning of the stream.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header.</returns>
-        internal async Task<NefsHeader> ReadHeaderAsync(Stream stream, uint offset, NefsProgress p)
+        internal async Task<NefsHeader> ReadHeaderAsync(Stream originalStream, uint offset, NefsProgress p)
         {
+            Stream stream;
             NefsHeaderIntro intro = null;
             NefsHeaderIntroToc toc = null;
             NefsHeaderPart1 part1 = null;
@@ -121,13 +122,18 @@ namespace VictorBush.Ego.NefsLib.IO
             NefsHeaderPart7 part7 = null;
             NefsHeaderPart8 part8 = null;
 
-            // Calc weight of each task (9 parts of header to load)
-            var weight = 1.0f / 9.0f;
+            // Calc weight of each task (8 parts + intro + table of contents)
+            var weight = 1.0f / 10.0f;
 
             using (p.BeginTask(weight, "Reading header intro"))
             {
-                intro = await this.ReadHeaderIntroAsync(stream, offset, p);
-                toc = await this.ReadHeaderIntroTocAsync(stream, offset + NefsHeaderIntroToc.Offset, intro, p);
+                // Decrypt header if needed
+                (intro, stream) = await this.ReadHeaderIntroAsync(originalStream, offset, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header intro"))
+            {
+                toc = await this.ReadHeaderIntroTocAsync(stream, NefsHeaderIntroToc.Offset, intro, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 1"))
@@ -171,29 +177,48 @@ namespace VictorBush.Ego.NefsLib.IO
                 part8 = await this.ReadHeaderPart8Async(stream, toc.OffsetToPart8.Value, 0, p);
             }
 
+            // The header stream must be disposed
+            stream.Dispose();
+
             return new NefsHeader(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
         }
 
         /// <summary>
-        /// Reads the header intro from an input stream.
+        /// Reads the header intro from an input stream. Returns a new stream that contains the
+        /// header data. This stream must be disposed by the caller. If the header is encrypted, the
+        /// header data is decrypted before being placed in the new stream.
         /// </summary>
         /// <param name="stream">The stream to read from.</param>
         /// <param name="offset">The offset to the header intro from the beginning of the stream.</param>
         /// <param name="p">Progress info.</param>
-        /// <returns>The loaded header intro.</returns>
-        internal async Task<NefsHeaderIntro> ReadHeaderIntroAsync(Stream stream, uint offset, NefsProgress p)
+        /// <returns>The loaded header intro and the stream to use for the rest of the header.</returns>
+        internal async Task<(NefsHeaderIntro Intro, Stream HeaderStream)> ReadHeaderIntroAsync(
+            Stream stream,
+            uint offset,
+            NefsProgress p)
         {
+            // The decrypted stream will need to be disposed by the caller
+            var decryptedStream = new MemoryStream();
+            NefsHeaderIntro intro;
+
             // Read magic number (first four bytes)
+            stream.Seek(offset, SeekOrigin.Begin);
             var magicNum = new UInt32Type(0);
             await magicNum.ReadAsync(stream, offset, p);
+
+            // Reset stream position
+            stream.Seek(offset, SeekOrigin.Begin);
 
             // Check magic number
             if (magicNum.Value == NefsHeaderIntro.NefsMagicNumber)
             {
                 // This is a non-encrypted NeFS header
-                var intro = new NefsHeaderIntro();
+                intro = new NefsHeaderIntro();
                 await FileData.ReadDataAsync(stream, offset, intro, p);
-                return intro;
+
+                // Copy the entire header to the decrypted stream (nothing to decrypt)
+                stream.Seek(offset, SeekOrigin.Begin);
+                await stream.CopyPartialAsync(decryptedStream, intro.HeaderSize.Value, p.CancellationToken);
             }
             else
             {
@@ -203,13 +228,12 @@ namespace VictorBush.Ego.NefsLib.IO
                 // Encrypted headers:
                 // - Headers are "encrypted" in a two-step process. RSA-1024. No padding is used.
                 // - First 0x80 bytes are signed with an RSA private key (data -> decrypt ->
-                //   scrambled data).
+                // scrambled data).
                 // - Must use an RSA 1024-bit public key to unscramble the data (scrambled data ->
-                //   encrypt -> data).
+                // encrypt -> data).
                 // - For DiRT Rally 2 this public key is stored in the main executable.
-                stream.Seek(offset, SeekOrigin.Begin);
-                byte[] encryptedHeader = new byte[0x81];
-                stream.Read(encryptedHeader, 0, (int)NefsHeaderIntro.Size);
+                byte[] encryptedHeader = new byte[NefsHeaderIntro.Size + 1]; // TODO : Why the +1?
+                await stream.ReadAsync(encryptedHeader, 0, (int)NefsHeaderIntro.Size, p.CancellationToken);
                 encryptedHeader[NefsHeaderIntro.Size] = 0;
 
                 // Use big integers instead of RSA since the c# implementation forces the use of padding.
@@ -217,27 +241,51 @@ namespace VictorBush.Ego.NefsLib.IO
                 var e = new BigInteger(this.RsaExponent);
                 var m = new BigInteger(encryptedHeader);
 
+                // Decrypt the header intro
                 byte[] decrypted = BigInteger.ModPow(m, e, n).ToByteArray();
+                decryptedStream.Write(decrypted, 0, decrypted.Length);
 
-                using (var decryptedStream = new MemoryStream())
+                // Fill any leftover space with zeros
+                if (decrypted.Length != NefsHeaderIntro.Size)
                 {
-                    decryptedStream.Write(decrypted, 0, decrypted.Length);
-
-                    // Fill any leftover space with zeros
-                    if (decrypted.Length != NefsHeaderIntro.Size)
+                    for (int i = 0; i < (NefsHeaderIntro.Size - decrypted.Length); i++)
                     {
-                        for (int i = 0; i < (NefsHeaderIntro.Size - decrypted.Length); i++)
-                        {
-                            decryptedStream.WriteByte(0);
-                        }
+                        decryptedStream.WriteByte(0);
                     }
+                }
 
-                    // Read header intro data from decrypted stream
-                    var intro = new NefsHeaderIntro(isEncrpyted: true);
-                    await FileData.ReadDataAsync(decryptedStream, offset, intro, p);
-                    return intro;
+                // Read header intro data from decrypted stream
+                intro = new NefsHeaderIntro(isEncrpyted: true);
+                await FileData.ReadDataAsync(decryptedStream, 0, intro, p);
+
+                // The rest of the header is encrypted using AES-256, decrypt using the key from the
+                // header intro
+                var asciiKey = Encoding.ASCII.GetString(intro.AesKey.Value);
+                byte[] key = HexHelper.FromHexString(asciiKey);
+                var headerSize = intro.HeaderSize.Value;
+
+                // Decrypt the rest of the header
+                using (var rijAlg = new RijndaelManaged())
+                {
+                    rijAlg.KeySize = 256;
+                    rijAlg.Key = key;
+                    rijAlg.Mode = CipherMode.ECB;
+                    rijAlg.BlockSize = 128;
+                    rijAlg.Padding = PaddingMode.Zeros;
+
+                    var decryptor = rijAlg.CreateDecryptor();
+                    decryptedStream.Seek(0, SeekOrigin.End);
+
+                    // Decrypt the data - make sure to leave open the base stream
+                    using (var cryptoStream = new CryptoStream(stream, decryptor, CryptoStreamMode.Read, true))
+                    {
+                        // Decrypt data from input stream and copy to the decrypted stream
+                        await cryptoStream.CopyPartialAsync(decryptedStream, headerSize, p.CancellationToken);
+                    }
                 }
             }
+
+            return (intro, decryptedStream);
         }
 
         /// <summary>
@@ -252,53 +300,9 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>The loaded header intro offets data.</returns>
         internal async Task<NefsHeaderIntroToc> ReadHeaderIntroTocAsync(Stream stream, uint offset, NefsHeaderIntro intro, NefsProgress p)
         {
-            if (intro.IsEncrypted)
-            {
-                // Header is encrypted, decrypt using the AES-256 key from the header intro
-                var asciiKey = Encoding.ASCII.GetString(intro.AesKey.Value);
-                byte[] key = HexHelper.FromHexString(asciiKey);
-                var headerLen = intro.HeaderSize.Value;
-                var tocSize = headerLen - NefsHeaderIntro.Size;
-
-                using (var encryptedStream = new MemoryStream())
-                using (var rijAlg = new RijndaelManaged())
-                {
-                    rijAlg.KeySize = 256;
-                    rijAlg.Key = key;
-                    rijAlg.Mode = CipherMode.ECB;
-                    rijAlg.BlockSize = 128;
-                    rijAlg.Padding = PaddingMode.Zeros;
-
-                    var decryptor = rijAlg.CreateDecryptor();
-
-                    // Copy from input stream to a temporary stream (to prevent closing the input stream)
-                    stream.Seek(offset, SeekOrigin.Begin);
-                    await stream.CopyPartialAsync(encryptedStream, tocSize, p.CancellationToken);
-                    encryptedStream.Seek(0, SeekOrigin.Begin);
-
-                    // Decrypt the data
-                    using (var cryptoStream = new CryptoStream(encryptedStream, decryptor, CryptoStreamMode.Read))
-                    using (var decryptedStream = new MemoryStream())
-                    {
-                        // Decrypt data from input stream and copy to an temp output stream
-                        byte[] buffer = new byte[tocSize];
-                        await cryptoStream.ReadAsync(buffer, 0, (int)tocSize, p.CancellationToken);
-                        await decryptedStream.WriteAsync(buffer, 0, (int)tocSize, p.CancellationToken);
-
-                        // Read header data from the decrypted stream
-                        var toc = new NefsHeaderIntroToc();
-                        await FileData.ReadDataAsync(decryptedStream, 0, toc, p);
-                        return toc;
-                    }
-                }
-            }
-            else
-            {
-                // Not encrypted
-                var toc = new NefsHeaderIntroToc();
-                await FileData.ReadDataAsync(stream, offset, toc, p);
-                return toc;
-            }
+            var toc = new NefsHeaderIntroToc();
+            await FileData.ReadDataAsync(stream, offset, toc, p);
+            return toc;
         }
 
         /// <summary>
