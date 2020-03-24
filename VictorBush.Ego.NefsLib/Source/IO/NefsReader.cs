@@ -81,24 +81,46 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <inheritdoc/>
         public async Task<NefsArchive> ReadArchiveAsync(string filePath, NefsProgress p)
         {
-            // Validate path
-            if (!this.FileSystem.File.Exists(filePath))
+            return await this.ReadArchiveAsync(filePath, NefsHeader.IntroOffset, filePath, p);
+        }
+
+        /// <inheritdoc/>
+        public async Task<NefsArchive> ReadArchiveAsync(
+            string headerFilePath,
+            ulong headerOffset,
+            string dataFilePath,
+            NefsProgress p)
+        {
+            // Validate header path
+            if (!this.FileSystem.File.Exists(headerFilePath))
             {
-                throw new FileNotFoundException($"File not found: {filePath}.");
+                throw new FileNotFoundException($"File not found: {headerFilePath}.");
+            }
+
+            // Validate data path
+            if (!this.FileSystem.File.Exists(dataFilePath))
+            {
+                throw new FileNotFoundException($"File not found: {dataFilePath}.");
             }
 
             // Read the header
             NefsHeader header = null;
-            using (var stream = this.FileSystem.File.OpenRead(filePath))
+            using (var stream = this.FileSystem.File.OpenRead(headerFilePath))
             {
-                header = await this.ReadHeaderAsync(stream, NefsHeader.IntroOffset, p);
+                header = await this.ReadHeaderAsync(stream, headerOffset, p);
             }
 
             // Create items from header
-            var items = this.CreateItems(filePath, header, p);
+            var items = this.CreateItems(dataFilePath, header, p);
 
             // Create the archive
             return new NefsArchive(header, items);
+        }
+
+        /// <inheritdoc/>
+        public async Task<NefsArchive> ReadArchiveAsync(NefsArchiveSource source, NefsProgress p)
+        {
+            return await this.ReadArchiveAsync(source.HeaderFilePath, source.HeaderOffset, source.DataFilePath, p);
         }
 
         /// <summary>
@@ -108,7 +130,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="offset">The offset to the header from the beginning of the stream.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header.</returns>
-        internal async Task<NefsHeader> ReadHeaderAsync(Stream originalStream, uint offset, NefsProgress p)
+        internal async Task<NefsHeader> ReadHeaderAsync(Stream originalStream, ulong offset, NefsProgress p)
         {
             Stream stream;
             NefsHeaderIntro intro = null;
@@ -131,9 +153,9 @@ namespace VictorBush.Ego.NefsLib.IO
                 (intro, stream) = await this.ReadHeaderIntroAsync(originalStream, offset, p);
             }
 
-            using (p.BeginTask(weight, "Reading header intro"))
+            using (p.BeginTask(weight, "Reading header intro table of contents"))
             {
-                toc = await this.ReadHeaderIntroTocAsync(stream, NefsHeaderIntroToc.Offset, intro, p);
+                toc = await this.ReadHeaderIntroTocAsync(stream, NefsHeaderIntroToc.Offset, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 1"))
@@ -194,7 +216,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>The loaded header intro and the stream to use for the rest of the header.</returns>
         internal async Task<(NefsHeaderIntro Intro, Stream HeaderStream)> ReadHeaderIntroAsync(
             Stream stream,
-            uint offset,
+            ulong offset,
             NefsProgress p)
         {
             // The decrypted stream will need to be disposed by the caller
@@ -202,12 +224,12 @@ namespace VictorBush.Ego.NefsLib.IO
             NefsHeaderIntro intro;
 
             // Read magic number (first four bytes)
-            stream.Seek(offset, SeekOrigin.Begin);
+            stream.Seek((long)offset, SeekOrigin.Begin);
             var magicNum = new UInt32Type(0);
             await magicNum.ReadAsync(stream, offset, p);
 
             // Reset stream position
-            stream.Seek(offset, SeekOrigin.Begin);
+            stream.Seek((long)offset, SeekOrigin.Begin);
 
             // Check magic number
             if (magicNum.Value == NefsHeaderIntro.NefsMagicNumber)
@@ -217,7 +239,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 await FileData.ReadDataAsync(stream, offset, intro, p);
 
                 // Copy the entire header to the decrypted stream (nothing to decrypt)
-                stream.Seek(offset, SeekOrigin.Begin);
+                stream.Seek((long)offset, SeekOrigin.Begin);
                 await stream.CopyPartialAsync(decryptedStream, intro.HeaderSize.Value, p.CancellationToken);
             }
             else
@@ -294,10 +316,9 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="offset">
         /// The offset to the header intro table of contents from the beginning of the stream.
         /// </param>
-        /// <param name="intro">The intro data.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header intro offets data.</returns>
-        internal async Task<NefsHeaderIntroToc> ReadHeaderIntroTocAsync(Stream stream, uint offset, NefsHeaderIntro intro, NefsProgress p)
+        internal async Task<NefsHeaderIntroToc> ReadHeaderIntroTocAsync(Stream stream, uint offset, NefsProgress p)
         {
             var toc = new NefsHeaderIntroToc();
             await FileData.ReadDataAsync(stream, offset, toc, p);

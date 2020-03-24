@@ -4,7 +4,10 @@ TODO
 - Namespace cleanup
 - Check for modified archive state in app. If not modified, don't allow saving.
 - Show item state in app - replaced items become a certain color, deleted items become red, etc.
-
+- Get lib logging working.
+- Show/hide "Item" menu tool strip item.
+- Recent files list.
+- Associate nefs with app.
 
 Notes
 - Need to double-check out-of-order items (i.e., if an item can come before its parent directory).
@@ -12,7 +15,7 @@ Need to check assumptions about item order.
 - Items list - get by index vs get by id.
 - Re-evaluate NefsProgress to see if it makes sense for progress reporting.
 - Using sorted dictionary for item lists in header parts. Make note in design decisions.
-
+- Requires newer version of .net framework
 
 
 Design decisions

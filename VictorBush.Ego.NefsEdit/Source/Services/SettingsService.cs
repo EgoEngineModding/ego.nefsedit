@@ -8,6 +8,7 @@ namespace VictorBush.Ego.NefsEdit.Services
     using System.Windows.Forms;
     using System.Xml.Serialization;
     using log4net;
+    using Microsoft.Win32;
     using VictorBush.Ego.NefsEdit.Utility;
 
     /// <summary>
@@ -28,10 +29,41 @@ namespace VictorBush.Ego.NefsEdit.Services
         {
             this.FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             this.UiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
+            this.Settings = new Settings();
         }
 
         /// <inheritdoc/>
-        public string QuickExtractDir => this.Settings?.QuickExtractDir ?? "";
+        public String Dirt4Dir
+        {
+            get => this.Settings.Dirt4Dir;
+            set => this.Settings.Dirt4Dir = value;
+        }
+
+        /// <inheritdoc/>
+        public String Dirt4Exe => Path.Combine(this.Dirt4Dir, Constants.Dirt4ExeName);
+
+        /// <inheritdoc/>
+        public String Dirt4GameDatDir => Path.Combine(this.Dirt4Dir, Constants.Dirt4GameDatPath);
+
+        /// <inheritdoc/>
+        public String DirtRally2Dir
+        {
+            get => this.Settings.DirtRally2Dir;
+            set => this.Settings.DirtRally2Dir = value;
+        }
+
+        /// <inheritdoc/>
+        public String DirtRally2Exe => Path.Combine(this.DirtRally2Dir, Constants.DirtRally2ExeName);
+
+        /// <inheritdoc/>
+        public String DirtRally2GameDatDir => Path.Combine(this.DirtRally2Dir, Constants.DirtRally2GameDatPath);
+
+        /// <inheritdoc/>
+        public string QuickExtractDir
+        {
+            get => this.Settings.QuickExtractDir ?? "";
+            set => this.Settings.QuickExtractDir = value;
+        }
 
         private IFileSystem FileSystem { get; }
 
@@ -82,10 +114,12 @@ namespace VictorBush.Ego.NefsEdit.Services
                 }
 
                 Log.Info($"Settings loaded.");
+                this.OnSettingsLoaded();
             }
             catch (Exception ex)
             {
                 Log.Error($"Failed to read settings file.\r\n{ex.Message}");
+                this.ResetSettings();
             }
         }
 
@@ -118,12 +152,75 @@ namespace VictorBush.Ego.NefsEdit.Services
             }
         }
 
+        private string FindSteamGameDir(string gameSubPath)
+        {
+            try
+            {
+                using (var key = Registry.CurrentUser.OpenSubKey(@"Software\Valve\Steam"))
+                {
+                    if (key?.GetValue("SteamPath") is string steamPath)
+                    {
+                        var path = Path.Combine(steamPath, gameSubPath);
+                        if (this.FileSystem.Directory.Exists(path))
+                        {
+                            return path;
+                        }
+                    }
+                }
+            }
+            catch (Exception)
+            {
+            }
+
+            return "";
+        }
+
+        /// <summary>
+        /// Performs checks when settings are loaded.
+        /// </summary>
+        private void OnSettingsLoaded()
+        {
+            var shouldSave = false;
+
+            // Try to auto-find game directories if not set
+            if (string.IsNullOrWhiteSpace(this.DirtRally2Dir))
+            {
+                this.DirtRally2Dir = this.FindSteamGameDir(Constants.DirtRally2SteamPath);
+                if (!string.IsNullOrWhiteSpace(this.DirtRally2Dir))
+                {
+                    Log.Info($"Found DiRT Rally 2 directory: {this.DirtRally2Dir}");
+                    shouldSave = true;
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(this.Dirt4Dir))
+            {
+                this.Dirt4Dir = this.FindSteamGameDir(Constants.Dirt4SteamPath);
+                if (!string.IsNullOrWhiteSpace(this.Dirt4Dir))
+                {
+                    Log.Info($"Found DiRT 4 directory: {this.Dirt4Dir}");
+                    shouldSave = true;
+                }
+            }
+
+            // Save updated settings if needed
+            if (shouldSave)
+            {
+                this.Save();
+            }
+        }
+
         /// <summary>
         /// Resets application settings to default.
         /// </summary>
         private void ResetSettings()
         {
-            this.Settings = new Settings();
+            this.Settings = new Settings
+            {
+                DirtRally2Dir = this.FindSteamGameDir(Constants.DirtRally2SteamPath),
+                Dirt4Dir = this.FindSteamGameDir(Constants.Dirt4SteamPath),
+            };
+
             this.Save();
         }
     }

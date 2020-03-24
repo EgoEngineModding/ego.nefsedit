@@ -43,14 +43,14 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         NefsArchive Archive { get; }
 
         /// <summary>
-        /// Gest the path to the archive file.
-        /// </summary>
-        string ArchiveFilePath { get; }
-
-        /// <summary>
         /// Gets a value indicating whether the archive has unsaved modifications.
         /// </summary>
         bool ArchiveIsModified { get; }
+
+        /// <summary>
+        /// Gest the archive file source info.
+        /// </summary>
+        NefsArchiveSource ArchiveSource { get; }
 
         /// <summary>
         /// Gets the file system.
@@ -106,6 +106,13 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// <param name="filePath">File path to the archive to open.</param>
         /// <returns>True if archive was opened.</returns>
         Task<bool> OpenArchiveAsync(string filePath);
+
+        /// <summary>
+        /// Opens the specified archive.
+        /// </summary>
+        /// <param name="source">Archive source to open.</param>
+        /// <returns>True if archive was opened.</returns>
+        Task<bool> OpenArchiveAsync(NefsArchiveSource source);
 
         /// <summary>
         /// Shows an open file dialog so the user can choose an archive to open, then opens the archive.

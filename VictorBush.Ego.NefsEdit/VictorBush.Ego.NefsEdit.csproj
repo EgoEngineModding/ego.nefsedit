@@ -57,9 +57,26 @@
     <Compile Include="Source\Commands\UndoBuffer.cs" />
     <Compile Include="Source\Commands\INefsEditCommand.cs" />
     <Compile Include="Source\Commands\ReplaceFileCommand.cs" />
+    <Compile Include="Source\Utility\Constants.cs" />
     <Compile Include="Source\Services\ISettingsService.cs" />
     <Compile Include="Source\Services\SettingsService.cs" />
+    <Compile Include="Source\UI\OpenFileForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Source\UI\OpenFileForm.Designer.cs">
+      <DependentUpon>OpenFileForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Source\UI\SettingsForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Source\UI\SettingsForm.Designer.cs">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Source\UI\TablessControl.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Source\Utility\DialogExtensions.cs" />
+    <Compile Include="Source\Utility\TextBoxExtensions.cs" />
     <Compile Include="Source\Workspace\INefsEditWorkspace.cs" />
     <Compile Include="Source\Services\IProgressService.cs" />
     <Compile Include="Source\Services\IUiService.cs" />
@@ -132,11 +149,17 @@
     <EmbeddedResource Include="Source\UI\ConsoleForm.resx">
       <DependentUpon>ConsoleForm.cs</DependentUpon>
     </EmbeddedResource>
+    <EmbeddedResource Include="Source\UI\OpenFileForm.resx">
+      <DependentUpon>OpenFileForm.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="Source\UI\ProgressDialogForm.resx">
       <DependentUpon>ProgressDialogForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Source\UI\PropertyGridForm.resx">
       <DependentUpon>PropertyGridForm.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Source\UI\SettingsForm.resx">
+      <DependentUpon>SettingsForm.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

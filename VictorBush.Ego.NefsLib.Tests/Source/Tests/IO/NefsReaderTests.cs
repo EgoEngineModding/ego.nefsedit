@@ -5,7 +5,6 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
     using System;
     using System.Collections.Generic;
     using System.IO;
-    using System.IO.Abstractions;
     using System.IO.Abstractions.TestingHelpers;
     using System.Threading;
     using VictorBush.Ego.NefsLib.Header;

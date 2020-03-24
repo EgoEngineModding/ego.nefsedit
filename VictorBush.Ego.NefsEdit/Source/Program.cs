@@ -49,7 +49,7 @@ namespace VictorBush.Ego.NefsEdit
 
             // Setup workspace and services
             var fileSystem = new FileSystem();
-            var uiService = new UiService(Dispatcher.CurrentDispatcher);
+            var uiService = new UiService(Dispatcher.CurrentDispatcher, fileSystem);
             var settingsService = new SettingsService(fileSystem, uiService);
             var progressService = new ProgressService(uiService);
             var nefsCompressor = new NefsCompressor(fileSystem);

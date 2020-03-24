@@ -214,6 +214,11 @@ namespace VictorBush.Ego.NefsEdit.UI
             await this.Workspace.OpenArchiveByDialogAsync();
         }
 
+        private void OptionsMainMenuItem_Click(Object sender, EventArgs e)
+        {
+            this.UiService.ShowSettingsDialog(this.SettingsService);
+        }
+
         private async void QuickExtractContextMenuItem_Click(object sender, EventArgs e)
         {
             await this.Workspace.ExtractItemsByQuickExtractAsync(this.Workspace.SelectedItems);
@@ -233,7 +238,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             // Archive has been modified; prompt to save before exit
             var result = this.UiService.ShowMessageBox(
-                $"Save archive {this.Workspace.ArchiveFilePath}?", "Save?", MessageBoxButtons.YesNoCancel);
+                $"Save archive {this.Workspace.ArchiveSource.DataFilePath}?", "Save?", MessageBoxButtons.YesNoCancel);
 
             if (result == DialogResult.Yes)
             {
@@ -335,7 +340,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                     this.Text += "*";
                 }
 
-                this.Text += this.Workspace.ArchiveFilePath;
+                this.Text += this.Workspace.ArchiveSource.DataFilePath;
             }
         }
     }

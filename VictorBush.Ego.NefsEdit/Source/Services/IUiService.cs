@@ -4,6 +4,7 @@ namespace VictorBush.Ego.NefsEdit.Services
 {
     using System.Windows.Forms;
     using System.Windows.Threading;
+    using VictorBush.Ego.NefsLib;
 
     /// <summary>
     /// Provides user interface dialogs and other services.
@@ -37,10 +38,21 @@ namespace VictorBush.Ego.NefsEdit.Services
             MessageBoxIcon icon = MessageBoxIcon.None);
 
         /// <summary>
+        /// Shows the NeFS Edit dialog for opening an archive file.
+        /// </summary>
+        /// <param name="settingsService">The settings service.</param>
+        /// <param name="progressService">The progress service.</param>
+        /// <returns>The dialog result and the archive source (if applicable).</returns>
+        (DialogResult Result, NefsArchiveSource Source) ShowNefsEditOpenFileDialog(
+            ISettingsService settingsService,
+            IProgressService progressService);
+
+        /// <summary>
         /// Shows an open file dialog.
         /// </summary>
+        /// <param name="filter">Filter for dialog.</param>
         /// <returns>The dialog result and the file name (if applicable).</returns>
-        (DialogResult Result, string FileName) ShowOpenFileDialog();
+        (DialogResult Result, string FileName) ShowOpenFileDialog(string filter = null);
 
         /// <summary>
         /// Shows a save file dialog.
@@ -48,5 +60,12 @@ namespace VictorBush.Ego.NefsEdit.Services
         /// <param name="defaultName">The default file name.</param>
         /// <returns>The dialog result and the file name (if applicable).</returns>
         (DialogResult Result, string FileName) ShowSaveFileDialog(string defaultName);
+
+        /// <summary>
+        /// Shows the settings dialog.
+        /// </summary>
+        /// <param name="settingsService">The settings service to use.</param>
+        /// <returns>The dialog result.</returns>
+        DialogResult ShowSettingsDialog(ISettingsService settingsService);
     }
 }

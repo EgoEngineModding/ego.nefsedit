@@ -62,7 +62,8 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.False(closed);
             Assert.Same(archive, w.Archive);
             Assert.True(w.ArchiveIsModified);
-            Assert.Equal(archivePath, w.ArchiveFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.DataFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.HeaderFilePath);
         }
 
         [Fact]
@@ -99,7 +100,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.True(closed);
             Assert.Null(w.Archive);
             Assert.False(w.ArchiveIsModified);
-            Assert.Equal("", w.ArchiveFilePath);
+            Assert.Null(w.ArchiveSource);
 
             // Verify not saved
             this.nefsWriterMock.Verify(
@@ -150,7 +151,8 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.False(closed);
             Assert.Same(archive, w.Archive);
             Assert.True(w.ArchiveIsModified);
-            Assert.Equal(archivePath, w.ArchiveFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.DataFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.HeaderFilePath);
 
             // Verify writer was called
             this.nefsWriterMock.Verify(
@@ -200,7 +202,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.True(closed);
             Assert.Null(w.Archive);
             Assert.False(w.ArchiveIsModified);
-            Assert.Equal("", w.ArchiveFilePath);
+            Assert.Null(w.ArchiveSource);
 
             // Verify writer was called
             this.nefsWriterMock.Verify(
@@ -235,7 +237,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.True(closed);
             Assert.Null(w.Archive);
             Assert.False(w.ArchiveIsModified);
-            Assert.Equal("", w.ArchiveFilePath);
+            Assert.Null(w.ArchiveSource);
         }
 
         [Fact]
@@ -299,7 +301,8 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.True(opened);
             Assert.Same(archive2, w.Archive);
             Assert.False(w.ArchiveIsModified);
-            Assert.Equal(archive2Path, w.ArchiveFilePath);
+            Assert.Equal(archive2Path, w.ArchiveSource.DataFilePath);
+            Assert.Equal(archive2Path, w.ArchiveSource.HeaderFilePath);
 
             // Verify writer was called
             this.nefsWriterMock.Verify(
@@ -341,7 +344,8 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.True(opened);
             Assert.Same(archive2, w.Archive);
             Assert.False(w.ArchiveIsModified);
-            Assert.Equal(archive2Path, w.ArchiveFilePath);
+            Assert.Equal(archive2Path, w.ArchiveSource.DataFilePath);
+            Assert.Equal(archive2Path, w.ArchiveSource.HeaderFilePath);
 
             // Verify writer was not called
             this.nefsWriterMock.Verify(
@@ -388,7 +392,8 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.True(result);
             Assert.Same(archive, w.Archive);
             Assert.True(opened);
-            Assert.Equal(filePath, w.ArchiveFilePath);
+            Assert.Equal(filePath, w.ArchiveSource.DataFilePath);
+            Assert.Equal(filePath, w.ArchiveSource.HeaderFilePath);
         }
 
         [Fact]
@@ -405,7 +410,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.False(saved);
             Assert.Null(w.Archive);
             Assert.False(w.ArchiveIsModified);
-            Assert.Equal("", w.ArchiveFilePath);
+            Assert.Null(w.ArchiveSource);
 
             // Verify writer not called
             this.nefsWriterMock.Verify(
@@ -455,7 +460,8 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.False(saved);
             Assert.Same(archive, w.Archive);
             Assert.True(w.ArchiveIsModified);
-            Assert.Equal(archivePath, w.ArchiveFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.DataFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.HeaderFilePath);
         }
 
         [Fact]
@@ -492,7 +498,8 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.True(saved);
             Assert.Same(savedArchive, w.Archive);
             Assert.False(w.ArchiveIsModified);
-            Assert.Equal(archivePath, w.ArchiveFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.DataFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.HeaderFilePath);
         }
 
         private NefsEditWorkspace CreateWorkspace()

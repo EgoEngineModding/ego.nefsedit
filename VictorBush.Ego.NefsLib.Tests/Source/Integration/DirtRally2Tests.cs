@@ -7,6 +7,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Integration
 {
     using System.IO;
     using System.IO.Abstractions;
+    using System.Threading.Tasks;
     using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Progress;
     using Xunit;
@@ -21,7 +22,22 @@ namespace VictorBush.Ego.NefsLib.Tests.Integration
         private readonly NefsProgress progress = new NefsProgress();
 
         [Fact]
-        public async void ReadArchiveAsync_CarArchive()
+        public async Task ReadArchiveAsync_GameDat_Loaded()
+        {
+            var fs = new FileSystem();
+            var reader = new NefsReader(fs);
+            var headerPath = Path.Combine(DirtRally2Path, @"dirtrally2.exe");
+            var dataPath = Path.Combine(DirtRally2Path, @"game\game.dat");
+
+            var offset = 0x107B9B0;
+            var nefs = await reader.ReadArchiveAsync(headerPath, (uint)offset, dataPath, this.progress);
+
+            // Not really verifying anything here, but useful to set breakpoint and inspect objects
+            Assert.NotNull(nefs);
+        }
+
+        [Fact]
+        public async Task ReadArchiveAsync_CarArchive()
         {
             var fs = new FileSystem();
             var reader = new NefsReader(fs);
@@ -37,7 +53,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Integration
         }
 
         [Fact]
-        public async void ReadArchiveAsync_EncrpytedCarArchive()
+        public async Task ReadArchiveAsync_EncrpytedCarArchive()
         {
             var fs = new FileSystem();
             var reader = new NefsReader(fs);

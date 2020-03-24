@@ -8,9 +8,39 @@ namespace VictorBush.Ego.NefsEdit.Services
     internal interface ISettingsService
     {
         /// <summary>
-        /// Gets the quick extract directory.
+        /// Gets or sets the DiRT 4 directory.
         /// </summary>
-        string QuickExtractDir { get; }
+        string Dirt4Dir { get; set; }
+
+        /// <summary>
+        /// Gets the DiRT 4 executable.
+        /// </summary>
+        string Dirt4Exe { get; }
+
+        /// <summary>
+        /// Gets the directory that contains game.dat files.
+        /// </summary>
+        string Dirt4GameDatDir { get; }
+
+        /// <summary>
+        /// Gets or sets the DiRT Rally 2 directory.
+        /// </summary>
+        string DirtRally2Dir { get; set; }
+
+        /// <summary>
+        /// Gets the DiRT Rally 2 executable.
+        /// </summary>
+        string DirtRally2Exe { get; }
+
+        /// <summary>
+        /// Gets the directory that contains game.dat files.
+        /// </summary>
+        string DirtRally2GameDatDir { get; }
+
+        /// <summary>
+        /// Gets or sets the quick extract directory.
+        /// </summary>
+        string QuickExtractDir { get; set; }
 
         /// <summary>
         /// Shows a dialog to choose the quick extract dir.
