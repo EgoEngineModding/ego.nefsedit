@@ -1,16 +1,17 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{001EE6EB-B056-4459-B13F-2B7CD96A7D55}</ProjectGuid>
+    <ProjectGuid>{C3A546A4-7C78-4FA2-98DD-D056858A57D9}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VictorBush.Ego.NefsLib</RootNamespace>
     <AssemblyName>VictorBush.Ego.NefsLib</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <Deterministic>true</Deterministic>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,6 +21,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>VictorBush.Ego.NefsLib.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\Debug\VictorBush.Ego.NefsLib.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -30,10 +33,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Numerics" />
@@ -45,44 +44,75 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DataTypes\ByteArrayType.cs" />
-    <Compile Include="DataTypes\DataType.cs" />
-    <Compile Include="DataTypes\FileData.cs" />
-    <Compile Include="DataTypes\UInt32Type.cs" />
-    <Compile Include="DataTypes\UInt64Type.cs" />
-    <Compile Include="Header\NefsHeaderIntro.cs" />
-    <Compile Include="Header\NefsHeaderPt1.cs" />
-    <Compile Include="Header\NefsHeaderPt1Entry.cs" />
-    <Compile Include="Header\NefsHeaderPt2.cs" />
-    <Compile Include="Header\NefsHeaderPt2Entry.cs" />
-    <Compile Include="Header\NefsHeaderPt3.cs" />
-    <Compile Include="Header\NefsHeaderPt4.cs" />
-    <Compile Include="Header\NefsHeaderPt5.cs" />
-    <Compile Include="Header\NefsHeaderPt5Entry.cs" />
-    <Compile Include="Header\NefsHeaderPt6.cs" />
-    <Compile Include="Header\NefsHeaderPt6Entry.cs" />
-    <Compile Include="Header\NefsHeaderPt7.cs" />
-    <Compile Include="NefsArchive.cs" />
-    <Compile Include="Header\NefsHeader.cs" />
-    <Compile Include="NefsItem.cs" />
-    <Compile Include="NefsProgress.cs" />
-    <Compile Include="NefsProgressInfo.cs" />
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Utility\DeflateHelper.cs" />
-    <Compile Include="Utility\FilePathHelper.cs" />
-    <Compile Include="Utility\FormatHelper.cs" />
-    <Compile Include="Utility\LogHelper.cs" />
-    <Compile Include="Utility\ProcessHelper.cs" />
+    <Compile Include="Source\DataSource\INefsDataSource.cs" />
+    <Compile Include="Source\DataSource\NefsEmptyDataSource.cs" />
+    <Compile Include="Source\DataSource\NefsFileDataSource.cs" />
+    <Compile Include="Source\DataSource\NefsItemListDataSource.cs" />
+    <Compile Include="Source\DataTypes\ByteArrayType.cs" />
+    <Compile Include="Source\DataTypes\DataType.cs" />
+    <Compile Include="Source\DataTypes\FileData.cs" />
+    <Compile Include="Source\DataTypes\UInt32Type.cs" />
+    <Compile Include="Source\DataTypes\UInt64Type.cs" />
+    <Compile Include="Source\Header\NefsHeader.cs" />
+    <Compile Include="Source\Header\NefsHeaderIntroToc.cs" />
+    <Compile Include="Source\Header\NefsHeaderIntro.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart1.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart1Entry.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart2.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart2Entry.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart3.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart4.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart4Entry.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart5.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart6.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart6Entry.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart7.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart7Entry.cs" />
+    <Compile Include="Source\Header\NefsHeaderPart8.cs" />
+    <Compile Include="Source\IO\INefsCompressor.cs" />
+    <Compile Include="Source\IO\INefsReader.cs" />
+    <Compile Include="Source\IO\INefsWriter.cs" />
+    <Compile Include="Source\IO\NefsCompressor.cs" />
+    <Compile Include="Source\IO\NefsReader.cs" />
+    <Compile Include="Source\IO\NefsWriter.cs" />
+    <Compile Include="Source\Item\NefsItem.cs" />
+    <Compile Include="Source\Item\NefsItemId.cs" />
+    <Compile Include="Source\Item\NefsItemList.cs" />
+    <Compile Include="Source\Item\NefsItemSize.cs" />
+    <Compile Include="Source\Item\NefsItemState.cs" />
+    <Compile Include="Source\Item\NefsItemType.cs" />
+    <Compile Include="Source\Item\NefsItemUnknownData.cs" />
+    <Compile Include="Source\NefsArchive.cs" />
+    <Compile Include="Source\NefsLib.cs" />
+    <Compile Include="Source\Progress\NefsProgress.cs" />
+    <Compile Include="Source\Progress\NefsProgressEventArgs.cs" />
+    <Compile Include="Source\Progress\NefsProgressTask.cs" />
+    <Compile Include="Source\Utility\DeflateHelper.cs" />
+    <Compile Include="Source\Utility\FileSystemExtensions.cs" />
+    <Compile Include="Source\Utility\HexHelper.cs" />
+    <Compile Include="Source\Utility\HashHelper.cs" />
+    <Compile Include="Source\Utility\StreamExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="packages.config" />
+    <AdditionalFiles Include="stylecop.json" />
+    <None Include="VictorBush.Ego.NefsLib.ruleset" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions">
+      <Version>3.1.2</Version>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers">
+      <Version>1.1.118</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.IO.Abstractions">
+      <Version>9.0.4</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
-       Other similar extension points exist, see Microsoft.Common.targets.
-  <Target Name="BeforeBuild">
-  </Target>
-  <Target Name="AfterBuild">
-  </Target>
-  -->
 </Project>

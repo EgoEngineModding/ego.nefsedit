@@ -9,9 +9,10 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>VictorBush.Ego.NefsEdit</RootNamespace>
     <AssemblyName>NefsEdit</AssemblyName>
-    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -22,6 +23,8 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <CodeAnalysisRuleSet>VictorBush.Ego.NefsEdit.ruleset</CodeAnalysisRuleSet>
+    <DocumentationFile>bin\Debug\NefsEdit.xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -33,10 +36,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net, Version=2.0.8.0, Culture=neutral, PublicKeyToken=669e0ddf0bb1aa2a, processorArchitecture=MSIL">
-      <HintPath>..\packages\log4net.2.0.8\lib\net45-full\log4net.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
@@ -48,61 +47,70 @@
     <Reference Include="System.Net.Http" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="WeifenLuo.WinFormsUI.Docking, Version=2.15.0.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
-      <HintPath>..\packages\DockPanelSuite.2.15.0\lib\net40\WeifenLuo.WinFormsUI.Docking.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="WeifenLuo.WinFormsUI.Docking.ThemeVS2015, Version=2.15.0.0, Culture=neutral, PublicKeyToken=5cded1a1a0a7b481, processorArchitecture=MSIL">
-      <HintPath>..\packages\DockPanelSuite.ThemeVS2015.2.15.0\lib\net40\WeifenLuo.WinFormsUI.Docking.ThemeVS2015.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
+    <Reference Include="WindowsBase" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="UI\EditorForm.cs">
+    <Compile Include="..\SharedAssemblyInfo.cs">
+      <Link>Properties\SharedAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="Source\Commands\RemoveFileCommand.cs" />
+    <Compile Include="Source\Commands\UndoBuffer.cs" />
+    <Compile Include="Source\Commands\INefsEditCommand.cs" />
+    <Compile Include="Source\Commands\ReplaceFileCommand.cs" />
+    <Compile Include="Source\Services\ISettingsService.cs" />
+    <Compile Include="Source\Services\SettingsService.cs" />
+    <Compile Include="Source\Utility\DialogExtensions.cs" />
+    <Compile Include="Source\Workspace\INefsEditWorkspace.cs" />
+    <Compile Include="Source\Services\IProgressService.cs" />
+    <Compile Include="Source\Services\IUiService.cs" />
+    <Compile Include="Source\Workspace\NefsEditWorkspace.cs" />
+    <Compile Include="Source\Services\ProgressService.cs" />
+    <Compile Include="Source\Services\UiService.cs" />
+    <Compile Include="Source\UI\EditorForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\EditorForm.Designer.cs">
+    <Compile Include="Source\UI\EditorForm.Designer.cs">
       <DependentUpon>EditorForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Utility\Helpers.cs" />
-    <Compile Include="Utility\HexStringTypeConverter.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Source\Utility\TreeNodeExtensions.cs" />
+    <Compile Include="Source\Utility\HexStringTypeConverter.cs" />
+    <Compile Include="Source\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI\BrowseAllForm.cs">
+    <Compile Include="Source\UI\BrowseAllForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\BrowseAllForm.Designer.cs">
+    <Compile Include="Source\UI\BrowseAllForm.Designer.cs">
       <DependentUpon>BrowseAllForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\BrowseTreeForm.cs">
+    <Compile Include="Source\UI\BrowseTreeForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\BrowseTreeForm.Designer.cs">
+    <Compile Include="Source\UI\BrowseTreeForm.Designer.cs">
       <DependentUpon>BrowseTreeForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\ConsoleForm.cs">
+    <Compile Include="Source\UI\ConsoleForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\ConsoleForm.Designer.cs">
+    <Compile Include="Source\UI\ConsoleForm.Designer.cs">
       <DependentUpon>ConsoleForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\ProgressDialogForm.cs">
+    <Compile Include="Source\UI\ProgressDialogForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\ProgressDialogForm.Designer.cs">
+    <Compile Include="Source\UI\ProgressDialogForm.Designer.cs">
       <DependentUpon>ProgressDialogForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="UI\PropertyGridForm.cs">
+    <Compile Include="Source\UI\PropertyGridForm.cs">
       <SubType>Form</SubType>
     </Compile>
-    <Compile Include="UI\PropertyGridForm.Designer.cs">
+    <Compile Include="Source\UI\PropertyGridForm.Designer.cs">
       <DependentUpon>PropertyGridForm.cs</DependentUpon>
     </Compile>
-    <Compile Include="Utility\ListViewColumnSorter.cs" />
-    <Compile Include="Utility\LogHelper.cs" />
-    <Compile Include="Utility\RichTextWriter.cs" />
-    <Compile Include="Utility\Settings.cs" />
-    <EmbeddedResource Include="UI\EditorForm.resx">
+    <Compile Include="Source\Utility\ListViewColumnSorter.cs" />
+    <Compile Include="Source\Utility\LogHelper.cs" />
+    <Compile Include="Source\Utility\RichTextWriter.cs" />
+    <Compile Include="Source\Utility\Settings.cs" />
+    <EmbeddedResource Include="Source\UI\EditorForm.resx">
       <DependentUpon>EditorForm.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Properties\Resources.resx">
@@ -115,22 +123,21 @@
       <DependentUpon>Resources.resx</DependentUpon>
       <DesignTime>True</DesignTime>
     </Compile>
-    <EmbeddedResource Include="UI\BrowseAllForm.resx">
+    <EmbeddedResource Include="Source\UI\BrowseAllForm.resx">
       <DependentUpon>BrowseAllForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\BrowseTreeForm.resx">
+    <EmbeddedResource Include="Source\UI\BrowseTreeForm.resx">
       <DependentUpon>BrowseTreeForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\ConsoleForm.resx">
+    <EmbeddedResource Include="Source\UI\ConsoleForm.resx">
       <DependentUpon>ConsoleForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\ProgressDialogForm.resx">
+    <EmbeddedResource Include="Source\UI\ProgressDialogForm.resx">
       <DependentUpon>ProgressDialogForm.cs</DependentUpon>
     </EmbeddedResource>
-    <EmbeddedResource Include="UI\PropertyGridForm.resx">
+    <EmbeddedResource Include="Source\UI\PropertyGridForm.resx">
       <DependentUpon>PropertyGridForm.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -140,15 +147,11 @@
       <DependentUpon>Settings.settings</DependentUpon>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
     </Compile>
+    <AdditionalFiles Include="stylecop.json" />
+    <None Include="VictorBush.Ego.NefsEdit.ruleset" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\VictorBush.Ego.NefsLib\VictorBush.Ego.NefsLib.csproj">
-      <Project>{001ee6eb-b056-4459-b13f-2b7cd96a7d55}</Project>
-      <Name>VictorBush.Ego.NefsLib</Name>
-    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\arrow_back_16xLG.png" />
@@ -158,6 +161,28 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="Resources\arrow_Up_16xLG.png" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\VictorBush.Ego.NefsLib\VictorBush.Ego.NefsLib.csproj">
+      <Project>{c3a546a4-7c78-4fa2-98dd-d056858a57d9}</Project>
+      <Name>VictorBush.Ego.NefsLib</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="DockPanelSuite.ThemeVS2015">
+      <Version>2.15.0</Version>
+    </PackageReference>
+    <PackageReference Include="log4net">
+      <Version>2.0.8</Version>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers">
+      <Version>1.1.118</Version>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="System.IO.Abstractions">
+      <Version>9.0.4</Version>
+    </PackageReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
