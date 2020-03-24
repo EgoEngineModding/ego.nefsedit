@@ -136,13 +136,19 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 }
             }
 
+            Log.Info("----------------------------");
+            Log.Info($"Closing archive: {this.ArchiveFilePath}.");
+
             // Close archive
             this.Archive = null;
             this.ArchiveFilePath = "";
             this.UndoBuffer.Reset();
+            this.SelectItems(Enumerable.Empty<NefsItem>());
 
             // Notify archive closed
             this.ArchiveClosed?.Invoke(this, EventArgs.Empty);
+
+            Log.Info($"Archive closed.");
 
             return true;
         }

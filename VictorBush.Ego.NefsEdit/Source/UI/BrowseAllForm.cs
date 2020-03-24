@@ -36,6 +36,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.UiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
             this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
             this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
+            this.Workspace.ArchiveClosed += this.OnWorkspaceArchiveClosed;
 
             this.itemsListView.ListViewItemSorter = this.listViewItemSorter;
 
@@ -150,6 +151,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         {
             if (archive == null)
             {
+                this.itemsListView.Items.Clear();
                 return;
             }
 
@@ -202,6 +204,15 @@ namespace VictorBush.Ego.NefsEdit.UI
 
                 this.itemsListView.Items.Add(listItem);
             }
+        }
+
+        private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+        {
+            // Clear items list - must do on UI thread
+            this.UiService.Dispatcher.Invoke(() =>
+            {
+                this.LoadArchive(null);
+            });
         }
 
         private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)

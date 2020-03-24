@@ -6,7 +6,6 @@ namespace VictorBush.Ego.NefsEdit.UI
     using System.Drawing;
     using System.Windows.Forms;
     using VictorBush.Ego.NefsEdit.Services;
-    using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsEdit.Workspace;
     using VictorBush.Ego.NefsLib.Item;
 
@@ -78,6 +77,11 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.archivePropertyForm.Focus();
         }
 
+        private async void CloseMainMenuItem_Click(Object sender, EventArgs e)
+        {
+            await this.Workspace.CloseArchiveAsync();
+        }
+
         private void ConsoleToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.consoleForm.Show();
@@ -128,14 +132,14 @@ namespace VictorBush.Ego.NefsEdit.UI
             Application.Exit();
         }
 
-        private void ExtractToContextMenuItem_Click(object sender, EventArgs e)
+        private async void ExtractToContextMenuItem_Click(object sender, EventArgs e)
         {
-            this.Workspace.ExtractItemsByDialogAsync(this.Workspace.SelectedItems);
+            await this.Workspace.ExtractItemsByDialogAsync(this.Workspace.SelectedItems);
         }
 
-        private void ExtractToToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void ExtractToToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Workspace.ExtractItemsByDialogAsync(this.Workspace.SelectedItems);
+            await this.Workspace.ExtractItemsByDialogAsync(this.Workspace.SelectedItems);
         }
 
         private void ItemDetailsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -195,13 +199,13 @@ namespace VictorBush.Ego.NefsEdit.UI
             {
                 // Can't replace directories or multiple files right now
                 this.ReplaceContextMenuItem.Visible = false;
-                this.ReplaceToolStripMenuItem.Enabled = false;
+                this.replaceMainMenuItem.Enabled = false;
             }
             else
             {
                 // Single file selected, can replace
                 this.ReplaceContextMenuItem.Visible = true;
-                this.ReplaceToolStripMenuItem.Enabled = true;
+                this.replaceMainMenuItem.Enabled = true;
             }
         }
 
@@ -302,9 +306,9 @@ namespace VictorBush.Ego.NefsEdit.UI
             await this.Workspace.SaveArchiveByDialogAsync();
         }
 
-        private void SaveToolStripMenuItem_Click(object sender, EventArgs e)
+        private async void SaveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.Workspace.SaveArchiveAsync();
+            await this.Workspace.SaveArchiveAsync();
         }
 
         private void SetExtractionDirectoryToolStripMenuItem_Click(object sender, EventArgs e)
