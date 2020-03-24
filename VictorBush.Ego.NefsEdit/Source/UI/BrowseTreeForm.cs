@@ -123,7 +123,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         {
             if (archive == null)
             {
-                this.filesListView.Clear();
+                this.filesListView.Items.Clear();
                 this.directoryTreeView.Nodes.Clear();
                 return;
             }
