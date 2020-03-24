@@ -3,7 +3,9 @@
 namespace VictorBush.Ego.NefsLib.Header
 {
     using System;
+    using System.Text;
     using VictorBush.Ego.NefsLib.DataTypes;
+    using VictorBush.Ego.NefsLib.Utility;
 
     /// <summary>
     /// Header introduction. Contains size, encryption, and verification info.
@@ -45,7 +47,7 @@ namespace VictorBush.Ego.NefsLib.Header
 
         /// <summary>256-bit AES key stored as a hex string.</summary>
         [FileData]
-        public ByteArrayType AesKey { get; } = new ByteArrayType(0x0024, 0x40);
+        public ByteArrayType AesKeyHexString { get; } = new ByteArrayType(0x0024, 0x40);
 
         /// <summary>Size of header in bytes.</summary>
         [FileData]
@@ -66,5 +68,15 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>Unknown value.</summary>
         [FileData]
         public UInt64Type Unknown0x78 { get; } = new UInt64Type(0x0078);
+
+        /// <summary>
+        /// Gets the AES-256 key for this header.
+        /// </summary>
+        /// <returns>A byte array with the AES key.</returns>
+        public byte[] GetAesKey()
+        {
+            var asciiKey = Encoding.ASCII.GetString(this.AesKeyHexString.Value);
+            return HexHelper.FromHexString(asciiKey);
+        }
     }
 }

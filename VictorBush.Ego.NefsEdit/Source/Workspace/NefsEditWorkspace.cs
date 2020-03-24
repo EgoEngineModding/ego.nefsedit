@@ -381,7 +381,9 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 return false;
             }
 
-            var (result, path) = this.UiService.ShowSaveFileDialog(this.Archive.Items.DataFilePath);
+            var fileName = Path.GetFileName(this.Archive.Items.DataFilePath);
+
+            var (result, path) = this.UiService.ShowSaveFileDialog(fileName);
             if (result != DialogResult.OK)
             {
                 return false;
@@ -417,7 +419,12 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 return false;
             }
 
-            // TODO : Don't allow saving encrypted archives
+            // Don't allow saving encrypted archives
+            if (this.Archive.Header.Intro.IsEncrypted)
+            {
+                this.UiService.ShowMessageBox("Saving encrypted archives is not supported.", icon: MessageBoxIcon.Error);
+                return false;
+            }
 
             Log.Info("----------------------------");
             Log.Info($"Writing archive: {destFilePath}.");
@@ -451,6 +458,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 
         private async Task<bool> ExtractFileAsync(NefsItem item, string outputFilePath, NefsProgress p)
         {
+            var isEncrypted = this.Archive.Header.Intro.IsEncrypted;
+
             try
             {
                 // Create target directory if needed
@@ -467,7 +476,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                     item.DataSource.Size.ChunkSizes,
                     outputFilePath,
                     0,
-                    p);
+                    p,
+                    isEncrypted ? this.Archive.Header.Intro.GetAesKey() : null);
 
                 return true;
             }

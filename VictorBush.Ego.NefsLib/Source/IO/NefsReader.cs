@@ -260,8 +260,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
                 // The rest of the header is encrypted using AES-256, decrypt using the key from the
                 // header intro
-                var asciiKey = Encoding.ASCII.GetString(intro.AesKey.Value);
-                byte[] key = HexHelper.FromHexString(asciiKey);
+                byte[] key = intro.GetAesKey();
                 var headerSize = intro.HeaderSize.Value;
 
                 // Decrypt the rest of the header

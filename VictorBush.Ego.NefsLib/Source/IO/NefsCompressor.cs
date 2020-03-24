@@ -242,7 +242,7 @@ namespace VictorBush.Ego.NefsLib.IO
             using (var inputStream = this.FileSystem.File.OpenRead(inputFile))
             using (var outputStream = this.FileSystem.File.OpenWrite(outputFile))
             {
-                await this.DecompressAsync(inputStream, inputOffset, chunkSizes, outputStream, outputOffset, p);
+                await this.DecompressAsync(inputStream, inputOffset, chunkSizes, outputStream, outputOffset, p, aes256key);
             }
         }
     }

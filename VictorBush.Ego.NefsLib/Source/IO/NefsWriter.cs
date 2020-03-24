@@ -477,7 +477,7 @@ namespace VictorBush.Ego.NefsLib.IO
             // Update header intro
             var intro = new NefsHeaderIntro();
             intro.MagicNumber.Value = sourceHeader.Intro.MagicNumber.Value;
-            intro.AesKey.Value = sourceHeader.Intro.AesKey.Value;
+            intro.AesKeyHexString.Value = sourceHeader.Intro.AesKeyHexString.Value;
             intro.HeaderSize.Value = (uint)headerSize;
             intro.Unknown0x68.Value = sourceHeader.Intro.Unknown0x68.Value;
             intro.NumberOfItems.Value = (uint)numItems;
