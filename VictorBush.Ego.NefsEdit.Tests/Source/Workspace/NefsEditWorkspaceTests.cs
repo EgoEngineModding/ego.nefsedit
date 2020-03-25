@@ -10,7 +10,6 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
     using VictorBush.Ego.NefsEdit.Commands;
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Tests.Services;
-    using VictorBush.Ego.NefsEdit.Tests.Source;
     using VictorBush.Ego.NefsEdit.Workspace;
     using VictorBush.Ego.NefsLib;
     using VictorBush.Ego.NefsLib.IO;

@@ -1,7 +1,8 @@
 ﻿// See LICENSE.txt for license information.
 
 using System.Reflection;
-using System.Runtime.InteropServices;
+
+[assembly: AssemblyCopyright("Copyright © VictorBush 2020")]
 
 // Version information for an assembly consists of the following four values:
 //

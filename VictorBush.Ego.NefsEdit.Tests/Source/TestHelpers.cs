@@ -1,6 +1,6 @@
 ﻿// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsEdit.Tests.Source
+namespace VictorBush.Ego.NefsEdit.Tests
 {
     using System;
     using System.Collections.Generic;

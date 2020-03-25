@@ -164,33 +164,33 @@
             // quickExtractMainMenuItem
             // 
             this.quickExtractMainMenuItem.Name = "quickExtractMainMenuItem";
-            this.quickExtractMainMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.quickExtractMainMenuItem.Size = new System.Drawing.Size(174, 22);
             this.quickExtractMainMenuItem.Text = "Quick Extract";
             this.quickExtractMainMenuItem.Click += new System.EventHandler(this.QuickExtractToolStripMenuItem_Click);
             // 
             // toolStripSeparator4
             // 
             this.toolStripSeparator4.Name = "toolStripSeparator4";
-            this.toolStripSeparator4.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator4.Size = new System.Drawing.Size(171, 6);
             // 
             // extractToMainMenuItem
             // 
             this.extractToMainMenuItem.Name = "extractToMainMenuItem";
             this.extractToMainMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.E)));
-            this.extractToMainMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.extractToMainMenuItem.Size = new System.Drawing.Size(174, 22);
             this.extractToMainMenuItem.Text = "Extract To...";
             this.extractToMainMenuItem.Click += new System.EventHandler(this.ExtractToToolStripMenuItem_Click);
             // 
             // toolStripSeparator3
             // 
             this.toolStripSeparator3.Name = "toolStripSeparator3";
-            this.toolStripSeparator3.Size = new System.Drawing.Size(177, 6);
+            this.toolStripSeparator3.Size = new System.Drawing.Size(171, 6);
             // 
             // replaceMainMenuItem
             // 
             this.replaceMainMenuItem.Name = "replaceMainMenuItem";
             this.replaceMainMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.R)));
-            this.replaceMainMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.replaceMainMenuItem.Size = new System.Drawing.Size(174, 22);
             this.replaceMainMenuItem.Text = "Replace...";
             this.replaceMainMenuItem.Click += new System.EventHandler(this.ReplaceToolStripMenuItem_Click);
             // 
@@ -328,6 +328,7 @@
             this.Controls.Add(this.mainMenuStrip);
             this.Margin = new System.Windows.Forms.Padding(2);
             this.Name = "EditorForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
             this.Text = "NeFS Edit";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.EditorForm_FormClosing);
             this.Load += new System.EventHandler(this.EditorForm_Load);
