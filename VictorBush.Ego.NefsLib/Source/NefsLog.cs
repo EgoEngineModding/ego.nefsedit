@@ -8,7 +8,7 @@ namespace VictorBush.Ego.NefsLib
     /// <summary>
     /// Library configuration.
     /// </summary>
-    public static class NefsLib
+    public static class NefsLog
     {
         private static ILoggerFactory logFactory = null;
 

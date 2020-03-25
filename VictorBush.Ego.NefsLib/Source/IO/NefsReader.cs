@@ -45,7 +45,7 @@ namespace VictorBush.Ego.NefsLib.IO
             00,
         };
 
-        private static readonly ILogger Log = NefsLib.LogFactory.CreateLogger<NefsReader>();
+        private static readonly ILogger Log = NefsLog.LogFactory.CreateLogger<NefsReader>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsReader"/> class.
@@ -353,7 +353,15 @@ namespace VictorBush.Ego.NefsLib.IO
                 {
                     var entry = new NefsHeaderPart1Entry();
                     await FileData.ReadDataAsync(stream, entryOffset, entry, p);
-                    entries.Add(new NefsItemId(entry.Id.Value), entry);
+
+                    var id = new NefsItemId(entry.Id.Value);
+                    if (entries.ContainsKey(id))
+                    {
+                        Log.LogError($"Found duplicate item id in part 1: {id.Value}");
+                        continue;
+                    }
+
+                    entries.Add(id, entry);
                     entryOffset += NefsHeaderPart1Entry.Size;
                 }
             }
@@ -389,7 +397,15 @@ namespace VictorBush.Ego.NefsLib.IO
                 {
                     var entry = new NefsHeaderPart2Entry();
                     await FileData.ReadDataAsync(stream, entryOffset, entry, p);
-                    entries.Add(new NefsItemId(entry.Id.Value), entry);
+
+                    var id = new NefsItemId(entry.Id.Value);
+                    if (entries.ContainsKey(id))
+                    {
+                        Log.LogError($"Found duplicate item id in part 2: {id.Value}");
+                        continue;
+                    }
+
+                    entries.Add(id, entry);
                     entryOffset += NefsHeaderPart2Entry.Size;
                 }
             }
@@ -484,8 +500,26 @@ namespace VictorBush.Ego.NefsLib.IO
                 using (p.BeginTask(1.0f / numItems))
                 {
                     var id = new NefsItemId((uint)i);
+
+                    // Part 1 entry
+                    if (!part1.EntriesById.ContainsKey(id))
+                    {
+                        Log.LogError($"Failed to find part 1 entry for item {id} when reading part 4.");
+                        continue;
+                    }
+
                     var p1 = part1.EntriesById[id];
+
+                    // Part 2 entry
+                    if (!part2.EntriesById.ContainsKey(id))
+                    {
+                        Log.LogError($"Failed to find part 2 entry for item {id} when reading part 4.");
+                        continue;
+                    }
+
                     var p2 = part2.EntriesById[id];
+
+                    // Create part 4 entry
                     var entry = new NefsHeaderPart4Entry(id);
 
                     // Check if item has part 4 entry
@@ -667,8 +701,16 @@ namespace VictorBush.Ego.NefsLib.IO
             {
                 // Create the item
                 var id = new NefsItemId((uint)i);
-                var item = NefsItem.CreateFromHeader(id, h, items);
-                items.Add(item);
+
+                try
+                {
+                    var item = NefsItem.CreateFromHeader(id, h, items);
+                    items.Add(item);
+                }
+                catch (Exception)
+                {
+                    Log.LogError($"Failed to create item {id}, skipping.");
+                }
             }
 
             return items;

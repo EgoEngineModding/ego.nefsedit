@@ -8,6 +8,7 @@ using System.Windows.Threading;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.UI;
 using VictorBush.Ego.NefsEdit.Workspace;
+using VictorBush.Ego.NefsLib;
 using VictorBush.Ego.NefsLib.IO;
 
 // Configure log4net to monitor the XML configuration file

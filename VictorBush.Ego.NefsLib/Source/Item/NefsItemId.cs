@@ -50,5 +50,11 @@ namespace VictorBush.Ego.NefsLib.Item
 
         /// <inheritdoc/>
         public override int GetHashCode() => this.Value.GetHashCode();
+
+        /// <inheritdoc/>
+        public override String ToString()
+        {
+            return this.Value.ToString();
+        }
     }
 }

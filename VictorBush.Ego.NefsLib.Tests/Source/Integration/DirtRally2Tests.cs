@@ -37,6 +37,23 @@ namespace VictorBush.Ego.NefsLib.Tests.Integration
         }
 
         [Fact]
+        public async Task ReadArchiveAsync_GameNefsArchive()
+        {
+            var fs = new FileSystem();
+            var reader = new NefsReader(fs);
+            var path = Path.Combine(DirtRally2Path, @"game\game.nefs");
+            NefsArchive nefs = null;
+
+            using (var stream = fs.File.OpenRead(path))
+            {
+                nefs = await reader.ReadArchiveAsync(path, this.progress);
+            }
+
+            // Not sure if this is the actual count, there are errors when reading game.nefs
+            Assert.Equal(0x445, nefs.Items.Count);
+        }
+
+        [Fact]
         public async Task ReadArchiveAsync_CarArchive()
         {
             var fs = new FileSystem();
