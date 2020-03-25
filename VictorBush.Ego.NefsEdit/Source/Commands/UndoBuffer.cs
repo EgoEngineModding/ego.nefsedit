@@ -91,7 +91,7 @@ namespace VictorBush.Ego.NefsEdit.Commands
         /// </summary>
         public void MarkAsSaved()
         {
-            this.SavedCommandIndex = this.NextCommandIndex;
+            this.SavedCommandIndex = this.PreviousCommandIndex;
         }
 
         /// <summary>

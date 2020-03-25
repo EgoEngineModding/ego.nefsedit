@@ -43,6 +43,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
             this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
             this.Workspace.ArchiveClosed += this.OnWorkspaceArchiveClosed;
+            this.Workspace.ArchiveSaved += this.OnWorkspaceArchiveSaved;
             this.Workspace.CommandExecuted += this.OnWorkspaceCommandExecuted;
 
             // Create the columns we want
@@ -192,6 +193,14 @@ namespace VictorBush.Ego.NefsEdit.UI
             {
                 this.LoadArchive(this.Workspace.Archive);
             });
+        }
+
+        private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
+        {
+            foreach (var item in this.filesListItems)
+            {
+                this.UpdateListItem(item.Value);
+            }
         }
 
         private void OnWorkspaceCommandExecuted(Object sender, Commands.NefsEditCommandEventArgs e)

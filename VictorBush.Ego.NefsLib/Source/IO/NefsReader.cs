@@ -8,6 +8,7 @@ namespace VictorBush.Ego.NefsLib.IO
     using System.Collections.Generic;
     using System.IO;
     using System.IO.Abstractions;
+    using System.Linq;
     using System.Numerics;
     using System.Security.Cryptography;
     using System.Text;
@@ -108,6 +109,12 @@ namespace VictorBush.Ego.NefsLib.IO
             using (var stream = this.FileSystem.File.OpenRead(headerFilePath))
             {
                 header = await this.ReadHeaderAsync(stream, headerOffset, p);
+
+                // Validate header hash
+                if (!this.ValidateHash(stream, headerOffset, header.Intro))
+                {
+                    Log.LogWarning("Header hash does not match expected value.");
+                }
             }
 
             // Create items from header
@@ -714,6 +721,33 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             return items;
+        }
+
+        private bool ValidateHash(Stream stream, ulong offset, NefsHeaderIntro intro)
+        {
+            var dataToHashSize = intro.IsEncrypted ? intro.HeaderSize.Value - 0x22 : intro.HeaderSize.Value - 0x20;
+            byte[] dataToHash = new byte[dataToHashSize];
+
+            stream.Seek((long)offset, SeekOrigin.Begin);
+            stream.Read(dataToHash, 0, 4);
+
+            stream.Seek(0x24, SeekOrigin.Begin);
+            if (!intro.IsEncrypted)
+            {
+                stream.Read(dataToHash, 4, (int)intro.HeaderSize.Value - 0x24);
+            }
+            else
+            {
+                stream.Read(dataToHash, 4, 0x5A);
+                stream.Seek(0x80, SeekOrigin.Begin);
+                stream.Read(dataToHash, 0x5E, (int)intro.HeaderSize.Value - 0x80);
+            }
+
+            using (var hash = SHA256.Create())
+            {
+                byte[] hashOut = hash.ComputeHash(dataToHash);
+                return hashOut.SequenceEqual(intro.ExpectedHash.Value);
+            }
         }
 
         private bool ValidateHeaderPartStream(Stream stream, uint offset, uint size, string part)

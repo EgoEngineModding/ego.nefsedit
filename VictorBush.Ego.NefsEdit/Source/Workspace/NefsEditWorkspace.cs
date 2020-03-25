@@ -509,6 +509,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                     {
                         this.Archive = await this.NefsWriter.WriteArchiveAsync(destFilePath, this.Archive, p);
                         this.ArchiveSource = source;
+                        this.UndoBuffer.MarkAsSaved();
 
                         this.ArchiveSaved?.Invoke(this, EventArgs.Empty);
                         result = true;

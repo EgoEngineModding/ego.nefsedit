@@ -372,22 +372,20 @@ namespace VictorBush.Ego.NefsLib.IO
             NefsProgress p)
         {
             // The hash is of the entire header expect for the expected hash
+            var firstOffset = (long)headerOffset;
+            var secondOffset = firstOffset + 0x24;
             var headerSize = (int)header.Intro.HeaderSize.Value;
-            var expectedHashOffset = (long)headerOffset + header.Intro.ExpectedHash.Offset;
-            var firstSize = (int)expectedHashOffset;
-            var secondSize = headerSize - expectedHashOffset + header.Intro.ExpectedHash.Size;
-            var totalSize = firstSize + secondSize;
 
             // Seek to beginning of header
-            stream.Seek((long)headerOffset, SeekOrigin.Begin);
+            stream.Seek(firstOffset, SeekOrigin.Begin);
 
-            // Read first block (before the expected hash)
-            var dataToHash = new byte[totalSize];
-            await stream.ReadAsync(dataToHash, 0, firstSize);
+            // Read magic num
+            var dataToHash = new byte[headerSize - 0x20];
+            await stream.ReadAsync(dataToHash, 0, 4);
 
-            // Read the second block (after the expected hash)
-            stream.Seek(expectedHashOffset, SeekOrigin.Begin);
-            stream.Read(dataToHash, firstSize, (int)secondSize);
+            // Skip expected hash and read rest of header
+            stream.Seek(secondOffset, SeekOrigin.Begin);
+            stream.Read(dataToHash, 4, headerSize - 0x24);
 
             // Compute the new expected hash
             using (var hash = SHA256.Create())

@@ -22,6 +22,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <param name="type">The type of item.</param>
         /// <param name="dataSource">The data source for the item's data.</param>
         /// <param name="unknownData">Unknown metadata.</param>
+        /// <param name="state">The item state.</param>
         public NefsItem(
             NefsItemId id,
             string fileName,
@@ -29,12 +30,14 @@ namespace VictorBush.Ego.NefsLib.Item
             NefsItemId directoryId,
             NefsItemType type,
             INefsDataSource dataSource,
-            NefsItemUnknownData unknownData)
+            NefsItemUnknownData unknownData,
+            NefsItemState state = NefsItemState.None)
         {
             this.Id = id;
             this.DirectoryId = directoryId;
             this.Type = type;
             this.DataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
+            this.State = state;
 
             // Unknown data
             this.Part6Unknown0x00 = unknownData.Part6Unknown0x00;
@@ -219,7 +222,8 @@ namespace VictorBush.Ego.NefsLib.Item
                 this.DirectoryId,
                 this.Type,
                 this.DataSource,
-                unknownData);
+                unknownData,
+                state: this.State);
         }
 
         /// <summary>

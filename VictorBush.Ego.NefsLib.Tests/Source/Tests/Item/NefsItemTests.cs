@@ -10,6 +10,34 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
     public class NefsItemTests
     {
         [Fact]
+        public void Clone_ItemCloned()
+        {
+            var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
+            var itemId = new NefsItemId(TestArchiveNotModified.File3ItemId);
+            var item = NefsItem.CreateFromHeader(itemId, nefs.Header, nefs.Items);
+            item.UpdateState(NefsItemState.Replaced);
+
+            var clone = item.Clone() as NefsItem;
+
+            Assert.Equal(item.CompressedSize, clone.CompressedSize);
+            Assert.Same(item.DataSource, clone.DataSource);
+            Assert.Equal(item.DirectoryId, clone.DirectoryId);
+            Assert.Equal(item.ExtractedSize, clone.ExtractedSize);
+            Assert.Equal(item.FileName, clone.FileName);
+            Assert.Equal(item.FilePathInArchive, clone.FilePathInArchive);
+            Assert.Equal(item.FilePathInArchiveHash, clone.FilePathInArchiveHash);
+            Assert.Equal(item.Id, clone.Id);
+            Assert.Equal(item.Part6Unknown0x00, clone.Part6Unknown0x00);
+            Assert.Equal(item.Part6Unknown0x01, clone.Part6Unknown0x01);
+            Assert.Equal(item.Part6Unknown0x02, clone.Part6Unknown0x02);
+            Assert.Equal(item.Part6Unknown0x03, clone.Part6Unknown0x03);
+            Assert.Equal(item.Part7Unknown0x00, clone.Part7Unknown0x00);
+            Assert.Equal(item.Part7Unknown0x04, clone.Part7Unknown0x04);
+            Assert.Equal(item.State, clone.State);
+            Assert.Equal(item.Type, clone.Type);
+        }
+
+        [Fact]
         public void CreateHeaderFromFile_ItemIsCompressed_ItemCreated()
         {
             var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");

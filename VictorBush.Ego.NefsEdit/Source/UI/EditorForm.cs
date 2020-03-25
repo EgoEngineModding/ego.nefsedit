@@ -363,17 +363,12 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void UpdateTitle()
         {
-            if (this.Workspace.Archive != null)
-            {
-                this.Text += this.Workspace.ArchiveSource.DataFilePath + " - ";
+            var archive = this.Workspace.Archive;
+            var archivePath = archive != null ? this.Workspace.ArchiveSource.DataFilePath : "";
+            var modifiedStar = this.Workspace.ArchiveIsModified ? "*" : "";
+            var separator = archive != null ? " - " : "";
 
-                if (this.Workspace.ArchiveIsModified)
-                {
-                    this.Text += "*";
-                }
-            }
-
-            this.Text = "NeFS Edit";
+            this.Text = $"{archivePath}{modifiedStar}{separator}NeFS Edit";
         }
     }
 }

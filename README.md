@@ -7,6 +7,8 @@ There are two components to this project.
 - NefsEdit - a Windows Forms application that uses NefsLib.
 
 ## TODO
+- Fix archive saving.
+- Fix list view items not being updated after save.
 - Add a recent files list.
 - Allow associating .nefs files with the app, and allow opening an archive via command line.
 - Add protection against saving over an archive in a game's directory (or always force a "Save As").
