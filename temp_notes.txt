@@ -4,7 +4,6 @@ TODO
 - Namespace cleanup
 - Check for modified archive state in app. If not modified, don't allow saving.
 - Show item state in app - replaced items become a certain color, deleted items become red, etc.
-- Get lib logging working.
 - Show/hide "Item" menu tool strip item.
 - Recent files list.
 - Associate nefs with app.

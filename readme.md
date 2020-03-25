@@ -1,12 +1,11 @@
 # NeFS Edit
 
-*** Use at your own risk. Backup your files. ***
-
 Features:
 - Open a NeFS archive and browse contents.
 - Extract files and directories from an archive.
 - Replace files in an archive.
 - Save archives.
+- Open game.dat files (DiRT Rally 2 and DiRT 4).
 
 What's NOT supported:
 - Sorting items in editor.
@@ -22,6 +21,10 @@ Other notes:
 Special thanks to [@Gigi1237]( https://github.com/Gigi1237 ) for encryption work.
 
 ## Changelog
+
+Version 0.5.0
+- Added ability to open game.dat files.
+- Fixed "Extract To" to extract directly to the location specified.
 
 Version 0.4.0
 - Added ability to open encrypted NeFS archives.
