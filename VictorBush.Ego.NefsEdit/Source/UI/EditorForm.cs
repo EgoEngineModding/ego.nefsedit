@@ -5,6 +5,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using System;
     using System.Drawing;
     using System.Windows.Forms;
+    using VictorBush.Ego.NefsEdit.Commands;
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Workspace;
     using VictorBush.Ego.NefsLib.Item;
@@ -39,6 +40,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
             this.Workspace.ArchiveClosed += this.OnWorkspaceArchiveClosed;
             this.Workspace.ArchiveSaved += this.OnWorkspaceArchiveSaved;
+            this.Workspace.CommandExecuted += this.OnWorkspaceCommandExecuted;
             this.Workspace.SelectedItemsChanged += this.OnWorkspaceSelectedItemsChanged;
         }
 
@@ -68,7 +70,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void AboutToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            this.UiService.ShowMessageBox($"Version {Application.ProductVersion}");
+            this.UiService.ShowMessageBox($"Version {Application.ProductVersion}", title: "About");
         }
 
         private void ArchiveDebugMainMenuItem_Click(Object sender, EventArgs e)
@@ -101,10 +103,6 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void EditorForm_Load(object sender, EventArgs e)
         {
-            // TODO : Startup items
-            // - verify write access / admin privellegeee?
-            // - try to find location of DiRT 4 in steamapps folder? https://stackoverflow.com/questions/29036572/how-to-find-the-path-to-steams-sourcemods-folder
-
             // Set the dockpanel theme
             var theme = new WeifenLuo.WinFormsUI.Docking.VS2015LightTheme();
             this.browserDockPanel.Theme = theme;
@@ -121,6 +119,9 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             // Reset the form layout to the default layout
             this.ResetToDefaultLayout();
+
+            // Setup menu item initial state
+            this.UpdateMenuItems();
 
             // Load settings
             this.SettingsService.Load();
@@ -150,7 +151,11 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
         {
-            this.UpdateTitle();
+            this.UiService.Dispatcher.Invoke(() =>
+            {
+                this.UpdateTitle();
+                this.UpdateMenuItems();
+            });
         }
 
         private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
@@ -159,6 +164,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.UiService.Dispatcher.Invoke(() =>
             {
                 this.UpdateTitle();
+                this.UpdateMenuItems();
             });
         }
 
@@ -167,7 +173,15 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.UiService.Dispatcher.Invoke(() =>
             {
                 this.UpdateTitle();
+                this.UpdateMenuItems();
             });
+        }
+
+        private void OnWorkspaceCommandExecuted(object sender, NefsEditCommandEventArgs e)
+        {
+            this.UpdateTitle();
+            this.UpdateMenuItems();
+            this.selectedFilePropertyForm.RefreshGrid();
         }
 
         private void OnWorkspaceSelectedItemsChanged(Object sender, EventArgs e)
@@ -185,7 +199,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
 
             // Set "Item" menu visibility
-            this.ItemToolStripMenuItem.Visible = items.Count > 0;
+            this.UpdateMenuItems();
 
             if (items.Count == 0)
             {
@@ -263,6 +277,11 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
         }
 
+        private void RedoMainMenuItem_Click(Object sender, EventArgs e)
+        {
+            this.Workspace.Redo();
+        }
+
         private void ReplaceToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Workspace.ReplaceSeletedItemByDialog();
@@ -327,21 +346,34 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.browseTreeForm.Focus();
         }
 
+        private void UndoMainMenuItem_Click(Object sender, EventArgs e)
+        {
+            this.Workspace.Undo();
+        }
+
+        private void UpdateMenuItems()
+        {
+            this.itemMainMenuItem.Visible = this.Workspace.SelectedItems.Count > 0;
+            this.undoMainMenuItem.Enabled = this.Workspace.CanUndo;
+            this.redoMainMenuItem.Enabled = this.Workspace.CanRedo;
+            this.saveAsMainMenuItem.Enabled = this.Workspace.ArchiveIsModified;
+            this.saveMainMenuItem.Enabled = this.Workspace.ArchiveIsModified;
+            this.closeMainMenuItem.Enabled = this.Workspace.Archive != null;
+        }
+
         private void UpdateTitle()
         {
-            this.Text = "NeFS Edit";
-
             if (this.Workspace.Archive != null)
             {
-                this.Text += " - ";
+                this.Text += this.Workspace.ArchiveSource.DataFilePath + " - ";
 
                 if (this.Workspace.ArchiveIsModified)
                 {
                     this.Text += "*";
                 }
-
-                this.Text += this.Workspace.ArchiveSource.DataFilePath;
             }
+
+            this.Text = "NeFS Edit";
         }
     }
 }

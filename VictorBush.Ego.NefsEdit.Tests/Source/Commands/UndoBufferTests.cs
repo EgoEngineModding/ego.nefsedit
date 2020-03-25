@@ -98,6 +98,21 @@ namespace VictorBush.Ego.NefsEdit.Tests.Commands
         }
 
         [Fact]
+        public void Execute_ValidCommand_CommandExecutedEventRaised()
+        {
+            var str = new StringBuilder();
+            var buffer = new UndoBuffer();
+            var cmd1 = new TestCommand(str, "", "A");
+
+            NefsEditCommandEventArgs eventArgs = null;
+            buffer.CommandExecuted += (o, e) => eventArgs = e;
+            buffer.Execute(cmd1);
+
+            Assert.Same(cmd1, eventArgs.Command);
+            Assert.Equal(NefsEditCommandEventKind.New, eventArgs.Kind);
+        }
+
+        [Fact]
         public void Redo_BufferEmpty_NoChange()
         {
             var buffer = new UndoBuffer();
@@ -105,6 +120,36 @@ namespace VictorBush.Ego.NefsEdit.Tests.Commands
             Assert.Equal(0, buffer.NextCommandIndex);
             Assert.Equal(-1, buffer.PreviousCommandIndex);
             Assert.False(buffer.IsModified);
+        }
+
+        [Fact]
+        public void Redo_CanNotRedo_CommandExecutedEventNotRaised()
+        {
+            var str = new StringBuilder();
+            var buffer = new UndoBuffer();
+
+            NefsEditCommandEventArgs eventArgs = null;
+            buffer.CommandExecuted += (o, e) => eventArgs = e;
+            buffer.Redo();
+
+            Assert.Null(eventArgs);
+        }
+
+        [Fact]
+        public void Redo_CanRedo_CommandExecutedEventRaised()
+        {
+            var str = new StringBuilder();
+            var buffer = new UndoBuffer();
+            var cmd1 = new TestCommand(str, "", "A");
+
+            NefsEditCommandEventArgs eventArgs = null;
+            buffer.Execute(cmd1);
+            buffer.Undo();
+            buffer.CommandExecuted += (o, e) => eventArgs = e;
+            buffer.Redo();
+
+            Assert.Same(cmd1, eventArgs.Command);
+            Assert.Equal(NefsEditCommandEventKind.Redo, eventArgs.Kind);
         }
 
         [Fact]
@@ -177,6 +222,35 @@ namespace VictorBush.Ego.NefsEdit.Tests.Commands
             Assert.Equal(0, buffer.NextCommandIndex);
             Assert.Equal(-1, buffer.PreviousCommandIndex);
             Assert.False(buffer.IsModified);
+        }
+
+        [Fact]
+        public void Undo_CanNotUndo_CommandExecutedEventNotRaised()
+        {
+            var str = new StringBuilder();
+            var buffer = new UndoBuffer();
+
+            NefsEditCommandEventArgs eventArgs = null;
+            buffer.CommandExecuted += (o, e) => eventArgs = e;
+            buffer.Undo();
+
+            Assert.Null(eventArgs);
+        }
+
+        [Fact]
+        public void Undo_CanUndo_CommandExecutedEventRaised()
+        {
+            var str = new StringBuilder();
+            var buffer = new UndoBuffer();
+            var cmd1 = new TestCommand(str, "", "A");
+
+            NefsEditCommandEventArgs eventArgs = null;
+            buffer.Execute(cmd1);
+            buffer.CommandExecuted += (o, e) => eventArgs = e;
+            buffer.Undo();
+
+            Assert.Same(cmd1, eventArgs.Command);
+            Assert.Equal(NefsEditCommandEventKind.Undo, eventArgs.Kind);
         }
 
         [Fact]

@@ -8,6 +8,8 @@ namespace VictorBush.Ego.NefsEdit.UI
     using System.Drawing;
     using System.Linq;
     using System.Windows.Forms;
+    using Microsoft.Extensions.Logging;
+    using VictorBush.Ego.NefsEdit.Commands;
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsEdit.Workspace;
@@ -20,6 +22,10 @@ namespace VictorBush.Ego.NefsEdit.UI
     /// </summary>
     internal partial class BrowseTreeForm : DockContent
     {
+        private static readonly ILogger Log = LogHelper.GetLogger();
+
+        private readonly Dictionary<NefsItem, ListViewItem> filesListItems = new Dictionary<NefsItem, ListViewItem>();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="BrowseTreeForm"/> class.
         /// </summary>
@@ -37,6 +43,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
             this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
             this.Workspace.ArchiveClosed += this.OnWorkspaceArchiveClosed;
+            this.Workspace.CommandExecuted += this.OnWorkspaceCommandExecuted;
 
             // Create the columns we want
             var columns = new ColumnHeader[]
@@ -47,6 +54,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                 new ColumnHeader() { Name = "extractedSize", Text = "Extracted Size" },
             };
 
+            this.filesListView.ShowItemToolTips = true;
             this.filesListView.Columns.AddRange(columns);
         }
 
@@ -124,6 +132,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             if (archive == null)
             {
                 this.filesListView.Items.Clear();
+                this.filesListItems.Clear();
                 this.directoryTreeView.Nodes.Clear();
                 return;
             }
@@ -185,6 +194,32 @@ namespace VictorBush.Ego.NefsEdit.UI
             });
         }
 
+        private void OnWorkspaceCommandExecuted(Object sender, Commands.NefsEditCommandEventArgs e)
+        {
+            if (e.Command is ReplaceFileCommand replaceCommand)
+            {
+                if (!this.filesListItems.ContainsKey(replaceCommand.Item))
+                {
+                    // An item was replaced, but its not in the current view
+                    return;
+                }
+
+                var listItem = this.filesListItems[replaceCommand.Item];
+                this.UpdateListItem(listItem);
+            }
+            else if (e.Command is RemoveFileCommand removeCommand)
+            {
+                if (!this.filesListItems.ContainsKey(removeCommand.Item))
+                {
+                    // An item was removed, but its not in the current view
+                    return;
+                }
+
+                var listItem = this.filesListItems[removeCommand.Item];
+                this.UpdateListItem(listItem);
+            }
+        }
+
         /// <summary>
         /// Opens a directory in the archive for viewing.
         /// </summary>
@@ -194,6 +229,10 @@ namespace VictorBush.Ego.NefsEdit.UI
             List<NefsItem> itemsInDir;
             var archive = this.Workspace.Archive;
 
+            // Clear the directory contents list view
+            this.filesListView.Items.Clear();
+            this.filesListItems.Clear();
+
             this.Directory = dir;
             if (dir == null)
             {
@@ -201,9 +240,6 @@ namespace VictorBush.Ego.NefsEdit.UI
                 itemsInDir = (from item in archive.Items
                               where item.Id == item.DirectoryId
                               select item).ToList();
-
-                // Clear the directory contents list view
-                this.filesListView.Items.Clear();
 
                 // This is the root of the archive
                 this.pathLabel.Text = @"\";
@@ -223,9 +259,6 @@ namespace VictorBush.Ego.NefsEdit.UI
 
                 this.pathLabel.Text = @"\" + dir.FilePathInArchive;
             }
-
-            // Clear the directory contents list view
-            this.filesListView.Items.Clear();
 
             // Load all items in the NeFS archive into the listview
             foreach (var item in itemsInDir)
@@ -251,6 +284,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                     listItem.BackColor = Color.LightBlue;
                 }
 
+                this.filesListItems.Add(item, listItem);
                 this.filesListView.Items.Add(listItem);
             }
         }
@@ -275,6 +309,42 @@ namespace VictorBush.Ego.NefsEdit.UI
             else
             {
                 this.OpenDirectory(parent);
+            }
+        }
+
+        /// <summary>
+        /// Updates visual appearance of a file list item.
+        /// </summary>
+        /// <param name="listItem">The item to update.</param>
+        private void UpdateListItem(ListViewItem listItem)
+        {
+            var item = listItem.Tag as NefsItem;
+            if (item == null)
+            {
+                Log.LogError("List view item did not have NefsItem as tag.");
+                return;
+            }
+
+            switch (item.State)
+            {
+                case NefsItemState.None:
+                    listItem.ForeColor = Color.Black;
+                    break;
+
+                case NefsItemState.Added:
+                    listItem.ForeColor = Color.Green;
+                    listItem.ToolTipText = $"Item will be added with {item.DataSource.FilePath}";
+                    break;
+
+                case NefsItemState.Removed:
+                    listItem.ForeColor = Color.Red;
+                    listItem.ToolTipText = "Item will be removed.";
+                    break;
+
+                case NefsItemState.Replaced:
+                    listItem.ForeColor = Color.Blue;
+                    listItem.ToolTipText = $"Item will be replaced with {item.DataSource.FilePath}";
+                    break;
             }
         }
     }

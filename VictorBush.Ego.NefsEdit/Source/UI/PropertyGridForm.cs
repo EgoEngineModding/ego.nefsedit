@@ -19,6 +19,14 @@ namespace VictorBush.Ego.NefsEdit.UI
         }
 
         /// <summary>
+        /// Refreshes the properties list.
+        /// </summary>
+        public void RefreshGrid()
+        {
+            this.propertyGrid.Refresh();
+        }
+
+        /// <summary>
         /// Sets the selected object in the property grid.
         /// </summary>
         /// <param name="obj">The object to display in the property grid.</param>

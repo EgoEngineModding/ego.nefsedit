@@ -6,6 +6,8 @@ namespace VictorBush.Ego.NefsEdit.UI
     using System.Collections.Generic;
     using System.Drawing;
     using System.Windows.Forms;
+    using Microsoft.Extensions.Logging;
+    using VictorBush.Ego.NefsEdit.Commands;
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsEdit.Workspace;
@@ -18,6 +20,8 @@ namespace VictorBush.Ego.NefsEdit.UI
     /// </summary>
     internal partial class BrowseAllForm : DockContent
     {
+        private static readonly ILogger Log = LogHelper.GetLogger();
+        private readonly Dictionary<NefsItem, ListViewItem> listItems = new Dictionary<NefsItem, ListViewItem>();
         private readonly ListViewColumnSorter listViewItemSorter = new ListViewColumnSorter();
 
         /// <summary>
@@ -37,6 +41,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
             this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
             this.Workspace.ArchiveClosed += this.OnWorkspaceArchiveClosed;
+            this.Workspace.CommandExecuted += this.OnWorkspaceCommandExecuted;
 
             this.itemsListView.ListViewItemSorter = this.listViewItemSorter;
 
@@ -72,6 +77,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                 new ColumnHeader() { Name = "pt7.0x04", Text = "[pt6.0x04]" },
             };
 
+            this.itemsListView.ShowItemToolTips = true;
             this.itemsListView.Columns.AddRange(columns);
             this.itemsListView.Columns.AddRange(debugColumns);
             this.itemsListView.ColumnClick += this.ItemsListView_ColumnClick;
@@ -149,14 +155,14 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void LoadArchive(NefsArchive archive)
         {
-            if (archive == null)
-            {
-                this.itemsListView.Items.Clear();
-                return;
-            }
-
             // Clear current list
             this.itemsListView.Items.Clear();
+            this.listItems.Clear();
+
+            if (archive == null)
+            {
+                return;
+            }
 
             // Load all items in the NeFS archive into the listview
             foreach (var item in archive.Items)
@@ -202,6 +208,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                     listItem.BackColor = Color.LightBlue;
                 }
 
+                this.listItems.Add(item, listItem);
                 this.itemsListView.Items.Add(listItem);
             }
         }
@@ -222,6 +229,68 @@ namespace VictorBush.Ego.NefsEdit.UI
             {
                 this.LoadArchive(this.Workspace.Archive);
             });
+        }
+
+        private void OnWorkspaceCommandExecuted(Object sender, NefsEditCommandEventArgs e)
+        {
+            if (e.Command is ReplaceFileCommand replaceCommand)
+            {
+                if (!this.listItems.ContainsKey(replaceCommand.Item))
+                {
+                    // An item was replaced, but its not in the current view
+                    return;
+                }
+
+                var listItem = this.listItems[replaceCommand.Item];
+                this.UpdateListItem(listItem);
+            }
+            else if (e.Command is RemoveFileCommand removeCommand)
+            {
+                if (!this.listItems.ContainsKey(removeCommand.Item))
+                {
+                    // An item was removed, but its not in the current view
+                    return;
+                }
+
+                var listItem = this.listItems[removeCommand.Item];
+                this.UpdateListItem(listItem);
+            }
+        }
+
+        /// <summary>
+        /// Updates visual appearance of a file list item.
+        /// </summary>
+        /// <param name="listItem">The item to update.</param>
+        private void UpdateListItem(ListViewItem listItem)
+        {
+            var item = listItem.Tag as NefsItem;
+            if (item == null)
+            {
+                Log.LogError("List view item did not have NefsItem as tag.");
+                return;
+            }
+
+            switch (item.State)
+            {
+                case NefsItemState.None:
+                    listItem.ForeColor = Color.Black;
+                    break;
+
+                case NefsItemState.Added:
+                    listItem.ForeColor = Color.Green;
+                    listItem.ToolTipText = $"Item will be added with {item.DataSource.FilePath}";
+                    break;
+
+                case NefsItemState.Removed:
+                    listItem.ForeColor = Color.Red;
+                    listItem.ToolTipText = "Item will be removed.";
+                    break;
+
+                case NefsItemState.Replaced:
+                    listItem.ForeColor = Color.Blue;
+                    listItem.ToolTipText = $"Item will be replaced with {item.DataSource.FilePath}";
+                    break;
+            }
         }
     }
 }

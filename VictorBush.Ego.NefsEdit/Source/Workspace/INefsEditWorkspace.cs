@@ -33,6 +33,12 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         event EventHandler ArchiveSaved;
 
         /// <summary>
+        /// Raised when a command is executed. This could be a new command, an undo command, or a
+        /// redo command.
+        /// </summary>
+        event EventHandler<NefsEditCommandEventArgs> CommandExecuted;
+
+        /// <summary>
         /// Raised when items are selected or de-selected.
         /// </summary>
         event EventHandler SelectedItemsChanged;
@@ -51,6 +57,16 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// Gest the archive file source info.
         /// </summary>
         NefsArchiveSource ArchiveSource { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether a redo is available.
+        /// </summary>
+        bool CanRedo { get; }
+
+        /// <summary>
+        /// Gets a value indicating whether an undo is available.
+        /// </summary>
+        bool CanUndo { get; }
 
         /// <summary>
         /// Gets the file system.

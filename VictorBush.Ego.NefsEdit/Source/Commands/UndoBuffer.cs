@@ -2,6 +2,7 @@
 
 namespace VictorBush.Ego.NefsEdit.Commands
 {
+    using System;
     using System.Collections.Generic;
 
     /// <summary>
@@ -18,6 +19,21 @@ namespace VictorBush.Ego.NefsEdit.Commands
         {
             this.Reset();
         }
+
+        /// <summary>
+        /// Raised when a command is executed (new, undo, or redo).
+        /// </summary>
+        public event EventHandler<NefsEditCommandEventArgs> CommandExecuted;
+
+        /// <summary>
+        /// Gets a value indicating whether a redo is available.
+        /// </summary>
+        public bool CanRedo => this.NextCommandIndex < this.commands.Count && this.NextCommandIndex >= 0;
+
+        /// <summary>
+        /// Gets a value indicating whether an undo is available.
+        /// </summary>
+        public bool CanUndo => this.PreviousCommandIndex >= 0 && this.PreviousCommandIndex < this.commands.Count;
 
         /// <summary>
         /// Gets the current commands list.
@@ -64,6 +80,10 @@ namespace VictorBush.Ego.NefsEdit.Commands
             // Update command index
             this.PreviousCommandIndex = this.NextCommandIndex;
             this.NextCommandIndex = this.commands.Count;
+
+            // Notifiy command executed
+            var eventArgs = new NefsEditCommandEventArgs(NefsEditCommandEventKind.New, command);
+            this.CommandExecuted?.Invoke(this, eventArgs);
         }
 
         /// <summary>
@@ -77,17 +97,22 @@ namespace VictorBush.Ego.NefsEdit.Commands
         /// <summary>
         /// Executes the next command in the undo buffer, if available.
         /// </summary>
-        public void Redo()
+        /// <returns>True if the redo was executed.</returns>
+        public bool Redo()
         {
-            if (this.NextCommandIndex >= this.commands.Count
-                || this.NextCommandIndex < 0)
+            if (!this.CanRedo)
             {
-                return;
+                return false;
             }
 
-            this.commands[this.NextCommandIndex].Do();
+            var command = this.commands[this.NextCommandIndex];
+            command.Do();
             this.NextCommandIndex += 1;
             this.PreviousCommandIndex += 1;
+
+            var eventArgs = new NefsEditCommandEventArgs(NefsEditCommandEventKind.Redo, command);
+            this.CommandExecuted?.Invoke(this, eventArgs);
+            return true;
         }
 
         /// <summary>
@@ -104,17 +129,22 @@ namespace VictorBush.Ego.NefsEdit.Commands
         /// <summary>
         /// Reverts the previous command in the undo buffer, if available.
         /// </summary>
-        public void Undo()
+        /// <returns>True if the undo was executed.</returns>
+        public bool Undo()
         {
-            if (this.PreviousCommandIndex < 0
-                || this.PreviousCommandIndex >= this.commands.Count)
+            if (!this.CanUndo)
             {
-                return;
+                return false;
             }
 
-            this.commands[this.PreviousCommandIndex].Undo();
+            var command = this.commands[this.PreviousCommandIndex];
+            command.Undo();
             this.PreviousCommandIndex -= 1;
             this.NextCommandIndex -= 1;
+
+            var eventArgs = new NefsEditCommandEventArgs(NefsEditCommandEventKind.Undo, command);
+            this.CommandExecuted?.Invoke(this, eventArgs);
+            return true;
         }
     }
 }

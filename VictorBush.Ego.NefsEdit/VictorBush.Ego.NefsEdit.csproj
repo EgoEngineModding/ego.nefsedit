@@ -53,6 +53,8 @@
     <Compile Include="..\SharedAssemblyInfo.cs">
       <Link>Properties\SharedAssemblyInfo.cs</Link>
     </Compile>
+    <Compile Include="Source\Commands\NefsEditCommandEventArgs.cs" />
+    <Compile Include="Source\Commands\NefsEditCommandEventKind.cs" />
     <Compile Include="Source\Commands\RemoveFileCommand.cs" />
     <Compile Include="Source\Commands\UndoBuffer.cs" />
     <Compile Include="Source\Commands\INefsEditCommand.cs" />

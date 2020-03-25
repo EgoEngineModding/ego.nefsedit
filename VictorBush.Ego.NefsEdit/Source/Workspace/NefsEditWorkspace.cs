@@ -57,7 +57,9 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 
             this.Archive = null;
             this.ArchiveSource = null;
+
             this.UndoBuffer = new UndoBuffer();
+            this.UndoBuffer.CommandExecuted += (o, e) => this.CommandExecuted?.Invoke(o, e);
         }
 
         /// <inheritdoc/>
@@ -70,6 +72,9 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         public event EventHandler ArchiveSaved;
 
         /// <inheritdoc/>
+        public event EventHandler<NefsEditCommandEventArgs> CommandExecuted;
+
+        /// <inheritdoc/>
         public event EventHandler SelectedItemsChanged;
 
         /// <inheritdoc/>
@@ -80,6 +85,12 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 
         /// <inheritdoc/>
         public NefsArchiveSource ArchiveSource { get; private set; }
+
+        /// <inheritdoc/>
+        public bool CanRedo => this.UndoBuffer.CanRedo;
+
+        /// <inheritdoc/>
+        public bool CanUndo => this.UndoBuffer.CanUndo;
 
         /// <inheritdoc/>
         public IFileSystem FileSystem { get; }
@@ -333,7 +344,10 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// <inheritdoc/>
         public void Redo()
         {
-            this.UndoBuffer.Redo();
+            if (this.UndoBuffer.Redo())
+            {
+                Log.LogInformation("Redo executed.");
+            }
         }
 
         /// <inheritdoc/>
@@ -441,7 +455,10 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// <inheritdoc/>
         public void Undo()
         {
-            this.UndoBuffer.Undo();
+            if (this.UndoBuffer.Undo())
+            {
+                Log.LogInformation("Undo executed.");
+            }
         }
 
         private async Task<bool> DoSaveArchiveAsync(NefsArchiveSource source)
