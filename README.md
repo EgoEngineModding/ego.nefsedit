@@ -7,10 +7,6 @@ There are two components to this project.
 - NefsEdit - a Windows Forms application that uses NefsLib.
 
 ## TODO
-- Add undo/redo commands.
-- Check for modified archive state. If not modified, disable save option.
-- Show item state in app - replaced items become a certain color, deleted items become red, etc.
-- Show/hide "Item" menu if an item is/isn't selected.
 - Add a recent files list.
 - Allow associating .nefs files with the app, and allow opening an archive via command line.
 - Add protection against saving over an archive in a game's directory (or always force a "Save As").
