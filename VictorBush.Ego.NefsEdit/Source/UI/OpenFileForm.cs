@@ -9,7 +9,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using System.IO.Abstractions;
     using System.Threading.Tasks;
     using System.Windows.Forms;
-    using log4net;
+    using Microsoft.Extensions.Logging;
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsLib;
@@ -20,7 +20,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     /// </summary>
     internal partial class OpenFileForm : Form
     {
-        private static readonly ILog Log = LogHelper.GetLogger();
+        private static readonly ILogger Log = LogHelper.GetLogger();
 
         private readonly OpenMode openModeCustom = new OpenMode("Custom");
 
@@ -186,7 +186,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             // Match offsets and files
             if (gameDatFiles.Count != headerOffsets.Count)
             {
-                Log.Error($"Found {gameDatFiles.Count} game*.dat files, but found {headerOffsets.Count} headers in game exectuable.");
+                Log.LogError($"Found {gameDatFiles.Count} game*.dat files, but found {headerOffsets.Count} headers in game exectuable.");
                 return new List<NefsArchiveSource>();
             }
 

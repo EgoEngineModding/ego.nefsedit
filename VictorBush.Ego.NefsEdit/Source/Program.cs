@@ -5,14 +5,14 @@ using System.IO;
 using System.IO.Abstractions;
 using System.Windows.Forms;
 using System.Windows.Threading;
+using Microsoft.Extensions.Logging;
+using Serilog;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.UI;
+using VictorBush.Ego.NefsEdit.Utility;
 using VictorBush.Ego.NefsEdit.Workspace;
 using VictorBush.Ego.NefsLib;
 using VictorBush.Ego.NefsLib.IO;
-
-// Configure log4net to monitor the XML configuration file
-[assembly: log4net.Config.XmlConfigurator(Watch = true)]
 
 // Expose NefsEdit classes to test project
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("VictorBush.Ego.NefsEdit.Tests")]
@@ -43,10 +43,13 @@ namespace VictorBush.Ego.NefsEdit
         [STAThread]
         internal static void Main()
         {
-            // Need to do this to get log4net to work in release builds
-            log4net.Config.XmlConfigurator.Configure();
-
-            // TODO: Setup nefs lib logging
+            // Logging
+            LogHelper.LoggerFactory = new LoggerFactory();
+            var logConfig = new LoggerConfiguration()
+                .WriteTo.Console()
+                .CreateLogger();
+            LogHelper.LoggerFactory.AddSerilog(logConfig);
+            NefsLog.LoggerFactory = LogHelper.LoggerFactory;
 
             // Setup workspace and services
             var fileSystem = new FileSystem();

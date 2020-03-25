@@ -7,7 +7,7 @@ namespace VictorBush.Ego.NefsEdit.Services
     using System.IO.Abstractions;
     using System.Windows.Forms;
     using System.Xml.Serialization;
-    using log4net;
+    using Microsoft.Extensions.Logging;
     using Microsoft.Win32;
     using VictorBush.Ego.NefsEdit.Utility;
 
@@ -16,7 +16,7 @@ namespace VictorBush.Ego.NefsEdit.Services
     /// </summary>
     internal class SettingsService : ISettingsService
     {
-        private static readonly ILog Log = LogHelper.GetLogger();
+        private static readonly ILogger Log = LogHelper.GetLogger();
 
         private static readonly string SettingsFilePath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "settings.xml");
 
@@ -100,8 +100,8 @@ namespace VictorBush.Ego.NefsEdit.Services
                 return;
             }
 
-            Log.Info("----------------------------");
-            Log.Info($"Loading settings...");
+            Log.LogInformation("----------------------------");
+            Log.LogInformation($"Loading settings...");
 
             // Settings file exists, load it
             try
@@ -113,12 +113,12 @@ namespace VictorBush.Ego.NefsEdit.Services
                     this.Settings = xs.Deserialize(reader) as Settings;
                 }
 
-                Log.Info($"Settings loaded.");
+                Log.LogInformation($"Settings loaded.");
                 this.OnSettingsLoaded();
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed to read settings file.\r\n{ex.Message}");
+                Log.LogError($"Failed to read settings file.\r\n{ex.Message}");
                 this.ResetSettings();
             }
         }
@@ -132,8 +132,8 @@ namespace VictorBush.Ego.NefsEdit.Services
                 this.ResetSettings();
             }
 
-            Log.Info("----------------------------");
-            Log.Info($"Saving settings...");
+            Log.LogInformation("----------------------------");
+            Log.LogInformation($"Saving settings...");
 
             try
             {
@@ -144,11 +144,11 @@ namespace VictorBush.Ego.NefsEdit.Services
                     xs.Serialize(writer, this.Settings);
                 }
 
-                Log.Info($"Settings saved.");
+                Log.LogInformation($"Settings saved.");
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed to save settings file.\r\n{ex.Message}");
+                Log.LogError($"Failed to save settings file.\r\n{ex.Message}");
             }
         }
 
@@ -188,7 +188,7 @@ namespace VictorBush.Ego.NefsEdit.Services
                 this.DirtRally2Dir = this.FindSteamGameDir(Constants.DirtRally2SteamPath);
                 if (!string.IsNullOrWhiteSpace(this.DirtRally2Dir))
                 {
-                    Log.Info($"Found DiRT Rally 2 directory: {this.DirtRally2Dir}");
+                    Log.LogInformation($"Found DiRT Rally 2 directory: {this.DirtRally2Dir}");
                     shouldSave = true;
                 }
             }
@@ -198,7 +198,7 @@ namespace VictorBush.Ego.NefsEdit.Services
                 this.Dirt4Dir = this.FindSteamGameDir(Constants.Dirt4SteamPath);
                 if (!string.IsNullOrWhiteSpace(this.Dirt4Dir))
                 {
-                    Log.Info($"Found DiRT 4 directory: {this.Dirt4Dir}");
+                    Log.LogInformation($"Found DiRT 4 directory: {this.Dirt4Dir}");
                     shouldSave = true;
                 }
             }

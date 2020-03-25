@@ -2,6 +2,7 @@
 
 namespace VictorBush.Ego.NefsLib
 {
+    using System.Runtime.CompilerServices;
     using Microsoft.Extensions.Logging;
     using Microsoft.Extensions.Logging.Abstractions;
 
@@ -15,7 +16,7 @@ namespace VictorBush.Ego.NefsLib
         /// <summary>
         /// Gets or sets the logger factory used by the library.
         /// </summary>
-        public static ILoggerFactory LogFactory
+        public static ILoggerFactory LoggerFactory
         {
             get
             {
@@ -31,6 +32,16 @@ namespace VictorBush.Ego.NefsLib
             {
                 logFactory = value;
             }
+        }
+
+        /// <summary>
+        /// Gets a logger.
+        /// </summary>
+        /// <param name="filename">Name of file the logger is for.</param>
+        /// <returns>The log instance.</returns>
+        public static ILogger GetLogger([CallerFilePath]string filename = "")
+        {
+            return LoggerFactory.CreateLogger(filename);
         }
     }
 }

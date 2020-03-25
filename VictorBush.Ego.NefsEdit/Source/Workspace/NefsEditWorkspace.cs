@@ -9,7 +9,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
     using System.Linq;
     using System.Threading.Tasks;
     using System.Windows.Forms;
-    using log4net;
+    using Microsoft.Extensions.Logging;
     using VictorBush.Ego.NefsEdit.Commands;
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Utility;
@@ -24,7 +24,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
     /// </summary>
     internal class NefsEditWorkspace : INefsEditWorkspace
     {
-        private static readonly ILog Log = LogHelper.GetLogger();
+        private static readonly ILogger Log = LogHelper.GetLogger();
 
         private List<NefsItem> selectedItems = new List<NefsItem>();
 
@@ -136,8 +136,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 }
             }
 
-            Log.Info("----------------------------");
-            Log.Info($"Closing archive: {this.ArchiveSource.DataFilePath}.");
+            Log.LogInformation("----------------------------");
+            Log.LogInformation($"Closing archive: {this.ArchiveSource.DataFilePath}.");
 
             // Close archive
             this.Archive = null;
@@ -148,7 +148,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             // Notify archive closed
             this.ArchiveClosed?.Invoke(this, EventArgs.Empty);
 
-            Log.Info($"Archive closed.");
+            Log.LogInformation($"Archive closed.");
 
             return true;
         }
@@ -262,31 +262,31 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             {
                 using (var tt = p.BeginTask(1.0f))
                 {
-                    Log.Info("----------------------------");
+                    Log.LogInformation("----------------------------");
 
                     // Check if header/data files are split
                     if (source.IsHeaderSeparate)
                     {
-                        Log.Info($"Opening archive:");
-                        Log.Info($"Header file: {source.HeaderFilePath}");
-                        Log.Info($"Header offset: {source.HeaderOffset}");
-                        Log.Info($"Data file: {source.DataFilePath}");
+                        Log.LogInformation($"Opening archive:");
+                        Log.LogInformation($"Header file: {source.HeaderFilePath}");
+                        Log.LogInformation($"Header offset: {source.HeaderOffset}");
+                        Log.LogInformation($"Data file: {source.DataFilePath}");
                     }
                     else
                     {
-                        Log.Info($"Opening archive: {source.DataFilePath}");
+                        Log.LogInformation($"Opening archive: {source.DataFilePath}");
                     }
 
                     // Verify file exists
                     if (!this.FileSystem.File.Exists(source.HeaderFilePath))
                     {
-                        Log.Error($"File not found: {source.HeaderFilePath}.");
+                        Log.LogError($"File not found: {source.HeaderFilePath}.");
                         return;
                     }
 
                     if (!this.FileSystem.File.Exists(source.DataFilePath))
                     {
-                        Log.Error($"File not found: {source.DataFilePath}.");
+                        Log.LogError($"File not found: {source.DataFilePath}.");
                         return;
                     }
 
@@ -299,11 +299,11 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                         this.ArchiveOpened?.Invoke(this, EventArgs.Empty);
                         result = true;
 
-                        Log.Info($"Archive opened.");
+                        Log.LogInformation($"Archive opened.");
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Failed to open archive {source.DataFilePath}.\r\n{ex.Message}");
+                        Log.LogError($"Failed to open archive {source.DataFilePath}.\r\n{ex.Message}");
                     }
                 }
             }));
@@ -341,7 +341,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         {
             if (item == null)
             {
-                Log.Error($"Cannot replace item. Item is null.");
+                Log.LogError($"Cannot replace item. Item is null.");
                 return false;
             }
 
@@ -355,7 +355,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             // Check file exists
             if (!this.FileSystem.File.Exists(fileName))
             {
-                Log.Error($"Cannot replace item. Replacement file does not exist: {fileName}.");
+                Log.LogError($"Cannot replace item. Replacement file does not exist: {fileName}.");
                 return false;
             }
 
@@ -409,7 +409,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         {
             if (this.Archive == null)
             {
-                Log.Error("Failed to save archive: no archive open.");
+                Log.LogError("Failed to save archive: no archive open.");
                 return false;
             }
 
@@ -448,7 +448,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         {
             if (this.Archive == null)
             {
-                Log.Error("Failed to save archive: no archive open.");
+                Log.LogError("Failed to save archive: no archive open.");
                 return false;
             }
 
@@ -457,7 +457,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             {
                 var msg = "Saving archive with a separated header is not supported.";
                 this.UiService.ShowMessageBox(msg);
-                Log.Error(msg);
+                Log.LogError(msg);
                 return false;
             }
 
@@ -466,7 +466,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             {
                 var msg = "Saving archive with an offset header is not supported.";
                 this.UiService.ShowMessageBox(msg);
-                Log.Error(msg);
+                Log.LogError(msg);
                 return false;
             }
 
@@ -478,8 +478,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             }
 
             var destFilePath = source.DataFilePath;
-            Log.Info("----------------------------");
-            Log.Info($"Writing archive: {destFilePath}.");
+            Log.LogInformation("----------------------------");
+            Log.LogInformation($"Writing archive: {destFilePath}.");
             var result = false;
 
             // Save archive
@@ -496,11 +496,11 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                         this.ArchiveSaved?.Invoke(this, EventArgs.Empty);
                         result = true;
 
-                        Log.Info($"Archive saved.");
+                        Log.LogInformation($"Archive saved.");
                     }
                     catch (Exception ex)
                     {
-                        Log.Error($"Failed to saved archive {destFilePath}.\r\n{ex.Message}");
+                        Log.LogError($"Failed to saved archive {destFilePath}.\r\n{ex.Message}");
                     }
                 }
             }));
@@ -537,7 +537,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             }
             catch (Exception ex)
             {
-                Log.Error($"Failed to extract item {item.FileName}.\r\n{ex.Message}");
+                Log.LogError($"Failed to extract item {item.FileName}.\r\n{ex.Message}");
                 return false;
             }
         }
@@ -551,8 +551,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 
                 using (var t = p.BeginTask(1.0f))
                 {
-                    Log.Info("----------------------------");
-                    Log.Info($"Extracting {numToExtract} items...");
+                    Log.LogInformation("----------------------------");
+                    Log.LogInformation($"Extracting {numToExtract} items...");
 
                     for (var i = 0; i < extractionList.Count; ++i)
                     {
@@ -564,7 +564,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                         }
                     }
 
-                    Log.Info("Extraction complete.");
+                    Log.LogInformation("Extraction complete.");
                 }
             }));
 

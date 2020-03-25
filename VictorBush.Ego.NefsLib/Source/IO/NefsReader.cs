@@ -45,7 +45,7 @@ namespace VictorBush.Ego.NefsLib.IO
             00,
         };
 
-        private static readonly ILogger Log = NefsLog.LogFactory.CreateLogger<NefsReader>();
+        private static readonly ILogger Log = NefsLog.GetLogger();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsReader"/> class.

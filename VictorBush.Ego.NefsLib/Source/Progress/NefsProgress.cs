@@ -12,7 +12,7 @@ namespace VictorBush.Ego.NefsLib.Progress
     /// </summary>
     public class NefsProgress
     {
-        private static readonly ILogger Log = NefsLog.LogFactory.CreateLogger<NefsProgress>();
+        private static readonly ILogger Log = NefsLog.GetLogger();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsProgress"/> class.

@@ -4,7 +4,7 @@ namespace VictorBush.Ego.NefsEdit.Services
 {
     using System;
     using System.Threading.Tasks;
-    using log4net;
+    using Microsoft.Extensions.Logging;
     using VictorBush.Ego.NefsEdit.UI;
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsLib.Progress;
@@ -14,7 +14,7 @@ namespace VictorBush.Ego.NefsEdit.Services
     /// </summary>
     internal class ProgressService : IProgressService
     {
-        private static readonly ILog Log = LogHelper.GetLogger();
+        private static readonly ILogger Log = LogHelper.GetLogger();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressService"/> class.
@@ -44,7 +44,7 @@ namespace VictorBush.Ego.NefsEdit.Services
             }
             catch (Exception ex)
             {
-                Log.Error(ex.Message);
+                Log.LogError(ex.Message);
             }
 
             // Close the progress dialog
