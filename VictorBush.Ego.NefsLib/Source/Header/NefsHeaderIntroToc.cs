@@ -17,7 +17,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// The size of this section.
         /// </summary>
-        public const uint Size = 0x7F;
+        public const uint Size = 0x80;
 
         /// <summary>Unknown, maybe constant (01 00 00 01).</summary>
         [FileData]
