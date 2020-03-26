@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsLib.Header
 {
     using System.Collections.Generic;
+    using System.Linq;
     using VictorBush.Ego.NefsLib.Item;
 
     /// <summary>
@@ -10,7 +11,9 @@ namespace VictorBush.Ego.NefsLib.Header
     /// </summary>
     public class NefsHeaderPart6
     {
-        private readonly List<NefsHeaderPart6Entry> entries;
+        private readonly SortedDictionary<NefsItemId, NefsHeaderPart6Entry> entriesById;
+
+        private readonly List<NefsHeaderPart6Entry> entriesByIndex;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart6"/> class.
@@ -18,7 +21,8 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="entries">A list of entries to instantiate this part with.</param>
         internal NefsHeaderPart6(IList<NefsHeaderPart6Entry> entries)
         {
-            this.entries = new List<NefsHeaderPart6Entry>(entries);
+            this.entriesByIndex = new List<NefsHeaderPart6Entry>(entries);
+            this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart6Entry>(entries.ToDictionary(e => e.Id, e => e));
         }
 
         /// <summary>
@@ -27,23 +31,31 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="items">The list of items in the archive sorted by id.</param>
         internal NefsHeaderPart6(NefsItemList items)
         {
-            this.entries = new List<NefsHeaderPart6Entry>();
+            this.entriesByIndex = new List<NefsHeaderPart6Entry>();
+            this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart6Entry>();
 
             foreach (var item in items)
             {
-                var entry = new NefsHeaderPart6Entry();
+                var entry = new NefsHeaderPart6Entry(item.Id);
                 entry.Byte0.Value[0] = item.Part6Unknown0x00;
                 entry.Byte1.Value[0] = item.Part6Unknown0x01;
                 entry.Byte2.Value[0] = item.Part6Unknown0x02;
                 entry.Byte3.Value[0] = item.Part6Unknown0x03;
 
-                this.entries.Add(entry);
+                this.entriesByIndex.Add(entry);
+                this.entriesById.Add(item.Id, entry);
             }
         }
 
         /// <summary>
-        /// The part 6 entries for each item in the archive.
+        /// Gets entries for each item in the archive, sorted by id. The key is the item id; the
+        /// value is the metadata entry for that item.
         /// </summary>
-        public IReadOnlyList<NefsHeaderPart6Entry> Entries => this.entries;
+        public IReadOnlyDictionary<NefsItemId, NefsHeaderPart6Entry> EntriesById => this.entriesById;
+
+        /// <summary>
+        /// Gets the list of entries in the order they appear in the header.
+        /// </summary>
+        public IList<NefsHeaderPart6Entry> EntriesByIndex => this.entriesByIndex;
     }
 }

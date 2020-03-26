@@ -29,23 +29,23 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             var items = new NefsItemList(@"C:\archive.nefs");
 
             var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, new List<UInt32> { 1, 11, 21 }));
-            this.file1 = new NefsItem(new NefsItemId(0), "file1", "file1", new NefsItemId(0), NefsItemType.File, file1DataSource, TestHelpers.CreateUnknownData());
+            this.file1 = new NefsItem(new NefsItemId(0), "file1", "file1", new NefsItemId(0), new NefsItemId(1), NefsItemType.File, file1DataSource, TestHelpers.CreateUnknownData());
             items.Add(this.file1);
 
             var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, new List<UInt32> { 2, 22, 52 }));
-            this.file2 = new NefsItem(new NefsItemId(1), "file2", "file2", new NefsItemId(1), NefsItemType.File, file2DataSource, TestHelpers.CreateUnknownData());
+            this.file2 = new NefsItem(new NefsItemId(1), "file2", "file2", new NefsItemId(1), new NefsItemId(2), NefsItemType.File, file2DataSource, TestHelpers.CreateUnknownData());
             items.Add(this.file2);
 
             var dir1DataSource = new NefsEmptyDataSource();
-            this.dir1 = new NefsItem(new NefsItemId(2), "dir1", "dir1", new NefsItemId(2), NefsItemType.Directory, dir1DataSource, TestHelpers.CreateUnknownData());
+            this.dir1 = new NefsItem(new NefsItemId(2), "dir1", "dir1", new NefsItemId(2), new NefsItemId(2), NefsItemType.Directory, dir1DataSource, TestHelpers.CreateUnknownData());
             items.Add(this.dir1);
 
             var file3DataSource = new NefsItemListDataSource(items, 222, new NefsItemSize(333, new List<UInt32> { 3, 13, 23 }));
-            this.file3 = new NefsItem(new NefsItemId(3), "file3", "file3", this.dir1.Id, NefsItemType.File, file3DataSource, TestHelpers.CreateUnknownData());
+            this.file3 = new NefsItem(new NefsItemId(3), "file3", "dir1/file3", this.dir1.Id, new NefsItemId(4), NefsItemType.File, file3DataSource, TestHelpers.CreateUnknownData());
             items.Add(this.file3);
 
             var file4DataSource = new NefsItemListDataSource(items, 777, new NefsItemSize(444));
-            this.file4NotCompressed = new NefsItem(new NefsItemId(4), "file4", "file3", this.dir1.Id, NefsItemType.File, file4DataSource, TestHelpers.CreateUnknownData());
+            this.file4NotCompressed = new NefsItem(new NefsItemId(4), "file4", "dir1/file3", this.dir1.Id, new NefsItemId(4), NefsItemType.File, file4DataSource, TestHelpers.CreateUnknownData());
             items.Add(this.file4NotCompressed);
 
             this.testItems = items;

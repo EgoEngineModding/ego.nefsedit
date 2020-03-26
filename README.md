@@ -9,10 +9,12 @@ There are two components to this project.
 ## TODO
 - Fix archive saving.
 - Fix list view items not being updated after save.
+- Verify hash for encrypted nefs.
 - Add a recent files list.
 - Allow associating .nefs files with the app, and allow opening an archive via command line.
 - Add protection against saving over an archive in a game's directory (or always force a "Save As").
 - Evaluate NefsProgress progress reporting.
+- Fix sorting by id (and allow resetting sorting order?)
 
 ## Acknowledgements
 Special thanks to [@Gigi1237]( https://github.com/Gigi1237 ) for encryption work.

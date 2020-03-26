@@ -132,7 +132,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart2Async(Stream stream, UInt64 offset, NefsHeaderPart2 part2, NefsProgress p)
         {
-            foreach (var entry in part2.Entries)
+            foreach (var entry in part2.EntriesById.Values)
             {
                 await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += NefsHeaderPart2Entry.Size;
@@ -210,7 +210,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart6Async(Stream stream, UInt64 offset, NefsHeaderPart6 part6, NefsProgress p)
         {
-            foreach (var entry in part6.Entries)
+            foreach (var entry in part6.EntriesById.Values)
             {
                 await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += NefsHeaderPart6Entry.Size;
@@ -227,11 +227,24 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart7Async(Stream stream, UInt64 offset, NefsHeaderPart7 part7, NefsProgress p)
         {
-            foreach (var entry in part7.Entries)
+            foreach (var entry in part7.EntriesById.Values)
             {
                 await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += NefsHeaderPart7Entry.Size;
             }
+        }
+
+        /// <summary>
+        /// Writes the header part to an output stream.
+        /// </summary>
+        /// <param name="stream">The stream to write to.</param>
+        /// <param name="offset">The absolute offset in the stream to write at.</param>
+        /// <param name="part8">The data to write.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>An async task.</returns>
+        internal async Task WriteHeaderPart8Async(Stream stream, UInt64 offset, NefsHeaderPart8 part8, NefsProgress p)
+        {
+            await FileData.WriteDataAsync(stream, offset, part8, p);
         }
 
         /// <summary>
@@ -444,7 +457,8 @@ namespace VictorBush.Ego.NefsLib.IO
             var p5Size = NefsHeaderPart5.Size;
             var p6Size = numItems * NefsHeaderPart6Entry.Size;
             var p7Size = numItems * NefsHeaderPart7Entry.Size;
-            var headerSize = introSize + tocSize + p1Size + p2Size + p3Size + p4Size + p5Size + p6Size + p7Size;
+            var p8Size = 4;
+            var headerSize = introSize + tocSize + p1Size + p2Size + p3Size + p4Size + p5Size + p6Size + p7Size + p8Size;
 
             // Determine first data offset. There are two known offset values. If the header is
             // large enough, the second (larger) offset is used.
@@ -494,11 +508,8 @@ namespace VictorBush.Ego.NefsLib.IO
             toc.OffsetToPart8.Value = toc.OffsetToPart7.Value + (uint)p7Size;
             toc.Unknown0x24.Value = sourceHeader.TableOfContents.Unknown0x24.Value;
 
-            // Part 8 : TODO ??
-            var p8 = new NefsHeaderPart8();
-            var p8DataSize = sourceHeader.Part8.AllTheData.Value.Length;
-            p8.AllTheData.Value = new byte[p8DataSize];
-            sourceHeader.Part8.AllTheData.Value.CopyTo(p8.AllTheData.Value, 0);
+            // Part 8 - not writing anything for now
+            var p8 = new NefsHeaderPart8((uint)p8Size);
 
             // Create new header object
             var header = new NefsHeader(intro, toc, p1, p2, p3, p4, p5, p6, p7, p8);
@@ -526,8 +537,8 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>The async task.</returns>
         private async Task WriteHeaderAsync(Stream stream, UInt64 headerOffset, NefsHeader header, NefsProgress p)
         {
-            // Calc weight of each task (7 parts + intro + table of contents)
-            var weight = 1.0f / 9.0f;
+            // Calc weight of each task (8 parts + intro + table of contents)
+            var weight = 1.0f / 10.0f;
 
             // Get table of contents
             var toc = header.TableOfContents;
@@ -584,6 +595,12 @@ namespace VictorBush.Ego.NefsLib.IO
             {
                 var offset = headerOffset + toc.OffsetToPart7.Value;
                 await this.WriteHeaderPart7Async(stream, offset, header.Part7, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 8"))
+            {
+                var offset = headerOffset + toc.OffsetToPart8.Value;
+                await this.WriteHeaderPart8Async(stream, offset, header.Part8, p);
             }
         }
 

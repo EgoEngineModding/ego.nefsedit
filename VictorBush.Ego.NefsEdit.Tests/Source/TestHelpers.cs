@@ -22,15 +22,15 @@ namespace VictorBush.Ego.NefsEdit.Tests
             var items = new NefsItemList(filePath);
 
             var file1DataSource = new NefsItemListDataSource(items, 100, new NefsItemSize(20, new List<UInt32> { 2, 3, 4 }));
-            var file1 = new NefsItem(new NefsItemId(0), "file1", "file1", new NefsItemId(0), NefsItemType.File, file1DataSource, CreateUnknownData());
+            var file1 = new NefsItem(new NefsItemId(0), "file1", "file1", new NefsItemId(0), new NefsItemId(1), NefsItemType.File, file1DataSource, CreateUnknownData());
             items.Add(file1);
 
             var dir1DataSource = new NefsEmptyDataSource();
-            var dir1 = new NefsItem(new NefsItemId(1), "dir1", "dir1", new NefsItemId(1), NefsItemType.Directory, dir1DataSource, CreateUnknownData());
+            var dir1 = new NefsItem(new NefsItemId(1), "dir1", "dir1", new NefsItemId(1), new NefsItemId(1), NefsItemType.Directory, dir1DataSource, CreateUnknownData());
             items.Add(dir1);
 
             var file2DataSource = new NefsItemListDataSource(items, 104, new NefsItemSize(15, new List<UInt32> { 5, 6, 7 }));
-            var file2 = new NefsItem(new NefsItemId(2), "file2", "dir1/file2", new NefsItemId(1), NefsItemType.File, file2DataSource, CreateUnknownData());
+            var file2 = new NefsItem(new NefsItemId(2), "file2", "dir1/file2", new NefsItemId(1), new NefsItemId(2), NefsItemType.File, file2DataSource, CreateUnknownData());
             items.Add(file2);
 
             var intro = new NefsHeaderIntro();
@@ -52,8 +52,6 @@ namespace VictorBush.Ego.NefsEdit.Tests
                 Part6Unknown0x01 = 0,
                 Part6Unknown0x02 = 0,
                 Part6Unknown0x03 = 0,
-                Part7Unknown0x00 = 0,
-                Part7Unknown0x04 = 0,
             };
         }
     }

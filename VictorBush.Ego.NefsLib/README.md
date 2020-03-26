@@ -37,10 +37,15 @@ Below are some general notes on design philosophy for NefsLib.
 	- Replacement files aren't compressed until the writer begins to write.
 	- This allows an application to queue up multiple changes and support undo/redo before triggering a save.
 - Be aware of an item id vs a generic list index
-	- When dealing with item metadata, the library keeps them sorted by id.
-	- The NefsItemList is sorted and indexed by item id, as are the different header part classes (NefsHeaderPart*X*). Data is stored sorted dictionaries (sorted by id). That way entries are enumerated by id.
-	- There are no guarantees on item order in the archive header (for example, parts 1 and 2 are not necessarily sorted by id). However, when NefsLib writes this metadata, it will have the entries sorted by id.
-	- Header part 4 is an example of the difference between an item id and an index. Not every item has an entry in part 4. The entries in part 4 are accessed by indices into the list, not by item id.
+	- Some header parts contain a list of item metadata. This list can be accessed by an index into this list.
+		- The list is not guaranteed to be sorted by item id.
+		- The part 1 entry for an item contains the index to use to access the item metadata in other parts.
+	- The header part classes (NefsHeaderPart*X*) retain the order of data when a header is read.
+		- They provide two ways to access this data:
+			- A list of entries that retains the order as read in from the header. This allows enumerating the entries by index.
+			- A dictionary keyed by item id and sorted by item id. This allows enumerating the entries by item id.
+	- The NefsItemList is sorted and indexed by item id.
+	- When NefsLib writes a header, it will write the entries sorted by id.
 - Use the Microsoft logging abstractions.
 	- Logging is configured by the consumer of the library by providing a static ILoggerFactory to NefsLog.LoggerFactory. If none is provided, a NullLoggerFactory is used.
 - Have some unit tests.

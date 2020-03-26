@@ -19,6 +19,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <param name="fileName">The file name within the archive.</param>
         /// <param name="filePathInArchive">The file path within the archive.</param>
         /// <param name="directoryId">The directory id the item is in.</param>
+        /// <param name="siblingId">The sibling item id.</param>
         /// <param name="type">The type of item.</param>
         /// <param name="dataSource">The data source for the item's data.</param>
         /// <param name="unknownData">Unknown metadata.</param>
@@ -28,6 +29,7 @@ namespace VictorBush.Ego.NefsLib.Item
             string fileName,
             string filePathInArchive,
             NefsItemId directoryId,
+            NefsItemId siblingId,
             NefsItemType type,
             INefsDataSource dataSource,
             NefsItemUnknownData unknownData,
@@ -35,6 +37,7 @@ namespace VictorBush.Ego.NefsLib.Item
         {
             this.Id = id;
             this.DirectoryId = directoryId;
+            this.SiblingId = siblingId;
             this.Type = type;
             this.DataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
             this.State = state;
@@ -44,8 +47,6 @@ namespace VictorBush.Ego.NefsLib.Item
             this.Part6Unknown0x01 = unknownData.Part6Unknown0x01;
             this.Part6Unknown0x02 = unknownData.Part6Unknown0x02;
             this.Part6Unknown0x03 = unknownData.Part6Unknown0x03;
-            this.Part7Unknown0x00 = unknownData.Part7Unknown0x00;
-            this.Part7Unknown0x04 = unknownData.Part7Unknown0x04;
 
             // Save file name
             this.FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
@@ -118,14 +119,10 @@ namespace VictorBush.Ego.NefsLib.Item
         public byte Part6Unknown0x03 { get; }
 
         /// <summary>
-        /// Unknown data in the part 7 entry.
+        /// Gets the id of the next item in the same directory as this item. If this item is the
+        /// last item in the directory, the sibling id is equal to the item id.
         /// </summary>
-        public UInt32 Part7Unknown0x00 { get; }
-
-        /// <summary>
-        /// Unknown data in the part 7 entry.
-        /// </summary>
-        public UInt32 Part7Unknown0x04 { get; }
+        public NefsItemId SiblingId { get; }
 
         /// <summary>
         /// The modification state of the item. Represents any pending changes to this item. Pending
@@ -149,13 +146,16 @@ namespace VictorBush.Ego.NefsLib.Item
         {
             var p1 = header.Part1.EntriesById[id];
             var p2 = header.Part2.EntriesById[id];
-            var p6 = header.Part6.Entries[(int)id.Value];
+            var p6 = header.Part6.EntriesById[id];
 
             // Determine type
             var type = p2.ExtractedSize.Value == 0 ? NefsItemType.Directory : NefsItemType.File;
 
             // Find parent
             var parentId = header.GetItemDirectoryId(id);
+
+            // Find sibling
+            var siblingId = header.Part7.EntriesById[id].SiblingId;
 
             // Offset and size
             var dataOffset = p1.OffsetToData.Value;
@@ -196,7 +196,7 @@ namespace VictorBush.Ego.NefsLib.Item
             };
 
             // Create item
-            return new NefsItem(id, fileName, filePath, parentId, type, dataSource, unknown);
+            return new NefsItem(id, fileName, filePath, parentId, siblingId, type, dataSource, unknown);
         }
 
         /// <summary>
@@ -211,8 +211,6 @@ namespace VictorBush.Ego.NefsLib.Item
                 Part6Unknown0x01 = this.Part6Unknown0x01,
                 Part6Unknown0x02 = this.Part6Unknown0x02,
                 Part6Unknown0x03 = this.Part6Unknown0x03,
-                Part7Unknown0x00 = this.Part7Unknown0x00,
-                Part7Unknown0x04 = this.Part7Unknown0x04,
             };
 
             return new NefsItem(
@@ -220,6 +218,7 @@ namespace VictorBush.Ego.NefsLib.Item
                 this.FileName,
                 this.FilePathInArchive,
                 this.DirectoryId,
+                this.SiblingId,
                 this.Type,
                 this.DataSource,
                 unknownData,

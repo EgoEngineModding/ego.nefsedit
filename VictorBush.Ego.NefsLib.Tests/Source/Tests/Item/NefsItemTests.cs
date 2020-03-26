@@ -31,8 +31,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
             Assert.Equal(item.Part6Unknown0x01, clone.Part6Unknown0x01);
             Assert.Equal(item.Part6Unknown0x02, clone.Part6Unknown0x02);
             Assert.Equal(item.Part6Unknown0x03, clone.Part6Unknown0x03);
-            Assert.Equal(item.Part7Unknown0x00, clone.Part7Unknown0x00);
-            Assert.Equal(item.Part7Unknown0x04, clone.Part7Unknown0x04);
+            Assert.Equal(item.SiblingId, clone.SiblingId);
             Assert.Equal(item.State, clone.State);
             Assert.Equal(item.Type, clone.Type);
         }

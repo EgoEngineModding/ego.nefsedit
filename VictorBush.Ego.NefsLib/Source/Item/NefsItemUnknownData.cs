@@ -2,8 +2,6 @@
 
 namespace VictorBush.Ego.NefsLib.Item
 {
-    using System;
-
     /// <summary>
     /// Collection of data values whose purpose has not yet been discovered.
     /// </summary>
@@ -28,15 +26,5 @@ namespace VictorBush.Ego.NefsLib.Item
         /// Unknown data in the part 6 entry.
         /// </summary>
         public byte Part6Unknown0x03 { get; set; }
-
-        /// <summary>
-        /// Unknown data in the part 7 entry.
-        /// </summary>
-        public UInt32 Part7Unknown0x00 { get; set; }
-
-        /// <summary>
-        /// Unknown data in the part 7 entry.
-        /// </summary>
-        public UInt32 Part7Unknown0x04 { get; set; }
     }
 }

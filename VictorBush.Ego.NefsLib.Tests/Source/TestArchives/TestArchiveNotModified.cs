@@ -10,6 +10,15 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
     using VictorBush.Ego.NefsLib.Item;
     using Xunit;
 
+    /// <summary>
+    /// <para>Test archive that has modified items in it.</para>
+    /// <list>
+    /// <item>/file1</item>
+    /// <item>/dir1</item>
+    /// <item>/dir1/file2</item>
+    /// <item>/dir1/file3</item>
+    /// </list>
+    /// </summary>
     internal class TestArchiveNotModified
     {
         /*
@@ -23,6 +32,8 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
         public static string Dir1Name => "dir1";
 
         public static string Dir1PathInArchive => Dir1Name;
+
+        public static UInt32 Dir1SiblingId => Dir1ItemId;
 
         /*
         File 1 - in root of archive.
@@ -42,6 +53,8 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
         public static string File1PathInArchive => File1Name;
 
+        public static UInt32 File1SiblingId => Dir1ItemId;
+
         /*
         File 2 - inside directory "dir1".
         */
@@ -59,6 +72,8 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
         public static UInt64 File2Offset => File1Offset + File1ChunkSizes.Last();
 
         public static string File2PathInArchive => $@"{Dir1PathInArchive}\{File2Name}";
+
+        public static UInt32 File2SiblingId => File3ItemId;
 
         /*
         File 3 - Not compressed. In directory "dir1".
@@ -78,6 +93,8 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
         public static string File3PathInArchive => $@"{Dir1PathInArchive}\{File3Name}";
 
+        public static UInt32 File3SiblingId => File3ItemId;
+
         public static UInt32 NumItems => 4;
 
         /// <summary>
@@ -91,19 +108,19 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
             var items = new NefsItemList(filePath);
 
             var file1DataSource = new NefsItemListDataSource(items, File1Offset, new NefsItemSize(File1ExtractedSize, File1ChunkSizes));
-            var file1 = new NefsItem(new NefsItemId(File1ItemId), File1Name, File1PathInArchive, new NefsItemId(File1DirectoryId), NefsItemType.File, file1DataSource, TestHelpers.CreateUnknownData());
+            var file1 = new NefsItem(new NefsItemId(File1ItemId), File1Name, File1PathInArchive, new NefsItemId(File1DirectoryId), new NefsItemId(File1SiblingId), NefsItemType.File, file1DataSource, TestHelpers.CreateUnknownData());
             items.Add(file1);
 
             var dir1DataSource = new NefsEmptyDataSource();
-            var dir1 = new NefsItem(new NefsItemId(Dir1ItemId), Dir1Name, Dir1PathInArchive, new NefsItemId(Dir1DirectoryId), NefsItemType.Directory, dir1DataSource, TestHelpers.CreateUnknownData());
+            var dir1 = new NefsItem(new NefsItemId(Dir1ItemId), Dir1Name, Dir1PathInArchive, new NefsItemId(Dir1DirectoryId), new NefsItemId(Dir1SiblingId), NefsItemType.Directory, dir1DataSource, TestHelpers.CreateUnknownData());
             items.Add(dir1);
 
             var file2DataSource = new NefsItemListDataSource(items, File2Offset, new NefsItemSize(File2ExtractedSize, File2ChunkSizes));
-            var file2 = new NefsItem(new NefsItemId(File2ItemId), File2Name, File2PathInArchive, new NefsItemId(File2DirectoryId), NefsItemType.File, file2DataSource, TestHelpers.CreateUnknownData());
+            var file2 = new NefsItem(new NefsItemId(File2ItemId), File2Name, File2PathInArchive, new NefsItemId(File2DirectoryId), new NefsItemId(File2SiblingId), NefsItemType.File, file2DataSource, TestHelpers.CreateUnknownData());
             items.Add(file2);
 
             var file3DataSource = new NefsItemListDataSource(items, File3Offset, new NefsItemSize(File3ExtractedSize, File3ChunkSizes));
-            var file3 = new NefsItem(new NefsItemId(File3ItemId), File3Name, File3PathInArchive, new NefsItemId(File3DirectoryId), NefsItemType.File, file3DataSource, TestHelpers.CreateUnknownData());
+            var file3 = new NefsItem(new NefsItemId(File3ItemId), File3Name, File3PathInArchive, new NefsItemId(File3DirectoryId), new NefsItemId(File3SiblingId), NefsItemType.File, file3DataSource, TestHelpers.CreateUnknownData());
             items.Add(file3);
 
             Assert.Equal((int)NumItems, items.Count);

@@ -29,6 +29,7 @@ namespace VictorBush.Ego.NefsLib.Header
         internal NefsHeaderPart1(NefsItemList items, NefsHeaderPart4 part4)
         {
             this.entries = new SortedDictionary<NefsItemId, NefsHeaderPart1Entry>();
+            var nextMetadataIndex = 0U;
 
             foreach (var item in items)
             {
@@ -40,7 +41,9 @@ namespace VictorBush.Ego.NefsLib.Header
 
                 // Get index into part 2. When NefsLib writes the header, it will always write part
                 // 1 and part 2 ordered by item id.
-                entry.IndexIntoPart2.Value = item.Id.Value;
+                // The index is not necessarily equal to the id. If for some reason there is a gap in the
+                // item ids (not sure if this is possible).
+                entry.IndexIntoPart2.Value = nextMetadataIndex++;
 
                 this.entries.Add(item.Id, entry);
             }

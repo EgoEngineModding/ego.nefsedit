@@ -194,15 +194,15 @@ namespace VictorBush.Ego.NefsEdit.UI
                 this.AddSubItem(listItem, "pt2.0x0c", p2.ExtractedSize.Value.ToString("X"));
                 this.AddSubItem(listItem, "pt2.0x10", p2.Id.Value.ToString("X"));
 
-                var p6 = archive.Header.Part6.Entries[(int)item.Id.Value];
+                var p6 = archive.Header.Part6.EntriesById[item.Id];
                 this.AddSubItem(listItem, "pt6.0x00", p6.Byte0.Value[0].ToString("X"));
                 this.AddSubItem(listItem, "pt6.0x01", p6.Byte1.Value[0].ToString("X"));
                 this.AddSubItem(listItem, "pt6.0x02", p6.Byte2.Value[0].ToString("X"));
                 this.AddSubItem(listItem, "pt6.0x03", p6.Byte3.Value[0].ToString("X"));
 
-                var p7 = archive.Header.Part7.Entries[(int)item.Id.Value];
-                this.AddSubItem(listItem, "pt7.0x00", p7.Unknown0x00.Value.ToString("X"));
-                this.AddSubItem(listItem, "pt7.0x04", p7.Unknown0x04.Value.ToString("X"));
+                var p7 = archive.Header.Part7.EntriesById[item.Id];
+                this.AddSubItem(listItem, "pt7.0x00", p7.SiblingId.Value.ToString("X"));
+                this.AddSubItem(listItem, "pt7.0x04", p7.Id.Value.ToString("X"));
 
                 if (item.Type == NefsItemType.Directory)
                 {

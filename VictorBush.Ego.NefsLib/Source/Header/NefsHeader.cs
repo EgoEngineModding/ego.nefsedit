@@ -82,7 +82,7 @@ namespace VictorBush.Ego.NefsLib.Header
             this.Part5 = new NefsHeaderPart5();
             this.Part6 = new NefsHeaderPart6(items);
             this.Part7 = new NefsHeaderPart7(items);
-            this.Part8 = new NefsHeaderPart8();
+            this.Part8 = new NefsHeaderPart8(intro.HeaderSize.Value - toc.OffsetToPart8.Value);
         }
 
         /// <summary>

@@ -65,6 +65,7 @@
             this.quickExtractContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.extractToContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.ReplaceContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.itemDebugViewMainMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mainMenuStrip.SuspendLayout();
             this.itemContextMenuStrip.SuspendLayout();
             this.SuspendLayout();
@@ -166,7 +167,7 @@
             // 
             this.undoMainMenuItem.Name = "undoMainMenuItem";
             this.undoMainMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Z)));
-            this.undoMainMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.undoMainMenuItem.Size = new System.Drawing.Size(144, 22);
             this.undoMainMenuItem.Text = "Undo";
             this.undoMainMenuItem.Click += new System.EventHandler(this.UndoMainMenuItem_Click);
             // 
@@ -174,7 +175,7 @@
             // 
             this.redoMainMenuItem.Name = "redoMainMenuItem";
             this.redoMainMenuItem.ShortcutKeys = ((System.Windows.Forms.Keys)((System.Windows.Forms.Keys.Control | System.Windows.Forms.Keys.Y)));
-            this.redoMainMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.redoMainMenuItem.Size = new System.Drawing.Size(144, 22);
             this.redoMainMenuItem.Text = "Redo";
             this.redoMainMenuItem.Click += new System.EventHandler(this.RedoMainMenuItem_Click);
             // 
@@ -229,6 +230,7 @@
             this.treeViewMainMenuItem,
             this.debugViewMainMenuItem,
             this.archiveDebugMainMenuItem,
+            this.itemDebugViewMainMenuItem,
             this.toolStripSeparator1,
             this.itemDetailsMainMenuItem,
             this.consoleMainMenuItem});
@@ -348,6 +350,13 @@
             this.ReplaceContextMenuItem.Text = "Replace...";
             this.ReplaceContextMenuItem.Click += new System.EventHandler(this.ReplaceToolStripMenuItem_Click);
             // 
+            // itemDebugViewMainMenuItem
+            // 
+            this.itemDebugViewMainMenuItem.Name = "itemDebugViewMainMenuItem";
+            this.itemDebugViewMainMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.itemDebugViewMainMenuItem.Text = "Item Debug View";
+            this.itemDebugViewMainMenuItem.Click += new System.EventHandler(this.ItemDebugViewMainMenuItem_Click);
+            // 
             // EditorForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -406,6 +415,7 @@
         private System.Windows.Forms.ToolStripMenuItem editToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem undoMainMenuItem;
         private System.Windows.Forms.ToolStripMenuItem redoMainMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem itemDebugViewMainMenuItem;
     }
 }
 

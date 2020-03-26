@@ -19,6 +19,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         private BrowseAllForm browseAllForm;
         private BrowseTreeForm browseTreeForm;
         private ConsoleForm consoleForm;
+        private ItemDebugForm itemDebugForm;
         private PropertyGridForm selectedFilePropertyForm;
 
         /// <summary>
@@ -113,6 +114,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.selectedFilePropertyForm = new PropertyGridForm();
             this.consoleForm = new ConsoleForm();
             this.archiveDebugForm = new ArchiveDebugForm(this.Workspace, this.UiService);
+            this.itemDebugForm = new ItemDebugForm(this.Workspace, this.UiService);
 
             // Redirect standard output to our console form
             this.consoleForm.SetupConsole();
@@ -141,6 +143,12 @@ namespace VictorBush.Ego.NefsEdit.UI
         private async void ExtractToToolStripMenuItem_Click(object sender, EventArgs e)
         {
             await this.Workspace.ExtractItemsByDialogAsync(this.Workspace.SelectedItems);
+        }
+
+        private void ItemDebugViewMainMenuItem_Click(Object sender, EventArgs e)
+        {
+            this.itemDebugForm.Show();
+            this.itemDebugForm.Focus();
         }
 
         private void ItemDetailsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -313,6 +321,13 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.archiveDebugForm.CloseButtonVisible = false;
             this.archiveDebugForm.DockAreas = WeifenLuo.WinFormsUI.Docking.DockAreas.Document | WeifenLuo.WinFormsUI.Docking.DockAreas.Float;
             this.archiveDebugForm.HideOnClose = true;
+
+            this.itemDebugForm.Show(this.browserDockPanel);
+            this.itemDebugForm.DockState = WeifenLuo.WinFormsUI.Docking.DockState.Document;
+            this.itemDebugForm.CloseButton = false;
+            this.itemDebugForm.CloseButtonVisible = false;
+            this.itemDebugForm.DockAreas = WeifenLuo.WinFormsUI.Docking.DockAreas.Document | WeifenLuo.WinFormsUI.Docking.DockAreas.Float;
+            this.itemDebugForm.HideOnClose = true;
 
             this.selectedFilePropertyForm.Show(this.browserDockPanel);
             this.selectedFilePropertyForm.DockState = WeifenLuo.WinFormsUI.Docking.DockState.DockRight;

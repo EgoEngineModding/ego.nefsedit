@@ -6,6 +6,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Workspace;
     using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.Header;
     using WeifenLuo.WinFormsUI.Docking;
 
     /// <summary>
@@ -73,6 +74,18 @@ General Info
 -----------------------------------------------------------
 Archive Size:               {archive.Header.Part5.ArchiveSize}
 Is Header Encrypted?        {archive.Header.Intro.IsEncrypted}
+
+Header size:                {archive.Header.Intro.HeaderSize}
+Intro size:                 {NefsHeaderIntro.Size}
+Toc size:                   {NefsHeaderIntroToc.Size}
+Part 1 size:                {archive.Header.TableOfContents.Part1Size}
+Part 2 size:                {archive.Header.TableOfContents.Part2Size}
+Part 3 size:                {archive.Header.TableOfContents.Part3Size}
+Part 4 size:                {archive.Header.TableOfContents.Part4Size}
+Part 5 size:                {archive.Header.TableOfContents.Part5Size}
+Part 6 size:                {archive.Header.TableOfContents.Part6Size}
+Part 7 size:                {archive.Header.TableOfContents.Part7Size}
+Part 8 size:                {archive.Header.Intro.HeaderSize.Value - archive.Header.TableOfContents.OffsetToPart8.Value}
 
 Header Intro
 -----------------------------------------------------------

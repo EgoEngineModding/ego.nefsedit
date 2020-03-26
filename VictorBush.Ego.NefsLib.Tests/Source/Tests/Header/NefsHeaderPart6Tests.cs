@@ -23,10 +23,8 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
                 Part6Unknown0x01 = 2,
                 Part6Unknown0x02 = 3,
                 Part6Unknown0x03 = 4,
-                Part7Unknown0x00 = 5,
-                Part7Unknown0x04 = 6,
             };
-            var file1 = new NefsItem(new NefsItemId(0), "file1", "file1", new NefsItemId(0), NefsItemType.File, file1DataSource, file1UnknownData);
+            var file1 = new NefsItem(new NefsItemId(0), "file1", "file1", new NefsItemId(0), new NefsItemId(1), NefsItemType.File, file1DataSource, file1UnknownData);
             items.Add(file1);
 
             var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, new List<UInt32> { 14, 15, 16 }));
@@ -36,10 +34,8 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
                 Part6Unknown0x01 = 8,
                 Part6Unknown0x02 = 9,
                 Part6Unknown0x03 = 10,
-                Part7Unknown0x00 = 11,
-                Part7Unknown0x04 = 12,
             };
-            var file2 = new NefsItem(new NefsItemId(1), "file2", "file2", new NefsItemId(1), NefsItemType.File, file2DataSource, file2UnknownData);
+            var file2 = new NefsItem(new NefsItemId(1), "file2", "file2", new NefsItemId(1), new NefsItemId(2), NefsItemType.File, file2DataSource, file2UnknownData);
             items.Add(file2);
 
             var dir1DataSource = new NefsEmptyDataSource();
@@ -49,42 +45,40 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
                 Part6Unknown0x01 = 14,
                 Part6Unknown0x02 = 15,
                 Part6Unknown0x03 = 16,
-                Part7Unknown0x00 = 17,
-                Part7Unknown0x04 = 18,
             };
-            var dir1 = new NefsItem(new NefsItemId(2), "dir1", "dir1", new NefsItemId(2), NefsItemType.Directory, dir1DataSource, dir1UnknownData);
+            var dir1 = new NefsItem(new NefsItemId(2), "dir1", "dir1", new NefsItemId(2), new NefsItemId(2), NefsItemType.Directory, dir1DataSource, dir1UnknownData);
             items.Add(dir1);
 
             var p6 = new NefsHeaderPart6(items);
 
-            Assert.Equal(3, p6.Entries.Count);
+            Assert.Equal(3, p6.EntriesById.Count);
 
             /*
             file1
             */
 
-            Assert.Equal(1, p6.Entries[0].Byte0.Value[0]);
-            Assert.Equal(2, p6.Entries[0].Byte1.Value[0]);
-            Assert.Equal(3, p6.Entries[0].Byte2.Value[0]);
-            Assert.Equal(4, p6.Entries[0].Byte3.Value[0]);
+            Assert.Equal(1, p6.EntriesById[file1.Id].Byte0.Value[0]);
+            Assert.Equal(2, p6.EntriesById[file1.Id].Byte1.Value[0]);
+            Assert.Equal(3, p6.EntriesById[file1.Id].Byte2.Value[0]);
+            Assert.Equal(4, p6.EntriesById[file1.Id].Byte3.Value[0]);
 
             /*
             file2
             */
 
-            Assert.Equal(7, p6.Entries[1].Byte0.Value[0]);
-            Assert.Equal(8, p6.Entries[1].Byte1.Value[0]);
-            Assert.Equal(9, p6.Entries[1].Byte2.Value[0]);
-            Assert.Equal(10, p6.Entries[1].Byte3.Value[0]);
+            Assert.Equal(7, p6.EntriesById[file2.Id].Byte0.Value[0]);
+            Assert.Equal(8, p6.EntriesById[file2.Id].Byte1.Value[0]);
+            Assert.Equal(9, p6.EntriesById[file2.Id].Byte2.Value[0]);
+            Assert.Equal(10, p6.EntriesById[file2.Id].Byte3.Value[0]);
 
             /*
             dir1
             */
 
-            Assert.Equal(13, p6.Entries[2].Byte0.Value[0]);
-            Assert.Equal(14, p6.Entries[2].Byte1.Value[0]);
-            Assert.Equal(15, p6.Entries[2].Byte2.Value[0]);
-            Assert.Equal(16, p6.Entries[2].Byte3.Value[0]);
+            Assert.Equal(13, p6.EntriesById[dir1.Id].Byte0.Value[0]);
+            Assert.Equal(14, p6.EntriesById[dir1.Id].Byte1.Value[0]);
+            Assert.Equal(15, p6.EntriesById[dir1.Id].Byte2.Value[0]);
+            Assert.Equal(16, p6.EntriesById[dir1.Id].Byte3.Value[0]);
         }
 
         [Fact]
@@ -92,7 +86,8 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
         {
             var items = new NefsItemList(@"C:\archive.nefs");
             var p6 = new NefsHeaderPart6(items);
-            Assert.Empty(p6.Entries);
+            Assert.Empty(p6.EntriesByIndex);
+            Assert.Empty(p6.EntriesById);
         }
     }
 }

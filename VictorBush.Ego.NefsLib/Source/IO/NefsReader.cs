@@ -118,7 +118,7 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             // Create items from header
-            var items = this.CreateItems(dataFilePath, header, p);
+            var items = this.CreateItems(dataFilePath, header);
 
             // Create the archive
             return new NefsArchive(header, items);
@@ -192,7 +192,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
             using (p.BeginTask(weight, "Reading header part 6"))
             {
-                part6 = await this.ReadHeaderPart6Async(stream, toc.OffsetToPart6.Value, toc.Part6Size, p);
+                part6 = await this.ReadHeaderPart6Async(stream, toc.OffsetToPart6.Value, toc.Part6Size, part2, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 7"))
@@ -202,8 +202,8 @@ namespace VictorBush.Ego.NefsLib.IO
 
             using (p.BeginTask(weight, "Reading header part 8"))
             {
-                // TODO : Get correct part 8 size
-                part8 = await this.ReadHeaderPart8Async(stream, toc.OffsetToPart8.Value, 0, p);
+                var part8Size = intro.HeaderSize.Value - toc.OffsetToPart8.Value;
+                part8 = await this.ReadHeaderPart8Async(stream, toc.OffsetToPart8.Value, part8Size, p);
             }
 
             // The header stream must be disposed
@@ -386,7 +386,8 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>The loaded header part.</returns>
         internal async Task<NefsHeaderPart2> ReadHeaderPart2Async(Stream stream, uint offset, uint size, NefsProgress p)
         {
-            var entries = new Dictionary<NefsItemId, NefsHeaderPart2Entry>();
+            var entries = new List<NefsHeaderPart2Entry>();
+            var ids = new HashSet<NefsItemId>();
 
             // Validate inputs
             if (!this.ValidateHeaderPartStream(stream, offset, size, "2"))
@@ -405,14 +406,16 @@ namespace VictorBush.Ego.NefsLib.IO
                     var entry = new NefsHeaderPart2Entry();
                     await FileData.ReadDataAsync(stream, entryOffset, entry, p);
 
+                    // Check for duplicate item ids
                     var id = new NefsItemId(entry.Id.Value);
-                    if (entries.ContainsKey(id))
+                    if (ids.Contains(id))
                     {
                         Log.LogError($"Found duplicate item id in part 2: {id.Value}");
                         continue;
                     }
 
-                    entries.Add(id, entry);
+                    ids.Add(id);
+                    entries.Add(entry);
                     entryOffset += NefsHeaderPart2Entry.Size;
                 }
             }
@@ -613,11 +616,15 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="stream">The stream to read from.</param>
         /// <param name="offset">The offset to the header part from the beginning of the stream.</param>
         /// <param name="size">The size of the header part.</param>
+        /// <param name="part2">
+        /// Header part 2. This is used to lookup item ids since part 6 metadata does not store item ids.
+        /// </param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header part.</returns>
-        internal async Task<NefsHeaderPart6> ReadHeaderPart6Async(Stream stream, uint offset, uint size, NefsProgress p)
+        internal async Task<NefsHeaderPart6> ReadHeaderPart6Async(Stream stream, uint offset, uint size, NefsHeaderPart2 part2, NefsProgress p)
         {
             var entries = new List<NefsHeaderPart6Entry>();
+            var ids = new HashSet<NefsItemId>();
 
             // Validate inputs
             if (!this.ValidateHeaderPartStream(stream, offset, size, "6"))
@@ -633,8 +640,25 @@ namespace VictorBush.Ego.NefsLib.IO
             {
                 using (p.BeginTask(1.0f / numEntries))
                 {
-                    var entry = new NefsHeaderPart6Entry();
+                    // Make sure there is a corresponding index in part 2
+                    if (i >= part2.EntriesByIndex.Count)
+                    {
+                        Log.LogError($"Could not find matching item entry for part 6 index {i} in part 2.");
+                        continue;
+                    }
+
+                    // Check for duplicate item ids
+                    var id = new NefsItemId(part2.EntriesByIndex[i].Id.Value);
+                    if (ids.Contains(id))
+                    {
+                        Log.LogError($"Found duplicate item id in part 6: {id.Value}");
+                        continue;
+                    }
+
+                    var entry = new NefsHeaderPart6Entry(id);
                     await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+
+                    ids.Add(id);
                     entries.Add(entry);
                     entryOffset += NefsHeaderPart6Entry.Size;
                 }
@@ -654,6 +678,7 @@ namespace VictorBush.Ego.NefsLib.IO
         internal async Task<NefsHeaderPart7> ReadHeaderPart7Async(Stream stream, uint offset, uint size, NefsProgress p)
         {
             var entries = new List<NefsHeaderPart7Entry>();
+            var ids = new HashSet<NefsItemId>();
 
             // Validate inputs
             if (!this.ValidateHeaderPartStream(stream, offset, size, "7"))
@@ -671,6 +696,16 @@ namespace VictorBush.Ego.NefsLib.IO
                 {
                     var entry = new NefsHeaderPart7Entry();
                     await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+
+                    // Check for duplicate item ids
+                    var id = new NefsItemId(entry.Id.Value);
+                    if (ids.Contains(id))
+                    {
+                        Log.LogError($"Found duplicate item id in part 6: {id.Value}");
+                        continue;
+                    }
+
+                    ids.Add(id);
                     entries.Add(entry);
                     entryOffset += NefsHeaderPart7Entry.Size;
                 }
@@ -689,17 +724,19 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>The loaded header part.</returns>
         internal async Task<NefsHeaderPart8> ReadHeaderPart8Async(Stream stream, uint offset, uint size, NefsProgress p)
         {
+            var part8 = new NefsHeaderPart8(size);
+
             // Validate inputs
             if (!this.ValidateHeaderPartStream(stream, offset, size, "8"))
             {
-                return new NefsHeaderPart8();
+                return part8;
             }
 
-            // TODO : Load part 8
-            return await Task.FromResult(new NefsHeaderPart8());
+            await stream.ReadAsync(part8.AllTheData.Value, 0, (int)size, p.CancellationToken);
+            return part8;
         }
 
-        private NefsItemList CreateItems(string dataFilePath, NefsHeader h, NefsProgress p)
+        private NefsItemList CreateItems(string dataFilePath, NefsHeader h)
         {
             var items = new NefsItemList(dataFilePath);
             var numItems = h.TableOfContents.Part1Size / NefsHeaderPart1Entry.Size;

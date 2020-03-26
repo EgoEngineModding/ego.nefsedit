@@ -15,15 +15,16 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart8"/> class.
         /// </summary>
-        internal NefsHeaderPart8()
+        /// <param name="size">The size of this header part.</param>
+        internal NefsHeaderPart8(uint size)
         {
-            this.AllTheData = new ByteArrayType(0, 4);
+            this.AllTheData = new ByteArrayType(0, size == 0 ? 4 : size);
         }
 
         /// <summary>
         /// All the data in part 8.
         /// </summary>
         [FileData]
-        public ByteArrayType AllTheData { get; internal set; }
+        public ByteArrayType AllTheData { get; }
     }
 }

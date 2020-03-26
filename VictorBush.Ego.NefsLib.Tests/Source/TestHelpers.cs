@@ -44,6 +44,7 @@ namespace VictorBush.Ego.NefsLib.Tests
         /// </summary>
         /// <param name="id">The item id.</param>
         /// <param name="dirId">The directory id.</param>
+        /// <param name="siblingId">The sibling id.</param>
         /// <param name="fileName">The item name.</param>
         /// <param name="filePathInArchive">The item's path in the archive.</param>
         /// <param name="dataOffset">Data offset.</param>
@@ -54,6 +55,7 @@ namespace VictorBush.Ego.NefsLib.Tests
         internal static NefsItem CreateItem(
             uint id,
             uint dirId,
+            uint siblingId,
             string fileName,
             string filePathInArchive,
             UInt64 dataOffset,
@@ -68,6 +70,7 @@ namespace VictorBush.Ego.NefsLib.Tests
                 fileName,
                 filePathInArchive,
                 new NefsItemId(dirId),
+                new NefsItemId(siblingId),
                 type,
                 dataSource,
                 CreateUnknownData());
@@ -85,8 +88,6 @@ namespace VictorBush.Ego.NefsLib.Tests
                 Part6Unknown0x01 = 0,
                 Part6Unknown0x02 = 0,
                 Part6Unknown0x03 = 0,
-                Part7Unknown0x00 = 0,
-                Part7Unknown0x04 = 0,
             };
         }
     }
