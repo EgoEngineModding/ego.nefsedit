@@ -234,10 +234,10 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
         {
-            foreach (var item in this.listItems)
+            this.UiService.Dispatcher.Invoke(() =>
             {
-                this.UpdateListItem(item.Value);
-            }
+                this.LoadArchive(this.Workspace.Archive);
+            });
         }
 
         private void OnWorkspaceCommandExecuted(Object sender, NefsEditCommandEventArgs e)

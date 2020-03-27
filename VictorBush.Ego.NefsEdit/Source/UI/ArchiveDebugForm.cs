@@ -28,6 +28,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.UiService = uiService;
             this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
             this.Workspace.ArchiveClosed += this.OnWorkspaceArchiveClosed;
+            this.Workspace.ArchiveSaved += this.OnWorkspaceArchiveSaved;
         }
 
         private IUiService UiService { get; }
@@ -48,6 +49,15 @@ namespace VictorBush.Ego.NefsEdit.UI
         }
 
         private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+        {
+            // Update on UI thread
+            this.UiService.Dispatcher.Invoke(() =>
+            {
+                this.PrintDebugInfo(this.Workspace.Archive, this.Workspace.ArchiveSource);
+            });
+        }
+
+        private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
         {
             // Update on UI thread
             this.UiService.Dispatcher.Invoke(() =>
