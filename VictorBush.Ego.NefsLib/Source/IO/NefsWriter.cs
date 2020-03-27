@@ -249,8 +249,9 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="item">The item to prepare.</param>
         /// <param name="workDir">The temporary working directory.</param>
         /// <param name="items">The source items list.</param>
+        /// <param name="chunkSize">The chunk size to use.</param>
         /// <param name="p">Progress info.</param>
-        private async Task PrepareItemAsync(NefsItem item, string workDir, NefsItemList items, NefsProgress p)
+        private async Task PrepareItemAsync(NefsItem item, string workDir, NefsItemList items, UInt32 chunkSize, NefsProgress p)
         {
             // Deleted items should not be prepared
             if (item.State == NefsItemState.Removed)
@@ -293,7 +294,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
                 // Compress the file
                 var destFilePath = Path.Combine(workDir, "inject.dat");
-                var newSize = await this.Compressor.CompressFileAsync(item.DataSource, destFilePath, NefsArchive.ChunkSize, p);
+                var newSize = await this.Compressor.CompressFileAsync(item.DataSource, destFilePath, chunkSize, p);
 
                 // Update data source to point to the compressed temp file
                 var dataSource = new NefsFileDataSource(destFilePath, 0, newSize, false);
@@ -311,9 +312,14 @@ namespace VictorBush.Ego.NefsLib.IO
         /// The source items list to prepare. This list nor its items are modified.
         /// </param>
         /// <param name="workDir">The temporary working directory.</param>
+        /// <param name="chunkSize">The chunk size to use.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>A prepared item list ready for writing.</returns>
-        private async Task<NefsItemList> PrepareItemsAsync(NefsItemList sourceItems, string workDir, NefsProgress p)
+        private async Task<NefsItemList> PrepareItemsAsync(
+            NefsItemList sourceItems,
+            string workDir,
+            UInt32 chunkSize,
+            NefsProgress p)
         {
             // Create a new items list - original source list is not modified. The new list is
             // returned that removes deleted items and has updated metadata for the other items.
@@ -330,7 +336,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 else
                 {
                     // Compress any new or replaced files and update chunk sizes
-                    await this.PrepareItemAsync(item, workDir, sourceItems, p);
+                    await this.PrepareItemAsync(item, workDir, sourceItems, chunkSize, p);
                 }
             }
 
@@ -436,7 +442,7 @@ namespace VictorBush.Ego.NefsLib.IO
             NefsItemList items;
             using (var t = p.BeginTask(taskWeightPrepareItems, "Preparing items"))
             {
-                items = await this.PrepareItemsAsync(sourceItems, workDir, p);
+                items = await this.PrepareItemsAsync(sourceItems, workDir, sourceHeader.Part5.ChunkSize, p);
             }
 
             // Determine number of items
@@ -456,7 +462,7 @@ namespace VictorBush.Ego.NefsLib.IO
             var p5Size = NefsHeaderPart5.Size;
             var p6Size = numItems * NefsHeaderPart6Entry.Size;
             var p7Size = numItems * NefsHeaderPart7Entry.Size;
-            var p8Size = 4;
+            var p8Size = sourceHeader.Intro.HeaderSize - sourceHeader.TableOfContents.OffsetToPart8;
             var headerSize = introSize + tocSize + p1Size + p2Size + p3Size + p4Size + p5Size + p6Size + p7Size + p8Size;
 
             // Determine first data offset. There are two known offset values. If the header is
@@ -483,7 +489,8 @@ namespace VictorBush.Ego.NefsLib.IO
             // Compute total archive size
             var p5 = new NefsHeaderPart5();
             p5.Data0x00_ArchiveSize.Value = archiveSize;
-            p5.Data0x08_UnknownData.Value = sourceHeader.Part5.UnknownData;
+            p5.Data0x08_ArchiveNameStringOffset.Value = p3.OffsetsByFileName[items.DataFileName];
+            p5.Data0x0C_ChunkSize.Value = sourceHeader.Part5.ChunkSize;
 
             // Update header intro
             var intro = new NefsHeaderIntro();

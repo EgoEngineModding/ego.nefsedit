@@ -338,7 +338,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         {
             var part5 = new NefsHeaderPart5();
             part5.Data0x00_ArchiveSize.Value = 1234;
-            part5.Data0x08_UnknownData.Value = 5678;
+            part5.Data0x08_ArchiveNameStringOffset.Value = 98;
+            part5.Data0x0C_ChunkSize.Value = 56;
 
             /*
             Write
@@ -359,7 +360,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             */
 
             Assert.Equal(1234, BitConverter.ToInt64(buffer, offset + 0));
-            Assert.Equal(5678, BitConverter.ToInt64(buffer, offset + 8));
+            Assert.Equal(98, BitConverter.ToInt32(buffer, offset + 8));
+            Assert.Equal(56, BitConverter.ToInt32(buffer, offset + 12));
         }
 
         [Fact]

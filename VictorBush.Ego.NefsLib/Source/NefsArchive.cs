@@ -12,12 +12,6 @@ namespace VictorBush.Ego.NefsLib
     public class NefsArchive
     {
         /// <summary>
-        /// Size of data chunks a file is broken up into before each chunk is compressed and
-        /// inserted into the archive.
-        /// </summary>
-        public const int ChunkSize = 0x10000;
-
-        /// <summary>
         /// Initializes a new instance of the <see cref="NefsArchive"/> class.
         /// </summary>
         /// <param name="header">The archive's header.</param>

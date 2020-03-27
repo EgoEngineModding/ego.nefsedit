@@ -38,7 +38,8 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             Assert.Equal(4, p2.EntriesById.Count);
 
             // NOTE: Part 3 is the strings table. So offset into p3 must take into account null
-            // terminated file/dir names. Also note strings table is alphabetized.
+            // terminated file/dir names. Also note strings table is alphabetized. Also note the
+            // data file name is added to the strings table.
 
             /*
             file1
@@ -48,7 +49,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             Assert.Equal(0, (int)p2.EntriesById[file1.Id].DirectoryId.Value);
             Assert.Equal(0, (int)p2.EntriesById[file1.Id].FirstChildId.Value);
             Assert.Equal(456, (int)p2.EntriesById[file1.Id].ExtractedSize);
-            Assert.Equal(5, (int)p2.EntriesById[file1.Id].OffsetIntoPart3);
+            Assert.Equal(18, (int)p2.EntriesById[file1.Id].OffsetIntoPart3);
 
             /*
             file2
@@ -58,7 +59,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             Assert.Equal(1, (int)p2.EntriesById[file2.Id].DirectoryId.Value);
             Assert.Equal(1, (int)p2.EntriesById[file2.Id].FirstChildId.Value);
             Assert.Equal(789, (int)p2.EntriesById[file2.Id].ExtractedSize);
-            Assert.Equal(11, (int)p2.EntriesById[file2.Id].OffsetIntoPart3);
+            Assert.Equal(24, (int)p2.EntriesById[file2.Id].OffsetIntoPart3);
 
             /*
             dir1
@@ -68,7 +69,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             Assert.Equal(2, (int)p2.EntriesById[dir1.Id].Data0x00_DirectoryId.Value);
             Assert.Equal(3, (int)p2.EntriesById[dir1.Id].Data0x04_FirstChildId.Value);
             Assert.Equal(0, (int)p2.EntriesById[dir1.Id].Data0x0c_ExtractedSize.Value);
-            Assert.Equal(0, (int)p2.EntriesById[dir1.Id].Data0x08_OffsetIntoPart3.Value);
+            Assert.Equal(13, (int)p2.EntriesById[dir1.Id].Data0x08_OffsetIntoPart3.Value);
 
             /*
             file3
@@ -78,7 +79,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             Assert.Equal(2, (int)p2.EntriesById[file3.Id].Data0x00_DirectoryId.Value);
             Assert.Equal(3, (int)p2.EntriesById[file3.Id].Data0x04_FirstChildId.Value);
             Assert.Equal(333, (int)p2.EntriesById[file3.Id].Data0x0c_ExtractedSize.Value);
-            Assert.Equal(17, (int)p2.EntriesById[file3.Id].Data0x08_OffsetIntoPart3.Value);
+            Assert.Equal(30, (int)p2.EntriesById[file3.Id].Data0x08_OffsetIntoPart3.Value);
         }
 
         [Fact]

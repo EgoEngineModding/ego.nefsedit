@@ -30,8 +30,12 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="items">The list of items in the archive.</param>
         internal NefsHeaderPart3(NefsItemList items)
         {
-            // Sort strings alphabetically
-            var strings = items.EnumerateById().Select(i => i.FileName).Distinct().OrderBy(i => i);
+            // Add the archive file name to the list and sort strings alphabetically
+            var strings = items.EnumerateById().Select(i => i.FileName)
+                .Append(items.DataFileName)
+                .Distinct()
+                .OrderBy(i => i);
+
             this.Init(strings);
         }
 

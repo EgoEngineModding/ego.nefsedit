@@ -33,6 +33,11 @@ namespace VictorBush.Ego.NefsLib.Item
         public int Count => this.itemsById.Count;
 
         /// <summary>
+        /// The name of the data file (without directory path, but with extension).
+        /// </summary>
+        public string DataFileName => Path.GetFileName(this.DataFilePath);
+
+        /// <summary>
         /// Gets the path to the file that contains the item data for the archive. Usually this is
         /// the NeFS archive file.
         /// </summary>

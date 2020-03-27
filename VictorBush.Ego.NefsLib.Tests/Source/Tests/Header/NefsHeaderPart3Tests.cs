@@ -34,22 +34,23 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
 
             var p3 = new NefsHeaderPart3(items);
 
-            Assert.Equal(4, p3.OffsetsByFileName.Count);
-            Assert.Equal(4, p3.FileNamesByOffset.Count);
+            Assert.Equal(5, p3.OffsetsByFileName.Count);
+            Assert.Equal(5, p3.FileNamesByOffset.Count);
 
             // Four file names plus a null terminal for each.
-            Assert.Equal(23, (int)p3.Size);
+            Assert.Equal(36, (int)p3.Size);
 
-            // Strings table is sorted alphabetically
-            Assert.Equal("dir1", p3.FileNamesByOffset[0]);
-            Assert.Equal("file1", p3.FileNamesByOffset[5]);
-            Assert.Equal("file2", p3.FileNamesByOffset[11]);
-            Assert.Equal("file3", p3.FileNamesByOffset[17]);
+            // Strings table is sorted alphabetically - and also contains data file name
+            Assert.Equal("archive.nefs", p3.FileNamesByOffset[0]);
+            Assert.Equal("dir1", p3.FileNamesByOffset[13]);
+            Assert.Equal("file1", p3.FileNamesByOffset[18]);
+            Assert.Equal("file2", p3.FileNamesByOffset[24]);
+            Assert.Equal("file3", p3.FileNamesByOffset[30]);
 
-            Assert.Equal(5, (int)p3.OffsetsByFileName[file1.FileName]);
-            Assert.Equal(11, (int)p3.OffsetsByFileName[file2.FileName]);
-            Assert.Equal(0, (int)p3.OffsetsByFileName[dir1.FileName]);
-            Assert.Equal(17, (int)p3.OffsetsByFileName[file3.FileName]);
+            Assert.Equal(18, (int)p3.OffsetsByFileName[file1.FileName]);
+            Assert.Equal(24, (int)p3.OffsetsByFileName[file2.FileName]);
+            Assert.Equal(13, (int)p3.OffsetsByFileName[dir1.FileName]);
+            Assert.Equal(30, (int)p3.OffsetsByFileName[file3.FileName]);
         }
 
         [Fact]
@@ -57,9 +58,9 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
         {
             var items = new NefsItemList(@"C:\archive.nefs");
             var p3 = new NefsHeaderPart3(items);
-            Assert.Empty(p3.OffsetsByFileName);
-            Assert.Empty(p3.FileNamesByOffset);
-            Assert.Equal(0, (int)p3.Size);
+            Assert.Single(p3.OffsetsByFileName);
+            Assert.Single(p3.FileNamesByOffset);
+            Assert.Equal(13, (int)p3.Size);
         }
     }
 }
