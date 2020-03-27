@@ -181,10 +181,6 @@ namespace VictorBush.Ego.NefsLib.IO
                     await stream.WriteAsync(data, 0, data.Length, p.CancellationToken);
                 }
             }
-
-            // Write last four bytes
-            var lastFourBytes = BitConverter.GetBytes(part4.LastFourBytes);
-            await stream.WriteAsync(lastFourBytes, 0, lastFourBytes.Length, p.CancellationToken);
         }
 
         /// <summary>

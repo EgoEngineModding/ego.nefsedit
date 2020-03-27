@@ -119,11 +119,8 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             // Dir 1 and file 4 should not have entries. Only compressed files have entries in part 4.
             Assert.Equal(3, p4.EntriesByIndex.Count);
 
-            // Last four bytes - potentially the largest compressed file size
-            Assert.Equal(52U, p4.LastFourBytes);
-
-            // Total size is (total number of chunks * bytes) + 4 bytes
-            Assert.Equal(40U, p4.Size);
+            // Total size is (total number of chunks * bytes)
+            Assert.Equal(36U, p4.Size);
 
             // File 1
             var f1Idx = p4.GetIndexForItem(this.file1);
@@ -153,8 +150,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             var items = new NefsItemList(@"C:\archive.nefs");
             var p4 = new NefsHeaderPart4(items);
             Assert.Empty(p4.EntriesByIndex);
-            Assert.Equal(0U, p4.LastFourBytes);
-            Assert.Equal(4U, p4.Size);
+            Assert.Equal(0U, p4.Size);
         }
     }
 }

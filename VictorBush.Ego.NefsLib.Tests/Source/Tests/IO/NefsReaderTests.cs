@@ -419,8 +419,6 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             Assert.Equal((uint)0x34333231, part4.EntriesByIndex[3].ChunkSizes[0]);
             Assert.Equal((uint)0x38373635, part4.EntriesByIndex[3].ChunkSizes[1]);
             Assert.Equal((uint)0x3C3B3A39, part4.EntriesByIndex[3].ChunkSizes[2]);
-
-            Assert.Equal((uint)0x04030201, part4.LastFourBytes);
         }
 
         [Fact]

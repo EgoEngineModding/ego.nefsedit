@@ -510,7 +510,7 @@ namespace VictorBush.Ego.NefsLib.IO
             // Validate inputs
             if (!this.ValidateHeaderPartStream(stream, offset, size, "4"))
             {
-                return new NefsHeaderPart4(entries, 0);
+                return new NefsHeaderPart4(entries);
             }
 
             // Get the chunk sizes for each item in the archive
@@ -587,14 +587,8 @@ namespace VictorBush.Ego.NefsLib.IO
                 }
             }
 
-            // Read the last four bytes of part 4
-            var lastFourBytes = new byte[4];
-            stream.Seek(offset + size - NefsHeaderPart4.DataSize, SeekOrigin.Begin);
-            await stream.ReadAsync(lastFourBytes, 0, NefsHeaderPart4.DataSize);
-            var lastFour = BitConverter.ToUInt32(lastFourBytes, 0);
-
             // Return part 4
-            return new NefsHeaderPart4(entries, lastFour);
+            return new NefsHeaderPart4(entries);
         }
 
         /// <summary>

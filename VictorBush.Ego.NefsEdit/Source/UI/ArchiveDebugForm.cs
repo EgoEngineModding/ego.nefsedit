@@ -171,7 +171,7 @@ Header Part 3
 {headerPart3String.ToString()}
 Header Part 4
 -----------------------------------------------------------
-Last 4 bytes:               {archive.Header.Part4.LastFourBytes.ToString("X")}
+Number of files:            {archive.Header.Part4.EntriesByIndex.Count.ToString("X")}
 
 Header Part 5
 -----------------------------------------------------------

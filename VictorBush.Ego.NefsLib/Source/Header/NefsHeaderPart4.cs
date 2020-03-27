@@ -26,12 +26,10 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Initializes a new instance of the <see cref="NefsHeaderPart4"/> class.
         /// </summary>
         /// <param name="entries">A collection of entries to initialize this object with.</param>
-        /// <param name="lastFourBytes">The last four bytes of the header.</param>
-        internal NefsHeaderPart4(IDictionary<UInt32, NefsHeaderPart4Entry> entries, UInt32 lastFourBytes)
+        internal NefsHeaderPart4(IDictionary<UInt32, NefsHeaderPart4Entry> entries)
         {
             this.entriesByIndex = new SortedDictionary<UInt32, NefsHeaderPart4Entry>(entries);
             this.indexById = new Dictionary<NefsItemId, UInt32>(this.entriesByIndex.ToDictionary(i => i.Value.Id, i => i.Key));
-            this.LastFourBytes = lastFourBytes;
 
             // Compute size
             this.ComputeSize();
@@ -46,7 +44,6 @@ namespace VictorBush.Ego.NefsLib.Header
             this.entriesByIndex = new SortedDictionary<UInt32, NefsHeaderPart4Entry>();
             this.indexById = new Dictionary<NefsItemId, UInt32>();
 
-            var largestSize = 0U;
             var nextIdx = 0;
             foreach (var item in items.EnumerateById())
             {
@@ -64,16 +61,7 @@ namespace VictorBush.Ego.NefsLib.Header
                 this.entriesByIndex.Add((uint)nextIdx, entry);
                 this.indexById.Add(item.Id, (uint)nextIdx);
                 nextIdx += entry.ChunkSizes.Count;
-
-                // Check for largest compressed file size
-                if (item.CompressedSize > largestSize)
-                {
-                    largestSize = item.CompressedSize;
-                }
             }
-
-            // Update last for bytes with largest compressed file size
-            this.LastFourBytes = largestSize;
 
             // Compute size
             this.ComputeSize();
@@ -89,11 +77,6 @@ namespace VictorBush.Ego.NefsLib.Header
         /// value is the part 4 entry for that item.
         /// </summary>
         public IReadOnlyDictionary<UInt32, NefsHeaderPart4Entry> EntriesByIndex => this.entriesByIndex;
-
-        /// <summary>
-        /// The last for bytes of header part 4. Potentially largest compressed file size.
-        /// </summary>
-        public UInt32 LastFourBytes { get; private set; }
 
         /// <summary>
         /// Gets the current size of header part 4.
@@ -163,9 +146,6 @@ namespace VictorBush.Ego.NefsLib.Header
             {
                 this.Size += (uint)(entry.ChunkSizes.Count * DataSize);
             }
-
-            // Account for last four bytes
-            this.Size += DataSize;
         }
     }
 }

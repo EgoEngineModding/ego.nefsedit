@@ -324,16 +324,13 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             Verify
             */
 
-            Assert.Equal(28 + offset, buffer.Length);
+            Assert.Equal(24 + offset, buffer.Length);
             Assert.Equal(12, BitConverter.ToInt32(buffer, offset + 0));
             Assert.Equal(13, BitConverter.ToInt32(buffer, offset + 4));
             Assert.Equal(22, BitConverter.ToInt32(buffer, offset + 8));
             Assert.Equal(23, BitConverter.ToInt32(buffer, offset + 12));
             Assert.Equal(32, BitConverter.ToInt32(buffer, offset + 16));
             Assert.Equal(33, BitConverter.ToInt32(buffer, offset + 20));
-
-            // Last four bytes - largest compressed size
-            Assert.Equal(33, BitConverter.ToInt32(buffer, offset + 24));
         }
 
         [Fact]

@@ -8,6 +8,7 @@ There are two components to this project.
 
 ## TODO
 - Fix archive saving.
+- Fix part 3 writing. Need to append bytes to end to get on a 4 byte boundary (?)
 - Fix list view items not being updated after save.
 - Verify hash for encrypted nefs.
 - Add a recent files list.
