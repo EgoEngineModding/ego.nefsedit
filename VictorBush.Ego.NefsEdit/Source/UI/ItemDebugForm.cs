@@ -90,20 +90,20 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.richTextBox.Text = $@"Item Info
 -----------------------------------------------------------
 Item name:                  {item.FileName}
-Item path:                  {item.FilePathInArchive}
+Item path:                  {archive.Items.GetItemFilePath(item.Id)}
 
 Part 1
 -----------------------------------------------------------
-Offset to data:             {archive.Header.Part1.EntriesById[item.Id].OffsetToData.Value}
-Index in part 2:            {archive.Header.Part1.EntriesById[item.Id].IndexIntoPart2.Value}
-Index in part 4:            {archive.Header.Part1.EntriesById[item.Id].IndexIntoPart4.Value}
+Offset to data:             {archive.Header.Part1.EntriesById[item.Id].OffsetToData}
+Index in part 2:            {archive.Header.Part1.EntriesById[item.Id].MetadataIndex}
+Index in part 4:            {archive.Header.Part1.EntriesById[item.Id].IndexIntoPart4}
 Id:                         {archive.Header.Part1.EntriesById[item.Id].Id.Value}
 
 Part 2
 -----------------------------------------------------------
-Directory id:               {archive.Header.Part2.EntriesById[item.Id].DirectoryId.Value}
-First child id:             {archive.Header.Part2.EntriesById[item.Id].FirstChildId.Value}
-Offset in part 3:           {archive.Header.Part2.EntriesById[item.Id].OffsetIntoPart3.Value}
+Directory id:               {archive.Header.Part2.EntriesById[item.Id].DirectoryId}
+First child id:             {archive.Header.Part2.EntriesById[item.Id].FirstChildId}
+Offset in part 3:           {archive.Header.Part2.EntriesById[item.Id].OffsetIntoPart3}
 Id:                         {archive.Header.Part2.EntriesById[item.Id].Id.Value}
 
 Part 4
@@ -112,10 +112,10 @@ Chunks                      {this.PrintChunkSizesToString(archive.Header.Part4.G
 
 Part 6
 -----------------------------------------------------------
-0x00:                       {archive.Header.Part6.EntriesById[item.Id].Byte0.Value}
-0x01:                       {archive.Header.Part6.EntriesById[item.Id].Byte1.Value}
-0x02:                       {archive.Header.Part6.EntriesById[item.Id].Byte2.Value}
-0x03:                       {archive.Header.Part6.EntriesById[item.Id].Byte3.Value}
+0x00:                       {archive.Header.Part6.EntriesById[item.Id].Byte0}
+0x01:                       {archive.Header.Part6.EntriesById[item.Id].Byte1}
+0x02:                       {archive.Header.Part6.EntriesById[item.Id].Byte2}
+0x03:                       {archive.Header.Part6.EntriesById[item.Id].Byte3}
 
 Part 7
 -----------------------------------------------------------

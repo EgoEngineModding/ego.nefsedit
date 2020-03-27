@@ -6,6 +6,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using System.Collections.Generic;
     using System.Data;
     using System.Drawing;
+    using System.IO;
     using System.Linq;
     using System.Windows.Forms;
     using Microsoft.Extensions.Logging;
@@ -140,10 +141,10 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             this.directoryTreeView.Nodes.Clear();
 
-            // TODO : Change the root node to the name of the archive?
-            var root = this.directoryTreeView.Nodes.Add("root");
+            var fileName = Path.GetFileName(this.Workspace.ArchiveSource.DataFilePath);
+            var root = this.directoryTreeView.Nodes.Add(fileName);
 
-            foreach (var item in archive.Items)
+            foreach (var item in archive.Items.EnumerateDepthFirst())
             {
                 if (item.Type == NefsItemType.Directory)
                 {
@@ -155,7 +156,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                     }
                     else
                     {
-                        /* Find this directory's parent directory */
+                        // Find this directory's parent directory
                         var parent = (from n in root.DescendantNodes()
                                       where n.Tag != null && ((NefsItem)n.Tag).Id == item.DirectoryId
                                       select n).FirstOrDefault();
@@ -235,8 +236,8 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// <param name="dir">The directory to view. Use null for root directory.</param>
         private void OpenDirectory(NefsItem dir)
         {
-            List<NefsItem> itemsInDir;
-            var archive = this.Workspace.Archive;
+            IEnumerable<NefsItem> itemsInDir;
+            var items = this.Workspace.Archive.Items;
 
             // Clear the directory contents list view
             this.filesListView.Items.Clear();
@@ -246,9 +247,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             if (dir == null)
             {
                 // Display contents of root
-                itemsInDir = (from item in archive.Items
-                              where item.Id == item.DirectoryId
-                              select item).ToList();
+                itemsInDir = items.EnumerateRootItems();
 
                 // This is the root of the archive
                 this.pathLabel.Text = @"\";
@@ -262,11 +261,8 @@ namespace VictorBush.Ego.NefsEdit.UI
                 }
 
                 // Display contents of specified directory
-                itemsInDir = (from item in archive.Items
-                              where item.DirectoryId == dir.Id && item.DirectoryId != item.Id
-                              select item).ToList();
-
-                this.pathLabel.Text = @"\" + dir.FilePathInArchive;
+                itemsInDir = items.EnumerateItemChildren(dir.Id);
+                this.pathLabel.Text = @"\" + items.GetItemFilePath(dir.Id);
             }
 
             // Load all items in the NeFS archive into the listview
@@ -307,9 +303,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
 
             // Find the parent directory
-            var parent = this.Workspace.Archive.Items
-                .Where(i => i.Id == this.Directory.DirectoryId).FirstOrDefault();
-
+            var parentId = this.Workspace.Archive.Items.GetItemDirectoryId(this.Directory.DirectoryId);
+            var parent = this.Workspace.Archive.Items.GetItem(parentId);
             if (parent == this.Directory)
             {
                 // If the parent == the current dir, then display root
@@ -327,8 +322,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// <param name="listItem">The item to update.</param>
         private void UpdateListItem(ListViewItem listItem)
         {
-            var item = listItem.Tag as NefsItem;
-            if (item == null)
+            if (!(listItem.Tag is NefsItem item))
             {
                 Log.LogError("List view item did not have NefsItem as tag.");
                 return;

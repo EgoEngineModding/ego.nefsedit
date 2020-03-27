@@ -34,10 +34,10 @@ namespace VictorBush.Ego.NefsLib.Header
             this.entriesByIndex = new List<NefsHeaderPart7Entry>();
             this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart7Entry>();
 
-            foreach (var item in items)
+            foreach (var item in items.EnumerateDepthFirst())
             {
                 var entry = new NefsHeaderPart7Entry();
-                entry.Data0x00_SiblingId.Value = item.SiblingId.Value;
+                entry.Data0x00_SiblingId.Value = items.GetItemSiblingId(item.Id).Value;
                 entry.Data0x04_Id.Value = item.Id.Value;
 
                 this.entriesByIndex.Add(entry);

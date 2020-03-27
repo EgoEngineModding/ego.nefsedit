@@ -49,9 +49,9 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         public async Task WriteHeaderPart1Async_ValidData_Written()
         {
             var items = new NefsItemList(@"C:\hi.txt");
-            var file1 = TestHelpers.CreateItem(0, 0, 1, "file1", "file1", 10, 11, new List<UInt32> { 12, 13 }, NefsItemType.File);
-            var file2 = TestHelpers.CreateItem(1, 1, 2, "file2", "file2", 20, 21, new List<UInt32> { 22, 23 }, NefsItemType.File);
-            var dir1 = TestHelpers.CreateItem(2, 2, 2, "dir1", "dir1", 0, 0, new List<UInt32> { 0 }, NefsItemType.Directory);
+            var file1 = TestHelpers.CreateItem(0, 0, "file1", 10, 11, new List<UInt32> { 12, 13 }, NefsItemType.File);
+            var file2 = TestHelpers.CreateItem(1, 1, "file2", 20, 21, new List<UInt32> { 22, 23 }, NefsItemType.File);
+            var dir1 = TestHelpers.CreateItem(2, 2, "dir1", 0, 0, new List<UInt32> { 0 }, NefsItemType.Directory);
             items.Add(file1);
             items.Add(file2);
             items.Add(dir1);
@@ -134,10 +134,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         public async Task WriteHeaderPart2Async_ValidData_Written()
         {
             var items = new NefsItemList(@"C:\hi.txt");
-            var file1 = TestHelpers.CreateItem(0, 0, 1, "file1", "file1", 10, 11, new List<UInt32> { 12, 13 }, NefsItemType.File);
-            var file2 = TestHelpers.CreateItem(1, 1, 2, "file2", "file2", 20, 21, new List<UInt32> { 22, 23 }, NefsItemType.File);
-            var dir1 = TestHelpers.CreateItem(2, 2, 2, "dir1", "dir1", 0, 0, new List<UInt32> { 0 }, NefsItemType.Directory);
-            var file3 = TestHelpers.CreateItem(3, 2, 3, "file3", "dir1/file3", 30, 31, new List<UInt32> { 32, 33 }, NefsItemType.File);
+            var file1 = TestHelpers.CreateItem(0, 0, "file1", 10, 11, new List<UInt32> { 12, 13 }, NefsItemType.File);
+            var file2 = TestHelpers.CreateItem(1, 1, "file2", 20, 21, new List<UInt32> { 22, 23 }, NefsItemType.File);
+            var dir1 = TestHelpers.CreateItem(2, 2, "dir1", 0, 0, new List<UInt32> { 0 }, NefsItemType.Directory);
+            var file3 = TestHelpers.CreateItem(3, 2, "file3", 30, 31, new List<UInt32> { 32, 33 }, NefsItemType.File);
             items.Add(file1);
             items.Add(file2);
             items.Add(dir1);
@@ -165,50 +165,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             */
 
             /*
-            file1
-            */
-
-            // Dir id
-            Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0));
-
-            // First child id
-            Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0x04));
-
-            // Part 3 offset
-            Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0x08));
-
-            // Extracted size
-            Assert.Equal(11, BitConverter.ToInt32(buffer, offset + 0x0c));
-
-            // Item id
-            Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0x10));
-
-            /*
-            file2
-            */
-
-            offset += (int)NefsHeaderPart2Entry.Size;
-
-            // Dir id
-            Assert.Equal(1, BitConverter.ToInt32(buffer, offset + 0));
-
-            // First child id
-            Assert.Equal(1, BitConverter.ToInt32(buffer, offset + 0x04));
-
-            // Part 3 offset
-            Assert.Equal(6, BitConverter.ToInt32(buffer, offset + 0x08));
-
-            // Extracted size
-            Assert.Equal(21, BitConverter.ToInt32(buffer, offset + 0x0c));
-
-            // Item id
-            Assert.Equal(1, BitConverter.ToInt32(buffer, offset + 0x10));
-
-            /*
             dir1
             */
-
-            offset += (int)NefsHeaderPart2Entry.Size;
 
             // Dir id
             Assert.Equal(2, BitConverter.ToInt32(buffer, offset + 0));
@@ -217,7 +175,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             Assert.Equal(3, BitConverter.ToInt32(buffer, offset + 0x04));
 
             // Part 3 offset
-            Assert.Equal(12, BitConverter.ToInt32(buffer, offset + 0x08));
+            Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0x08));
 
             // Extracted size
             Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0x0c));
@@ -245,16 +203,58 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             // Item id
             Assert.Equal(3, BitConverter.ToInt32(buffer, offset + 0x10));
+
+            /*
+            file1
+            */
+
+            offset += (int)NefsHeaderPart2Entry.Size;
+
+            // Dir id
+            Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0));
+
+            // First child id
+            Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0x04));
+
+            // Part 3 offset
+            Assert.Equal(5, BitConverter.ToInt32(buffer, offset + 0x08));
+
+            // Extracted size
+            Assert.Equal(11, BitConverter.ToInt32(buffer, offset + 0x0c));
+
+            // Item id
+            Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0x10));
+
+            /*
+            file2
+            */
+
+            offset += (int)NefsHeaderPart2Entry.Size;
+
+            // Dir id
+            Assert.Equal(1, BitConverter.ToInt32(buffer, offset + 0));
+
+            // First child id
+            Assert.Equal(1, BitConverter.ToInt32(buffer, offset + 0x04));
+
+            // Part 3 offset
+            Assert.Equal(11, BitConverter.ToInt32(buffer, offset + 0x08));
+
+            // Extracted size
+            Assert.Equal(21, BitConverter.ToInt32(buffer, offset + 0x0c));
+
+            // Item id
+            Assert.Equal(1, BitConverter.ToInt32(buffer, offset + 0x10));
         }
 
         [Fact]
         public async Task WriteHeaderPart3Async_ValidData_Written()
         {
             var items = new NefsItemList(@"C:\hi.txt");
-            var file1 = TestHelpers.CreateItem(0, 0, 1, "file1", "file1", 10, 11, new List<UInt32> { 12, 13 }, NefsItemType.File);
-            var file2 = TestHelpers.CreateItem(1, 1, 2, "file2", "file2", 20, 21, new List<UInt32> { 22, 23 }, NefsItemType.File);
-            var dir1 = TestHelpers.CreateItem(2, 2, 2, "dir1", "dir1", 0, 0, new List<UInt32> { 0 }, NefsItemType.Directory);
-            var file3 = TestHelpers.CreateItem(3, 2, 3, "file3", "dir1/file3", 30, 31, new List<UInt32> { 32, 33 }, NefsItemType.File);
+            var file1 = TestHelpers.CreateItem(0, 0, "file1", 10, 11, new List<UInt32> { 12, 13 }, NefsItemType.File);
+            var file2 = TestHelpers.CreateItem(1, 1, "file2", 20, 21, new List<UInt32> { 22, 23 }, NefsItemType.File);
+            var dir1 = TestHelpers.CreateItem(2, 2, "dir1", 0, 0, new List<UInt32> { 0 }, NefsItemType.Directory);
+            var file3 = TestHelpers.CreateItem(3, 2, "file3", 30, 31, new List<UInt32> { 32, 33 }, NefsItemType.File);
             items.Add(file1);
             items.Add(file2);
             items.Add(dir1);
@@ -281,11 +281,11 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             */
 
             // Null terminated strings
-            Assert.Equal("file1", Encoding.ASCII.GetString(buffer, offset + 0, 5));
-            Assert.Equal(0, buffer[offset + 5]);
-            Assert.Equal("file2", Encoding.ASCII.GetString(buffer, offset + 6, 5));
-            Assert.Equal(0, buffer[offset + 11]);
-            Assert.Equal("dir1", Encoding.ASCII.GetString(buffer, offset + 12, 4));
+            Assert.Equal("dir1", Encoding.ASCII.GetString(buffer, offset + 0, 4));
+            Assert.Equal(0, buffer[offset + 4]);
+            Assert.Equal("file1", Encoding.ASCII.GetString(buffer, offset + 5, 5));
+            Assert.Equal(0, buffer[offset + 10]);
+            Assert.Equal("file2", Encoding.ASCII.GetString(buffer, offset + 11, 5));
             Assert.Equal(0, buffer[offset + 16]);
             Assert.Equal("file3", Encoding.ASCII.GetString(buffer, offset + 17, 5));
             Assert.Equal(0, buffer[offset + 22]);
@@ -295,10 +295,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         public async Task WriteHeaderPart4Async_ValidData_Written()
         {
             var items = new NefsItemList(@"C:\hi.txt");
-            var file1 = TestHelpers.CreateItem(0, 0, 1, "file1", "file1", 10, 11, new List<UInt32> { 12, 13 }, NefsItemType.File);
-            var file2 = TestHelpers.CreateItem(1, 1, 2, "file2", "file2", 20, 21, new List<UInt32> { 22, 23 }, NefsItemType.File);
-            var dir1 = TestHelpers.CreateItem(2, 2, 2, "dir1", "dir1", 0, 0, new List<UInt32> { 0 }, NefsItemType.Directory);
-            var file3 = TestHelpers.CreateItem(3, 2, 3, "file3", "dir1/file3", 30, 31, new List<UInt32> { 32, 33 }, NefsItemType.File);
+            var file1 = TestHelpers.CreateItem(0, 0, "file1", 10, 11, new List<UInt32> { 12, 13 }, NefsItemType.File);
+            var file2 = TestHelpers.CreateItem(1, 1, "file2", 20, 21, new List<UInt32> { 22, 23 }, NefsItemType.File);
+            var dir1 = TestHelpers.CreateItem(2, 2, "dir1", 0, 0, new List<UInt32> { 0 }, NefsItemType.Directory);
+            var file3 = TestHelpers.CreateItem(3, 2, "file3", 30, 31, new List<UInt32> { 32, 33 }, NefsItemType.File);
             items.Add(file1);
             items.Add(file2);
             items.Add(dir1);

@@ -115,7 +115,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart1Async(Stream stream, UInt64 offset, NefsHeaderPart1 part1, NefsProgress p)
         {
-            foreach (var entry in part1.Entries)
+            foreach (var entry in part1.EntriesByIndex)
             {
                 await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += NefsHeaderPart1Entry.Size;
@@ -132,7 +132,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart2Async(Stream stream, UInt64 offset, NefsHeaderPart2 part2, NefsProgress p)
         {
-            foreach (var entry in part2.EntriesById.Values)
+            foreach (var entry in part2.EntriesByIndex)
             {
                 await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += NefsHeaderPart2Entry.Size;
@@ -210,7 +210,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart6Async(Stream stream, UInt64 offset, NefsHeaderPart6 part6, NefsProgress p)
         {
-            foreach (var entry in part6.EntriesById.Values)
+            foreach (var entry in part6.EntriesByIndex)
             {
                 await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += NefsHeaderPart6Entry.Size;
@@ -227,7 +227,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart7Async(Stream stream, UInt64 offset, NefsHeaderPart7 part7, NefsProgress p)
         {
-            foreach (var entry in part7.EntriesById.Values)
+            foreach (var entry in part7.EntriesByIndex)
             {
                 await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += NefsHeaderPart7Entry.Size;
@@ -252,8 +252,9 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </summary>
         /// <param name="item">The item to prepare.</param>
         /// <param name="workDir">The temporary working directory.</param>
+        /// <param name="items">The source items list.</param>
         /// <param name="p">Progress info.</param>
-        private async Task PrepareItemAsync(NefsItem item, string workDir, NefsProgress p)
+        private async Task PrepareItemAsync(NefsItem item, string workDir, NefsItemList items, NefsProgress p)
         {
             // Deleted items should not be prepared
             if (item.State == NefsItemState.Removed)
@@ -289,7 +290,9 @@ namespace VictorBush.Ego.NefsLib.IO
             if (item.DataSource.ShouldCompress)
             {
                 // Prepare the working directory
-                var fileWorkDir = Path.Combine(workDir, item.FilePathInArchiveHash);
+                var filePathInArchive = items.GetItemFilePath(item.Id);
+                var filePathInArchiveHash = HashHelper.HashStringMD5(filePathInArchive);
+                var fileWorkDir = Path.Combine(workDir, filePathInArchiveHash);
                 this.FileSystem.ResetOrCreateDirectory(fileWorkDir);
 
                 // Compress the file
@@ -321,7 +324,7 @@ namespace VictorBush.Ego.NefsLib.IO
             var items = sourceItems.Clone() as NefsItemList;
             var itemsToRemove = new List<NefsItem>();
 
-            foreach (var item in items)
+            foreach (var item in items.EnumerateById())
             {
                 if (item.State == NefsItemState.Removed)
                 {
@@ -331,7 +334,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 else
                 {
                     // Compress any new or replaced files and update chunk sizes
-                    await this.PrepareItemAsync(item, workDir, p);
+                    await this.PrepareItemAsync(item, workDir, sourceItems, p);
                 }
             }
 
@@ -687,7 +690,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
             // Update item info and write out item data
             var i = 1;
-            foreach (var item in items)
+            foreach (var item in items.EnumerateById())
             {
                 using (var t = p.BeginSubTask(1.0f / items.Count, $"Writing data for item {i}/{items.Count}"))
                 {

@@ -244,7 +244,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 // Use the full path in archive to determine where to extract within the quick
                 // extract dir. The quick extract option preserves the structure of the nefs archive
                 // within the quick extract dir.
-                var fullPath = Path.Combine(baseDir, item.FilePathInArchive);
+                var path = this.Archive.Items.GetItemFilePath(item.Id);
+                var fullPath = Path.Combine(baseDir, path);
                 var dir = Path.GetDirectoryName(fullPath);
                 extractionList.AddRange(this.GetExtractionList(item, this.Archive.Items, dir));
             }
@@ -609,7 +610,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             string outputDir)
         {
             var items = new List<(NefsItem, string)>();
-            var children = itemsList.Where(i => i.DirectoryId == item.Id && i != item);
+            var children = itemsList.EnumerateItemChildren(item.Id);
             var path = Path.Combine(outputDir, item.FileName);
 
             if (item.Type == NefsItemType.Directory)

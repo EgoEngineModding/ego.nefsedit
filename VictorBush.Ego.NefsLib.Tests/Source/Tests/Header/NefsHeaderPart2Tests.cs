@@ -17,19 +17,19 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             var items = new NefsItemList(@"C:\archive.nefs");
 
             var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, new List<UInt32> { 11, 12, 13 }));
-            var file1 = new NefsItem(new NefsItemId(0), "file1", "file1", new NefsItemId(0), new NefsItemId(1), NefsItemType.File, file1DataSource, TestHelpers.CreateUnknownData());
+            var file1 = new NefsItem(new NefsItemId(0), "file1", new NefsItemId(0), NefsItemType.File, file1DataSource, TestHelpers.CreateUnknownData());
             items.Add(file1);
 
             var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, new List<UInt32> { 14, 15, 16 }));
-            var file2 = new NefsItem(new NefsItemId(1), "file2", "file2", new NefsItemId(1), new NefsItemId(2), NefsItemType.File, file2DataSource, TestHelpers.CreateUnknownData());
+            var file2 = new NefsItem(new NefsItemId(1), "file2", new NefsItemId(1), NefsItemType.File, file2DataSource, TestHelpers.CreateUnknownData());
             items.Add(file2);
 
             var dir1DataSource = new NefsEmptyDataSource();
-            var dir1 = new NefsItem(new NefsItemId(2), "dir1", "dir1", new NefsItemId(2), new NefsItemId(2), NefsItemType.Directory, dir1DataSource, TestHelpers.CreateUnknownData());
+            var dir1 = new NefsItem(new NefsItemId(2), "dir1", new NefsItemId(2), NefsItemType.Directory, dir1DataSource, TestHelpers.CreateUnknownData());
             items.Add(dir1);
 
             var file3DataSource = new NefsItemListDataSource(items, 222, new NefsItemSize(333, new List<UInt32> { 22, 23, 24 }));
-            var file3 = new NefsItem(new NefsItemId(3), "file3", "dir1/file3", dir1.Id, new NefsItemId(3), NefsItemType.File, file3DataSource, TestHelpers.CreateUnknownData());
+            var file3 = new NefsItem(new NefsItemId(3), "file3", dir1.Id, NefsItemType.File, file3DataSource, TestHelpers.CreateUnknownData());
             items.Add(file3);
 
             var p3 = new NefsHeaderPart3(items);
@@ -38,7 +38,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             Assert.Equal(4, p2.EntriesById.Count);
 
             // NOTE: Part 3 is the strings table. So offset into p3 must take into account null
-            // terminated file/dir names.
+            // terminated file/dir names. Also note strings table is alphabetized.
 
             /*
             file1
@@ -47,8 +47,8 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             Assert.Equal(0, (int)p2.EntriesById[file1.Id].Id.Value);
             Assert.Equal(0, (int)p2.EntriesById[file1.Id].DirectoryId.Value);
             Assert.Equal(0, (int)p2.EntriesById[file1.Id].FirstChildId.Value);
-            Assert.Equal(456, (int)p2.EntriesById[file1.Id].ExtractedSize.Value);
-            Assert.Equal(0, (int)p2.EntriesById[file1.Id].OffsetIntoPart3.Value);
+            Assert.Equal(456, (int)p2.EntriesById[file1.Id].ExtractedSize);
+            Assert.Equal(5, (int)p2.EntriesById[file1.Id].OffsetIntoPart3);
 
             /*
             file2
@@ -57,28 +57,28 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             Assert.Equal(1, (int)p2.EntriesById[file2.Id].Id.Value);
             Assert.Equal(1, (int)p2.EntriesById[file2.Id].DirectoryId.Value);
             Assert.Equal(1, (int)p2.EntriesById[file2.Id].FirstChildId.Value);
-            Assert.Equal(789, (int)p2.EntriesById[file2.Id].ExtractedSize.Value);
-            Assert.Equal(6, (int)p2.EntriesById[file2.Id].OffsetIntoPart3.Value);
+            Assert.Equal(789, (int)p2.EntriesById[file2.Id].ExtractedSize);
+            Assert.Equal(11, (int)p2.EntriesById[file2.Id].OffsetIntoPart3);
 
             /*
             dir1
             */
 
             Assert.Equal(2, (int)p2.EntriesById[dir1.Id].Id.Value);
-            Assert.Equal(2, (int)p2.EntriesById[dir1.Id].DirectoryId.Value);
-            Assert.Equal(3, (int)p2.EntriesById[dir1.Id].FirstChildId.Value);
-            Assert.Equal(0, (int)p2.EntriesById[dir1.Id].ExtractedSize.Value);
-            Assert.Equal(12, (int)p2.EntriesById[dir1.Id].OffsetIntoPart3.Value);
+            Assert.Equal(2, (int)p2.EntriesById[dir1.Id].Data0x00_DirectoryId.Value);
+            Assert.Equal(3, (int)p2.EntriesById[dir1.Id].Data0x04_FirstChildId.Value);
+            Assert.Equal(0, (int)p2.EntriesById[dir1.Id].Data0x0c_ExtractedSize.Value);
+            Assert.Equal(0, (int)p2.EntriesById[dir1.Id].Data0x08_OffsetIntoPart3.Value);
 
             /*
             file3
             */
 
             Assert.Equal(3, (int)p2.EntriesById[file3.Id].Id.Value);
-            Assert.Equal(2, (int)p2.EntriesById[file3.Id].DirectoryId.Value);
-            Assert.Equal(3, (int)p2.EntriesById[file3.Id].FirstChildId.Value);
-            Assert.Equal(333, (int)p2.EntriesById[file3.Id].ExtractedSize.Value);
-            Assert.Equal(17, (int)p2.EntriesById[file3.Id].OffsetIntoPart3.Value);
+            Assert.Equal(2, (int)p2.EntriesById[file3.Id].Data0x00_DirectoryId.Value);
+            Assert.Equal(3, (int)p2.EntriesById[file3.Id].Data0x04_FirstChildId.Value);
+            Assert.Equal(333, (int)p2.EntriesById[file3.Id].Data0x0c_ExtractedSize.Value);
+            Assert.Equal(17, (int)p2.EntriesById[file3.Id].Data0x08_OffsetIntoPart3.Value);
         }
 
         [Fact]

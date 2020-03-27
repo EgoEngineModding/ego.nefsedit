@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsLib.Header
 {
     using System.Collections.Generic;
+    using System.Linq;
     using VictorBush.Ego.NefsLib.Item;
 
     /// <summary>
@@ -10,15 +11,17 @@ namespace VictorBush.Ego.NefsLib.Header
     /// </summary>
     public class NefsHeaderPart1
     {
-        private readonly SortedDictionary<NefsItemId, NefsHeaderPart1Entry> entries;
+        private readonly SortedDictionary<NefsItemId, NefsHeaderPart1Entry> entriesById;
+        private readonly List<NefsHeaderPart1Entry> entriesByIndex;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart1"/> class.
         /// </summary>
         /// <param name="entries">A list of entries to instantiate this part with.</param>
-        internal NefsHeaderPart1(IDictionary<NefsItemId, NefsHeaderPart1Entry> entries)
+        internal NefsHeaderPart1(IList<NefsHeaderPart1Entry> entries)
         {
-            this.entries = new SortedDictionary<NefsItemId, NefsHeaderPart1Entry>(entries);
+            this.entriesByIndex = new List<NefsHeaderPart1Entry>(entries);
+            this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart1Entry>(entries.ToDictionary(e => new NefsItemId(e.Id.Value), e => e));
         }
 
         /// <summary>
@@ -28,41 +31,33 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="part4">Header part 4.</param>
         internal NefsHeaderPart1(NefsItemList items, NefsHeaderPart4 part4)
         {
-            this.entries = new SortedDictionary<NefsItemId, NefsHeaderPart1Entry>();
+            this.entriesByIndex = new List<NefsHeaderPart1Entry>();
+            this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart1Entry>();
             var nextMetadataIndex = 0U;
 
-            foreach (var item in items)
+            foreach (var item in items.EnumerateById())
             {
                 var entry = new NefsHeaderPart1Entry();
+                entry.Data0x00_OffsetToData.Value = item.DataSource.Offset;
+                entry.Data0x08_MetadataIndex.Value = nextMetadataIndex++;
+                entry.Data0x10_Id.Value = item.Id.Value;
+                entry.Data0x0c_IndexIntoPart4.Value = part4.GetIndexForItem(item);
 
-                entry.Id.Value = item.Id.Value;
-                entry.OffsetToData.Value = item.DataSource.Offset;
-                entry.IndexIntoPart4.Value = part4.GetIndexForItem(item);
-
-                // Get index into part 2. When NefsLib writes the header, it will always write part
-                // 1 and part 2 ordered by item id.
-                // The index is not necessarily equal to the id. If for some reason there is a gap in the
-                // item ids (not sure if this is possible).
-                entry.IndexIntoPart2.Value = nextMetadataIndex++;
-
-                this.entries.Add(item.Id, entry);
+                this.entriesByIndex.Add(entry);
+                this.entriesById.Add(item.Id, entry);
             }
         }
 
         /// <summary>
-        /// Gets the list of entries sorted by id.
+        /// Gets entries for each item in the archive, sorted by id. The key is the item id; the
+        /// value is the metadata entry for that item.
         /// </summary>
-        public IEnumerable<NefsHeaderPart1Entry> Entries => this.entries.Values;
+        public IReadOnlyDictionary<NefsItemId, NefsHeaderPart1Entry> EntriesById => this.entriesById;
 
         /// <summary>
-        /// The part 1 entries for each item in the archive. The key is the item id; the value is
-        /// the part 1 entry for that item.
+        /// Gets the list of entries in the order they appear in the header. For part 1,
+        /// the items should be sorted by id.
         /// </summary>
-        /// <remarks>
-        /// Part 1 entries are not guaranteed to be written in order. Part 1 entries are not
-        /// guaranteed to be written in the same order as part 2 entries, so the entries are stored
-        /// in dictionaries after they are read from disk for easy access based on item id.
-        /// </remarks>
-        public IReadOnlyDictionary<NefsItemId, NefsHeaderPart1Entry> EntriesById => this.entries;
+        public IList<NefsHeaderPart1Entry> EntriesByIndex => this.entriesByIndex;
     }
 }

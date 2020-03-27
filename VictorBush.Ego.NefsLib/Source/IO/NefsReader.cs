@@ -342,7 +342,8 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>The loaded header part.</returns>
         internal async Task<NefsHeaderPart1> ReadHeaderPart1Async(Stream stream, uint offset, uint size, NefsProgress p)
         {
-            var entries = new Dictionary<NefsItemId, NefsHeaderPart1Entry>();
+            var entries = new List<NefsHeaderPart1Entry>();
+            var ids = new HashSet<NefsItemId>();
 
             // Validate inputs
             if (!this.ValidateHeaderPartStream(stream, offset, size, "1"))
@@ -361,14 +362,16 @@ namespace VictorBush.Ego.NefsLib.IO
                     var entry = new NefsHeaderPart1Entry();
                     await FileData.ReadDataAsync(stream, entryOffset, entry, p);
 
+                    // Check for duplicate item ids
                     var id = new NefsItemId(entry.Id.Value);
-                    if (entries.ContainsKey(id))
+                    if (ids.Contains(id))
                     {
                         Log.LogError($"Found duplicate item id in part 1: {id.Value}");
                         continue;
                     }
 
-                    entries.Add(id, entry);
+                    ids.Add(id);
+                    entries.Add(entry);
                     entryOffset += NefsHeaderPart1Entry.Size;
                 }
             }
@@ -533,20 +536,20 @@ namespace VictorBush.Ego.NefsLib.IO
                     var entry = new NefsHeaderPart4Entry(id);
 
                     // Check if item has part 4 entry
-                    if (p1.IndexIntoPart4.Value == 0xFFFFFFFF)
+                    if (p1.IndexIntoPart4 == 0xFFFFFFFF)
                     {
                         // Item is most likely not compressed or has no data
                         continue;
                     }
 
-                    if (p2.ExtractedSize.Value == 0)
+                    if (p2.Data0x0c_ExtractedSize.Value == 0)
                     {
                         // Item is probably a directory
                         continue;
                     }
 
                     // Get number of chunks
-                    var numChunks = (int)Math.Ceiling(p2.ExtractedSize.Value / (double)NefsArchive.ChunkSize);
+                    var numChunks = (int)Math.Ceiling(p2.Data0x0c_ExtractedSize.Value / (double)NefsArchive.ChunkSize);
                     if (numChunks == 0)
                     {
                         Log.LogError($"Item {p1.Id} contains no compressed chunks but was expected to.");
@@ -573,7 +576,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     }
 
                     // Record entry
-                    entries.Add(p1.IndexIntoPart4.Value, entry);
+                    entries.Add(p1.IndexIntoPart4, entry);
                 }
             }
 

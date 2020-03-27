@@ -35,21 +35,14 @@ namespace VictorBush.Ego.NefsLib.Header
             this.entriesByIndex = new List<NefsHeaderPart2Entry>();
             this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart2Entry>();
 
-            foreach (var item in items)
+            foreach (var item in items.EnumerateDepthFirst())
             {
                 var entry = new NefsHeaderPart2Entry();
-                entry.DirectoryId.Value = item.DirectoryId.Value;
-                entry.FirstChildId.Value = item.Id.Value;
-                entry.ExtractedSize.Value = item.DataSource.Size.ExtractedSize;
-                entry.OffsetIntoPart3.Value = part3.OffsetsByFileName[item.FileName];
-                entry.Id.Value = item.Id.Value;
-
-                // Find first child item
-                var firstChild = items.Where(i => i.DirectoryId == item.Id && i != item).OrderBy(i => i.Id.Value).FirstOrDefault();
-                if (firstChild != null)
-                {
-                    entry.FirstChildId.Value = firstChild.Id.Value;
-                }
+                entry.Data0x00_DirectoryId.Value = item.DirectoryId.Value;
+                entry.Data0x04_FirstChildId.Value = items.GetItemFirstChildId(item.Id).Value;
+                entry.Data0x08_OffsetIntoPart3.Value = part3.OffsetsByFileName[item.FileName];
+                entry.Data0x0c_ExtractedSize.Value = item.DataSource.Size.ExtractedSize;
+                entry.Data0x10_Id.Value = item.Id.Value;
 
                 this.entriesByIndex.Add(entry);
                 this.entriesById.Add(item.Id, entry);

@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsEdit.UI
 {
     using System;
+    using System.Text;
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Workspace;
     using VictorBush.Ego.NefsLib;
@@ -63,6 +64,27 @@ namespace VictorBush.Ego.NefsEdit.UI
                 return;
             }
 
+            var headerPart1String = new StringBuilder();
+            foreach (var entry in archive.Header.Part1.EntriesByIndex)
+            {
+                headerPart1String.Append(entry.OffsetToData.ToString().PadRight(16));
+                headerPart1String.Append(entry.MetadataIndex.ToString().PadRight(16));
+                headerPart1String.Append(entry.IndexIntoPart4.ToString().PadRight(16));
+                headerPart1String.Append(entry.Id.ToString().PadRight(16));
+                headerPart1String.Append("\n");
+            }
+
+            var headerPart2String = new StringBuilder();
+            foreach (var entry in archive.Header.Part2.EntriesByIndex)
+            {
+                headerPart2String.Append(entry.DirectoryId.ToString().PadRight(16));
+                headerPart2String.Append(entry.FirstChildId.ToString().PadRight(16));
+                headerPart2String.Append(entry.OffsetIntoPart3.ToString().PadRight(16));
+                headerPart2String.Append(entry.ExtractedSize.ToString().PadRight(16));
+                headerPart2String.Append(entry.Id.ToString().PadRight(16));
+                headerPart2String.Append("\n");
+            }
+
             this.richTextBox.Text = $@"Archive Source
 -----------------------------------------------------------
 Header source file:         {source.HeaderFilePath}
@@ -110,6 +132,16 @@ Offset to Part 7:           {archive.Header.TableOfContents.OffsetToPart7}
 Offset to Part 8:           {archive.Header.TableOfContents.OffsetToPart8}
 Unknown 0x00:               {archive.Header.TableOfContents.Unknown0x00}
 Unknown 0x24:               {archive.Header.TableOfContents.Unknown0x24}
+
+Header Part 1
+-----------------------------------------------------------
+Data Offset         Index to Part 2     Index to Part 4     Id
+{headerPart1String.ToString()}
+
+Header Part 2
+-----------------------------------------------------------
+Directory Id        First child Id      Part 3 offset       Extracted size      Id
+{headerPart2String.ToString()}
 ";
         }
     }

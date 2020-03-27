@@ -166,7 +166,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
 
             // Load all items in the NeFS archive into the listview
-            foreach (var item in archive.Items)
+            foreach (var item in archive.Items.EnumerateById())
             {
                 var listItem = new ListViewItem();
 
@@ -182,23 +182,23 @@ namespace VictorBush.Ego.NefsEdit.UI
                 this.AddSubItem(listItem, "extractedSize", item.ExtractedSize.ToString("X"));
 
                 var p1 = archive.Header.Part1.EntriesById[item.Id];
-                this.AddSubItem(listItem, "pt1.0x00", p1.OffsetToData.Value.ToString("X"));
-                this.AddSubItem(listItem, "pt1.0x08", p1.IndexIntoPart2.Value.ToString("X"));
-                this.AddSubItem(listItem, "pt1.0x0c", p1.IndexIntoPart4.Value.ToString("X"));
+                this.AddSubItem(listItem, "pt1.0x00", p1.OffsetToData.ToString("X"));
+                this.AddSubItem(listItem, "pt1.0x08", p1.MetadataIndex.ToString("X"));
+                this.AddSubItem(listItem, "pt1.0x0c", p1.IndexIntoPart4.ToString("X"));
                 this.AddSubItem(listItem, "pt1.0x10", p1.Id.Value.ToString("X"));
 
                 var p2 = archive.Header.Part2.EntriesById[item.Id];
                 this.AddSubItem(listItem, "pt2.0x00", p2.DirectoryId.Value.ToString("X"));
                 this.AddSubItem(listItem, "pt2.0x04", p2.FirstChildId.Value.ToString("X"));
-                this.AddSubItem(listItem, "pt2.0x08", p2.OffsetIntoPart3.Value.ToString("X"));
-                this.AddSubItem(listItem, "pt2.0x0c", p2.ExtractedSize.Value.ToString("X"));
+                this.AddSubItem(listItem, "pt2.0x08", p2.OffsetIntoPart3.ToString("X"));
+                this.AddSubItem(listItem, "pt2.0x0c", p2.ExtractedSize.ToString("X"));
                 this.AddSubItem(listItem, "pt2.0x10", p2.Id.Value.ToString("X"));
 
                 var p6 = archive.Header.Part6.EntriesById[item.Id];
-                this.AddSubItem(listItem, "pt6.0x00", p6.Byte0.Value[0].ToString("X"));
-                this.AddSubItem(listItem, "pt6.0x01", p6.Byte1.Value[0].ToString("X"));
-                this.AddSubItem(listItem, "pt6.0x02", p6.Byte2.Value[0].ToString("X"));
-                this.AddSubItem(listItem, "pt6.0x03", p6.Byte3.Value[0].ToString("X"));
+                this.AddSubItem(listItem, "pt6.0x00", p6.Byte0.ToString("X"));
+                this.AddSubItem(listItem, "pt6.0x01", p6.Byte1.ToString("X"));
+                this.AddSubItem(listItem, "pt6.0x02", p6.Byte2.ToString("X"));
+                this.AddSubItem(listItem, "pt6.0x03", p6.Byte3.ToString("X"));
 
                 var p7 = archive.Header.Part7.EntriesById[item.Id];
                 this.AddSubItem(listItem, "pt7.0x00", p7.SiblingId.Value.ToString("X"));
@@ -272,8 +272,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// <param name="listItem">The item to update.</param>
         private void UpdateListItem(ListViewItem listItem)
         {
-            var item = listItem.Tag as NefsItem;
-            if (item == null)
+            if (!(listItem.Tag is NefsItem item))
             {
                 Log.LogError("List view item did not have NefsItem as tag.");
                 return;

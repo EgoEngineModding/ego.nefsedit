@@ -13,7 +13,7 @@ There are two components to this project.
 - Add a recent files list.
 - Allow associating .nefs files with the app, and allow opening an archive via command line.
 - Add protection against saving over an archive in a game's directory (or always force a "Save As").
-- Evaluate NefsProgress progress reporting.
+- Evaluate NefsProgress progress reporting (and the performance hit for using Dispatcher to sync with UI thread).
 - Fix sorting by id (and allow resetting sorting order?)
 
 ## Acknowledgements

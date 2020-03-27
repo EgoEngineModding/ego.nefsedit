@@ -34,13 +34,13 @@ namespace VictorBush.Ego.NefsLib.Header
             this.entriesByIndex = new List<NefsHeaderPart6Entry>();
             this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart6Entry>();
 
-            foreach (var item in items)
+            foreach (var item in items.EnumerateDepthFirst())
             {
                 var entry = new NefsHeaderPart6Entry(item.Id);
-                entry.Byte0.Value[0] = item.Part6Unknown0x00;
-                entry.Byte1.Value[0] = item.Part6Unknown0x01;
-                entry.Byte2.Value[0] = item.Part6Unknown0x02;
-                entry.Byte3.Value[0] = item.Part6Unknown0x03;
+                entry.Data0x00_Byte0.Value[0] = item.Part6Unknown0x00;
+                entry.Data0x01_Byte1.Value[0] = item.Part6Unknown0x01;
+                entry.Data0x02_Byte2.Value[0] = item.Part6Unknown0x02;
+                entry.Data0x03_Byte3.Value[0] = item.Part6Unknown0x03;
 
                 this.entriesByIndex.Add(entry);
                 this.entriesById.Add(item.Id, entry);

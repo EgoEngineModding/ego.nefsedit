@@ -23,18 +23,6 @@ namespace VictorBush.Ego.NefsLib.Header
         }
 
         /// <summary>
-        /// The sibling item id.
-        /// </summary>
-        [FileData]
-        public UInt32Type Data0x00_SiblingId { get; } = new UInt32Type(0x00);
-
-        /// <summary>
-        /// The item id this entry is for.
-        /// </summary>
-        [FileData]
-        public UInt32Type Data0x04_Id { get; } = new UInt32Type(0x04);
-
-        /// <summary>
         /// Gets the id of the item this entry is for.
         /// </summary>
         public NefsItemId Id => new NefsItemId(this.Data0x04_Id.Value);
@@ -44,5 +32,17 @@ namespace VictorBush.Ego.NefsLib.Header
         /// last item in the directory, the sibling id will equal the item id.
         /// </summary>
         public NefsItemId SiblingId => new NefsItemId(this.Data0x00_SiblingId.Value);
+
+        /// <summary>
+        /// Data at offset 0x00.
+        /// </summary>
+        [FileData]
+        internal UInt32Type Data0x00_SiblingId { get; } = new UInt32Type(0x00);
+
+        /// <summary>
+        /// Data at offset 0x04.
+        /// </summary>
+        [FileData]
+        internal UInt32Type Data0x04_Id { get; } = new UInt32Type(0x04);
     }
 }

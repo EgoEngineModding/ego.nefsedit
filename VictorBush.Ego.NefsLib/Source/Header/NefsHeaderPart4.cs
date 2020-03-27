@@ -48,7 +48,7 @@ namespace VictorBush.Ego.NefsLib.Header
 
             var largestSize = 0U;
             var nextIdx = 0;
-            foreach (var item in items)
+            foreach (var item in items.EnumerateById())
             {
                 if (!item.DataSource.Size.IsCompressed)
                 {

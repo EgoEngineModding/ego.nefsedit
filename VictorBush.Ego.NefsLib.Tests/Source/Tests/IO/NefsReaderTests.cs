@@ -49,9 +49,9 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             // Entries are keyed by id
             var e1 = part1.EntriesById[new NefsItemId(0x34333231)];
-            Assert.Equal((ulong)0x0807060504030201, e1.OffsetToData.Value);
-            Assert.Equal((uint)0x14131211, e1.IndexIntoPart2.Value);
-            Assert.Equal((uint)0x24232221, e1.IndexIntoPart4.Value);
+            Assert.Equal((ulong)0x0807060504030201, e1.OffsetToData);
+            Assert.Equal((uint)0x14131211, e1.MetadataIndex);
+            Assert.Equal((uint)0x24232221, e1.IndexIntoPart4);
             Assert.Equal((uint)0x34333231, e1.Id.Value);
         }
 
@@ -115,15 +115,15 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             // Entries are keyed by id
             var e1 = part1.EntriesById[new NefsItemId(0x34333231)];
-            Assert.Equal((ulong)0x0807060504030201, e1.OffsetToData.Value);
-            Assert.Equal((uint)0x14131211, e1.IndexIntoPart2.Value);
-            Assert.Equal((uint)0x24232221, e1.IndexIntoPart4.Value);
+            Assert.Equal((ulong)0x0807060504030201, e1.OffsetToData);
+            Assert.Equal((uint)0x14131211, e1.MetadataIndex);
+            Assert.Equal((uint)0x24232221, e1.IndexIntoPart4);
             Assert.Equal((uint)0x34333231, e1.Id.Value);
 
             var e2 = part1.EntriesById[new NefsItemId(0x74737271)];
-            Assert.Equal((ulong)0x4847464544434241, e2.OffsetToData.Value);
-            Assert.Equal((uint)0x54535251, e2.IndexIntoPart2.Value);
-            Assert.Equal((uint)0x64636261, e2.IndexIntoPart4.Value);
+            Assert.Equal((ulong)0x4847464544434241, e2.OffsetToData);
+            Assert.Equal((uint)0x54535251, e2.MetadataIndex);
+            Assert.Equal((uint)0x64636261, e2.IndexIntoPart4);
             Assert.Equal((uint)0x74737271, e2.Id.Value);
         }
 
@@ -171,10 +171,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             // Entries are keyed by id
             var e1 = part2.EntriesById[new NefsItemId(0x44434241)];
-            Assert.Equal((uint)0x04030201, e1.DirectoryId.Value);
-            Assert.Equal((uint)0x14131211, e1.FirstChildId.Value);
-            Assert.Equal((uint)0x24232221, e1.OffsetIntoPart3.Value);
-            Assert.Equal((uint)0x34333231, e1.ExtractedSize.Value);
+            Assert.Equal((uint)0x04030201, e1.Data0x00_DirectoryId.Value);
+            Assert.Equal((uint)0x14131211, e1.Data0x04_FirstChildId.Value);
+            Assert.Equal((uint)0x24232221, e1.Data0x08_OffsetIntoPart3.Value);
+            Assert.Equal((uint)0x34333231, e1.Data0x0c_ExtractedSize.Value);
             Assert.Equal((uint)0x44434241, e1.Id.Value);
         }
 
@@ -210,17 +210,17 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             // Entries are keyed by id
             var e1 = part2.EntriesById[new NefsItemId(0x44434241)];
-            Assert.Equal((uint)0x04030201, e1.DirectoryId.Value);
-            Assert.Equal((uint)0x14131211, e1.FirstChildId.Value);
-            Assert.Equal((uint)0x24232221, e1.OffsetIntoPart3.Value);
-            Assert.Equal((uint)0x34333231, e1.ExtractedSize.Value);
+            Assert.Equal((uint)0x04030201, e1.Data0x00_DirectoryId.Value);
+            Assert.Equal((uint)0x14131211, e1.Data0x04_FirstChildId.Value);
+            Assert.Equal((uint)0x24232221, e1.Data0x08_OffsetIntoPart3.Value);
+            Assert.Equal((uint)0x34333231, e1.Data0x0c_ExtractedSize.Value);
             Assert.Equal((uint)0x44434241, e1.Id.Value);
 
             var e2 = part2.EntriesById[new NefsItemId(0x94939291)];
-            Assert.Equal((uint)0x54535251, e2.DirectoryId.Value);
-            Assert.Equal((uint)0x64636261, e2.FirstChildId.Value);
-            Assert.Equal((uint)0x74737271, e2.OffsetIntoPart3.Value);
-            Assert.Equal((uint)0x84838281, e2.ExtractedSize.Value);
+            Assert.Equal((uint)0x54535251, e2.Data0x00_DirectoryId.Value);
+            Assert.Equal((uint)0x64636261, e2.Data0x04_FirstChildId.Value);
+            Assert.Equal((uint)0x74737271, e2.Data0x08_OffsetIntoPart3.Value);
+            Assert.Equal((uint)0x84838281, e2.Data0x0c_ExtractedSize.Value);
             Assert.Equal((uint)0x94939291, e2.Id.Value);
         }
 
@@ -320,51 +320,51 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         {
             // Item 1 has 2 chunk sizes
             var e1p1 = new NefsHeaderPart1Entry();
-            e1p1.Id.Value = 0;
-            e1p1.IndexIntoPart4.Value = 0;
+            e1p1.Data0x10_Id.Value = 0;
+            e1p1.Data0x0c_IndexIntoPart4.Value = 0;
             var e1p2 = new NefsHeaderPart2Entry();
-            e1p1.Id.Value = e1p1.Id.Value;
-            e1p2.ExtractedSize.Value = NefsArchive.ChunkSize * 2;
+            e1p1.Data0x10_Id.Value = e1p1.Id.Value;
+            e1p2.Data0x0c_ExtractedSize.Value = NefsArchive.ChunkSize * 2;
 
             // Item 2 has 1 chunk size
             var e2p1 = new NefsHeaderPart1Entry();
-            e2p1.Id.Value = 1;
-            e2p1.IndexIntoPart4.Value = 2;
+            e2p1.Data0x10_Id.Value = 1;
+            e2p1.Data0x0c_IndexIntoPart4.Value = 2;
             var e2p2 = new NefsHeaderPart2Entry();
-            e2p2.Id.Value = e2p1.Id.Value;
-            e2p2.ExtractedSize.Value = NefsArchive.ChunkSize;
+            e2p2.Data0x10_Id.Value = e2p1.Id.Value;
+            e2p2.Data0x0c_ExtractedSize.Value = NefsArchive.ChunkSize;
 
             // Item 3 has no chunks
             var e3p1 = new NefsHeaderPart1Entry();
-            e3p1.Id.Value = 2;
-            e3p1.IndexIntoPart4.Value = 0xFFFFFFFF;
+            e3p1.Data0x10_Id.Value = 2;
+            e3p1.Data0x0c_IndexIntoPart4.Value = 0xFFFFFFFF;
             var e3p2 = new NefsHeaderPart2Entry();
-            e3p2.Id.Value = e3p1.Id.Value;
-            e3p2.ExtractedSize.Value = NefsArchive.ChunkSize;
+            e3p2.Data0x10_Id.Value = e3p1.Id.Value;
+            e3p2.Data0x0c_ExtractedSize.Value = NefsArchive.ChunkSize;
 
             // Item 4 is a directory (extracted size == 0)
             var e4p1 = new NefsHeaderPart1Entry();
-            e4p1.Id.Value = 3;
-            e4p1.IndexIntoPart4.Value = 0;
+            e4p1.Data0x10_Id.Value = 3;
+            e4p1.Data0x0c_IndexIntoPart4.Value = 0;
             var e4p2 = new NefsHeaderPart2Entry();
-            e4p2.Id.Value = e4p1.Id.Value;
-            e4p2.ExtractedSize.Value = 0;
+            e4p2.Data0x10_Id.Value = e4p1.Id.Value;
+            e4p2.Data0x0c_ExtractedSize.Value = 0;
 
             // Item 5 has 3 chunks
             var e5p1 = new NefsHeaderPart1Entry();
-            e5p1.Id.Value = 4;
-            e5p1.IndexIntoPart4.Value = 3;
+            e5p1.Data0x10_Id.Value = 4;
+            e5p1.Data0x0c_IndexIntoPart4.Value = 3;
             var e5p2 = new NefsHeaderPart2Entry();
-            e5p2.Id.Value = e5p1.Id.Value;
-            e5p2.ExtractedSize.Value = (NefsArchive.ChunkSize * 2) + 5;
+            e5p2.Data0x10_Id.Value = e5p1.Id.Value;
+            e5p2.Data0x0c_ExtractedSize.Value = (NefsArchive.ChunkSize * 2) + 5;
 
-            var part1Items = new Dictionary<NefsItemId, NefsHeaderPart1Entry>
+            var part1Items = new List<NefsHeaderPart1Entry>
             {
-                { new NefsItemId(0), e1p1 },
-                { new NefsItemId(1), e2p1 },
-                { new NefsItemId(2), e3p1 },
-                { new NefsItemId(3), e4p1 },
-                { new NefsItemId(4), e5p1 },
+                e1p1,
+                e2p1,
+                e3p1,
+                e4p1,
+                e5p1,
             };
 
             var part2Items = new List<NefsHeaderPart2Entry>
@@ -515,17 +515,17 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var e1 = part6.EntriesByIndex[0];
             Assert.Same(e1, part6.EntriesById[e1.Id]);
-            Assert.Equal(0x11, e1.Byte0.Value[0]);
-            Assert.Equal(0x12, e1.Byte1.Value[0]);
-            Assert.Equal(0x13, e1.Byte2.Value[0]);
-            Assert.Equal(0x14, e1.Byte3.Value[0]);
+            Assert.Equal(0x11, e1.Byte0);
+            Assert.Equal(0x12, e1.Byte1);
+            Assert.Equal(0x13, e1.Byte2);
+            Assert.Equal(0x14, e1.Byte3);
 
             var e2 = part6.EntriesByIndex[1];
             Assert.Same(e2, part6.EntriesById[e2.Id]);
-            Assert.Equal(0x21, e2.Byte0.Value[0]);
-            Assert.Equal(0x22, e2.Byte1.Value[0]);
-            Assert.Equal(0x23, e2.Byte2.Value[0]);
-            Assert.Equal(0x24, e2.Byte3.Value[0]);
+            Assert.Equal(0x21, e2.Byte0);
+            Assert.Equal(0x22, e2.Byte1);
+            Assert.Equal(0x23, e2.Byte2);
+            Assert.Equal(0x24, e2.Byte3);
         }
 
         [Fact]

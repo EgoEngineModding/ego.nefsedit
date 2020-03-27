@@ -5,7 +5,6 @@ namespace VictorBush.Ego.NefsLib.Item
     using System;
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.Header;
-    using VictorBush.Ego.NefsLib.Utility;
 
     /// <summary>
     /// An item in a NeFS archive (file or directory).
@@ -17,9 +16,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// </summary>
         /// <param name="id">The item id (index).</param>
         /// <param name="fileName">The file name within the archive.</param>
-        /// <param name="filePathInArchive">The file path within the archive.</param>
         /// <param name="directoryId">The directory id the item is in.</param>
-        /// <param name="siblingId">The sibling item id.</param>
         /// <param name="type">The type of item.</param>
         /// <param name="dataSource">The data source for the item's data.</param>
         /// <param name="unknownData">Unknown metadata.</param>
@@ -27,9 +24,7 @@ namespace VictorBush.Ego.NefsLib.Item
         public NefsItem(
             NefsItemId id,
             string fileName,
-            string filePathInArchive,
             NefsItemId directoryId,
-            NefsItemId siblingId,
             NefsItemType type,
             INefsDataSource dataSource,
             NefsItemUnknownData unknownData,
@@ -37,7 +32,6 @@ namespace VictorBush.Ego.NefsLib.Item
         {
             this.Id = id;
             this.DirectoryId = directoryId;
-            this.SiblingId = siblingId;
             this.Type = type;
             this.DataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
             this.State = state;
@@ -50,10 +44,6 @@ namespace VictorBush.Ego.NefsLib.Item
 
             // Save file name
             this.FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
-            this.FilePathInArchive = filePathInArchive ?? throw new ArgumentNullException(nameof(filePathInArchive));
-
-            // Compute file path hash
-            this.FilePathInArchiveHash = HashHelper.HashStringMD5(this.FilePathInArchive);
         }
 
         /// <summary>
@@ -83,17 +73,6 @@ namespace VictorBush.Ego.NefsLib.Item
         public string FileName { get; }
 
         /// <summary>
-        /// Gets path to the item within the archive.
-        /// Example: cars/models/fr2/interior/fr2.xml.
-        /// </summary>
-        public string FilePathInArchive { get; }
-
-        /// <summary>
-        /// Hash string of the file path.
-        /// </summary>
-        public string FilePathInArchiveHash { get; }
-
-        /// <summary>
         /// The id of this item.
         /// </summary>
         public NefsItemId Id { get; }
@@ -117,12 +96,6 @@ namespace VictorBush.Ego.NefsLib.Item
         /// Unknown data in the part 6 entry.
         /// </summary>
         public byte Part6Unknown0x03 { get; }
-
-        /// <summary>
-        /// Gets the id of the next item in the same directory as this item. If this item is the
-        /// last item in the directory, the sibling id is equal to the item id.
-        /// </summary>
-        public NefsItemId SiblingId { get; }
 
         /// <summary>
         /// The modification state of the item. Represents any pending changes to this item. Pending
@@ -149,17 +122,14 @@ namespace VictorBush.Ego.NefsLib.Item
             var p6 = header.Part6.EntriesById[id];
 
             // Determine type
-            var type = p2.ExtractedSize.Value == 0 ? NefsItemType.Directory : NefsItemType.File;
+            var type = p2.Data0x0c_ExtractedSize.Value == 0 ? NefsItemType.Directory : NefsItemType.File;
 
             // Find parent
             var parentId = header.GetItemDirectoryId(id);
 
-            // Find sibling
-            var siblingId = header.Part7.EntriesById[id].SiblingId;
-
             // Offset and size
-            var dataOffset = p1.OffsetToData.Value;
-            var extractedSize = p2.ExtractedSize.Value;
+            var dataOffset = p1.Data0x00_OffsetToData.Value;
+            var extractedSize = p2.Data0x0c_ExtractedSize.Value;
 
             // Data source
             INefsDataSource dataSource;
@@ -168,7 +138,7 @@ namespace VictorBush.Ego.NefsLib.Item
                 // Item is a directory
                 dataSource = new NefsEmptyDataSource();
             }
-            else if (p1.IndexIntoPart4.Value == 0xFFFFFFFFU)
+            else if (p1.IndexIntoPart4 == 0xFFFFFFFFU)
             {
                 // Item is not compressed
                 var size = new NefsItemSize(extractedSize);
@@ -177,26 +147,25 @@ namespace VictorBush.Ego.NefsLib.Item
             else
             {
                 // Item is compressed
-                var p4 = header.Part4.EntriesByIndex[p1.IndexIntoPart4.Value];
+                var p4 = header.Part4.EntriesByIndex[p1.IndexIntoPart4];
                 var size = new NefsItemSize(extractedSize, p4.ChunkSizes);
                 dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
             }
 
             // File name and path
             var fileName = header.GetItemFileName(id);
-            var filePath = header.GetItemFilePath(id);
 
             // Gather unknown metadata
             var unknown = new NefsItemUnknownData
             {
-                Part6Unknown0x00 = p6.Byte0.Value[0],
-                Part6Unknown0x01 = p6.Byte1.Value[0],
-                Part6Unknown0x02 = p6.Byte2.Value[0],
-                Part6Unknown0x03 = p6.Byte3.Value[0],
+                Part6Unknown0x00 = p6.Byte0,
+                Part6Unknown0x01 = p6.Byte1,
+                Part6Unknown0x02 = p6.Byte2,
+                Part6Unknown0x03 = p6.Byte3,
             };
 
             // Create item
-            return new NefsItem(id, fileName, filePath, parentId, siblingId, type, dataSource, unknown);
+            return new NefsItem(id, fileName, parentId, type, dataSource, unknown);
         }
 
         /// <summary>
@@ -216,9 +185,7 @@ namespace VictorBush.Ego.NefsLib.Item
             return new NefsItem(
                 this.Id,
                 this.FileName,
-                this.FilePathInArchive,
                 this.DirectoryId,
-                this.SiblingId,
                 this.Type,
                 this.DataSource,
                 unknownData,

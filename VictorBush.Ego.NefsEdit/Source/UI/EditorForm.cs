@@ -371,7 +371,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.itemMainMenuItem.Visible = this.Workspace.SelectedItems.Count > 0;
             this.undoMainMenuItem.Enabled = this.Workspace.CanUndo;
             this.redoMainMenuItem.Enabled = this.Workspace.CanRedo;
-            this.saveAsMainMenuItem.Enabled = this.Workspace.ArchiveIsModified;
+            this.saveAsMainMenuItem.Enabled = this.Workspace.Archive != null;
             this.saveMainMenuItem.Enabled = this.Workspace.ArchiveIsModified;
             this.closeMainMenuItem.Enabled = this.Workspace.Archive != null;
         }

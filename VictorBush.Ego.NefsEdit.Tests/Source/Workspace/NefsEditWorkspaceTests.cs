@@ -47,7 +47,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items[itemId];
+            var item = w.Archive.Items.GetItem(itemId);
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 
@@ -85,7 +85,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items[itemId];
+            var item = w.Archive.Items.GetItem(itemId);
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 
@@ -129,7 +129,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items[itemId];
+            var item = w.Archive.Items.GetItem(itemId);
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 
@@ -181,7 +181,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items[itemId];
+            var item = w.Archive.Items.GetItem(itemId);
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 
@@ -275,7 +275,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items[itemId];
+            var item = w.Archive.Items.GetItem(itemId);
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 
@@ -440,7 +440,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items[itemId];
+            var item = w.Archive.Items.GetItem(itemId);
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 

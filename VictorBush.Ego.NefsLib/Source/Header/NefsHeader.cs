@@ -143,7 +143,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <returns>The directory id.</returns>
         public NefsItemId GetItemDirectoryId(NefsItemId id)
         {
-            return new NefsItemId(this.Part2.EntriesById[id].DirectoryId.Value);
+            return new NefsItemId(this.Part2.EntriesById[id].Data0x00_DirectoryId.Value);
         }
 
         /// <summary>
@@ -153,32 +153,8 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <returns>The item's file name.</returns>
         public string GetItemFileName(NefsItemId id)
         {
-            var offsetIntoPart3 = this.Part2.EntriesById[id].OffsetIntoPart3.Value;
+            var offsetIntoPart3 = this.Part2.EntriesById[id].Data0x08_OffsetIntoPart3.Value;
             return this.Part3.FileNamesByOffset[offsetIntoPart3];
-        }
-
-        /// <summary>
-        /// Gets the file path of the item within the archive.
-        /// </summary>
-        /// <param name="id">The item id.</param>
-        /// <returns>The item's file path within the archive.</returns>
-        public string GetItemFilePath(NefsItemId id)
-        {
-            var path = this.GetItemFileName(id);
-
-            var dirId = this.GetItemDirectoryId(id);
-            var prevDirId = id;
-
-            while (dirId != prevDirId)
-            {
-                var dirName = this.GetItemFileName(dirId);
-                path = Path.Combine(dirName, path);
-
-                prevDirId = dirId;
-                dirId = this.GetItemDirectoryId(dirId);
-            }
-
-            return path;
         }
     }
 }
