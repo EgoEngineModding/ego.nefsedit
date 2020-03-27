@@ -22,7 +22,7 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
             Assert.Empty(items.EnumerateDepthFirst());
 
             var intro = new NefsHeaderIntro();
-            intro.NumberOfItems.Value = (uint)items.Count;
+            intro.Data0x6c_NumberOfItems.Value = (uint)items.Count;
             var toc = new NefsHeaderIntroToc();
 
             var header = new NefsHeader(intro, toc, items);

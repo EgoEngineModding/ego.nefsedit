@@ -340,8 +340,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         public async Task WriteHeaderPart5Async_ValidData_Written()
         {
             var part5 = new NefsHeaderPart5();
-            part5.ArchiveSize.Value = 1234;
-            part5.UnknownData.Value = 5678;
+            part5.Data0x00_ArchiveSize.Value = 1234;
+            part5.Data0x08_UnknownData.Value = 5678;
 
             /*
             Write
@@ -372,13 +372,13 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             var hash = new byte[] { 0xCB, 0x13, 0x87, 0xAB, 0xBF, 0xD5, 0x45, 0x93, 0x34, 0x0A, 0x50, 0xC1, 0xA8, 0x0A, 0x82, 0x53, 0xF9, 0xD5, 0x46, 0xDA, 0x24, 0xDA, 0xA4, 0xDA, 0x82, 0xEA, 0x9A, 0xB5, 0xBC, 0xD8, 0x6B, 0xFC };
 
             var intro = new NefsHeaderIntro();
-            intro.AesKeyHexString.Value = aes;
-            intro.ExpectedHash.Value = hash;
-            intro.HeaderSize.Value = 12345;
-            intro.NumberOfItems.Value = 9876;
-            intro.Unknown0x68.Value = 101;
-            intro.Unknown0x70zlib.Value = 202;
-            intro.Unknown0x78.Value = 303;
+            intro.Data0x24_AesKeyHexString.Value = aes;
+            intro.Data0x04_ExpectedHash.Value = hash;
+            intro.Data0x64_HeaderSize.Value = 12345;
+            intro.Data0x6c_NumberOfItems.Value = 9876;
+            intro.Data0x68_Unknown.Value = 101;
+            intro.Data0x70_UnknownZlib.Value = 202;
+            intro.Data0x78_Unknown.Value = 303;
 
             /*
             Write
@@ -426,19 +426,19 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         public async Task WriterHeaderIntroTocAsync_ValidData_Written()
         {
             var toc = new NefsHeaderIntroToc();
-            toc.OffsetToPart1.Value = 111;
-            toc.OffsetToPart2.Value = 222;
-            toc.OffsetToPart3.Value = 333;
-            toc.OffsetToPart4.Value = 444;
-            toc.OffsetToPart5.Value = 555;
-            toc.OffsetToPart6.Value = 666;
-            toc.OffsetToPart7.Value = 777;
-            toc.OffsetToPart8.Value = 888;
-            toc.Unknown0x00.Value = 404;
+            toc.Data0x04_OffsetToPart1.Value = 111;
+            toc.Data0x0c_OffsetToPart2.Value = 222;
+            toc.Data0x14_OffsetToPart3.Value = 333;
+            toc.Data0x18_OffsetToPart4.Value = 444;
+            toc.Data0x1c_OffsetToPart5.Value = 555;
+            toc.Data0x08_OffsetToPart6.Value = 666;
+            toc.Data0x10_OffsetToPart7.Value = 777;
+            toc.Data0x20_OffsetToPart8.Value = 888;
+            toc.Data0x00_Unknown.Value = 404;
 
             // This chunk of data is unknown, but it must be 0x5C bytes long
-            toc.Unknown0x24.Value = new byte[0x5C];
-            toc.Unknown0x24.Value[0] = 20;
+            toc.Data0x24_Unknown.Value = new byte[0x5C];
+            toc.Data0x24_Unknown.Value[0] = 20;
 
             /*
             Write

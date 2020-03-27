@@ -278,11 +278,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             var part3 = await reader.ReadHeaderPart3Async(stream, offset, size, this.p);
 
             // Verify
-            Assert.Equal(3, part3.FileNamesByOffset.Count);
-            Assert.Equal(3, part3.OffsetsByFileName.Count);
+            Assert.Equal(2, part3.FileNamesByOffset.Count);
+            Assert.Equal(2, part3.OffsetsByFileName.Count);
             Assert.Equal("AB", part3.FileNamesByOffset[0]);
             Assert.Equal("CD", part3.FileNamesByOffset[3]);
-            Assert.Equal("EFG", part3.FileNamesByOffset[6]);
         }
 
         [Fact]
@@ -448,8 +447,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             var part5 = await reader.ReadHeaderPart5Async(stream, offset, size, this.p);
 
             // Verify
-            Assert.Equal((UInt64)0x1817161514131211, part5.ArchiveSize.Value);
-            Assert.Equal((UInt64)0x2827262524232221, part5.UnknownData.Value);
+            Assert.Equal((UInt64)0x1817161514131211, part5.ArchiveSize);
+            Assert.Equal((UInt64)0x2827262524232221, part5.UnknownData);
         }
 
         [Fact]

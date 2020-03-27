@@ -2,6 +2,7 @@
 
 namespace VictorBush.Ego.NefsLib.Header
 {
+    using System;
     using VictorBush.Ego.NefsLib.DataTypes;
 
     /// <summary>
@@ -24,13 +25,23 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// The size of the archive file.
         /// </summary>
-        [FileData]
-        public UInt64Type ArchiveSize { get; } = new UInt64Type(0x00);
+        public UInt64 ArchiveSize => this.Data0x00_ArchiveSize.Value;
 
         /// <summary>
         /// Unknown data.
         /// </summary>
+        public UInt64 UnknownData => this.Data0x08_UnknownData.Value;
+
+        /// <summary>
+        /// Data at offset 0x00.
+        /// </summary>
         [FileData]
-        public UInt64Type UnknownData { get; } = new UInt64Type(0x08);
+        internal UInt64Type Data0x00_ArchiveSize { get; } = new UInt64Type(0x00);
+
+        /// <summary>
+        /// Data at offset 0x08.
+        /// </summary>
+        [FileData]
+        internal UInt64Type Data0x08_UnknownData { get; } = new UInt64Type(0x08);
     }
 }

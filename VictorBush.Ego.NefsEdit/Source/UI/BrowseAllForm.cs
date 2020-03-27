@@ -69,13 +69,13 @@ namespace VictorBush.Ego.NefsEdit.UI
                 new ColumnHeader() { Name = "pt2.0x0c", Text = "[pt2.0x0c] Extracted size" },
                 new ColumnHeader() { Name = "pt2.0x10", Text = "[pt2.0x10] Id" },
 
-                new ColumnHeader() { Name = "pt6.0x00", Text = "[pt5.0x00]" },
-                new ColumnHeader() { Name = "pt6.0x01", Text = "[pt5.0x01]" },
-                new ColumnHeader() { Name = "pt6.0x02", Text = "[pt5.0x02]" },
-                new ColumnHeader() { Name = "pt6.0x13", Text = "[pt5.0x03]" },
+                new ColumnHeader() { Name = "pt6.0x00", Text = "[pt6.0x00]" },
+                new ColumnHeader() { Name = "pt6.0x01", Text = "[pt6.0x01]" },
+                new ColumnHeader() { Name = "pt6.0x02", Text = "[pt6.0x02]" },
+                new ColumnHeader() { Name = "pt6.0x03", Text = "[pt6.0x03]" },
 
-                new ColumnHeader() { Name = "pt7.0x00", Text = "[pt6.0x00]" },
-                new ColumnHeader() { Name = "pt7.0x04", Text = "[pt6.0x04]" },
+                new ColumnHeader() { Name = "pt7.0x00", Text = "[pt7.0x00]" },
+                new ColumnHeader() { Name = "pt7.0x04", Text = "[pt7.0x04]" },
             };
 
             this.itemsListView.ShowItemToolTips = true;

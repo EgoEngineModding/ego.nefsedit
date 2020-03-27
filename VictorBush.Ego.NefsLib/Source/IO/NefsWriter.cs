@@ -390,7 +390,7 @@ namespace VictorBush.Ego.NefsLib.IO
             // The hash is of the entire header expect for the expected hash
             var firstOffset = (long)headerOffset;
             var secondOffset = firstOffset + 0x24;
-            var headerSize = (int)header.Intro.HeaderSize.Value;
+            var headerSize = (int)header.Intro.HeaderSize;
 
             // Seek to beginning of header
             stream.Seek(firstOffset, SeekOrigin.Begin);
@@ -409,8 +409,8 @@ namespace VictorBush.Ego.NefsLib.IO
                 byte[] hashOut = hash.ComputeHash(dataToHash);
 
                 // Write the expected hash
-                header.Intro.ExpectedHash.Value = hashOut;
-                await header.Intro.ExpectedHash.WriteAsync(stream, headerOffset, p);
+                header.Intro.Data0x04_ExpectedHash.Value = hashOut;
+                await header.Intro.Data0x04_ExpectedHash.WriteAsync(stream, headerOffset, p);
             }
         }
 
@@ -486,30 +486,30 @@ namespace VictorBush.Ego.NefsLib.IO
 
             // Compute total archive size
             var p5 = new NefsHeaderPart5();
-            p5.ArchiveSize.Value = archiveSize;
-            p5.UnknownData.Value = sourceHeader.Part5.UnknownData.Value;
+            p5.Data0x00_ArchiveSize.Value = archiveSize;
+            p5.Data0x08_UnknownData.Value = sourceHeader.Part5.UnknownData;
 
             // Update header intro
             var intro = new NefsHeaderIntro();
-            intro.MagicNumber.Value = sourceHeader.Intro.MagicNumber.Value;
-            intro.AesKeyHexString.Value = sourceHeader.Intro.AesKeyHexString.Value;
-            intro.HeaderSize.Value = (uint)headerSize;
-            intro.Unknown0x68.Value = sourceHeader.Intro.Unknown0x68.Value;
-            intro.NumberOfItems.Value = (uint)numItems;
-            intro.Unknown0x70zlib.Value = sourceHeader.Intro.Unknown0x70zlib.Value;
-            intro.Unknown0x78.Value = sourceHeader.Intro.Unknown0x78.Value;
+            intro.Data0x00_MagicNumber.Value = sourceHeader.Intro.MagicNumber;
+            intro.Data0x24_AesKeyHexString.Value = sourceHeader.Intro.AesKeyHexString;
+            intro.Data0x64_HeaderSize.Value = (uint)headerSize;
+            intro.Data0x68_Unknown.Value = sourceHeader.Intro.Unknown0x68;
+            intro.Data0x6c_NumberOfItems.Value = (uint)numItems;
+            intro.Data0x70_UnknownZlib.Value = sourceHeader.Intro.Unknown0x70zlib;
+            intro.Data0x78_Unknown.Value = sourceHeader.Intro.Unknown0x78;
 
             var toc = new NefsHeaderIntroToc();
-            toc.Unknown0x00.Value = sourceHeader.TableOfContents.Unknown0x00.Value;
-            toc.OffsetToPart1.Value = introSize + tocSize;
-            toc.OffsetToPart2.Value = toc.OffsetToPart1.Value + (uint)p1Size;
-            toc.OffsetToPart3.Value = toc.OffsetToPart2.Value + (uint)p2Size;
-            toc.OffsetToPart4.Value = toc.OffsetToPart3.Value + (uint)p3Size;
-            toc.OffsetToPart5.Value = toc.OffsetToPart4.Value + (uint)p4Size;
-            toc.OffsetToPart6.Value = toc.OffsetToPart5.Value + (uint)p5Size;
-            toc.OffsetToPart7.Value = toc.OffsetToPart6.Value + (uint)p6Size;
-            toc.OffsetToPart8.Value = toc.OffsetToPart7.Value + (uint)p7Size;
-            toc.Unknown0x24.Value = sourceHeader.TableOfContents.Unknown0x24.Value;
+            toc.Data0x00_Unknown.Value = sourceHeader.TableOfContents.Unknown0x00;
+            toc.Data0x04_OffsetToPart1.Value = introSize + tocSize;
+            toc.Data0x0c_OffsetToPart2.Value = toc.OffsetToPart1 + (uint)p1Size;
+            toc.Data0x14_OffsetToPart3.Value = toc.OffsetToPart2 + (uint)p2Size;
+            toc.Data0x18_OffsetToPart4.Value = toc.OffsetToPart3 + (uint)p3Size;
+            toc.Data0x1c_OffsetToPart5.Value = toc.OffsetToPart4 + (uint)p4Size;
+            toc.Data0x08_OffsetToPart6.Value = toc.OffsetToPart5 + (uint)p5Size;
+            toc.Data0x10_OffsetToPart7.Value = toc.OffsetToPart6 + (uint)p6Size;
+            toc.Data0x20_OffsetToPart8.Value = toc.OffsetToPart7 + (uint)p7Size;
+            toc.Data0x24_Unknown.Value = sourceHeader.TableOfContents.Unknown0x24;
 
             // Part 8 - not writing anything for now
             var p8 = new NefsHeaderPart8((uint)p8Size);
@@ -560,49 +560,49 @@ namespace VictorBush.Ego.NefsLib.IO
 
             using (var t = p.BeginTask(weight, "Writing header part 1"))
             {
-                var offset = headerOffset + toc.OffsetToPart1.Value;
+                var offset = headerOffset + toc.OffsetToPart1;
                 await this.WriteHeaderPart1Async(stream, offset, header.Part1, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 2"))
             {
-                var offset = headerOffset + toc.OffsetToPart2.Value;
+                var offset = headerOffset + toc.OffsetToPart2;
                 await this.WriteHeaderPart2Async(stream, offset, header.Part2, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 3"))
             {
-                var offset = headerOffset + toc.OffsetToPart3.Value;
+                var offset = headerOffset + toc.OffsetToPart3;
                 await this.WriteHeaderPart3Async(stream, offset, header.Part3, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 4"))
             {
-                var offset = headerOffset + toc.OffsetToPart4.Value;
+                var offset = headerOffset + toc.OffsetToPart4;
                 await this.WriteHeaderPart4Async(stream, offset, header.Part4, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 5"))
             {
-                var offset = headerOffset + toc.OffsetToPart5.Value;
+                var offset = headerOffset + toc.OffsetToPart5;
                 await this.WriteHeaderPart5Async(stream, offset, header.Part5, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 6"))
             {
-                var offset = headerOffset + toc.OffsetToPart6.Value;
+                var offset = headerOffset + toc.OffsetToPart6;
                 await this.WriteHeaderPart6Async(stream, offset, header.Part6, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 7"))
             {
-                var offset = headerOffset + toc.OffsetToPart7.Value;
+                var offset = headerOffset + toc.OffsetToPart7;
                 await this.WriteHeaderPart7Async(stream, offset, header.Part7, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 8"))
             {
-                var offset = headerOffset + toc.OffsetToPart8.Value;
+                var offset = headerOffset + toc.OffsetToPart8;
                 await this.WriteHeaderPart8Async(stream, offset, header.Part8, p);
             }
         }

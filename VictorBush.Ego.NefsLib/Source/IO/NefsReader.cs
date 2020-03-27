@@ -167,43 +167,43 @@ namespace VictorBush.Ego.NefsLib.IO
 
             using (p.BeginTask(weight, "Reading header part 1"))
             {
-                part1 = await this.ReadHeaderPart1Async(stream, toc.OffsetToPart1.Value, toc.Part1Size, p);
+                part1 = await this.ReadHeaderPart1Async(stream, toc.OffsetToPart1, toc.Part1Size, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 2"))
             {
-                part2 = await this.ReadHeaderPart2Async(stream, toc.OffsetToPart2.Value, toc.Part2Size, p);
+                part2 = await this.ReadHeaderPart2Async(stream, toc.OffsetToPart2, toc.Part2Size, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 3"))
             {
-                part3 = await this.ReadHeaderPart3Async(stream, toc.OffsetToPart3.Value, toc.Part3Size, p);
+                part3 = await this.ReadHeaderPart3Async(stream, toc.OffsetToPart3, toc.Part3Size, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 4"))
             {
-                part4 = await this.ReadHeaderPart4Async(stream, toc.OffsetToPart4.Value, toc.Part4Size, part1, part2, p);
+                part4 = await this.ReadHeaderPart4Async(stream, toc.OffsetToPart4, toc.Part4Size, part1, part2, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 5"))
             {
-                part5 = await this.ReadHeaderPart5Async(stream, toc.OffsetToPart5.Value, toc.Part5Size, p);
+                part5 = await this.ReadHeaderPart5Async(stream, toc.OffsetToPart5, toc.Part5Size, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 6"))
             {
-                part6 = await this.ReadHeaderPart6Async(stream, toc.OffsetToPart6.Value, toc.Part6Size, part2, p);
+                part6 = await this.ReadHeaderPart6Async(stream, toc.OffsetToPart6, toc.Part6Size, part2, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 7"))
             {
-                part7 = await this.ReadHeaderPart7Async(stream, toc.OffsetToPart7.Value, toc.Part7Size, p);
+                part7 = await this.ReadHeaderPart7Async(stream, toc.OffsetToPart7, toc.Part7Size, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 8"))
             {
-                var part8Size = intro.HeaderSize.Value - toc.OffsetToPart8.Value;
-                part8 = await this.ReadHeaderPart8Async(stream, toc.OffsetToPart8.Value, part8Size, p);
+                var part8Size = intro.HeaderSize - toc.OffsetToPart8;
+                part8 = await this.ReadHeaderPart8Async(stream, toc.OffsetToPart8, part8Size, p);
             }
 
             // The header stream must be disposed
@@ -247,7 +247,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
                 // Copy the entire header to the decrypted stream (nothing to decrypt)
                 stream.Seek((long)offset, SeekOrigin.Begin);
-                await stream.CopyPartialAsync(decryptedStream, intro.HeaderSize.Value, p.CancellationToken);
+                await stream.CopyPartialAsync(decryptedStream, intro.HeaderSize, p.CancellationToken);
             }
             else
             {
@@ -290,7 +290,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 // The rest of the header is encrypted using AES-256, decrypt using the key from the
                 // header intro
                 byte[] key = intro.GetAesKey();
-                var headerSize = intro.HeaderSize.Value;
+                var headerSize = intro.HeaderSize;
 
                 // Decrypt the rest of the header
                 using (var rijAlg = new RijndaelManaged())
@@ -464,6 +464,13 @@ namespace VictorBush.Ego.NefsLib.IO
                             nullOffset = i;
                             break;
                         }
+                    }
+
+                    if (nullOffset == size)
+                    {
+                        // No null terminator found, assume end of part 3. There can be a few
+                        // garbage bytes at the end of this part.
+                        break;
                     }
 
                     // Get the string
@@ -765,7 +772,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
         private bool ValidateHash(Stream stream, ulong offset, NefsHeaderIntro intro)
         {
-            var dataToHashSize = intro.IsEncrypted ? intro.HeaderSize.Value - 0x22 : intro.HeaderSize.Value - 0x20;
+            var dataToHashSize = intro.IsEncrypted ? intro.HeaderSize - 0x22 : intro.HeaderSize - 0x20;
             byte[] dataToHash = new byte[dataToHashSize];
 
             stream.Seek((long)offset, SeekOrigin.Begin);
@@ -774,19 +781,19 @@ namespace VictorBush.Ego.NefsLib.IO
             stream.Seek(0x24, SeekOrigin.Begin);
             if (!intro.IsEncrypted)
             {
-                stream.Read(dataToHash, 4, (int)intro.HeaderSize.Value - 0x24);
+                stream.Read(dataToHash, 4, (int)intro.HeaderSize - 0x24);
             }
             else
             {
                 stream.Read(dataToHash, 4, 0x5A);
                 stream.Seek(0x80, SeekOrigin.Begin);
-                stream.Read(dataToHash, 0x5E, (int)intro.HeaderSize.Value - 0x80);
+                stream.Read(dataToHash, 0x5E, (int)intro.HeaderSize - 0x80);
             }
 
             using (var hash = SHA256.Create())
             {
                 byte[] hashOut = hash.ComputeHash(dataToHash);
-                return hashOut.SequenceEqual(intro.ExpectedHash.Value);
+                return hashOut.SequenceEqual(intro.ExpectedHash);
             }
         }
 
