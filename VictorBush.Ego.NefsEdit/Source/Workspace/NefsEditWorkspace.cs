@@ -18,6 +18,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
     using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Item;
     using VictorBush.Ego.NefsLib.Progress;
+    using VictorBush.Ego.NefsLib.Utility;
 
     /// <summary>
     /// Handles archive and item operations.
@@ -532,6 +533,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             // If header is encrypted, then assume data is encrypted. For archives like game.dat,
             // the header isn't encrypted, but the data is.
             var isEncrypted = this.Archive.Header.Intro.IsEncrypted || this.ArchiveSource.AssumeDataIsEncrypted;
+            var isCompressed = item.DataSource.Size.IsCompressed;
 
             try
             {
@@ -543,14 +545,27 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 }
 
                 // Extract the file
-                await this.NefsCompressor.DecompressFileAsync(
-                    item.DataSource.FilePath,
-                    (Int64)item.DataSource.Offset,
-                    item.DataSource.Size.ChunkSizes,
-                    outputFilePath,
-                    0,
-                    p,
-                    isEncrypted ? this.Archive.Header.Intro.GetAesKey() : null);
+                if (isCompressed)
+                {
+                    await this.NefsCompressor.DecompressFileAsync(
+                        item.DataSource.FilePath,
+                        (Int64)item.DataSource.Offset,
+                        item.DataSource.Size.ChunkSizes,
+                        outputFilePath,
+                        0,
+                        p,
+                        isEncrypted ? this.Archive.Header.Intro.GetAesKey() : null);
+                }
+                else
+                {
+                    // Item not compressed, just extract it
+                    using (var inputStream = this.FileSystem.File.OpenRead(item.DataSource.FilePath))
+                    using (var outputStream = this.FileSystem.File.OpenWrite(outputFilePath))
+                    {
+                        inputStream.Seek((long)item.DataSource.Offset, SeekOrigin.Begin);
+                        await inputStream.CopyPartialAsync(outputStream, item.DataSource.Size.ExtractedSize, p.CancellationToken);
+                    }
+                }
 
                 return true;
             }

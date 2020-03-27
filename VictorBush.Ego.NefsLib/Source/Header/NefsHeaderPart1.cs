@@ -31,11 +31,12 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="part4">Header part 4.</param>
         internal NefsHeaderPart1(NefsItemList items, NefsHeaderPart4 part4)
         {
-            this.entriesByIndex = new List<NefsHeaderPart1Entry>();
             this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart1Entry>();
             var nextMetadataIndex = 0U;
 
-            foreach (var item in items.EnumerateById())
+            // Enumerate this list depth first. This determines the metadata index.
+            // The part 1 entries will be sorted by item id.
+            foreach (var item in items.EnumerateDepthFirst())
             {
                 var entry = new NefsHeaderPart1Entry();
                 entry.Data0x00_OffsetToData.Value = item.DataSource.Offset;
@@ -43,9 +44,11 @@ namespace VictorBush.Ego.NefsLib.Header
                 entry.Data0x10_Id.Value = item.Id.Value;
                 entry.Data0x0c_IndexIntoPart4.Value = part4.GetIndexForItem(item);
 
-                this.entriesByIndex.Add(entry);
                 this.entriesById.Add(item.Id, entry);
             }
+
+            // Part 1 is sorted by item id
+            this.entriesByIndex = new List<NefsHeaderPart1Entry>(this.entriesById.Values);
         }
 
         /// <summary>

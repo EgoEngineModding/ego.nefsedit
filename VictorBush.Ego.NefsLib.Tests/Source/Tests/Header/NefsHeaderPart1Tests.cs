@@ -34,12 +34,22 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             Assert.Equal(3, p1.EntriesById.Count);
 
             /*
+            dir1
+            */
+
+            // Offset to data and index to p4 are both 0 since this is a directory
+            Assert.Equal(2, (int)p1.EntriesById[dir1.Id].Id.Value);
+            Assert.Equal(0, (int)p1.EntriesById[dir1.Id].OffsetToData);
+            Assert.Equal(0, (int)p1.EntriesById[dir1.Id].MetadataIndex);
+            Assert.Equal(0, (int)p1.EntriesById[dir1.Id].IndexIntoPart4);
+
+            /*
             file1
             */
 
             Assert.Equal(0, (int)p1.EntriesById[file1.Id].Id.Value);
             Assert.Equal(123, (int)p1.EntriesById[file1.Id].OffsetToData);
-            Assert.Equal(0, (int)p1.EntriesById[file1.Id].MetadataIndex);
+            Assert.Equal(1, (int)p1.EntriesById[file1.Id].MetadataIndex);
             Assert.Equal(0, (int)p1.EntriesById[file1.Id].IndexIntoPart4);
 
             /*
@@ -48,21 +58,11 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
 
             Assert.Equal(1, (int)p1.EntriesById[file2.Id].Id.Value);
             Assert.Equal(456, (int)p1.EntriesById[file2.Id].OffsetToData);
-            Assert.Equal(1, (int)p1.EntriesById[file2.Id].MetadataIndex);
+            Assert.Equal(2, (int)p1.EntriesById[file2.Id].MetadataIndex);
 
             // There are 3 chunks for file1, so file2's chunks start right after that (hence p4
             // index == 3)
             Assert.Equal(3, (int)p1.EntriesById[file2.Id].IndexIntoPart4);
-
-            /*
-            dir1
-            */
-
-            // Offset to data and index to p4 are both 0 since this is a directory
-            Assert.Equal(2, (int)p1.EntriesById[dir1.Id].Id.Value);
-            Assert.Equal(0, (int)p1.EntriesById[dir1.Id].OffsetToData);
-            Assert.Equal(2, (int)p1.EntriesById[dir1.Id].MetadataIndex);
-            Assert.Equal(0, (int)p1.EntriesById[dir1.Id].IndexIntoPart4);
         }
 
         [Fact]

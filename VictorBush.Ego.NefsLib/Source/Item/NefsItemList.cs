@@ -224,34 +224,6 @@ namespace VictorBush.Ego.NefsLib.Item
         }
 
         /// <summary>
-        /// Gets the index used to index into header parts 2, 6, and 7 for an item. This index is
-        /// based on the depth-first traversal of the directory structure.
-        /// </summary>
-        /// <param name="id">The id of the item.</param>
-        /// <returns>The metadata index for the item.</returns>
-        public UInt32 GetItemMetadataIndex(NefsItemId id)
-        {
-            var index = 0;
-
-            var itemId = id;
-            var parentId = this.GetItemDirectoryId(id);
-
-            // Work up the tree, adding the index of each item in the parent's children list
-            while (parentId != id)
-            {
-                var parentList = this.itemsById[parentId].Children;
-                var item = this.itemsById[itemId].Item;
-
-                // Add a +1 to account for the parent object
-                index += parentList.IndexOfKey(item.FileName) + 1;
-            }
-
-            // Handle item in the root directory
-            var parent = this.GetItem(parentId);
-            return (uint)(index + this.rootItems.IndexOfKey(parent.FileName));
-        }
-
-        /// <summary>
         /// Gets the id of the next item in the same directory as the specified item. If the
         /// specified item is that last item in the directory, the sibling id is equal to the item's id.
         /// </summary>

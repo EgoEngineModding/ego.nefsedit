@@ -94,17 +94,18 @@ Item path:                  {archive.Items.GetItemFilePath(item.Id)}
 
 Part 1
 -----------------------------------------------------------
-Offset to data:             {archive.Header.Part1.EntriesById[item.Id].OffsetToData}
-Index in part 2:            {archive.Header.Part1.EntriesById[item.Id].MetadataIndex}
-Index in part 4:            {archive.Header.Part1.EntriesById[item.Id].IndexIntoPart4}
-Id:                         {archive.Header.Part1.EntriesById[item.Id].Id.Value}
+Offset to data:             {archive.Header.Part1.EntriesById[item.Id].OffsetToData.ToString("X")}
+Index in part 2:            {archive.Header.Part1.EntriesById[item.Id].MetadataIndex.ToString("X")}
+Index in part 4:            {archive.Header.Part1.EntriesById[item.Id].IndexIntoPart4.ToString("X")}
+Id:                         {archive.Header.Part1.EntriesById[item.Id].Id.Value.ToString("X")}
 
 Part 2
 -----------------------------------------------------------
-Directory id:               {archive.Header.Part2.EntriesById[item.Id].DirectoryId}
-First child id:             {archive.Header.Part2.EntriesById[item.Id].FirstChildId}
-Offset in part 3:           {archive.Header.Part2.EntriesById[item.Id].OffsetIntoPart3}
-Id:                         {archive.Header.Part2.EntriesById[item.Id].Id.Value}
+Directory id:               {archive.Header.Part2.EntriesById[item.Id].DirectoryId.Value.ToString("X")}
+First child id:             {archive.Header.Part2.EntriesById[item.Id].FirstChildId.Value.ToString("X")}
+Offset in part 3:           {archive.Header.Part2.EntriesById[item.Id].OffsetIntoPart3.ToString("X")}
+Extracted size:             {archive.Header.Part2.EntriesById[item.Id].ExtractedSize.ToString("X")}
+Id:                         {archive.Header.Part2.EntriesById[item.Id].Id.Value.ToString("X")}
 
 Part 4
 -----------------------------------------------------------
@@ -112,15 +113,15 @@ Chunks                      {this.PrintChunkSizesToString(archive.Header.Part4.G
 
 Part 6
 -----------------------------------------------------------
-0x00:                       {archive.Header.Part6.EntriesById[item.Id].Byte0}
-0x01:                       {archive.Header.Part6.EntriesById[item.Id].Byte1}
-0x02:                       {archive.Header.Part6.EntriesById[item.Id].Byte2}
-0x03:                       {archive.Header.Part6.EntriesById[item.Id].Byte3}
+0x00:                       {archive.Header.Part6.EntriesById[item.Id].Byte0.ToString("X")}
+0x01:                       {archive.Header.Part6.EntriesById[item.Id].Byte1.ToString("X")}
+0x02:                       {archive.Header.Part6.EntriesById[item.Id].Byte2.ToString("X")}
+0x03:                       {archive.Header.Part6.EntriesById[item.Id].Byte3.ToString("X")}
 
 Part 7
 -----------------------------------------------------------
-Sibling id:                 {archive.Header.Part7.EntriesById[item.Id].SiblingId.Value}
-Item id:                    {archive.Header.Part7.EntriesById[item.Id].Id.Value}
+Sibling id:                 {archive.Header.Part7.EntriesById[item.Id].SiblingId.Value.ToString("X")}
+Item id:                    {archive.Header.Part7.EntriesById[item.Id].Id.Value.ToString("X")}
 ";
         }
     }
