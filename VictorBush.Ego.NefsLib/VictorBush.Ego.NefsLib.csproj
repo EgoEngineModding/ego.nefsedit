@@ -93,6 +93,7 @@
     <Compile Include="Source\Progress\NefsProgressEventArgs.cs" />
     <Compile Include="Source\Progress\NefsProgressTask.cs" />
     <Compile Include="Source\Utility\DeflateHelper.cs" />
+    <Compile Include="Source\Utility\DictionaryExtensions.cs" />
     <Compile Include="Source\Utility\FileSystemExtensions.cs" />
     <Compile Include="Source\Utility\HexHelper.cs" />
     <Compile Include="Source\Utility\HashHelper.cs" />

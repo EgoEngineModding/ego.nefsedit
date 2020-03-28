@@ -119,7 +119,13 @@ namespace VictorBush.Ego.NefsLib.Item
         {
             var p1 = header.Part1.EntriesById[id];
             var p2 = header.Part2.EntriesById[id];
-            var p6 = header.Part6.EntriesById[id];
+
+            // Check if part 6 exists
+            NefsHeaderPart6Entry p6 = null;
+            if (header.Part6.EntriesById.ContainsKey(id))
+            {
+                p6 = header.Part6.EntriesById[id];
+            }
 
             // Determine type
             var type = p2.Data0x0c_ExtractedSize.Value == 0 ? NefsItemType.Directory : NefsItemType.File;
@@ -158,10 +164,10 @@ namespace VictorBush.Ego.NefsLib.Item
             // Gather unknown metadata
             var unknown = new NefsItemUnknownData
             {
-                Part6Unknown0x00 = p6.Byte0,
-                Part6Unknown0x01 = p6.Byte1,
-                Part6Unknown0x02 = p6.Byte2,
-                Part6Unknown0x03 = p6.Byte3,
+                Part6Unknown0x00 = p6?.Byte0 ?? 0,
+                Part6Unknown0x01 = p6?.Byte1 ?? 0,
+                Part6Unknown0x02 = p6?.Byte2 ?? 0,
+                Part6Unknown0x03 = p6?.Byte3 ?? 0,
             };
 
             // Create item

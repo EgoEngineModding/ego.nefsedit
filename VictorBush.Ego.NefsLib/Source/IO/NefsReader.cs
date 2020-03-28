@@ -192,12 +192,32 @@ namespace VictorBush.Ego.NefsLib.IO
 
             using (p.BeginTask(weight, "Reading header part 6"))
             {
-                part6 = await this.ReadHeaderPart6Async(stream, toc.OffsetToPart6, toc.Part6Size, part2, p);
+                if (toc.OffsetToPart6 == 0)
+                {
+                    // game.dat files don't have part 6
+                    Log.LogDebug("Archive does not have header part 6.");
+                    part6 = new NefsHeaderPart6(new List<NefsHeaderPart6Entry>());
+                }
+                else
+                {
+                    part6 = await this.ReadHeaderPart6Async(stream, toc.OffsetToPart6, toc.Part6Size, part2, p);
+                }
             }
 
             using (p.BeginTask(weight, "Reading header part 7"))
             {
-                part7 = await this.ReadHeaderPart7Async(stream, toc.OffsetToPart7, toc.Part7Size, p);
+                if (toc.OffsetToPart6 == 0)
+                {
+                    // game.dat files don't have part 7. Still checking if part 6 offset is 0. For
+                    // some reason, the part 7 offset still has a value, but doesn't appear to be a
+                    // correct one, so skipping part 7 as well
+                    Log.LogDebug("Archive does not have header part 7.");
+                    part7 = new NefsHeaderPart7(new List<NefsHeaderPart7Entry>());
+                }
+                else
+                {
+                    part7 = await this.ReadHeaderPart7Async(stream, toc.OffsetToPart7, toc.Part7Size, p);
+                }
             }
 
             using (p.BeginTask(weight, "Reading header part 8"))
@@ -366,7 +386,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     var id = new NefsItemId(entry.Id.Value);
                     if (ids.Contains(id))
                     {
-                        Log.LogError($"Found duplicate item id in part 1: {id.Value}");
+                        //Log.LogError($"Found duplicate item id in part 1: {id.Value}");
                         continue;
                     }
 
@@ -413,7 +433,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     var id = new NefsItemId(entry.Id.Value);
                     if (ids.Contains(id))
                     {
-                        Log.LogError($"Found duplicate item id in part 2: {id.Value}");
+                        //Log.LogError($"Found duplicate item id in part 2: {id.Value}");
                         continue;
                     }
 
@@ -705,8 +725,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     var id = new NefsItemId(entry.Id.Value);
                     if (ids.Contains(id))
                     {
-                        Log.LogError($"Found duplicate item id in part 6: {id.Value}");
-                        continue;
+                        Log.LogWarning($"Found duplicate item id in part 7: {id.Value}");
                     }
 
                     ids.Add(id);

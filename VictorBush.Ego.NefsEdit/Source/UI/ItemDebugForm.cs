@@ -10,6 +10,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using VictorBush.Ego.NefsEdit.Workspace;
     using VictorBush.Ego.NefsLib;
     using VictorBush.Ego.NefsLib.Item;
+    using VictorBush.Ego.NefsLib.Utility;
     using WeifenLuo.WinFormsUI.Docking;
 
     /// <summary>
@@ -87,6 +88,11 @@ namespace VictorBush.Ego.NefsEdit.UI
                 return;
             }
 
+            var p1 = archive.Header.Part1.EntriesById.GetValueOrDefault(item.Id);
+            var p2 = archive.Header.Part2.EntriesById.GetValueOrDefault(item.Id);
+            var p6 = archive.Header.Part6.EntriesById.GetValueOrDefault(item.Id);
+            var p7 = archive.Header.Part7.EntriesById.GetValueOrDefault(item.Id);
+
             this.richTextBox.Text = $@"Item Info
 -----------------------------------------------------------
 Item name:                  {item.FileName}
@@ -94,18 +100,18 @@ Item path:                  {archive.Items.GetItemFilePath(item.Id)}
 
 Part 1
 -----------------------------------------------------------
-Offset to data:             {archive.Header.Part1.EntriesById[item.Id].OffsetToData.ToString("X")}
-Index in part 2:            {archive.Header.Part1.EntriesById[item.Id].MetadataIndex.ToString("X")}
-Index in part 4:            {archive.Header.Part1.EntriesById[item.Id].IndexIntoPart4.ToString("X")}
-Id:                         {archive.Header.Part1.EntriesById[item.Id].Id.Value.ToString("X")}
+Offset to data:             {p1?.OffsetToData.ToString("X")}
+Index in part 2:            {p1?.MetadataIndex.ToString("X")}
+Index in part 4:            {p1?.IndexIntoPart4.ToString("X")}
+Id:                         {p1?.Id.Value.ToString("X")}
 
 Part 2
 -----------------------------------------------------------
-Directory id:               {archive.Header.Part2.EntriesById[item.Id].DirectoryId.Value.ToString("X")}
-First child id:             {archive.Header.Part2.EntriesById[item.Id].FirstChildId.Value.ToString("X")}
-Offset in part 3:           {archive.Header.Part2.EntriesById[item.Id].OffsetIntoPart3.ToString("X")}
-Extracted size:             {archive.Header.Part2.EntriesById[item.Id].ExtractedSize.ToString("X")}
-Id:                         {archive.Header.Part2.EntriesById[item.Id].Id.Value.ToString("X")}
+Directory id:               {p2?.DirectoryId.Value.ToString("X")}
+First child id:             {p2?.FirstChildId.Value.ToString("X")}
+Offset in part 3:           {p2?.OffsetIntoPart3.ToString("X")}
+Extracted size:             {p2?.ExtractedSize.ToString("X")}
+Id:                         {p2?.Id.Value.ToString("X")}
 
 Part 4
 -----------------------------------------------------------
@@ -113,15 +119,15 @@ Chunks                      {this.PrintChunkSizesToString(archive.Header.Part4.G
 
 Part 6
 -----------------------------------------------------------
-0x00:                       {archive.Header.Part6.EntriesById[item.Id].Byte0.ToString("X")}
-0x01:                       {archive.Header.Part6.EntriesById[item.Id].Byte1.ToString("X")}
-0x02:                       {archive.Header.Part6.EntriesById[item.Id].Byte2.ToString("X")}
-0x03:                       {archive.Header.Part6.EntriesById[item.Id].Byte3.ToString("X")}
+0x00:                       {p6?.Byte0.ToString("X")}
+0x01:                       {p6?.Byte1.ToString("X")}
+0x02:                       {p6?.Byte2.ToString("X")}
+0x03:                       {p6?.Byte3.ToString("X")}
 
 Part 7
 -----------------------------------------------------------
-Sibling id:                 {archive.Header.Part7.EntriesById[item.Id].SiblingId.Value.ToString("X")}
-Item id:                    {archive.Header.Part7.EntriesById[item.Id].Id.Value.ToString("X")}
+Sibling id:                 {p7?.SiblingId.Value.ToString("X")}
+Item id:                    {p7?.Id.Value.ToString("X")}
 ";
         }
     }

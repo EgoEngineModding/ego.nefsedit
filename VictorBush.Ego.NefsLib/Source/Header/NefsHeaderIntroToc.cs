@@ -83,17 +83,19 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// The size of header part 5.
         /// </summary>
-        public uint Part5Size => this.OffsetToPart6 - this.OffsetToPart5;
+        public uint Part5Size => this.OffsetToPart6 > 0
+            ? this.OffsetToPart6 - this.OffsetToPart5
+            : this.OffsetToPart8 - this.OffsetToPart5;
 
         /// <summary>
         /// The size of header part 6.
         /// </summary>
-        public uint Part6Size => this.OffsetToPart7 - this.OffsetToPart6;
+        public uint Part6Size => this.OffsetToPart6 > 0 ? this.OffsetToPart7 - this.OffsetToPart6 : 0;
 
         /// <summary>
         /// The size of header part 7.
         /// </summary>
-        public uint Part7Size => this.OffsetToPart8 - this.OffsetToPart7;
+        public uint Part7Size => this.OffsetToPart6 > 0 ? this.OffsetToPart8 - this.OffsetToPart7 : 0;
 
         /// <summary>
         /// Unknown, maybe constant (01 00 00 01).

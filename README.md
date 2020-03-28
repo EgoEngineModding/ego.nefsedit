@@ -16,6 +16,7 @@ There are two components to this project.
 - Evaluate NefsProgress progress reporting (and the performance hit for using Dispatcher to sync with UI thread).
 - Fix sorting by id (and allow resetting sorting order?)
 - Extracting non-compressed files from encrypted archives?
+- Console logging performance issues
 
 ## Acknowledgements
 Special thanks to [@Gigi1237]( https://github.com/Gigi1237 ) for encryption work.
