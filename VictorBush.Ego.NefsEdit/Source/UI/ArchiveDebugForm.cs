@@ -186,7 +186,7 @@ Number of files:            {archive.Header.Part4.EntriesByIndex.Count.ToString(
 Header Part 5
 -----------------------------------------------------------
 Archive size:               {archive.Header.Part5.ArchiveSize.ToString("X")}
-Chunk size:                 {archive.Header.Part5.ChunkSize.ToString("X")}
+First data offset:          {archive.Header.Part5.FirstDataOffset.ToString("X")}
 Archive name string offset: {archive.Header.Part5.ArchiveNameStringOffset.ToString("X")}
 
 Header Part 6

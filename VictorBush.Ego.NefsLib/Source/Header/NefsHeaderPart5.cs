@@ -11,11 +11,6 @@ namespace VictorBush.Ego.NefsLib.Header
     public class NefsHeaderPart5
     {
         /// <summary>
-        /// Default chunk size value.
-        /// </summary>
-        public const int DefaultChunkSize = 0x10000;
-
-        /// <summary>
         /// The size of header part 5.
         /// </summary>
         public const uint Size = 0x10;
@@ -25,7 +20,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         internal NefsHeaderPart5()
         {
-            this.Data0x0C_ChunkSize.Value = DefaultChunkSize;
+            this.Data0x0C_FirstDataOffset.Value = NefsHeader.DataOffsetDefault;
         }
 
         /// <summary>
@@ -39,10 +34,9 @@ namespace VictorBush.Ego.NefsLib.Header
         public UInt64 ArchiveSize => this.Data0x00_ArchiveSize.Value;
 
         /// <summary>
-        /// Size of data chunks a file is broken up into before each chunk is compressed and
-        /// inserted into the archive.
+        /// Offset to first item data.
         /// </summary>
-        public UInt32 ChunkSize => this.Data0x0C_ChunkSize.Value;
+        public UInt32 FirstDataOffset => this.Data0x0C_FirstDataOffset.Value;
 
         /// <summary>
         /// Data at offset 0x00.
@@ -60,6 +54,6 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Data at offset 0x0C.
         /// </summary>
         [FileData]
-        internal UInt32Type Data0x0C_ChunkSize { get; } = new UInt32Type(0x0C);
+        internal UInt32Type Data0x0C_FirstDataOffset { get; } = new UInt32Type(0x0C);
     }
 }

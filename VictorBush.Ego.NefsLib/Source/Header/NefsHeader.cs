@@ -3,7 +3,6 @@
 namespace VictorBush.Ego.NefsLib.Header
 {
     using System;
-    using System.IO;
     using VictorBush.Ego.NefsLib.Item;
 
     /// <summary>
@@ -11,6 +10,12 @@ namespace VictorBush.Ego.NefsLib.Header
     /// </summary>
     public class NefsHeader
     {
+        /// <summary>
+        /// Size of data chunks a file is broken up into before each chunk is compressed and
+        /// inserted into the archive.
+        /// </summary>
+        public const int ChunkSize = 0x10000;
+
         /// <summary>
         /// Offset to the first data item used in most archives.
         /// </summary>

@@ -442,7 +442,7 @@ namespace VictorBush.Ego.NefsLib.IO
             NefsItemList items;
             using (var t = p.BeginTask(taskWeightPrepareItems, "Preparing items"))
             {
-                items = await this.PrepareItemsAsync(sourceItems, workDir, sourceHeader.Part5.ChunkSize, p);
+                items = await this.PrepareItemsAsync(sourceItems, workDir, NefsHeader.ChunkSize, p);
             }
 
             // Determine number of items
@@ -490,7 +490,7 @@ namespace VictorBush.Ego.NefsLib.IO
             var p5 = new NefsHeaderPart5();
             p5.Data0x00_ArchiveSize.Value = archiveSize;
             p5.Data0x08_ArchiveNameStringOffset.Value = p3.OffsetsByFileName[items.DataFileName];
-            p5.Data0x0C_ChunkSize.Value = sourceHeader.Part5.ChunkSize;
+            p5.Data0x0C_FirstDataOffset.Value = sourceHeader.Part5.FirstDataOffset;
 
             // Update header intro
             var intro = new NefsHeaderIntro();

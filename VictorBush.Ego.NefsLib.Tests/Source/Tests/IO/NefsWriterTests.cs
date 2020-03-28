@@ -339,7 +339,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             var part5 = new NefsHeaderPart5();
             part5.Data0x00_ArchiveSize.Value = 1234;
             part5.Data0x08_ArchiveNameStringOffset.Value = 98;
-            part5.Data0x0C_ChunkSize.Value = 56;
+            part5.Data0x0C_FirstDataOffset.Value = 56;
 
             /*
             Write

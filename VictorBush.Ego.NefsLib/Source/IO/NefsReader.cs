@@ -180,15 +180,14 @@ namespace VictorBush.Ego.NefsLib.IO
                 part3 = await this.ReadHeaderPart3Async(stream, toc.OffsetToPart3, toc.Part3Size, p);
             }
 
-            // Need to read part 5 before part 4 (to get chunk size)
+            using (p.BeginTask(weight, "Reading header part 4"))
+            {
+                part4 = await this.ReadHeaderPart4Async(stream, toc.OffsetToPart4, toc.Part4Size, part1, part2, p);
+            }
+
             using (p.BeginTask(weight, "Reading header part 5"))
             {
                 part5 = await this.ReadHeaderPart5Async(stream, toc.OffsetToPart5, toc.Part5Size, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 4"))
-            {
-                part4 = await this.ReadHeaderPart4Async(stream, toc.OffsetToPart4, toc.Part4Size, part1, part2, part5, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 6"))
@@ -496,7 +495,6 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="size">The size of the header part.</param>
         /// <param name="part1">Header part 1.</param>
         /// <param name="part2">Header part 2.</param>
-        /// <param name="part5">Header part 5.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header part.</returns>
         internal async Task<NefsHeaderPart4> ReadHeaderPart4Async(
@@ -505,7 +503,6 @@ namespace VictorBush.Ego.NefsLib.IO
             uint size,
             NefsHeaderPart1 part1,
             NefsHeaderPart2 part2,
-            NefsHeaderPart5 part5,
             NefsProgress p)
         {
             var entries = new Dictionary<uint, NefsHeaderPart4Entry>();
@@ -559,7 +556,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     }
 
                     // Get number of chunks
-                    var numChunks = (int)Math.Ceiling(p2.Data0x0c_ExtractedSize.Value / (double)part5.ChunkSize);
+                    var numChunks = (int)Math.Ceiling(p2.Data0x0c_ExtractedSize.Value / (double)NefsHeader.ChunkSize);
                     if (numChunks == 0)
                     {
                         Log.LogError($"Item {p1.Id} contains no compressed chunks but was expected to.");
