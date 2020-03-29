@@ -571,7 +571,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             }
             catch (Exception ex)
             {
-                Log.LogError($"Failed to extract item {item.FileName}.\r\n{ex.Message}");
+                Log.LogError(ex, $"Failed to extract item {item.FileName}.");
                 return false;
             }
         }
