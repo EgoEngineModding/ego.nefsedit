@@ -12,7 +12,10 @@ namespace VictorBush.Ego.NefsLib.Utility
     /// </summary>
     public static class StreamExtensions
     {
-        private const int BufferSize = 4096;
+        /// <summary>
+        /// The default value used Stream.CopyToAsync().
+        /// </summary>
+        public const int CopyBufferSize = 81920;
 
         /// <summary>
         /// Copies part of a stream to a destination stream.
@@ -29,13 +32,13 @@ namespace VictorBush.Ego.NefsLib.Utility
             CancellationToken cancelToken)
         {
             // Use a temporary buffer to transfer chunks of data at a time
-            var buffer = new byte[BufferSize];
+            var buffer = new byte[CopyBufferSize];
             var bytesRemaining = length;
 
             while (bytesRemaining > 0)
             {
                 // Read from input stream
-                var bytesToRead = Math.Min(length, BufferSize);
+                var bytesToRead = Math.Min(length, CopyBufferSize);
                 var bytesRead = await stream.ReadAsync(buffer, 0, (int)bytesToRead, cancelToken);
 
                 // Copy to destination
