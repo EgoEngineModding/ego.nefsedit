@@ -1,4 +1,3 @@
-
 # Changelog
 
 ## Version 0.5.0
@@ -6,8 +5,11 @@
 - Added ability to close an archive.
 - Added archive and item debug output views.
 - Fixed "Extract To" to extract directly to the location specified.
+- Fixed/improved intepretation of various NeFS header fields.
 - Replaced Archive Details pane with an Archive Debug view.
-- Refactored NefsEdit and NefsLib code for better application/library separation.
+- Refactored NefsEdit and NefsLib substantially. 
+- Improved application/library separation.
+- Added various unit tests.
 - Switched to Serilog for logging.
 
 ## Version 0.4.0
