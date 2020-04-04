@@ -182,12 +182,6 @@ namespace VictorBush.Ego.NefsLib.IO
             using (var stream = this.FileSystem.File.OpenRead(headerFilePath))
             {
                 header = await this.ReadHeaderAsync(stream, headerOffset, p);
-
-                // Validate header hash
-                if (!this.ValidateHash(stream, headerOffset, header.Intro))
-                {
-                    Log.LogWarning("Header hash does not match expected value.");
-                }
             }
 
             // Create items from header
@@ -297,6 +291,12 @@ namespace VictorBush.Ego.NefsLib.IO
             {
                 var part8Size = intro.HeaderSize - toc.OffsetToPart8;
                 part8 = await this.ReadHeaderPart8Async(stream, toc.OffsetToPart8, part8Size, p);
+            }
+
+            // Validate header hash
+            if (!this.ValidateHash(stream, offset, intro))
+            {
+                Log.LogWarning("Header hash does not match expected value.");
             }
 
             // The header stream must be disposed
