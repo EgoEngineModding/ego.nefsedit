@@ -144,7 +144,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             var fileName = Path.GetFileName(this.Workspace.ArchiveSource.DataFilePath);
             var root = this.directoryTreeView.Nodes.Add(fileName);
 
-            foreach (var item in archive.Items.EnumerateDepthFirst())
+            foreach (var item in archive.Items.EnumerateDepthFirstByName())
             {
                 if (item.Type == NefsItemType.Directory)
                 {

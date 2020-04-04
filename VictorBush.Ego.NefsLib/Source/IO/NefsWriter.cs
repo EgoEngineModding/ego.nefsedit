@@ -656,6 +656,18 @@ namespace VictorBush.Ego.NefsLib.IO
                 throw new InvalidOperationException($"Item data compresseion should be handled before calling {nameof(this.WriteItemAsync)}.");
             }
 
+            // There are weird things with non-compressed files. Checking if:
+            // - Not compressed
+            // - Not the 1 byte item at the end of car archives
+            // - Not in an encrypted archive
+            if (item.CompressedSize == item.ExtractedSize
+                && item.ExtractedSize != 1
+                && item.Part6Unknown0x02 != 3)
+            {
+                // Add 8 bytes to the size for some reason
+                srcSize += 0x8;
+            }
+
             // Copy data from data source to the destination stream
             using (var inputFile = this.FileSystem.File.OpenRead(srcFile))
             {

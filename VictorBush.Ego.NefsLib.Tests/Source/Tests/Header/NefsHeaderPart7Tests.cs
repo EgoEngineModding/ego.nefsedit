@@ -69,14 +69,14 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             */
 
             Assert.Equal(41U, p7.EntriesById[file2.Id].Id.Value);
-            Assert.Equal(41U, p7.EntriesById[file2.Id].SiblingId.Value);
+            Assert.Equal(51U, p7.EntriesById[file2.Id].SiblingId.Value);
 
             /*
             dir1
             */
 
             Assert.Equal(51U, p7.EntriesById[dir1.Id].Id.Value);
-            Assert.Equal(31U, p7.EntriesById[dir1.Id].SiblingId.Value);
+            Assert.Equal(51U, p7.EntriesById[dir1.Id].SiblingId.Value);
         }
 
         [Fact]

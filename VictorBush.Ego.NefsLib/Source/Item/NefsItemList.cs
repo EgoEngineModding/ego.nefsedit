@@ -94,7 +94,7 @@ namespace VictorBush.Ego.NefsLib.Item
             var newList = new NefsItemList(this.DataFilePath);
 
             // Clone each item and add to new list
-            foreach (var item in this.EnumerateDepthFirst())
+            foreach (var item in this.EnumerateDepthFirstByName())
             {
                 var newItem = item.Clone() as NefsItem;
                 newList.Add(newItem);
@@ -120,16 +120,33 @@ namespace VictorBush.Ego.NefsLib.Item
         public IEnumerable<NefsItem> EnumerateById() => this.itemsById.Values.Select(v => v.Item);
 
         /// <summary>
+        /// Enumerates item in depth-first order based on directory structure, but sorts children by
+        /// item id.
+        /// </summary>
+        /// <returns>List of items.</returns>
+        public IEnumerable<NefsItem> EnumerateDepthFirstById()
+        {
+            var items = new List<NefsItem>();
+            foreach (var item in this.rootItems.Values.OrderBy(i => i.Item.Id))
+            {
+                items.Add(item.Item);
+                items.AddRange(item.EnumerateDepthFirstById());
+            }
+
+            return items;
+        }
+
+        /// <summary>
         /// Enumerates item in depth-first order based on alphabetized directory structure.
         /// </summary>
         /// <returns>List of items.</returns>
-        public IEnumerable<NefsItem> EnumerateDepthFirst()
+        public IEnumerable<NefsItem> EnumerateDepthFirstByName()
         {
             var items = new List<NefsItem>();
             foreach (var item in this.rootItems.Values)
             {
                 items.Add(item.Item);
-                items.AddRange(item.EnumerateDepthFirst());
+                items.AddRange(item.EnumerateDepthFirstByName());
             }
 
             return items;
@@ -218,27 +235,31 @@ namespace VictorBush.Ego.NefsLib.Item
 
         /// <summary>
         /// Gets the id of the first child for an item. If the item has no children, the item's id
-        /// is returned.
+        /// is returned. The first child id is based on the children being sorted by id, not file name.
         /// </summary>
         /// <param name="id">The id of the item.</param>
         /// <returns>The first child id.</returns>
         public NefsItemId GetItemFirstChildId(NefsItemId id)
         {
+            // First child id is based on children items being sorted by id, NOT by file name
             var item = this.itemsById[id];
-            return item.Children.Count > 0 ? item.Children.First().Value.Item.Id : id;
+            return item.Children.Count > 0 ? item.Children.OrderBy(i => i.Value.Item.Id).First().Value.Item.Id : id;
         }
 
         /// <summary>
         /// Gets the id of the next item in the same directory as the specified item. If the
-        /// specified item is that last item in the directory, the sibling id is equal to the item's id.
+        /// specified item is that last item in the directory, the sibling id is equal to the item's
+        /// id. Sibling id is based on directory structure with the children sorted by id, not file name.
         /// </summary>
         /// <param name="id">The id of the item to get the sibling for.</param>
         /// <returns>The sibling id.</returns>
         public NefsItemId GetItemSiblingId(NefsItemId id)
         {
+            // Sibling id is based on children items being sorted by id, NOT by file name
             var item = this.itemsById[id];
-            var parentList = item.Parent?.Children ?? this.rootItems;
-            var itemIndex = parentList.IndexOfKey(item.Item.FileName);
+            var parentList = item.Parent?.Children.OrderBy(i => i.Value.Item.Id).Select(i => i.Value.Item.Id).ToList()
+                ?? this.rootItems.OrderBy(i => i.Value.Item.Id).Select(i => i.Value.Item.Id).ToList();
+            var itemIndex = parentList.IndexOf(item.Item.Id);
 
             if (itemIndex == parentList.Count - 1)
             {
@@ -247,7 +268,7 @@ namespace VictorBush.Ego.NefsLib.Item
             }
 
             // Return id of next item in directory
-            return parentList.Values[itemIndex + 1].Item.Id;
+            return parentList[itemIndex + 1];
         }
 
         /// <summary>
@@ -293,13 +314,33 @@ namespace VictorBush.Ego.NefsLib.Item
 
             public ItemContainer Parent { get; set; }
 
-            public IEnumerable<NefsItem> EnumerateDepthFirst()
+            /// <summary>
+            /// Enumerates children depth first, but sorts children by id.
+            /// </summary>
+            /// <returns>List of items.</returns>
+            public IEnumerable<NefsItem> EnumerateDepthFirstById()
+            {
+                var items = new List<NefsItem>();
+                foreach (var child in this.Children.Values.OrderBy(i => i.Item.Id))
+                {
+                    items.Add(child.Item);
+                    items.AddRange(child.EnumerateDepthFirstById());
+                }
+
+                return items;
+            }
+
+            /// <summary>
+            /// Enumerates children depth first, but sorts children by name.
+            /// </summary>
+            /// <returns>List of items.</returns>
+            public IEnumerable<NefsItem> EnumerateDepthFirstByName()
             {
                 var items = new List<NefsItem>();
                 foreach (var child in this.Children.Values)
                 {
                     items.Add(child.Item);
-                    items.AddRange(child.EnumerateDepthFirst());
+                    items.AddRange(child.EnumerateDepthFirstByName());
                 }
 
                 return items;

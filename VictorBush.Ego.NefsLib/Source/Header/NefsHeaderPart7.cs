@@ -34,7 +34,7 @@ namespace VictorBush.Ego.NefsLib.Header
             this.entriesByIndex = new List<NefsHeaderPart7Entry>();
             this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart7Entry>();
 
-            foreach (var item in items.EnumerateDepthFirst())
+            foreach (var item in items.EnumerateDepthFirstByName())
             {
                 var entry = new NefsHeaderPart7Entry();
                 entry.Data0x00_SiblingId.Value = items.GetItemSiblingId(item.Id).Value;

@@ -35,7 +35,7 @@ namespace VictorBush.Ego.NefsLib.Header
             this.entriesByIndex = new List<NefsHeaderPart2Entry>();
             this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart2Entry>();
 
-            foreach (var item in items.EnumerateDepthFirst())
+            foreach (var item in items.EnumerateDepthFirstByName())
             {
                 var entry = new NefsHeaderPart2Entry();
                 entry.Data0x00_DirectoryId.Value = item.DirectoryId.Value;

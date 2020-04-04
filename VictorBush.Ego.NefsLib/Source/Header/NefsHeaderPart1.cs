@@ -36,7 +36,7 @@ namespace VictorBush.Ego.NefsLib.Header
 
             // Enumerate this list depth first. This determines the metadata index.
             // The part 1 entries will be sorted by item id.
-            foreach (var item in items.EnumerateDepthFirst())
+            foreach (var item in items.EnumerateDepthFirstByName())
             {
                 var entry = new NefsHeaderPart1Entry();
                 entry.Data0x00_OffsetToData.Value = item.DataSource.Offset;

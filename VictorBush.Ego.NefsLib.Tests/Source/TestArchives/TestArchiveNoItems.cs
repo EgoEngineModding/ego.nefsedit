@@ -19,7 +19,7 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
             var items = new NefsItemList(filePath);
 
             Assert.Empty(items.EnumerateById());
-            Assert.Empty(items.EnumerateDepthFirst());
+            Assert.Empty(items.EnumerateDepthFirstByName());
 
             var intro = new NefsHeaderIntro();
             intro.Data0x6c_NumberOfItems.Value = (uint)items.Count;

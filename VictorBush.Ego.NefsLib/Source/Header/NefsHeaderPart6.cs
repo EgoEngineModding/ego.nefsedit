@@ -34,7 +34,7 @@ namespace VictorBush.Ego.NefsLib.Header
             this.entriesByIndex = new List<NefsHeaderPart6Entry>();
             this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart6Entry>();
 
-            foreach (var item in items.EnumerateDepthFirst())
+            foreach (var item in items.EnumerateDepthFirstByName())
             {
                 var entry = new NefsHeaderPart6Entry(item.Id);
                 entry.Data0x00_Byte0.Value[0] = item.Part6Unknown0x00;
