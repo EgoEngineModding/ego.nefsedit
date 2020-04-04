@@ -80,6 +80,79 @@ namespace VictorBush.Ego.NefsLib.IO
         private byte[] RsaPublicKey { get; }
 
         /// <inheritdoc/>
+        public async Task<(string, ulong)?> FindHeaderAsync(byte[] bytes, ulong searchOffset, NefsProgress p)
+        {
+            var i = (long)searchOffset;
+            while (i + 4 <= bytes.Length)
+            {
+                var offset = i;
+
+                // Searching for a NeFS header: Look for 4E 65 46 53 (NeFS). This is the NeFS header
+                // magic number.
+                if (bytes[i++] != 0x4E
+                    || bytes[i++] != 0x65
+                    || bytes[i++] != 0x46
+                    || bytes[i++] != 0x53)
+                {
+                    continue;
+                }
+
+                // Check for zlib constant to confirm this is a header. This works for now, but not
+                // the best long term solution.
+                if (bytes[offset + 0x70 + 4] != 0x7A
+                    || bytes[offset + 0x70 + 5] != 0x6C
+                    || bytes[offset + 0x70 + 6] != 0x69
+                    || bytes[offset + 0x70 + 7] != 0x62)
+                {
+                    continue;
+                }
+
+                // Try to read header intro
+                try
+                {
+                    using (var byteStream = new MemoryStream(bytes))
+                    {
+                        var (intro, headerStream) = await this.ReadHeaderIntroAsync(byteStream, (ulong)offset, p);
+                        using (headerStream)
+                        {
+                            // Read table of contents
+                            var toc = await this.ReadHeaderIntroTocAsync(headerStream, NefsHeaderIntroToc.Offset, p);
+
+                            // Read part 5
+                            var p5 = await this.ReadHeaderPart5Async(headerStream, toc.OffsetToPart5, NefsHeaderPart5.Size, p);
+
+                            // Find file name
+                            headerStream.Seek(toc.OffsetToPart3, SeekOrigin.Begin);
+                            headerStream.Seek(p5.ArchiveNameStringOffset, SeekOrigin.Current);
+
+                            // Read 256 bytes - this is overkill, probably won't have a filename
+                            // that big
+                            var nameBytes = new byte[256];
+                            await headerStream.ReadAsync(nameBytes, 0, 256, p.CancellationToken);
+
+                            var name = StringHelper.TryReadNullTerminatedAscii(nameBytes, 0, nameBytes.Length);
+                            if (string.IsNullOrWhiteSpace(name))
+                            {
+                                // Failed to get name
+                                Log.LogError($"Thought we found a header at {offset}, but could not read data file name.");
+                                continue;
+                            }
+
+                            return (name, (ulong)offset);
+                        }
+                    }
+                }
+                catch (Exception)
+                {
+                    // Failed to read header, so assume not a header
+                    continue;
+                }
+            }
+
+            return null;
+        }
+
+        /// <inheritdoc/>
         public async Task<NefsArchive> ReadArchiveAsync(string filePath, NefsProgress p)
         {
             return await this.ReadArchiveAsync(filePath, NefsHeader.IntroOffset, filePath, p);
@@ -386,7 +459,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     var id = new NefsItemId(entry.Id.Value);
                     if (ids.Contains(id))
                     {
-                        //Log.LogError($"Found duplicate item id in part 1: {id.Value}");
+                        Log.LogError($"Found duplicate item id in part 1: {id.Value}");
                         continue;
                     }
 
@@ -433,7 +506,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     var id = new NefsItemId(entry.Id.Value);
                     if (ids.Contains(id))
                     {
-                        //Log.LogError($"Found duplicate item id in part 2: {id.Value}");
+                        Log.LogError($"Found duplicate item id in part 2: {id.Value}");
                         continue;
                     }
 

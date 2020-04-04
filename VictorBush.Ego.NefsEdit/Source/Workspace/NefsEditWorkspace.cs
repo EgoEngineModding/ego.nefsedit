@@ -334,7 +334,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// <inheritdoc/>
         public async Task<bool> OpenArchiveByDialogAsync()
         {
-            (var result, var source) = this.UiService.ShowNefsEditOpenFileDialog(this.SettingsService, this.ProgressService);
+            (var result, var source) = this.UiService.ShowNefsEditOpenFileDialog(this.SettingsService, this.ProgressService, this.NefsReader);
             if (result != DialogResult.OK)
             {
                 return false;

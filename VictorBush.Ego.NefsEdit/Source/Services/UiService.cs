@@ -8,6 +8,7 @@ namespace VictorBush.Ego.NefsEdit.Services
     using System.Windows.Threading;
     using VictorBush.Ego.NefsEdit.UI;
     using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.IO;
 
     /// <summary>
     /// UI service implementation.
@@ -51,9 +52,10 @@ namespace VictorBush.Ego.NefsEdit.Services
         /// <inheritdoc/>
         public (DialogResult Result, NefsArchiveSource Source) ShowNefsEditOpenFileDialog(
             ISettingsService settingsService,
-            IProgressService progressService)
+            IProgressService progressService,
+            INefsReader reader)
         {
-            using (var dialog = new OpenFileForm(settingsService, this, progressService, this.FileSystem))
+            using (var dialog = new OpenFileForm(settingsService, this, progressService, reader, this.FileSystem))
             {
                 var result = dialog.ShowDialog();
                 var source = dialog.ArchiveSource;

@@ -77,7 +77,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         /// <inheritdoc/>
         public override String ToString()
         {
-            return HexHelper.ByteArrayToString(this.Value);
+            return StringHelper.ByteArrayToString(this.Value);
         }
     }
 }

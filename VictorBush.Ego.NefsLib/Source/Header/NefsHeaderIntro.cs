@@ -132,7 +132,7 @@ namespace VictorBush.Ego.NefsLib.Header
         public byte[] GetAesKey()
         {
             var asciiKey = Encoding.ASCII.GetString(this.AesKeyHexString);
-            return HexHelper.FromHexString(asciiKey);
+            return StringHelper.FromHexString(asciiKey);
         }
     }
 }

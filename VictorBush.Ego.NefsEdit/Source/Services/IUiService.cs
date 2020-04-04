@@ -5,6 +5,7 @@ namespace VictorBush.Ego.NefsEdit.Services
     using System.Windows.Forms;
     using System.Windows.Threading;
     using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.IO;
 
     /// <summary>
     /// Provides user interface dialogs and other services.
@@ -42,10 +43,12 @@ namespace VictorBush.Ego.NefsEdit.Services
         /// </summary>
         /// <param name="settingsService">The settings service.</param>
         /// <param name="progressService">The progress service.</param>
+        /// <param name="reader">The nefs reader.</param>
         /// <returns>The dialog result and the archive source (if applicable).</returns>
         (DialogResult Result, NefsArchiveSource Source) ShowNefsEditOpenFileDialog(
             ISettingsService settingsService,
-            IProgressService progressService);
+            IProgressService progressService,
+            INefsReader reader);
 
         /// <summary>
         /// Shows an open file dialog.

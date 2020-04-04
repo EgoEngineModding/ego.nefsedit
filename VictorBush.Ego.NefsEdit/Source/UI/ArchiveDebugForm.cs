@@ -147,8 +147,8 @@ Part 8 size:                {(archive.Header.Intro.HeaderSize - archive.Header.T
 Header Intro
 -----------------------------------------------------------
 Magic Number:               {archive.Header.Intro.MagicNumber.ToString("X")}
-Expected SHA-256 hash:      {HexHelper.ByteArrayToString(archive.Header.Intro.ExpectedHash)}
-AES 256 key hex string:     {HexHelper.ByteArrayToString(archive.Header.Intro.AesKeyHexString)}
+Expected SHA-256 hash:      {StringHelper.ByteArrayToString(archive.Header.Intro.ExpectedHash)}
+AES 256 key hex string:     {StringHelper.ByteArrayToString(archive.Header.Intro.AesKeyHexString)}
 Header size:                {archive.Header.Intro.HeaderSize.ToString("X")}
 Unknown 0x68:               {archive.Header.Intro.Unknown0x68.ToString("X")}
 Number of items:            {archive.Header.Intro.NumberOfItems.ToString("X")}
@@ -166,7 +166,7 @@ Offset to Part 6:           {archive.Header.TableOfContents.OffsetToPart6.ToStri
 Offset to Part 7:           {archive.Header.TableOfContents.OffsetToPart7.ToString("X")}
 Offset to Part 8:           {archive.Header.TableOfContents.OffsetToPart8.ToString("X")}
 Unknown 0x00:               {archive.Header.TableOfContents.Unknown0x00.ToString("X")}
-Unknown 0x24:               {HexHelper.ByteArrayToString(archive.Header.TableOfContents.Unknown0x24)}
+Unknown 0x24:               {StringHelper.ByteArrayToString(archive.Header.TableOfContents.Unknown0x24)}
 
 Header Part 1
 -----------------------------------------------------------

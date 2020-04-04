@@ -6,9 +6,9 @@ namespace VictorBush.Ego.NefsLib.Utility
     using System.Text;
 
     /// <summary>
-    /// Some hex string utilities.
+    /// Some string utilities.
     /// </summary>
-    public static class HexHelper
+    public static class StringHelper
     {
         /// <summary>
         /// Prints a byte array to a string in hex format.
@@ -63,6 +63,39 @@ namespace VictorBush.Ego.NefsLib.Utility
             {
                 return string.Format("{0:X}", value);
             }
+        }
+
+        /// <summary>
+        /// Tries to read a null terminated ASCII string. If no null-terminator is found, an empty
+        /// string is returned.
+        /// </summary>
+        /// <param name="bytes">The input bytes.</param>
+        /// <param name="startOffset">Offset into the input array.</param>
+        /// <param name="maxSize">Max number of characters long.</param>
+        /// <returns>The string.</returns>
+        public static string TryReadNullTerminatedAscii(byte[] bytes, int startOffset, int maxSize)
+        {
+            // Find the next null terminator
+            var endOffset = startOffset + maxSize;
+            var nullOffset = endOffset;
+            for (var i = startOffset; i < endOffset; ++i)
+            {
+                if (bytes[i] == 0)
+                {
+                    nullOffset = i;
+                    break;
+                }
+            }
+
+            if (nullOffset == endOffset)
+            {
+                // No null terminator found, assume end of part 3. There can be a few garbage bytes
+                // at the end of this part.
+                return "";
+            }
+
+            // Get the string
+            return Encoding.ASCII.GetString(bytes, startOffset, nullOffset - startOffset);
         }
     }
 }

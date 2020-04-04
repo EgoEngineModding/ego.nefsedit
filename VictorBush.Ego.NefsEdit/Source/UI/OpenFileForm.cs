@@ -13,6 +13,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Progress;
 
     /// <summary>
@@ -36,17 +37,20 @@ namespace VictorBush.Ego.NefsEdit.UI
         /// <param name="settingsService">The settings service.</param>
         /// <param name="uiService">The UI service.</param>
         /// <param name="progressService">Progress service.</param>
+        /// <param name="reader">Nefs reader.</param>
         /// <param name="fileSystem">The file system.</param>
         public OpenFileForm(
             ISettingsService settingsService,
             IUiService uiService,
             IProgressService progressService,
+            INefsReader reader,
             IFileSystem fileSystem)
         {
             this.InitializeComponent();
             this.SettingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
             this.UiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
             this.ProgressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
+            this.Reader = reader ?? throw new ArgumentNullException(nameof(reader));
             this.FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
         }
 
@@ -58,6 +62,8 @@ namespace VictorBush.Ego.NefsEdit.UI
         private IFileSystem FileSystem { get; }
 
         private IProgressService ProgressService { get; }
+
+        private INefsReader Reader { get; }
 
         private ISettingsService SettingsService { get; }
 
@@ -102,81 +108,38 @@ namespace VictorBush.Ego.NefsEdit.UI
                 return new List<NefsArchiveSource>();
             }
 
-            var headerOffsets = new List<int>();
+            var headerOffsets = new Dictionary<string, ulong>();
             var gameDatFiles = new List<string>();
 
             // Read whole game exe into memory
             byte[] gameExeBuffer;
-            using (var t = p.BeginTask(0.30f, "Reading game executable"))
+            using (var t = p.BeginTask(0.20f, "Reading game executable"))
             using (var reader = this.FileSystem.File.OpenRead(gameExePath))
             {
                 gameExeBuffer = new byte[reader.Length];
                 await reader.ReadAsync(gameExeBuffer, 0, (int)reader.Length, p.CancellationToken);
             }
 
-            // Searching for a NeFS header: Look for 4E 65 46 53 (NeFS). This is the NeFS header
-            // magic number. If found, look for 7A 6C 69 62 (zlib). This should be 0x70 from the end
-            // of the magic number. This is the simplest way I know to find a header. There are
-            // other instances of "NeFS" in the executable so you have to do the second check for
-            // the "zlib" to confirm its actually a header.
-            using (var t = p.BeginTask(0.40f, "Searching for NeFS headers in game exectuable"))
+            // Search for headers in the exe
+            using (var t = p.BeginTask(0.50f, "Searching for headers"))
             {
-                var buffer = new byte[4];
-                var i = 0;
-                var offset = 0;
+                var searchOffset = 0UL;
 
-                while (i + 4 <= gameExeBuffer.Length)
+                (string DataFileName, ulong Offset)? header;
+                while ((header = await this.Reader.FindHeaderAsync(gameExeBuffer, searchOffset, p)) != null)
                 {
-                    offset = i;
-
-                    if (gameExeBuffer[i++] != 0x4E)
-                    {
-                        continue;
-                    }
-
-                    if (gameExeBuffer[i++] != 0x65)
-                    {
-                        continue;
-                    }
-
-                    if (gameExeBuffer[i++] != 0x46)
-                    {
-                        continue;
-                    }
-
-                    if (gameExeBuffer[i++] != 0x53)
-                    {
-                        continue;
-                    }
-
-                    // Found magic number, confirm this is a header
-                    i += 0x70;
-                    buffer[0] = gameExeBuffer[i++];
-                    buffer[1] = gameExeBuffer[i++];
-                    buffer[2] = gameExeBuffer[i++];
-                    buffer[3] = gameExeBuffer[i++];
-
-                    // Check for zlib
-                    var zlib = BitConverter.ToUInt32(buffer, 0);
-                    if (zlib != 0x62696C7A)
-                    {
-                        // Not a header
-                        continue;
-                    }
-
-                    // Found a header
-                    headerOffsets.Add(offset);
+                    headerOffsets.Add(header.Value.DataFileName, header.Value.Offset);
+                    searchOffset = header.Value.Offset + 4;
                 }
             }
 
-            // Try to match offsets to game.dat files. Search for game.dat files. Assume the order
-            // of the files in the directory matches the order of the headers in the executable.
+            // Try to match offsets to game.dat files
             using (var t = p.BeginTask(0.30f, "Searching for game.dat files"))
             {
                 foreach (var file in this.FileSystem.Directory.EnumerateFiles(gameDatDir))
                 {
                     var fileName = Path.GetFileName(file);
-                    if (fileName.StartsWith("game") && fileName.EndsWith(".dat"))
+                    if (headerOffsets.ContainsKey(fileName))
                     {
                         gameDatFiles.Add(file);
                     }
@@ -187,14 +150,15 @@ namespace VictorBush.Ego.NefsEdit.UI
             if (gameDatFiles.Count != headerOffsets.Count)
             {
                 Log.LogError($"Found {gameDatFiles.Count} game*.dat files, but found {headerOffsets.Count} headers in game exectuable.");
-                return new List<NefsArchiveSource>();
             }
 
+            // Build data sources for the game.dat files
             var sources = new List<NefsArchiveSource>();
             for (var i = 0; i < gameDatFiles.Count; ++i)
             {
+                var fileName = Path.GetFileName(gameDatFiles[i]);
                 var isDataEncrypted = true;
-                var source = new NefsArchiveSource(gameExePath, (ulong)headerOffsets[i], gameDatFiles[i], isDataEncrypted);
+                var source = new NefsArchiveSource(gameExePath, headerOffsets[fileName], gameDatFiles[i], isDataEncrypted);
                 sources.Add(source);
             }
 
@@ -316,6 +280,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                 this.gameExeFileTextBox.ScrollToEnd();
                 this.gameDatDirTextBox.Text = this.SettingsService.DirtRally2GameDatDir;
                 this.gameDatDirTextBox.ScrollToEnd();
+                this.gameDatFilesListBox.Items.Clear();
             }
             else if (this.typeComboBox.SelectedItem == this.openModeGameDatDirt4)
             {
@@ -325,6 +290,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                 this.gameExeFileTextBox.ScrollToEnd();
                 this.gameDatDirTextBox.Text = this.SettingsService.Dirt4GameDatDir;
                 this.gameDatDirTextBox.ScrollToEnd();
+                this.gameDatFilesListBox.Items.Clear();
             }
             else if (this.typeComboBox.SelectedItem == this.openModeCustom)
             {
