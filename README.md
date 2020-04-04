@@ -7,7 +7,6 @@ There are two components to this project.
 - NefsEdit - a Windows Forms application that uses NefsLib.
 
 ## TODO
-- Fix part 3 writing. Need to append bytes to end to get on a 4 byte boundary (?)
 - Verify hash for encrypted nefs (and game.dat headers).
 - Add a recent files list.
 - Allow associating .nefs files with the app, and allow opening an archive via command line.
@@ -17,6 +16,7 @@ There are two components to this project.
 - Extracting non-compressed files from encrypted archives?
 - Console logging performance issues.
 - Check if the part 6 field has a flag indicating if data is encrypted.
+- Fix part 3 writing. Need to append bytes to end to get on a 4 byte boundary (?)
 
 ## Acknowledgements
 Special thanks to [@Gigi1237]( https://github.com/Gigi1237 ) for encryption work.

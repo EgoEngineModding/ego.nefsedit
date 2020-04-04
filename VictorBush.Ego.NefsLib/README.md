@@ -40,13 +40,17 @@ Below are some general notes on design philosophy for NefsLib.
 	- Some header parts contain a list of item metadata. This list can be accessed by an index into this list.
 		- The list is not guaranteed to be sorted by item id.
 		- The part 1 entry for an item contains the index to use to access the item metadata in other parts.
+        - Header part 1 is sorted by id.
+        - Header parts 2, 6, and 7 are sorted by depth-first directory structure with children sorted by file name.
 	- The header part classes (NefsHeaderPart*X*) retain the order of data when a header is read.
 		- They provide two ways to access this data:
 			- A list of entries that retains the order as read in from the header. This allows enumerating the entries by index.
 			- A dictionary keyed by item id and sorted by item id. This allows enumerating the entries by item id.
-	- The NefsItemList can be enumerated in two ways: by id and by a depth-first traversal of the directory structure.
-		- Header part 1 is sorted by id. Parts 2, 6, and 7 and sorted by the directory structure.
-	- When NefsLib writes a header, it will write the entries sorted by id.
+	- The NefsItemList can be enumerated in multiple ways:
+        - by id.
+        - by a depth-first traversal of the directory structure with children sorted by file name.
+        - by a depth-first traversal of the directory structure with children sorted by id.
+    - The "First Child Id" and "Sibling Id" fields are based on the depth-first traversal, but with children sorted by id.
 - Use the Microsoft logging abstractions.
 	- Logging is configured by the consumer of the library by providing a static ILoggerFactory to NefsLog.LoggerFactory. If none is provided, a NullLoggerFactory is used.
 - Have some unit tests.
