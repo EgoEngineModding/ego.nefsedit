@@ -4,6 +4,7 @@
 ## Version 0.5.0
 - Added ability to open game.dat files (archives with separate header/data files).
 - Added ability to close an archive.
+- Added archive and item debug output views.
 - Fixed "Extract To" to extract directly to the location specified.
 - Replaced Archive Details pane with an Archive Debug view.
 - Refactored NefsEdit and NefsLib code for better application/library separation.
