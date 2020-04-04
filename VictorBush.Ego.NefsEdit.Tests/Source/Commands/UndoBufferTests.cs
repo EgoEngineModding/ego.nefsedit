@@ -197,7 +197,6 @@ namespace VictorBush.Ego.NefsEdit.Tests.Commands
             var buffer = new UndoBuffer();
             var cmd1 = new TestCommand(str, "", "A");
             var cmd2 = new TestCommand(str, "A", "B");
-            var cmd3 = new TestCommand(str, "A", "B");
 
             buffer.Execute(cmd1);
             buffer.Execute(cmd2);
