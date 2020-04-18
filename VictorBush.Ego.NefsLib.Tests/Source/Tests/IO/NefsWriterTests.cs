@@ -375,7 +375,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             intro.Data0x04_ExpectedHash.Value = hash;
             intro.Data0x64_HeaderSize.Value = 12345;
             intro.Data0x6c_NumberOfItems.Value = 9876;
-            intro.Data0x68_Unknown.Value = 101;
+            intro.Data0x68_NefsVersion.Value = 101;
             intro.Data0x70_UnknownZlib.Value = 202;
             intro.Data0x78_Unknown.Value = 303;
 

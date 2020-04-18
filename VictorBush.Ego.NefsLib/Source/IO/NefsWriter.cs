@@ -497,7 +497,7 @@ namespace VictorBush.Ego.NefsLib.IO
             intro.Data0x00_MagicNumber.Value = sourceHeader.Intro.MagicNumber;
             intro.Data0x24_AesKeyHexString.Value = sourceHeader.Intro.AesKeyHexString;
             intro.Data0x64_HeaderSize.Value = (uint)headerSize;
-            intro.Data0x68_Unknown.Value = sourceHeader.Intro.Unknown0x68;
+            intro.Data0x68_NefsVersion.Value = sourceHeader.Intro.NefsVersion;
             intro.Data0x6c_NumberOfItems.Value = (uint)numItems;
             intro.Data0x70_UnknownZlib.Value = sourceHeader.Intro.Unknown0x70zlib;
             intro.Data0x78_Unknown.Value = sourceHeader.Intro.Unknown0x78;

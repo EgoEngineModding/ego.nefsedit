@@ -150,7 +150,7 @@ Magic Number:               {archive.Header.Intro.MagicNumber.ToString("X")}
 Expected SHA-256 hash:      {StringHelper.ByteArrayToString(archive.Header.Intro.ExpectedHash)}
 AES 256 key hex string:     {StringHelper.ByteArrayToString(archive.Header.Intro.AesKeyHexString)}
 Header size:                {archive.Header.Intro.HeaderSize.ToString("X")}
-Unknown 0x68:               {archive.Header.Intro.Unknown0x68.ToString("X")}
+NeFS version:               {archive.Header.Intro.NefsVersion.ToString("X")}
 Number of items:            {archive.Header.Intro.NumberOfItems.ToString("X")}
 Unknown 0x70:               {archive.Header.Intro.Unknown0x70zlib.ToString("X")}
 Unknown 0x78:               {archive.Header.Intro.Unknown0x78.ToString("X")}
