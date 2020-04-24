@@ -5,6 +5,7 @@ namespace VictorBush.Ego.NefsLib.Header
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.Item;
 
     /// <summary>
@@ -47,7 +48,7 @@ namespace VictorBush.Ego.NefsLib.Header
             var nextIdx = 0;
             foreach (var item in items.EnumerateById())
             {
-                if (!item.DataSource.Size.IsCompressed)
+                if (item.DataSource.Size.ExtractedSize == item.DataSource.Size.TransformedSize)
                 {
                     // Item does not have a part 4 entry since it has no compressed data
                     continue;
@@ -55,7 +56,7 @@ namespace VictorBush.Ego.NefsLib.Header
 
                 // Create entry
                 var entry = new NefsHeaderPart4Entry(item.Id);
-                entry.ChunkSizes.AddRange(item.DataSource.Size.ChunkSizes);
+                entry.ChunkSizes.AddRange(item.DataSource.Size.Chunks.Select(c => c.CumulativeSize));
 
                 // Add to entries list and advance index
                 this.entriesByIndex.Add((uint)nextIdx, entry);
@@ -82,6 +83,40 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Gets the current size of header part 4.
         /// </summary>
         public UInt32 Size { get; private set; }
+
+        /// <summary>
+        /// Creates a list of chunk metadata for an item.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="transform">The transform used for data chunks.</param>
+        /// <returns>A list of chunk data.</returns>
+        public List<NefsDataChunk> CreateChunksListForItem(NefsItemId id, NefsDataTransform transform)
+        {
+            if (!this.indexById.ContainsKey(id))
+            {
+                return new List<NefsDataChunk>();
+            }
+
+            var chunks = new List<NefsDataChunk>();
+            var idx = this.indexById[id];
+            var entry = this.entriesByIndex[idx];
+
+            for (var i = 0; i < entry.ChunkSizes.Count; ++i)
+            {
+                var cumulativeSize = entry.ChunkSizes[i];
+                var size = cumulativeSize;
+
+                if (i > 0)
+                {
+                    size -= entry.ChunkSizes[i - 1];
+                }
+
+                var chunk = new NefsDataChunk(size, cumulativeSize, transform);
+                chunks.Add(chunk);
+            }
+
+            return chunks;
+        }
 
         /// <summary>
         /// Gets a copy of the chunk sizes list for an item.

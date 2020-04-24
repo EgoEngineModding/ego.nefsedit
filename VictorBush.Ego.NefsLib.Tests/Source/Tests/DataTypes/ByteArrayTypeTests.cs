@@ -1,6 +1,6 @@
 ﻿// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
+namespace VictorBush.Ego.NefsLib.Tests.DataTypes
 {
     using System;
     using System.Linq;

@@ -26,21 +26,16 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </summary>
         /// <param name="tempDirPath">Path to a directory that can be used to write temporary files.</param>
         /// <param name="fileSystem">The file system to use.</param>
-        /// <param name="compressor">Interface used to compress data.</param>
+        /// <param name="transfomer">Interface used to compress and encrypt data.</param>
         public NefsWriter(
             string tempDirPath,
             IFileSystem fileSystem,
-            INefsCompressor compressor)
+            INefsTransformer transfomer)
         {
             this.TempDirectoryPath = tempDirPath ?? throw new ArgumentNullException(nameof(tempDirPath));
             this.FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-            this.Compressor = compressor ?? throw new ArgumentNullException(nameof(compressor));
+            this.Transformer = transfomer ?? throw new ArgumentNullException(nameof(transfomer));
         }
-
-        /// <summary>
-        /// The compressor used to compress item data.
-        /// </summary>
-        private INefsCompressor Compressor { get; }
 
         /// <summary>
         /// The file system.
@@ -51,6 +46,11 @@ namespace VictorBush.Ego.NefsLib.IO
         /// The path of the temporary directory to use when writing.
         /// </summary>
         private string TempDirectoryPath { get; }
+
+        /// <summary>
+        /// The transfomer used to compress and encrypt item data.
+        /// </summary>
+        private INefsTransformer Transformer { get; }
 
         /// <inheritdoc/>
         public async Task<NefsArchive> WriteArchiveAsync(string destFilePath, NefsArchive nefs, NefsProgress p)
@@ -249,9 +249,8 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="item">The item to prepare.</param>
         /// <param name="workDir">The temporary working directory.</param>
         /// <param name="items">The source items list.</param>
-        /// <param name="chunkSize">The chunk size to use.</param>
         /// <param name="p">Progress info.</param>
-        private async Task PrepareItemAsync(NefsItem item, string workDir, NefsItemList items, UInt32 chunkSize, NefsProgress p)
+        private async Task PrepareItemAsync(NefsItem item, string workDir, NefsItemList items, NefsProgress p)
         {
             // Deleted items should not be prepared
             if (item.State == NefsItemState.Removed)
@@ -284,7 +283,7 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             // Compress to temp location if needed
-            if (item.DataSource.ShouldCompress)
+            if (!item.DataSource.IsTransformed)
             {
                 // Prepare the working directory
                 var filePathInArchive = items.GetItemFilePath(item.Id);
@@ -292,12 +291,12 @@ namespace VictorBush.Ego.NefsLib.IO
                 var fileWorkDir = Path.Combine(workDir, filePathInArchiveHash);
                 this.FileSystem.ResetOrCreateDirectory(fileWorkDir);
 
-                // Compress the file
+                // Transform the file
                 var destFilePath = Path.Combine(workDir, "inject.dat");
-                var newSize = await this.Compressor.CompressFileAsync(item.DataSource, destFilePath, chunkSize, p);
+                var newSize = await this.Transformer.TransformFileAsync(item.DataSource, destFilePath, item.Transform, p);
 
-                // Update data source to point to the compressed temp file
-                var dataSource = new NefsFileDataSource(destFilePath, 0, newSize, false);
+                // Update data source to point to the transformed temp file
+                var dataSource = new NefsFileDataSource(destFilePath, 0, newSize, isTransformed: true);
                 item.UpdateDataSource(dataSource, NefsItemState.Replaced);
             }
         }
@@ -312,13 +311,11 @@ namespace VictorBush.Ego.NefsLib.IO
         /// The source items list to prepare. This list nor its items are modified.
         /// </param>
         /// <param name="workDir">The temporary working directory.</param>
-        /// <param name="chunkSize">The chunk size to use.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>A prepared item list ready for writing.</returns>
         private async Task<NefsItemList> PrepareItemsAsync(
             NefsItemList sourceItems,
             string workDir,
-            UInt32 chunkSize,
             NefsProgress p)
         {
             // Create a new items list - original source list is not modified. The new list is
@@ -336,7 +333,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 else
                 {
                     // Compress any new or replaced files and update chunk sizes
-                    await this.PrepareItemAsync(item, workDir, sourceItems, chunkSize, p);
+                    await this.PrepareItemAsync(item, workDir, sourceItems, p);
                 }
             }
 
@@ -442,7 +439,7 @@ namespace VictorBush.Ego.NefsLib.IO
             NefsItemList items;
             using (var t = p.BeginTask(taskWeightPrepareItems, "Preparing items"))
             {
-                items = await this.PrepareItemsAsync(sourceItems, workDir, NefsHeader.ChunkSize, p);
+                items = await this.PrepareItemsAsync(sourceItems, workDir, p);
             }
 
             // Determine number of items
@@ -648,12 +645,12 @@ namespace VictorBush.Ego.NefsLib.IO
             // Determine data source
             var srcFile = item.DataSource.FilePath;
             var srcOffset = item.DataSource.Offset;
-            var srcSize = item.DataSource.Size.Size;
+            var srcSize = item.DataSource.Size.TransformedSize;
 
-            // The data should already be compressed (if needed) by this point
-            if (item.DataSource.ShouldCompress)
+            // The data should already be transformed (if needed) by this point
+            if (!item.DataSource.IsTransformed)
             {
-                throw new InvalidOperationException($"Item data compresseion should be handled before calling {nameof(this.WriteItemAsync)}.");
+                throw new InvalidOperationException($"Item data transformation should be handled before calling {nameof(this.WriteItemAsync)}.");
             }
 
             // There are weird things with non-compressed files. Checking if:

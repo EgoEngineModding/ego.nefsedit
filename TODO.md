@@ -1,4 +1,7 @@
 # TODO
+- Fix game.dat extract
+- Pull in fixes for duplicate items
+
 - Add a recent files list (https://github.com/victorbush/ego.nefsedit/issues/7).
 - Console logging performance issues (https://github.com/victorbush/ego.nefsedit/issues/8).
 - Check if the part 6 field has a flag indicating if data is encrypted (https://github.com/victorbush/ego.nefsedit/issues/10).

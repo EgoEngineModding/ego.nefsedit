@@ -56,9 +56,9 @@ namespace VictorBush.Ego.NefsEdit
             var uiService = new UiService(Dispatcher.CurrentDispatcher, fileSystem);
             var settingsService = new SettingsService(fileSystem, uiService);
             var progressService = new ProgressService(uiService);
-            var nefsCompressor = new NefsCompressor(fileSystem);
+            var nefsTransformer = new NefsTransformer(fileSystem);
             var nefsReader = new NefsReader(fileSystem);
-            var nefsWriter = new NefsWriter(TempDirectory, fileSystem, nefsCompressor);
+            var nefsWriter = new NefsWriter(TempDirectory, fileSystem, nefsTransformer);
             var workspace = new NefsEditWorkspace(
                 fileSystem,
                 progressService,
@@ -66,7 +66,7 @@ namespace VictorBush.Ego.NefsEdit
                 settingsService,
                 nefsReader,
                 nefsWriter,
-                nefsCompressor);
+                nefsTransformer);
 
             // Run application
             Application.EnableVisualStyles();

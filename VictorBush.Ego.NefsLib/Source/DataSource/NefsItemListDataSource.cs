@@ -39,14 +39,11 @@ namespace VictorBush.Ego.NefsLib.DataSource
         public string FilePath => this.Items.DataFilePath;
 
         /// <inheritdoc/>
-        public UInt64 Offset { get; }
+        /// <remarks>For an item list data source, the data is already transformed.</remarks>
+        public bool IsTransformed => true;
 
         /// <inheritdoc/>
-        /// <remarks>
-        /// For an archive data source, there is no need to compress the data. The data will simply
-        /// be copied from the existing archive to the new one.
-        /// </remarks>
-        public bool ShouldCompress => false;
+        public UInt64 Offset { get; }
 
         /// <inheritdoc/>
         public NefsItemSize Size { get; }

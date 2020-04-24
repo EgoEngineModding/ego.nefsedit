@@ -18,13 +18,13 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
     public class NefsWriterTests
     {
         private const string TempDir = @"C:\temp";
-        private readonly INefsCompressor compressor;
         private readonly MockFileSystem fileSystem = new MockFileSystem();
+        private readonly INefsTransformer transformer;
 
         public NefsWriterTests()
         {
             this.fileSystem.AddDirectory(TempDir);
-            this.compressor = new NefsCompressor(this.fileSystem);
+            this.transformer = new NefsTransformer(this.fileSystem);
         }
 
         [Fact]
@@ -490,7 +490,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
         private NefsWriter CreateWriter()
         {
-            return new NefsWriter(TempDir, this.fileSystem, this.compressor);
+            return new NefsWriter(TempDir, this.fileSystem, this.transformer);
         }
 
         private void VerifyArrraySlice(

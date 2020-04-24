@@ -19,6 +19,9 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <param name="directoryId">The directory id the item is in.</param>
         /// <param name="type">The type of item.</param>
         /// <param name="dataSource">The data source for the item's data.</param>
+        /// <param name="transform">
+        /// The transform that is applied to this item's data. Can be null if no transform.
+        /// </param>
         /// <param name="unknownData">Unknown metadata.</param>
         /// <param name="state">The item state.</param>
         public NefsItem(
@@ -27,6 +30,7 @@ namespace VictorBush.Ego.NefsLib.Item
             NefsItemId directoryId,
             NefsItemType type,
             INefsDataSource dataSource,
+            NefsDataTransform transform,
             NefsItemUnknownData unknownData,
             NefsItemState state = NefsItemState.None)
         {
@@ -35,6 +39,7 @@ namespace VictorBush.Ego.NefsLib.Item
             this.Type = type;
             this.DataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
             this.State = state;
+            this.Transform = transform;
 
             // Unknown data
             this.Part6Unknown0x00 = unknownData.Part6Unknown0x00;
@@ -49,7 +54,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <summary>
         /// The size of the item's data in the archive.
         /// </summary>
-        public UInt32 CompressedSize => this.DataSource?.Size.Size ?? 0;
+        public UInt32 CompressedSize => this.DataSource?.Size.TransformedSize ?? 0;
 
         /// <summary>
         /// The current data source for this item.
@@ -104,6 +109,11 @@ namespace VictorBush.Ego.NefsLib.Item
         public NefsItemState State { get; private set; }
 
         /// <summary>
+        /// The transform that is applied to this item's data. Is null if no transform.
+        /// </summary>
+        public NefsDataTransform Transform { get; }
+
+        /// <summary>
         /// The type of item this is.
         /// </summary>
         public NefsItemType Type { get; }
@@ -137,12 +147,16 @@ namespace VictorBush.Ego.NefsLib.Item
             var dataOffset = p1.Data0x00_OffsetToData.Value;
             var extractedSize = p2.Data0x0c_ExtractedSize.Value;
 
+            // Transform
+            var transform = new NefsDataTransform(NefsHeader.ChunkSize, true, header.Intro.IsEncrypted ? header.Intro.GetAesKey() : null);
+
             // Data source
             INefsDataSource dataSource;
             if (type == NefsItemType.Directory)
             {
                 // Item is a directory
                 dataSource = new NefsEmptyDataSource();
+                transform = null;
             }
             else if (p1.IndexIntoPart4 == 0xFFFFFFFFU)
             {
@@ -153,8 +167,8 @@ namespace VictorBush.Ego.NefsLib.Item
             else
             {
                 // Item is compressed
-                var p4 = header.Part4.EntriesByIndex[p1.IndexIntoPart4];
-                var size = new NefsItemSize(extractedSize, p4.ChunkSizes);
+                var chunks = header.Part4.CreateChunksListForItem(id, transform);
+                var size = new NefsItemSize(extractedSize, chunks);
                 dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
             }
 
@@ -171,7 +185,7 @@ namespace VictorBush.Ego.NefsLib.Item
             };
 
             // Create item
-            return new NefsItem(id, fileName, parentId, type, dataSource, unknown);
+            return new NefsItem(id, fileName, parentId, type, dataSource, transform, unknown);
         }
 
         /// <summary>
@@ -194,6 +208,7 @@ namespace VictorBush.Ego.NefsLib.Item
                 this.DirectoryId,
                 this.Type,
                 this.DataSource,
+                this.Transform,
                 unknownData,
                 state: this.State);
         }

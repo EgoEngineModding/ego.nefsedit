@@ -51,12 +51,13 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
             Assert.Equal(NefsItemType.File, item.Type);
             Assert.Equal(@"C:\archive.nefs", item.DataSource.FilePath);
             Assert.Equal(expected.DataSource.Offset, item.DataSource.Offset);
-            Assert.False(item.DataSource.ShouldCompress);
-            Assert.Equal(expected.DataSource.Size.ChunkSizes.Count, item.DataSource.Size.ChunkSizes.Count);
-            Assert.True(expected.DataSource.Size.ChunkSizes.SequenceEqual(item.DataSource.Size.ChunkSizes));
+            Assert.True(item.DataSource.IsTransformed);
+            Assert.Equal(expected.DataSource.Size.Chunks.Count, item.DataSource.Size.Chunks.Count);
+            Assert.True(expected.DataSource.Size.Chunks.Select(c => c.CumulativeSize).SequenceEqual(item.DataSource.Size.Chunks.Select(c => c.CumulativeSize)));
             Assert.Equal(expected.ExtractedSize, item.DataSource.Size.ExtractedSize);
-            Assert.True(item.DataSource.Size.IsCompressed);
-            Assert.Equal(expected.CompressedSize, item.DataSource.Size.Size);
+            Assert.Equal(expected.CompressedSize, item.DataSource.Size.TransformedSize);
+            Assert.True(item.Transform.IsZlibCompressed);
+            Assert.NotNull(item.Transform);
         }
 
         [Fact]
@@ -76,11 +77,11 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
             Assert.Equal(NefsItemType.Directory, item.Type);
             Assert.Equal("", item.DataSource.FilePath);
             Assert.Equal(0U, item.DataSource.Offset);
-            Assert.False(item.DataSource.ShouldCompress);
-            Assert.Empty(item.DataSource.Size.ChunkSizes);
+            Assert.True(item.DataSource.IsTransformed);
+            Assert.Empty(item.DataSource.Size.Chunks);
             Assert.Equal(0U, item.DataSource.Size.ExtractedSize);
-            Assert.False(item.DataSource.Size.IsCompressed);
-            Assert.Equal(0U, item.DataSource.Size.Size);
+            Assert.Equal(0U, item.DataSource.Size.TransformedSize);
+            Assert.Null(item.Transform);
         }
 
         [Fact]
@@ -101,12 +102,14 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
             Assert.Equal(NefsItemType.File, item.Type);
             Assert.Equal(@"C:\archive.nefs", item.DataSource.FilePath);
             Assert.Equal(expected.DataSource.Offset, item.DataSource.Offset);
-            Assert.False(item.DataSource.ShouldCompress);
-            Assert.Single(item.DataSource.Size.ChunkSizes);
-            Assert.Equal(expected.ExtractedSize, item.DataSource.Size.ChunkSizes[0]);
+            Assert.True(item.DataSource.IsTransformed);
+            Assert.Single(item.DataSource.Size.Chunks);
+            Assert.Equal(expected.ExtractedSize, item.DataSource.Size.Chunks[0].CumulativeSize);
+            Assert.Equal(expected.ExtractedSize, item.DataSource.Size.Chunks[0].Size);
             Assert.Equal(expected.ExtractedSize, item.DataSource.Size.ExtractedSize);
-            Assert.False(item.DataSource.Size.IsCompressed);
-            Assert.Equal(expected.CompressedSize, item.DataSource.Size.Size);
+            Assert.Equal(expected.CompressedSize, item.DataSource.Size.TransformedSize);
+            Assert.False(item.DataSource.Size.Chunks[0].Transform.IsZlibCompressed);
+            Assert.NotNull(item.Transform);
         }
     }
 }

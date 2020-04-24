@@ -49,12 +49,14 @@
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Source\DataSource\INefsDataSource.cs" />
+    <Compile Include="Source\DataSource\NefsDataTransform.cs" />
     <Compile Include="Source\DataSource\NefsEmptyDataSource.cs" />
     <Compile Include="Source\DataSource\NefsFileDataSource.cs" />
     <Compile Include="Source\DataSource\NefsItemListDataSource.cs" />
     <Compile Include="Source\DataTypes\ByteArrayType.cs" />
     <Compile Include="Source\DataTypes\DataType.cs" />
     <Compile Include="Source\DataTypes\FileData.cs" />
+    <Compile Include="Source\DataTypes\UInt16Type.cs" />
     <Compile Include="Source\DataTypes\UInt32Type.cs" />
     <Compile Include="Source\DataTypes\UInt64Type.cs" />
     <Compile Include="Source\Header\NefsHeader.cs" />
@@ -73,10 +75,29 @@
     <Compile Include="Source\Header\NefsHeaderPart7.cs" />
     <Compile Include="Source\Header\NefsHeaderPart7Entry.cs" />
     <Compile Include="Source\Header\NefsHeaderPart8.cs" />
-    <Compile Include="Source\IO\INefsCompressor.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16Header.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderIntro.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderIntroToc.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart1.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart1Entry.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart2.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart2Entry.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart3.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart4.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart4Chunk.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart4Entry.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart4TransformType.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart5.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart6.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart6Entry.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart7.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart7Entry.cs" />
+    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart8.cs" />
+    <Compile Include="Source\IO\INefsTransformer.cs" />
     <Compile Include="Source\IO\INefsReader.cs" />
     <Compile Include="Source\IO\INefsWriter.cs" />
-    <Compile Include="Source\IO\NefsCompressor.cs" />
+    <Compile Include="Source\DataSource\NefsDataChunk.cs" />
+    <Compile Include="Source\IO\NefsTransformer.cs" />
     <Compile Include="Source\IO\NefsReader.cs" />
     <Compile Include="Source\IO\NefsWriter.cs" />
     <Compile Include="Source\Item\NefsItem.cs" />
@@ -119,5 +140,6 @@
       <Version>9.0.4</Version>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

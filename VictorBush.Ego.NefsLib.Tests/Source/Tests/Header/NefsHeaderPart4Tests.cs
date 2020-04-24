@@ -28,24 +28,27 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
         {
             var items = new NefsItemList(@"C:\archive.nefs");
 
-            var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, new List<UInt32> { 1, 11, 21 }));
-            this.file1 = new NefsItem(new NefsItemId(0), "file1", new NefsItemId(0), NefsItemType.File, file1DataSource, TestHelpers.CreateUnknownData());
+            var file1Chunks = NefsDataChunk.CreateChunkList(new List<UInt32> { 1, 11, 21 }, TestHelpers.TestTransform);
+            var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, file1Chunks));
+            this.file1 = new NefsItem(new NefsItemId(0), "file1", new NefsItemId(0), NefsItemType.File, file1DataSource, TestHelpers.TestTransform, TestHelpers.CreateUnknownData());
             items.Add(this.file1);
 
-            var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, new List<UInt32> { 2, 22, 52 }));
-            this.file2 = new NefsItem(new NefsItemId(1), "file2", new NefsItemId(1), NefsItemType.File, file2DataSource, TestHelpers.CreateUnknownData());
+            var file2Chunks = NefsDataChunk.CreateChunkList(new List<UInt32> { 2, 22, 52 }, TestHelpers.TestTransform);
+            var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, file2Chunks));
+            this.file2 = new NefsItem(new NefsItemId(1), "file2", new NefsItemId(1), NefsItemType.File, file2DataSource, TestHelpers.TestTransform, TestHelpers.CreateUnknownData());
             items.Add(this.file2);
 
             var dir1DataSource = new NefsEmptyDataSource();
-            this.dir1 = new NefsItem(new NefsItemId(2), "dir1", new NefsItemId(2), NefsItemType.Directory, dir1DataSource, TestHelpers.CreateUnknownData());
+            this.dir1 = new NefsItem(new NefsItemId(2), "dir1", new NefsItemId(2), NefsItemType.Directory, dir1DataSource, null, TestHelpers.CreateUnknownData());
             items.Add(this.dir1);
 
-            var file3DataSource = new NefsItemListDataSource(items, 222, new NefsItemSize(333, new List<UInt32> { 3, 13, 23 }));
-            this.file3 = new NefsItem(new NefsItemId(3), "file3", this.dir1.Id, NefsItemType.File, file3DataSource, TestHelpers.CreateUnknownData());
+            var file3Chunks = NefsDataChunk.CreateChunkList(new List<UInt32> { 3, 13, 23 }, TestHelpers.TestTransform);
+            var file3DataSource = new NefsItemListDataSource(items, 222, new NefsItemSize(333, file3Chunks));
+            this.file3 = new NefsItem(new NefsItemId(3), "file3", this.dir1.Id, NefsItemType.File, file3DataSource, TestHelpers.TestTransform, TestHelpers.CreateUnknownData());
             items.Add(this.file3);
 
             var file4DataSource = new NefsItemListDataSource(items, 777, new NefsItemSize(444));
-            this.file4NotCompressed = new NefsItem(new NefsItemId(4), "file4", this.dir1.Id, NefsItemType.File, file4DataSource, TestHelpers.CreateUnknownData());
+            this.file4NotCompressed = new NefsItem(new NefsItemId(4), "file4", this.dir1.Id, NefsItemType.File, file4DataSource, TestHelpers.TestTransform, TestHelpers.CreateUnknownData());
             items.Add(this.file4NotCompressed);
 
             this.testItems = items;
@@ -74,18 +77,15 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
 
             var file1Sizes = p4.GetChunkSizesForItem(this.file1);
             Assert.Equal(3, file1Sizes.Count);
-            Assert.NotSame(this.file1.DataSource.Size.ChunkSizes, file1Sizes);
-            Assert.True(file1Sizes.SequenceEqual(this.file1.DataSource.Size.ChunkSizes));
+            Assert.True(file1Sizes.SequenceEqual(this.file1.DataSource.Size.Chunks.Select(c => c.CumulativeSize)));
 
             var file2Sizes = p4.GetChunkSizesForItem(this.file2);
             Assert.Equal(3, file2Sizes.Count);
-            Assert.NotSame(this.file2.DataSource.Size.ChunkSizes, file2Sizes);
-            Assert.True(file2Sizes.SequenceEqual(this.file2.DataSource.Size.ChunkSizes));
+            Assert.True(file2Sizes.SequenceEqual(this.file2.DataSource.Size.Chunks.Select(c => c.CumulativeSize)));
 
             var file3Sizes = p4.GetChunkSizesForItem(this.file3);
             Assert.Equal(3, file3Sizes.Count);
-            Assert.NotSame(this.file3.DataSource.Size.ChunkSizes, file3Sizes);
-            Assert.True(file3Sizes.SequenceEqual(this.file3.DataSource.Size.ChunkSizes));
+            Assert.True(file3Sizes.SequenceEqual(this.file3.DataSource.Size.Chunks.Select(c => c.CumulativeSize)));
         }
 
         [Fact]

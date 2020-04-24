@@ -29,6 +29,11 @@ namespace VictorBush.Ego.NefsLib.Tests
         };
 
         /// <summary>
+        /// Transform used for common test items.
+        /// </summary>
+        internal static NefsDataTransform TestTransform { get; } = new NefsDataTransform(100, true);
+
+        /// <summary>
         /// Creates a mock file system for data type tests that includes a test file.
         /// </summary>
         /// <returns>A mock file system.</returns>
@@ -59,7 +64,9 @@ namespace VictorBush.Ego.NefsLib.Tests
             IReadOnlyList<UInt32> chunkSizes,
             NefsItemType type)
         {
-            var size = new NefsItemSize(extractedSize, chunkSizes);
+            var transform = TestTransform;
+            var chunks = NefsDataChunk.CreateChunkList(chunkSizes, transform);
+            var size = new NefsItemSize(extractedSize, chunks);
             var dataSource = new NefsFileDataSource(@"C:\source.txt", dataOffset, size, extractedSize != chunkSizes.LastOrDefault());
             return new NefsItem(
                 new NefsItemId(id),
@@ -67,6 +74,7 @@ namespace VictorBush.Ego.NefsLib.Tests
                 new NefsItemId(dirId),
                 type,
                 dataSource,
+                transform,
                 CreateUnknownData());
         }
 
