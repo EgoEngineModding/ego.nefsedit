@@ -4,7 +4,6 @@ namespace VictorBush.Ego.NefsLib.Item
 {
     using System;
     using VictorBush.Ego.NefsLib.DataSource;
-    using VictorBush.Ego.NefsLib.Header;
 
     /// <summary>
     /// An item in a NeFS archive (file or directory).
@@ -117,76 +116,6 @@ namespace VictorBush.Ego.NefsLib.Item
         /// The type of item this is.
         /// </summary>
         public NefsItemType Type { get; }
-
-        /// <summary>
-        /// Creates an item from header data.
-        /// </summary>
-        /// <param name="id">The item id.</param>
-        /// <param name="header">The header data.</param>
-        /// <param name="dataSourceList">The item list to use as the item data source.</param>
-        /// <returns>A new <see cref="NefsItem"/>.</returns>
-        public static NefsItem CreateFromHeader(NefsItemId id, NefsHeader header, NefsItemList dataSourceList)
-        {
-            var p1 = header.Part1.EntriesById[id];
-            var p2 = header.Part2.EntriesById[id];
-
-            // Check if part 6 exists
-            NefsHeaderPart6Entry p6 = null;
-            if (header.Part6.EntriesById.ContainsKey(id))
-            {
-                p6 = header.Part6.EntriesById[id];
-            }
-
-            // Determine type
-            var type = p2.Data0x0c_ExtractedSize.Value == 0 ? NefsItemType.Directory : NefsItemType.File;
-
-            // Find parent
-            var parentId = header.GetItemDirectoryId(id);
-
-            // Offset and size
-            var dataOffset = p1.Data0x00_OffsetToData.Value;
-            var extractedSize = p2.Data0x0c_ExtractedSize.Value;
-
-            // Transform
-            var transform = new NefsDataTransform(NefsHeader.ChunkSize, true, header.Intro.IsEncrypted ? header.Intro.GetAesKey() : null);
-
-            // Data source
-            INefsDataSource dataSource;
-            if (type == NefsItemType.Directory)
-            {
-                // Item is a directory
-                dataSource = new NefsEmptyDataSource();
-                transform = null;
-            }
-            else if (p1.IndexIntoPart4 == 0xFFFFFFFFU)
-            {
-                // Item is not compressed
-                var size = new NefsItemSize(extractedSize);
-                dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
-            }
-            else
-            {
-                // Item is compressed
-                var chunks = header.Part4.CreateChunksListForItem(id, transform);
-                var size = new NefsItemSize(extractedSize, chunks);
-                dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
-            }
-
-            // File name and path
-            var fileName = header.GetItemFileName(id);
-
-            // Gather unknown metadata
-            var unknown = new NefsItemUnknownData
-            {
-                Part6Unknown0x00 = p6?.Byte0 ?? 0,
-                Part6Unknown0x01 = p6?.Byte1 ?? 0,
-                Part6Unknown0x02 = p6?.Byte2 ?? 0,
-                Part6Unknown0x03 = p6?.Byte3 ?? 0,
-            };
-
-            // Create item
-            return new NefsItem(id, fileName, parentId, type, dataSource, transform, unknown);
-        }
 
         /// <summary>
         /// Clones this item metadata.

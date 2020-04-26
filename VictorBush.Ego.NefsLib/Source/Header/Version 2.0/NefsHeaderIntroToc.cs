@@ -11,6 +11,12 @@ namespace VictorBush.Ego.NefsLib.Header
     public class NefsHeaderIntroToc
     {
         /// <summary>
+        /// Size of data chunks a file is broken up into before each chunk is compressed and
+        /// inserted into the archive.
+        /// </summary>
+        public const uint ChunkSize = 0x10000;
+
+        /// <summary>
         /// Offset to the table of contents in the header.
         /// </summary>
         public const uint Offset = NefsHeaderIntro.Size;

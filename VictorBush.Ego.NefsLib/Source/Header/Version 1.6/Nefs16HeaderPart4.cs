@@ -5,6 +5,7 @@ namespace VictorBush.Ego.NefsLib.Header
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using Microsoft.Extensions.Logging;
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.Item;
 
@@ -13,6 +14,7 @@ namespace VictorBush.Ego.NefsLib.Header
     /// </summary>
     public class Nefs16HeaderPart4
     {
+        private static readonly ILogger Log = NefsLog.GetLogger();
         private readonly SortedDictionary<uint, Nefs16HeaderPart4Entry> entriesByIndex;
 
         private readonly Dictionary<NefsItemId, uint> indexById;
@@ -42,20 +44,29 @@ namespace VictorBush.Ego.NefsLib.Header
             var nextIdx = 0;
             foreach (var item in items.EnumerateById())
             {
-                //if (!item.DataSource.Size.IsCompressed)
-                //{
-                //    // Item does not have a part 4 entry since it has no compressed data
-                //    continue;
-                //}
+                if (item.Type == NefsItemType.Directory)
+                {
+                    // Item does not have a part 4 entry
+                    continue;
+                }
 
-                //// Create entry
-                //var entry = new Nefs16HeaderPart4Entry(item.Id);
-                //entry.Chunks.AddRange(item.DataSource.Size.ChunkSizes);
+                // Create entry
+                var entry = new Nefs16HeaderPart4Entry(item.Id);
 
-                //// Add to entries list and advance index
-                //this.entriesByIndex.Add((uint)nextIdx, entry);
-                //this.indexById.Add(item.Id, (uint)nextIdx);
-                //nextIdx += entry.ChunkSizes.Count;
+                // Process chunks
+                foreach (var chunk in item.DataSource.Size.Chunks)
+                {
+                    var c = new Nefs16HeaderPart4Chunk();
+                    c.Data0x00_CumulativeBlockSize.Value = chunk.CumulativeSize;
+                    c.Data0x04_TransformType.Value = (ushort)this.GetTransformType(chunk.Transform);
+                    c.Data0x06_Checksum.Value = 0; // TODO
+                    entry.Chunks.Add(c);
+                }
+
+                // Add to entries list and advance index
+                this.entriesByIndex.Add((uint)nextIdx, entry);
+                this.indexById.Add(item.Id, (uint)nextIdx);
+                nextIdx += entry.Chunks.Count;
             }
 
             // Compute size
@@ -78,34 +89,63 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         public UInt32 Size { get; private set; }
 
-        ///// <summary>
-        ///// Gets a copy of the chunk sizes list for an item.
-        ///// </summary>
-        ///// <param name="item">The item to get chunk sizes for.</param>
-        ///// <returns>The list of chunk sizes.</returns>
-        //public List<NefsDataChunk> GetChunksForItem(NefsItem item)
-        //{
-        //    if (item.Type == NefsItemType.Directory)
-        //    {
-        //        // Item is a directory; no chunk sizes
-        //        return new List<NefsDataChunk>();
-        //    }
-        //    else if (item.ExtractedSize == item.CompressedSize)
-        //    {
-        //        //TODO: this is not correct
+        /// <summary>
+        /// Creates a list of chunk metadata for an item.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="aes256key">The AES 256 key to use if chunk is encrypted.</param>
+        /// <returns>A list of chunk data.</returns>
+        public List<NefsDataChunk> CreateChunksListForItem(NefsItemId id, byte[] aes256key)
+        {
+            if (!this.indexById.ContainsKey(id))
+            {
+                return new List<NefsDataChunk>();
+            }
 
-        //        // Item is uncompressed; no chunk sizes
-        //        return new List<NefsDataChunk>();
-        //    }
-        //    else
-        //    {
-        //        // Item is compressed; get chunk sizes
-        //        var idx = this.indexById[item.Id];
+            var chunks = new List<NefsDataChunk>();
+            var idx = this.indexById[id];
+            var entry = this.entriesByIndex[idx];
 
-        //        // Use ToList() to create a copy of the list
-        //        return this.entriesByIndex[idx].Chunks.ToList();
-        //    }
-        //}
+            for (var i = 0; i < entry.Chunks.Count; ++i)
+            {
+                var cumulativeSize = entry.Chunks[i].CumulativeBlockSize;
+                var size = cumulativeSize;
+
+                if (i > 0)
+                {
+                    size -= entry.Chunks[i - 1].CumulativeBlockSize;
+                }
+
+                // Determine transform -- need to clean this up
+                NefsDataTransform transform;
+                var transformVal = entry.Chunks[i].Data0x04_TransformType.Value;
+
+                switch (transformVal)
+                {
+                    case (int)Nefs16HeaderPart4TransformType.Zlib:
+                        transform = new NefsDataTransform(Nefs16HeaderIntroToc.ChunkSize, true);
+                        break;
+
+                    case (int)Nefs16HeaderPart4TransformType.Aes:
+                        transform = new NefsDataTransform(Nefs16HeaderIntroToc.ChunkSize, false, aes256key);
+                        break;
+
+                    case (int)Nefs16HeaderPart4TransformType.None:
+                        transform = new NefsDataTransform(Nefs16HeaderIntroToc.ChunkSize, false);
+                        break;
+
+                    default:
+                        Log.LogError("Found v1.6 data chunk with unknown transform; aborting.");
+                        return new List<NefsDataChunk>();
+                }
+
+                // Create data chunk info
+                var chunk = new NefsDataChunk(size, cumulativeSize, transform);
+                chunks.Add(chunk);
+            }
+
+            return chunks;
+        }
 
         /// <summary>
         /// Gets the index into part 4 for the specified item. The index into part 4 is potentially
@@ -121,16 +161,9 @@ namespace VictorBush.Ego.NefsLib.Header
                 // Item is a directory; the index 0
                 return 0;
             }
-            else if (item.ExtractedSize == item.CompressedSize)
-            {
-                //TODO: This is not correct for v1.6
-
-                // Item is uncompressed; the index is -1 (0xFFFFFFFF)
-                return 0xFFFFFFFF;
-            }
             else
             {
-                // Item is compressed; get index into part 4
+                // Get index into part 4
                 return this.indexById[item.Id];
             }
         }
@@ -145,6 +178,26 @@ namespace VictorBush.Ego.NefsLib.Header
             {
                 this.Size += (uint)(entry.Chunks.Count * Nefs16HeaderPart4Chunk.Size);
             }
+        }
+
+        private Nefs16HeaderPart4TransformType GetTransformType(NefsDataTransform transform)
+        {
+            // Can v1.6 have both aes and zlib simulatneously?
+            if (transform.IsAesEncrypted && transform.IsZlibCompressed)
+            {
+                Log.LogWarning("Found multiple data transforms for header part 4 entry.");
+            }
+
+            if (transform.IsAesEncrypted)
+            {
+                return Nefs16HeaderPart4TransformType.Aes;
+            }
+            else if (transform.IsZlibCompressed)
+            {
+                return Nefs16HeaderPart4TransformType.Zlib;
+            }
+
+            return Nefs16HeaderPart4TransformType.None;
         }
     }
 }

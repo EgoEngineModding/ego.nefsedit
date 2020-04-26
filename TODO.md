@@ -1,6 +1,6 @@
 # TODO
 - Fix game.dat extract
-- Pull in fixes for duplicate items
+- Chunk size source rather than hard code?
 
 - Add a recent files list (https://github.com/victorbush/ego.nefsedit/issues/7).
 - Console logging performance issues (https://github.com/victorbush/ego.nefsedit/issues/8).

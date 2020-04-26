@@ -26,6 +26,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="outputOffset">
         /// The absolute offset from the beginning of the output stream to write to.
         /// </param>
+        /// <param name="extractedSize">The expected size of the detransformed data.</param>
         /// <param name="chunks">The list of chunks the input stream contains.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>An async task.</returns>
@@ -34,6 +35,7 @@ namespace VictorBush.Ego.NefsLib.IO
             Int64 inputOffset,
             Stream output,
             Int64 outputOffset,
+            uint extractedSize,
             IReadOnlyList<NefsDataChunk> chunks,
             NefsProgress p);
 
@@ -43,12 +45,16 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="input">The input stream that contains the chunk.</param>
         /// <param name="output">The output stream to write to.</param>
         /// <param name="chunk">Info about the chunk.</param>
+        /// <param name="maxOutputSize">
+        /// Max size of the output chunk. Any data beyond this size will be discarded.
+        /// </param>
         /// <param name="p">Progress info.</param>
-        /// <returns>An async Task.</returns>
-        Task DetransformChunkAsync(
+        /// <returns>The size of the detransformed chunk.</returns>
+        Task<uint> DetransformChunkAsync(
             Stream input,
             Stream output,
             NefsDataChunk chunk,
+            uint maxOutputSize,
             NefsProgress p);
 
         /// <summary>
@@ -62,6 +68,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="outputOffset">
         /// The absolute offset from the beginning of the output file to write to.
         /// </param>
+        /// <param name="extractedSize">The expected size of the detransformed data.</param>
         /// <param name="chunks">The list of chunks the input stream contains.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>An async Task.</returns>
@@ -70,6 +77,7 @@ namespace VictorBush.Ego.NefsLib.IO
             Int64 inputOffset,
             string outputFile,
             Int64 outputOffset,
+            uint extractedSize,
             IReadOnlyList<NefsDataChunk> chunks,
             NefsProgress p);
 

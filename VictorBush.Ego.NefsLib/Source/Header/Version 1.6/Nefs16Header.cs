@@ -3,19 +3,15 @@
 namespace VictorBush.Ego.NefsLib.Header
 {
     using System;
+    using Microsoft.Extensions.Logging;
+    using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.Item;
 
     /// <summary>
     /// A NeFS archive header.
     /// </summary>
-    public class Nefs16Header
+    public class Nefs16Header : INefsHeader
     {
-        /// <summary>
-        /// Size of data chunks a file is broken up into before each chunk is compressed and
-        /// inserted into the archive.
-        /// </summary>
-        public const int ChunkSize = 0x10000;
-
         /// <summary>
         /// Offset to the first data item used in most archives.
         /// </summary>
@@ -31,6 +27,8 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         public const uint IntroOffset = 0x0;
 
+        private static readonly ILogger Log = NefsLog.GetLogger();
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Nefs16Header"/> class.
         /// </summary>
@@ -45,7 +43,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="part7">Header part 7.</param>
         /// <param name="part8">Header part 8.</param>
         public Nefs16Header(
-            Nefs16HeaderIntro intro,
+            NefsHeaderIntro intro,
             Nefs16HeaderIntroToc toc,
             Nefs16HeaderPart1 part1,
             Nefs16HeaderPart2 part2,
@@ -74,7 +72,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="intro">Header intro.</param>
         /// <param name="toc">Header intro table of contents.</param>
         /// <param name="items">List of items.</param>
-        public Nefs16Header(Nefs16HeaderIntro intro, Nefs16HeaderIntroToc toc, NefsItemList items)
+        public Nefs16Header(NefsHeaderIntro intro, Nefs16HeaderIntroToc toc, NefsItemList items)
         {
             this.Intro = intro ?? throw new ArgumentNullException(nameof(intro));
             this.TableOfContents = toc ?? throw new ArgumentNullException(nameof(toc));
@@ -93,7 +91,10 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// The header intro.
         /// </summary>
-        public Nefs16HeaderIntro Intro { get; }
+        public NefsHeaderIntro Intro { get; }
+
+        /// <inheritdoc/>
+        public Boolean IsEncrypted => this.Intro.IsEncrypted;
 
         /// <summary>
         /// Header part 1.
@@ -140,22 +141,100 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         public Nefs16HeaderIntroToc TableOfContents { get; }
 
-        /// <summary>
-        /// Gets the directory id for an item. If the item is in the root directory, the directory
-        /// id will equal the item's id.
-        /// </summary>
-        /// <param name="id">The item id.</param>
-        /// <returns>The directory id.</returns>
+        /// <inheritdoc/>
+        public NefsItem CreateItemInfo(NefsItemId id, NefsItemList dataSourceList)
+        {
+            var p1 = this.Part1.EntriesById[id];
+            var p2 = this.Part2.EntriesById[id];
+
+            // Check if part 6 exists
+            Nefs16HeaderPart6Entry p6 = null;
+            if (this.Part6.EntriesById.ContainsKey(id))
+            {
+                p6 = this.Part6.EntriesById[id];
+            }
+
+            // Determine type
+            var type = p2.Data0x0c_ExtractedSize.Value == 0 ? NefsItemType.Directory : NefsItemType.File;
+
+            // Find parent
+            var parentId = this.GetItemDirectoryId(id);
+
+            // Offset and size
+            var dataOffset = p1.Data0x00_OffsetToData.Value;
+            var extractedSize = p2.Data0x0c_ExtractedSize.Value;
+
+            // Transform
+            var transform = new NefsDataTransform(NefsHeaderIntroToc.ChunkSize, true, this.Intro.IsEncrypted ? this.Intro.GetAesKey() : null);
+
+            // Data source
+            INefsDataSource dataSource;
+            if (type == NefsItemType.Directory)
+            {
+                // Item is a directory
+                dataSource = new NefsEmptyDataSource();
+                transform = null;
+            }
+            else if (p1.IndexIntoPart4 == 0xFFFFFFFFU)
+            {
+                // Item is not compressed
+                var size = new NefsItemSize(extractedSize);
+                dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
+            }
+            else
+            {
+                // Item is compressed
+                var chunks = this.Part4.CreateChunksListForItem(id, this.Intro.GetAesKey());
+                var size = new NefsItemSize(extractedSize, chunks);
+                dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
+            }
+
+            // File name and path
+            var fileName = this.GetItemFileName(id);
+
+            // Gather unknown metadata
+            var unknown = new NefsItemUnknownData
+            {
+                Part6Unknown0x00 = p6?.Byte0 ?? 0,
+                Part6Unknown0x01 = p6?.Byte1 ?? 0,
+                Part6Unknown0x02 = p6?.Byte2 ?? 0,
+                Part6Unknown0x03 = p6?.Byte3 ?? 0,
+            };
+
+            // Create item
+            return new NefsItem(id, fileName, parentId, type, dataSource, transform, unknown);
+        }
+
+        /// <inheritdoc/>
+        public NefsItemList CreateItemList(String dataFilePath)
+        {
+            var items = new NefsItemList(dataFilePath);
+
+            foreach (var entry in this.Part1.EntriesById)
+            {
+                var id = entry.Key;
+
+                try
+                {
+                    var item = this.CreateItemInfo(id, items);
+                    items.Add(item);
+                }
+                catch (Exception)
+                {
+                    Log.LogError($"Failed to create item {id}, skipping.");
+                }
+            }
+
+            return items;
+        }
+
+        /// <inheritdoc/>
         public NefsItemId GetItemDirectoryId(NefsItemId id)
         {
             return new NefsItemId(this.Part2.EntriesById[id].Data0x00_DirectoryId.Value);
         }
 
-        /// <summary>
-        /// Gets the file name of an item.
-        /// </summary>
-        /// <param name="id">The item id.</param>
-        /// <returns>The item's file name.</returns>
+        /// <inheritdoc/>
         public string GetItemFileName(NefsItemId id)
         {
             var offsetIntoPart3 = this.Part2.EntriesById[id].Data0x08_OffsetIntoPart3.Value;

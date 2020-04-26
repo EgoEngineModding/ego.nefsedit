@@ -489,7 +489,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             }
 
             // Currently don't support saving encrypted archives
-            if (this.Archive.Header.Intro.IsEncrypted)
+            if (this.Archive.Header.IsEncrypted)
             {
                 this.UiService.ShowMessageBox("Saving encrypted archives is not supported.", icon: MessageBoxIcon.Error);
                 return false;
@@ -544,6 +544,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                     (Int64)item.DataSource.Offset,
                     outputFilePath,
                     0,
+                    item.ExtractedSize,
                     item.DataSource.Size.Chunks,
                     p);
 

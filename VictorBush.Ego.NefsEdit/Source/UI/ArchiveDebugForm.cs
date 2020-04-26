@@ -39,6 +39,256 @@ namespace VictorBush.Ego.NefsEdit.UI
         {
         }
 
+        private string GetDebugInfoVersion16(Nefs16Header h, NefsArchiveSource source)
+        {
+            var headerPart1String = new StringBuilder();
+            foreach (var entry in h.Part1.EntriesByIndex)
+            {
+                headerPart1String.Append($"0x{entry.OffsetToData.ToString("X")}".PadRight(20));
+                headerPart1String.Append($"0x{entry.MetadataIndex.ToString("X")}".PadRight(20));
+                headerPart1String.Append($"0x{entry.IndexIntoPart4.ToString("X")}".PadRight(20));
+                headerPart1String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+                headerPart1String.Append("\n");
+            }
+
+            var headerPart2String = new StringBuilder();
+            foreach (var entry in h.Part2.EntriesByIndex)
+            {
+                headerPart2String.Append($"0x{entry.DirectoryId.Value.ToString("X")}".PadRight(20));
+                headerPart2String.Append($"0x{entry.FirstChildId.Value.ToString("X")}".PadRight(20));
+                headerPart2String.Append($"0x{entry.OffsetIntoPart3.ToString("X")}".PadRight(20));
+                headerPart2String.Append($"0x{entry.ExtractedSize.ToString("X")}".PadRight(20));
+                headerPart2String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+                headerPart2String.Append("\n");
+            }
+
+            var headerPart3String = new StringBuilder();
+            foreach (var s in h.Part3.FileNames)
+            {
+                headerPart3String.AppendLine(s);
+            }
+
+            var headerPart6String = new StringBuilder();
+            foreach (var entry in h.Part6.EntriesByIndex)
+            {
+                headerPart6String.Append($"0x{entry.Byte0.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Byte1.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Byte2.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Byte3.ToString("X")}".PadRight(20));
+                headerPart6String.Append("\n");
+            }
+
+            var headerPart7String = new StringBuilder();
+            foreach (var entry in h.Part7.EntriesByIndex)
+            {
+                headerPart7String.Append($"0x{entry.SiblingId.Value.ToString("X")}".PadRight(20));
+                headerPart7String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+                headerPart7String.Append("\n");
+            }
+
+            return $@"Archive Source
+-----------------------------------------------------------
+Header source file:         {source.HeaderFilePath}
+Header offset:              {source.HeaderOffset.ToString("X")}
+Data file path:             {source.DataFilePath}
+Is header/data separate:    {source.IsHeaderSeparate}
+
+General Info
+-----------------------------------------------------------
+Archive Size:               {h.Part5.ArchiveSize.ToString("X")}
+Is Header Encrypted?        {h.Intro.IsEncrypted}
+
+Header size:                {h.Intro.HeaderSize.ToString("X")}
+Intro size:                 {NefsHeaderIntro.Size.ToString("X")}
+Toc size:                   {NefsHeaderIntroToc.Size.ToString("X")}
+Part 1 size:                {h.TableOfContents.Part1Size.ToString("X")}
+Part 2 size:                {h.TableOfContents.Part2Size.ToString("X")}
+Part 3 size:                {h.TableOfContents.Part3Size.ToString("X")}
+Part 4 size:                {h.TableOfContents.Part4Size.ToString("X")}
+Part 5 size:                {h.TableOfContents.Part5Size.ToString("X")}
+Part 6 size:                {h.TableOfContents.Part6Size.ToString("X")}
+Part 7 size:                {h.TableOfContents.Part7Size.ToString("X")}
+Part 8 size:                {(h.Intro.HeaderSize - h.TableOfContents.OffsetToPart8).ToString("X")}
+
+Header Intro
+-----------------------------------------------------------
+Magic Number:               {h.Intro.MagicNumber.ToString("X")}
+Expected SHA-256 hash:      {StringHelper.ByteArrayToString(h.Intro.ExpectedHash)}
+AES 256 key hex string:     {StringHelper.ByteArrayToString(h.Intro.AesKeyHexString)}
+Header size:                {h.Intro.HeaderSize.ToString("X")}
+NeFS version:               {h.Intro.NefsVersion.ToString("X")}
+Number of items:            {h.Intro.NumberOfItems.ToString("X")}
+Unknown 0x70:               {h.Intro.Unknown0x70zlib.ToString("X")}
+Unknown 0x78:               {h.Intro.Unknown0x78.ToString("X")}
+
+Header Table of Contents
+-----------------------------------------------------------
+Offset to Part 1:           {h.TableOfContents.OffsetToPart1.ToString("X")}
+Offset to Part 2:           {h.TableOfContents.OffsetToPart2.ToString("X")}
+Offset to Part 3:           {h.TableOfContents.OffsetToPart3.ToString("X")}
+Offset to Part 4:           {h.TableOfContents.OffsetToPart4.ToString("X")}
+Offset to Part 5:           {h.TableOfContents.OffsetToPart5.ToString("X")}
+Offset to Part 6:           {h.TableOfContents.OffsetToPart6.ToString("X")}
+Offset to Part 7:           {h.TableOfContents.OffsetToPart7.ToString("X")}
+Offset to Part 8:           {h.TableOfContents.OffsetToPart8.ToString("X")}
+Unknown 0x00:               {h.TableOfContents.Unknown0x00.ToString("X")}
+Unknown 0x28:               {StringHelper.ByteArrayToString(h.TableOfContents.Unknown0x28)}
+
+Header Part 1
+-----------------------------------------------------------
+Data Offset         Metadata index      Index to Part 4     Id
+{headerPart1String.ToString()}
+Header Part 2
+-----------------------------------------------------------
+Directory Id        First child Id      Part 3 offset       Extracted size      Id
+{headerPart2String.ToString()}
+Header Part 3
+-----------------------------------------------------------
+{headerPart3String.ToString()}
+Header Part 4
+-----------------------------------------------------------
+Number of files:            {h.Part4.EntriesByIndex.Count.ToString("X")}
+
+Header Part 5
+-----------------------------------------------------------
+Archive size:               {h.Part5.ArchiveSize.ToString("X")}
+First data offset:          {h.Part5.FirstDataOffset.ToString("X")}
+Archive name string offset: {h.Part5.ArchiveNameStringOffset.ToString("X")}
+
+Header Part 6
+-----------------------------------------------------------
+{headerPart6String.ToString()}
+Header Part 7
+-----------------------------------------------------------
+{headerPart7String.ToString()}
+";
+        }
+
+        private string GetDebugInfoVersion20(NefsHeader h, NefsArchiveSource source)
+        {
+            var headerPart1String = new StringBuilder();
+            foreach (var entry in h.Part1.EntriesByIndex)
+            {
+                headerPart1String.Append($"0x{entry.OffsetToData.ToString("X")}".PadRight(20));
+                headerPart1String.Append($"0x{entry.MetadataIndex.ToString("X")}".PadRight(20));
+                headerPart1String.Append($"0x{entry.IndexIntoPart4.ToString("X")}".PadRight(20));
+                headerPart1String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+                headerPart1String.Append("\n");
+            }
+
+            var headerPart2String = new StringBuilder();
+            foreach (var entry in h.Part2.EntriesByIndex)
+            {
+                headerPart2String.Append($"0x{entry.DirectoryId.Value.ToString("X")}".PadRight(20));
+                headerPart2String.Append($"0x{entry.FirstChildId.Value.ToString("X")}".PadRight(20));
+                headerPart2String.Append($"0x{entry.OffsetIntoPart3.ToString("X")}".PadRight(20));
+                headerPart2String.Append($"0x{entry.ExtractedSize.ToString("X")}".PadRight(20));
+                headerPart2String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+                headerPart2String.Append("\n");
+            }
+
+            var headerPart3String = new StringBuilder();
+            foreach (var s in h.Part3.FileNames)
+            {
+                headerPart3String.AppendLine(s);
+            }
+
+            var headerPart6String = new StringBuilder();
+            foreach (var entry in h.Part6.EntriesByIndex)
+            {
+                headerPart6String.Append($"0x{entry.Byte0.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Byte1.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Byte2.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Byte3.ToString("X")}".PadRight(20));
+                headerPart6String.Append("\n");
+            }
+
+            var headerPart7String = new StringBuilder();
+            foreach (var entry in h.Part7.EntriesByIndex)
+            {
+                headerPart7String.Append($"0x{entry.SiblingId.Value.ToString("X")}".PadRight(20));
+                headerPart7String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+                headerPart7String.Append("\n");
+            }
+
+            return $@"Archive Source
+-----------------------------------------------------------
+Header source file:         {source.HeaderFilePath}
+Header offset:              {source.HeaderOffset.ToString("X")}
+Data file path:             {source.DataFilePath}
+Is header/data separate:    {source.IsHeaderSeparate}
+
+General Info
+-----------------------------------------------------------
+Archive Size:               {h.Part5.ArchiveSize.ToString("X")}
+Is Header Encrypted?        {h.Intro.IsEncrypted}
+
+Header size:                {h.Intro.HeaderSize.ToString("X")}
+Intro size:                 {NefsHeaderIntro.Size.ToString("X")}
+Toc size:                   {NefsHeaderIntroToc.Size.ToString("X")}
+Part 1 size:                {h.TableOfContents.Part1Size.ToString("X")}
+Part 2 size:                {h.TableOfContents.Part2Size.ToString("X")}
+Part 3 size:                {h.TableOfContents.Part3Size.ToString("X")}
+Part 4 size:                {h.TableOfContents.Part4Size.ToString("X")}
+Part 5 size:                {h.TableOfContents.Part5Size.ToString("X")}
+Part 6 size:                {h.TableOfContents.Part6Size.ToString("X")}
+Part 7 size:                {h.TableOfContents.Part7Size.ToString("X")}
+Part 8 size:                {(h.Intro.HeaderSize - h.TableOfContents.OffsetToPart8).ToString("X")}
+
+Header Intro
+-----------------------------------------------------------
+Magic Number:               {h.Intro.MagicNumber.ToString("X")}
+Expected SHA-256 hash:      {StringHelper.ByteArrayToString(h.Intro.ExpectedHash)}
+AES 256 key hex string:     {StringHelper.ByteArrayToString(h.Intro.AesKeyHexString)}
+Header size:                {h.Intro.HeaderSize.ToString("X")}
+NeFS version:               {h.Intro.NefsVersion.ToString("X")}
+Number of items:            {h.Intro.NumberOfItems.ToString("X")}
+Unknown 0x70:               {h.Intro.Unknown0x70zlib.ToString("X")}
+Unknown 0x78:               {h.Intro.Unknown0x78.ToString("X")}
+
+Header Table of Contents
+-----------------------------------------------------------
+Offset to Part 1:           {h.TableOfContents.OffsetToPart1.ToString("X")}
+Offset to Part 2:           {h.TableOfContents.OffsetToPart2.ToString("X")}
+Offset to Part 3:           {h.TableOfContents.OffsetToPart3.ToString("X")}
+Offset to Part 4:           {h.TableOfContents.OffsetToPart4.ToString("X")}
+Offset to Part 5:           {h.TableOfContents.OffsetToPart5.ToString("X")}
+Offset to Part 6:           {h.TableOfContents.OffsetToPart6.ToString("X")}
+Offset to Part 7:           {h.TableOfContents.OffsetToPart7.ToString("X")}
+Offset to Part 8:           {h.TableOfContents.OffsetToPart8.ToString("X")}
+Unknown 0x00:               {h.TableOfContents.Unknown0x00.ToString("X")}
+Unknown 0x24:               {StringHelper.ByteArrayToString(h.TableOfContents.Unknown0x24)}
+
+Header Part 1
+-----------------------------------------------------------
+Data Offset         Metadata index      Index to Part 4     Id
+{headerPart1String.ToString()}
+Header Part 2
+-----------------------------------------------------------
+Directory Id        First child Id      Part 3 offset       Extracted size      Id
+{headerPart2String.ToString()}
+Header Part 3
+-----------------------------------------------------------
+{headerPart3String.ToString()}
+Header Part 4
+-----------------------------------------------------------
+Number of files:            {h.Part4.EntriesByIndex.Count.ToString("X")}
+
+Header Part 5
+-----------------------------------------------------------
+Archive size:               {h.Part5.ArchiveSize.ToString("X")}
+First data offset:          {h.Part5.FirstDataOffset.ToString("X")}
+Archive name string offset: {h.Part5.ArchiveNameStringOffset.ToString("X")}
+
+Header Part 6
+-----------------------------------------------------------
+{headerPart6String.ToString()}
+Header Part 7
+-----------------------------------------------------------
+{headerPart7String.ToString()}
+";
+        }
+
         private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
         {
             // Update on UI thread
@@ -75,127 +325,18 @@ namespace VictorBush.Ego.NefsEdit.UI
                 return;
             }
 
-            var headerPart1String = new StringBuilder();
-            foreach (var entry in archive.Header.Part1.EntriesByIndex)
+            if (archive.Header is NefsHeader h20)
             {
-                headerPart1String.Append($"0x{entry.OffsetToData.ToString("X")}".PadRight(20));
-                headerPart1String.Append($"0x{entry.MetadataIndex.ToString("X")}".PadRight(20));
-                headerPart1String.Append($"0x{entry.IndexIntoPart4.ToString("X")}".PadRight(20));
-                headerPart1String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
-                headerPart1String.Append("\n");
+                this.richTextBox.Text = this.GetDebugInfoVersion20(h20, source);
             }
-
-            var headerPart2String = new StringBuilder();
-            foreach (var entry in archive.Header.Part2.EntriesByIndex)
+            else if (archive.Header is Nefs16Header h16)
             {
-                headerPart2String.Append($"0x{entry.DirectoryId.Value.ToString("X")}".PadRight(20));
-                headerPart2String.Append($"0x{entry.FirstChildId.Value.ToString("X")}".PadRight(20));
-                headerPart2String.Append($"0x{entry.OffsetIntoPart3.ToString("X")}".PadRight(20));
-                headerPart2String.Append($"0x{entry.ExtractedSize.ToString("X")}".PadRight(20));
-                headerPart2String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
-                headerPart2String.Append("\n");
+                this.richTextBox.Text = this.GetDebugInfoVersion16(h16, source);
             }
-
-            var headerPart3String = new StringBuilder();
-            foreach (var s in archive.Header.Part3.FileNames)
+            else
             {
-                headerPart3String.AppendLine(s);
+                this.richTextBox.Text = "Unknown header version.";
             }
-
-            var headerPart6String = new StringBuilder();
-            foreach (var entry in archive.Header.Part6.EntriesByIndex)
-            {
-                headerPart6String.Append($"0x{entry.Byte0.ToString("X")}".PadRight(20));
-                headerPart6String.Append($"0x{entry.Byte1.ToString("X")}".PadRight(20));
-                headerPart6String.Append($"0x{entry.Byte2.ToString("X")}".PadRight(20));
-                headerPart6String.Append($"0x{entry.Byte3.ToString("X")}".PadRight(20));
-                headerPart6String.Append("\n");
-            }
-
-            var headerPart7String = new StringBuilder();
-            foreach (var entry in archive.Header.Part7.EntriesByIndex)
-            {
-                headerPart7String.Append($"0x{entry.SiblingId.Value.ToString("X")}".PadRight(20));
-                headerPart7String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
-                headerPart7String.Append("\n");
-            }
-
-            this.richTextBox.Text = $@"Archive Source
------------------------------------------------------------
-Header source file:         {source.HeaderFilePath}
-Header offset:              {source.HeaderOffset.ToString("X")}
-Data file path:             {source.DataFilePath}
-Is header/data separate:    {source.IsHeaderSeparate}
-
-General Info
------------------------------------------------------------
-Archive Size:               {archive.Header.Part5.ArchiveSize.ToString("X")}
-Is Header Encrypted?        {archive.Header.Intro.IsEncrypted}
-
-Header size:                {archive.Header.Intro.HeaderSize.ToString("X")}
-Intro size:                 {NefsHeaderIntro.Size.ToString("X")}
-Toc size:                   {NefsHeaderIntroToc.Size.ToString("X")}
-Part 1 size:                {archive.Header.TableOfContents.Part1Size.ToString("X")}
-Part 2 size:                {archive.Header.TableOfContents.Part2Size.ToString("X")}
-Part 3 size:                {archive.Header.TableOfContents.Part3Size.ToString("X")}
-Part 4 size:                {archive.Header.TableOfContents.Part4Size.ToString("X")}
-Part 5 size:                {archive.Header.TableOfContents.Part5Size.ToString("X")}
-Part 6 size:                {archive.Header.TableOfContents.Part6Size.ToString("X")}
-Part 7 size:                {archive.Header.TableOfContents.Part7Size.ToString("X")}
-Part 8 size:                {(archive.Header.Intro.HeaderSize - archive.Header.TableOfContents.OffsetToPart8).ToString("X")}
-
-Header Intro
------------------------------------------------------------
-Magic Number:               {archive.Header.Intro.MagicNumber.ToString("X")}
-Expected SHA-256 hash:      {StringHelper.ByteArrayToString(archive.Header.Intro.ExpectedHash)}
-AES 256 key hex string:     {StringHelper.ByteArrayToString(archive.Header.Intro.AesKeyHexString)}
-Header size:                {archive.Header.Intro.HeaderSize.ToString("X")}
-NeFS version:               {archive.Header.Intro.NefsVersion.ToString("X")}
-Number of items:            {archive.Header.Intro.NumberOfItems.ToString("X")}
-Unknown 0x70:               {archive.Header.Intro.Unknown0x70zlib.ToString("X")}
-Unknown 0x78:               {archive.Header.Intro.Unknown0x78.ToString("X")}
-
-Header Table of Contents
------------------------------------------------------------
-Offset to Part 1:           {archive.Header.TableOfContents.OffsetToPart1.ToString("X")}
-Offset to Part 2:           {archive.Header.TableOfContents.OffsetToPart2.ToString("X")}
-Offset to Part 3:           {archive.Header.TableOfContents.OffsetToPart3.ToString("X")}
-Offset to Part 4:           {archive.Header.TableOfContents.OffsetToPart4.ToString("X")}
-Offset to Part 5:           {archive.Header.TableOfContents.OffsetToPart5.ToString("X")}
-Offset to Part 6:           {archive.Header.TableOfContents.OffsetToPart6.ToString("X")}
-Offset to Part 7:           {archive.Header.TableOfContents.OffsetToPart7.ToString("X")}
-Offset to Part 8:           {archive.Header.TableOfContents.OffsetToPart8.ToString("X")}
-Unknown 0x00:               {archive.Header.TableOfContents.Unknown0x00.ToString("X")}
-Unknown 0x24:               {StringHelper.ByteArrayToString(archive.Header.TableOfContents.Unknown0x24)}
-
-Header Part 1
------------------------------------------------------------
-Data Offset         Metadata index      Index to Part 4     Id
-{headerPart1String.ToString()}
-Header Part 2
------------------------------------------------------------
-Directory Id        First child Id      Part 3 offset       Extracted size      Id
-{headerPart2String.ToString()}
-Header Part 3
------------------------------------------------------------
-{headerPart3String.ToString()}
-Header Part 4
------------------------------------------------------------
-Number of files:            {archive.Header.Part4.EntriesByIndex.Count.ToString("X")}
-
-Header Part 5
------------------------------------------------------------
-Archive size:               {archive.Header.Part5.ArchiveSize.ToString("X")}
-First data offset:          {archive.Header.Part5.FirstDataOffset.ToString("X")}
-Archive name string offset: {archive.Header.Part5.ArchiveNameStringOffset.ToString("X")}
-
-Header Part 6
------------------------------------------------------------
-{headerPart6String.ToString()}
-Header Part 7
------------------------------------------------------------
-{headerPart7String.ToString()}
-";
         }
     }
 }

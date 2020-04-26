@@ -23,7 +23,7 @@ namespace VictorBush.Ego.NefsLib.IO
     /// <summary>
     /// Reads NeFS archives.
     /// </summary>
-    public class NefsReader : INefsReader
+    public partial class NefsReader : INefsReader
     {
         /// <summary>
         /// The default RSA exponent for encrypted headers.
@@ -178,14 +178,14 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             // Read the header
-            NefsHeader header = null;
+            INefsHeader header = null;
             using (var stream = this.FileSystem.File.OpenRead(headerFilePath))
             {
                 header = await this.ReadHeaderAsync(stream, headerOffset, p);
             }
 
             // Create items from header
-            var items = this.CreateItems(dataFilePath, header);
+            var items = header.CreateItemList(dataFilePath);
 
             // Create the archive
             return new NefsArchive(header, items);
@@ -198,16 +198,15 @@ namespace VictorBush.Ego.NefsLib.IO
         }
 
         /// <summary>
-        /// Reads the header from an input stream.
+        /// Reads a version 2.0 header from an input stream.
         /// </summary>
-        /// <param name="originalStream">The stream to read from.</param>
+        /// <param name="stream">The stream to read from.</param>
         /// <param name="offset">The offset to the header from the beginning of the stream.</param>
+        /// <param name="intro">The pre-parsed header intro.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header.</returns>
-        internal async Task<NefsHeader> ReadHeaderAsync(Stream originalStream, ulong offset, NefsProgress p)
+        internal async Task<NefsHeader> Read20HeaderAsync(Stream stream, ulong offset, NefsHeaderIntro intro, NefsProgress p)
         {
-            Stream stream;
-            NefsHeaderIntro intro = null;
             NefsHeaderIntroToc toc = null;
             NefsHeaderPart1 part1 = null;
             NefsHeaderPart2 part2 = null;
@@ -218,14 +217,8 @@ namespace VictorBush.Ego.NefsLib.IO
             NefsHeaderPart7 part7 = null;
             NefsHeaderPart8 part8 = null;
 
-            // Calc weight of each task (8 parts + intro + table of contents)
+            // Calc weight of each task (8 parts + table of contents)
             var weight = 1.0f / 10.0f;
-
-            using (p.BeginTask(weight, "Reading header intro"))
-            {
-                // Decrypt header if needed
-                (intro, stream) = await this.ReadHeaderIntroAsync(originalStream, offset, p);
-            }
 
             using (p.BeginTask(weight, "Reading header intro table of contents"))
             {
@@ -303,6 +296,52 @@ namespace VictorBush.Ego.NefsLib.IO
             stream.Dispose();
 
             return new NefsHeader(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
+        }
+
+        /// <summary>
+        /// Reads the header from an input stream.
+        /// </summary>
+        /// <param name="originalStream">The stream to read from.</param>
+        /// <param name="offset">The offset to the header from the beginning of the stream.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>The loaded header.</returns>
+        internal async Task<INefsHeader> ReadHeaderAsync(Stream originalStream, ulong offset, NefsProgress p)
+        {
+            Stream stream;
+            INefsHeader header = null;
+            NefsHeaderIntro intro = null;
+
+            using (p.BeginTask(0.2f, "Reading header intro"))
+            {
+                // Decrypt header if needed
+                (intro, stream) = await this.ReadHeaderIntroAsync(originalStream, offset, p);
+            }
+
+            using (p.BeginTask(0.8f))
+            {
+                if (intro.NefsVersion == 0x20000)
+                {
+                    // 2.0.0
+                    Log.LogInformation("Detected NeFS version 2.0.");
+                    header = await this.Read20HeaderAsync(stream, 0, intro, p);
+                }
+                else if (intro.NefsVersion == 0x10600)
+                {
+                    // 1.6.0
+                    Log.LogInformation("Detected NeFS version 1.6.");
+                    header = await this.Read16HeaderAsync(stream, 0, intro, p);
+                }
+                else
+                {
+                    Log.LogInformation($"Detected unkown NeFS version {intro.NefsVersion}.");
+                    header = await this.Read20HeaderAsync(stream, 0, intro, p);
+                }
+            }
+
+            // The header stream must be disposed
+            stream.Dispose();
+
+            return header;
         }
 
         /// <summary>
@@ -641,7 +680,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     }
 
                     // Get number of chunks
-                    var numChunks = (int)Math.Ceiling(p2.Data0x0c_ExtractedSize.Value / (double)NefsHeader.ChunkSize);
+                    var numChunks = (int)Math.Ceiling(p2.Data0x0c_ExtractedSize.Value / (double)NefsHeaderIntroToc.ChunkSize);
                     if (numChunks == 0)
                     {
                         Log.LogError($"Item {p1.Id} contains no compressed chunks but was expected to.");
@@ -822,30 +861,6 @@ namespace VictorBush.Ego.NefsLib.IO
 
             await stream.ReadAsync(part8.AllTheData.Value, 0, (int)size, p.CancellationToken);
             return part8;
-        }
-
-        private NefsItemList CreateItems(string dataFilePath, NefsHeader h)
-        {
-            var items = new NefsItemList(dataFilePath);
-            var numItems = h.TableOfContents.Part1Size / NefsHeaderPart1Entry.Size;
-
-            for (var i = 0; i < numItems; ++i)
-            {
-                // Create the item
-                var id = new NefsItemId((uint)i);
-
-                try
-                {
-                    var item = NefsItem.CreateFromHeader(id, h, items);
-                    items.Add(item);
-                }
-                catch (Exception)
-                {
-                    Log.LogError($"Failed to create item {id}, skipping.");
-                }
-            }
-
-            return items;
         }
 
         private bool ValidateHash(Stream stream, ulong offset, NefsHeaderIntro intro)

@@ -57,6 +57,12 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             NefsArchive newArchive = null;
 
+            // Check header version
+            if (!(nefs.Header is NefsHeader header))
+            {
+                throw new NotSupportedException("Can only write v2.0 files right now.");
+            }
+
             // Setup temp working directory
             var workDir = this.PrepareWorkingDirectory(destFilePath);
 
@@ -64,7 +70,7 @@ namespace VictorBush.Ego.NefsLib.IO
             var tempFilePath = Path.Combine(workDir, "temp.nefs");
             using (var file = this.FileSystem.File.Open(tempFilePath, FileMode.Create))
             {
-                newArchive = await this.WriteArchiveAsync(file, nefs.Header, nefs.Items, workDir, p);
+                newArchive = await this.WriteArchiveAsync(file, header, nefs.Items, workDir, p);
             }
 
             // Copy to final destination

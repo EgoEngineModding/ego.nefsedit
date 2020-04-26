@@ -323,7 +323,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             e1p1.Data0x0c_IndexIntoPart4.Value = 0;
             var e1p2 = new NefsHeaderPart2Entry();
             e1p1.Data0x10_Id.Value = e1p1.Id.Value;
-            e1p2.Data0x0c_ExtractedSize.Value = NefsHeader.ChunkSize * 2;
+            e1p2.Data0x0c_ExtractedSize.Value = NefsHeaderIntroToc.ChunkSize * 2;
 
             // Item 2 has 1 chunk size
             var e2p1 = new NefsHeaderPart1Entry();
@@ -331,7 +331,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             e2p1.Data0x0c_IndexIntoPart4.Value = 2;
             var e2p2 = new NefsHeaderPart2Entry();
             e2p2.Data0x10_Id.Value = e2p1.Id.Value;
-            e2p2.Data0x0c_ExtractedSize.Value = NefsHeader.ChunkSize;
+            e2p2.Data0x0c_ExtractedSize.Value = NefsHeaderIntroToc.ChunkSize;
 
             // Item 3 has no chunks
             var e3p1 = new NefsHeaderPart1Entry();
@@ -339,7 +339,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             e3p1.Data0x0c_IndexIntoPart4.Value = 0xFFFFFFFF;
             var e3p2 = new NefsHeaderPart2Entry();
             e3p2.Data0x10_Id.Value = e3p1.Id.Value;
-            e3p2.Data0x0c_ExtractedSize.Value = NefsHeader.ChunkSize;
+            e3p2.Data0x0c_ExtractedSize.Value = NefsHeaderIntroToc.ChunkSize;
 
             // Item 4 is a directory (extracted size == 0)
             var e4p1 = new NefsHeaderPart1Entry();
@@ -355,7 +355,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             e5p1.Data0x0c_IndexIntoPart4.Value = 3;
             var e5p2 = new NefsHeaderPart2Entry();
             e5p2.Data0x10_Id.Value = e5p1.Id.Value;
-            e5p2.Data0x0c_ExtractedSize.Value = (NefsHeader.ChunkSize * 2) + 5;
+            e5p2.Data0x0c_ExtractedSize.Value = (NefsHeaderIntroToc.ChunkSize * 2) + 5;
 
             var part1Items = new List<NefsHeaderPart1Entry>
             {

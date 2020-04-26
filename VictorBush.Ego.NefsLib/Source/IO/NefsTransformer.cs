@@ -39,10 +39,12 @@ namespace VictorBush.Ego.NefsLib.IO
             Int64 inputOffset,
             Stream output,
             Int64 outputOffset,
+            uint extractedSize,
             IReadOnlyList<NefsDataChunk> chunks,
             NefsProgress p)
         {
             var numChunks = chunks.Count;
+            var bytesRemaining = extractedSize;
 
             input.Seek(inputOffset, SeekOrigin.Begin);
             output.Seek(outputOffset, SeekOrigin.Begin);
@@ -53,18 +55,23 @@ namespace VictorBush.Ego.NefsLib.IO
                 {
                     using (var st = p.BeginSubTask(1.0f / numChunks, $"Detransforming chunk {i + 1}/{numChunks}..."))
                     {
+                        // Determine the maximum output size for this chunk based on expected output size
+                        var maxChunkSize = Math.Min(bytesRemaining, chunks[i].Transform.ChunkSize);
+
                         // Revert the transform
-                        await this.DetransformChunkAsync(input, output, chunks[i], p);
+                        var chunkSize = await this.DetransformChunkAsync(input, output, chunks[i], maxChunkSize, p);
+                        bytesRemaining -= chunkSize;
                     }
                 }
             }
         }
 
         /// <inheritdoc/>
-        public async Task DetransformChunkAsync(
+        public async Task<uint> DetransformChunkAsync(
              Stream input,
              Stream output,
              NefsDataChunk chunk,
+             uint maxOutputSize,
              NefsProgress p)
         {
             using (var detransformedStream = new MemoryStream())
@@ -107,7 +114,9 @@ namespace VictorBush.Ego.NefsLib.IO
                 }
 
                 // Copy detransformed chunk to output stream
-                await detransformedStream.CopyToAsync(output, p.CancellationToken);
+                var chunkSize = Math.Min(detransformedStream.Length, maxOutputSize);
+                await detransformedStream.CopyPartialAsync(output, chunkSize, p.CancellationToken);
+                return (uint)chunkSize;
             }
         }
 
@@ -117,6 +126,7 @@ namespace VictorBush.Ego.NefsLib.IO
             Int64 inputOffset,
             string outputFile,
             Int64 outputOffset,
+            uint extractedSize,
             IReadOnlyList<NefsDataChunk> chunks,
             NefsProgress p)
         {
@@ -124,7 +134,7 @@ namespace VictorBush.Ego.NefsLib.IO
             using (var inputStream = this.FileSystem.File.OpenRead(inputFile))
             using (var outputStream = this.FileSystem.File.OpenWrite(outputFile))
             {
-                await this.DetransformAsync(inputStream, inputOffset, outputStream, outputOffset, chunks, p);
+                await this.DetransformAsync(inputStream, inputOffset, outputStream, outputOffset, extractedSize, chunks, p);
             }
         }
 
@@ -209,7 +219,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 if (transform.IsAesEncrypted)
                 {
                     using (var aesManager = this.CreateAesManager(transform.Aes256Key))
-                    using (var cryptoStream = new CryptoStream(transformedStream, aesManager.CreateEncryptor(), CryptoStreamMode.Write, leaveOpen: true))
+                    using (var cryptoStream = new CryptoStream(transformedStream, aesManager.CreateEncryptor(), CryptoStreamMode.Read, leaveOpen: true))
                     using (var tempStream = new MemoryStream())
                     {
                         await cryptoStream.CopyToAsync(tempStream, p.CancellationToken);
