@@ -1,6 +1,7 @@
 # TODO
 - Fix game.dat extract
 - Chunk size source rather than hard code?
+- Logging verbosity options (i.e., settings save/lod, etc can be debug)
 
 - Add a recent files list (https://github.com/victorbush/ego.nefsedit/issues/7).
 - Console logging performance issues (https://github.com/victorbush/ego.nefsedit/issues/8).

@@ -4,7 +4,6 @@ namespace VictorBush.Ego.NefsEdit.Services
 {
     using System.Collections.Generic;
     using VictorBush.Ego.NefsEdit.Settings;
-    using VictorBush.Ego.NefsLib;
 
     /// <summary>
     /// Settings service.
@@ -69,7 +68,7 @@ namespace VictorBush.Ego.NefsEdit.Services
         /// <summary>
         /// Gets or sets the list of recently opened files.
         /// </summary>
-        List<NefsArchiveSource> RecentFiles { get; set; }
+        List<RecentFile> RecentFiles { get; set; }
 
         /// <summary>
         /// Shows a dialog to choose the quick extract dir.

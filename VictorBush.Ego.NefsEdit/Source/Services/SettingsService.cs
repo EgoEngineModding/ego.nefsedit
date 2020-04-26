@@ -12,7 +12,6 @@ namespace VictorBush.Ego.NefsEdit.Services
     using Microsoft.Win32;
     using VictorBush.Ego.NefsEdit.Settings;
     using VictorBush.Ego.NefsEdit.Utility;
-    using VictorBush.Ego.NefsLib;
 
     /// <summary>
     /// Settings service implementation.
@@ -89,7 +88,7 @@ namespace VictorBush.Ego.NefsEdit.Services
         }
 
         /// <inheritdoc/>
-        public List<NefsArchiveSource> RecentFiles
+        public List<RecentFile> RecentFiles
         {
             get => this.Settings.RecentFiles;
             set => this.Settings.RecentFiles = value;

@@ -60,6 +60,7 @@
     <Compile Include="Source\Commands\INefsEditCommand.cs" />
     <Compile Include="Source\Commands\ReplaceFileCommand.cs" />
     <Compile Include="Source\Settings\OpenFileDialogState.cs" />
+    <Compile Include="Source\Settings\RecentFile.cs" />
     <Compile Include="Source\UI\ItemDebugForm.cs">
       <SubType>Form</SubType>
     </Compile>

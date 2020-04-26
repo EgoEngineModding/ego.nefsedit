@@ -4,7 +4,6 @@ namespace VictorBush.Ego.NefsEdit.Settings
 {
     using System;
     using System.Collections.Generic;
-    using VictorBush.Ego.NefsLib;
 
     /// <summary>
     /// Settings.
@@ -17,7 +16,7 @@ namespace VictorBush.Ego.NefsEdit.Settings
         /// </summary>
         public Settings()
         {
-            this.RecentFiles = new List<NefsArchiveSource>();
+            this.RecentFiles = new List<RecentFile>();
             this.OpenFileDialogState = new OpenFileDialogState();
             this.Dirt4Dir = "";
             this.DirtRally1Dir = "";
@@ -53,6 +52,6 @@ namespace VictorBush.Ego.NefsEdit.Settings
         /// <summary>
         /// Gets or sets the list of recently opened files.
         /// </summary>
-        public List<NefsArchiveSource> RecentFiles { get; set; }
+        public List<RecentFile> RecentFiles { get; set; }
     }
 }

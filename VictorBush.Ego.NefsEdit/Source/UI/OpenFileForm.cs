@@ -11,6 +11,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using System.Windows.Forms;
     using Microsoft.Extensions.Logging;
     using VictorBush.Ego.NefsEdit.Services;
+    using VictorBush.Ego.NefsEdit.Settings;
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsLib;
     using VictorBush.Ego.NefsLib.IO;
@@ -307,7 +308,9 @@ namespace VictorBush.Ego.NefsEdit.UI
             {
                 this.DialogResult = DialogResult.OK;
                 this.ArchiveSource = source;
-                this.SettingsService.RecentFiles.Insert(0, source);
+
+                var recentFile = new RecentFile(source);
+                this.SettingsService.RecentFiles.Insert(0, recentFile);
                 this.Close();
             }
         }
@@ -350,6 +353,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.SettingsService.OpenFileDialogState.HeaderPart6Offset = this.headerPart6OffsetTextBox.Text;
             this.SettingsService.OpenFileDialogState.HeaderPath = this.nefsFileTextBox.Text;
             this.SettingsService.OpenFileDialogState.IsAdvanced = this.advancedCheckBox.Checked;
+
+            this.SettingsService.Save();
         }
 
         private NefsArchiveSource ValidateGameDat()
@@ -365,7 +370,9 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private NefsArchiveSource ValidateNefs()
         {
-            var offsetString = this.advancedCheckBox.Checked ? this.headerOffsetTextBox.Text : "0";
+            var isAdvanced = this.advancedCheckBox.Checked;
+
+            var offsetString = isAdvanced ? this.headerOffsetTextBox.Text : "0";
             var offsetNumStyle = NumberStyles.Integer;
             if (!ulong.TryParse(offsetString, offsetNumStyle, CultureInfo.InvariantCulture, out var offset))
             {
@@ -373,30 +380,29 @@ namespace VictorBush.Ego.NefsEdit.UI
                 return null;
             }
 
-            var offsetPart6String = this.advancedCheckBox.Checked ? this.headerPart6OffsetTextBox.Text : "0";
+            var offsetPart6String = isAdvanced ? this.headerPart6OffsetTextBox.Text : "0";
             if (!ulong.TryParse(offsetString, offsetNumStyle, CultureInfo.InvariantCulture, out var offsetPart6))
             {
                 this.UiService.ShowMessageBox($"Invalid header part 6 offset {offsetPart6String}.");
                 return null;
             }
 
-            var source = new NefsArchiveSource(
-                this.nefsFileButton.Text,
-                offset,
-                offsetPart6,
-                this.dataFileTextBox.Text);
+            var headerFile = this.nefsFileTextBox.Text;
+            var dataFile = isAdvanced ? this.dataFileTextBox.Text : headerFile;
+            var source = new NefsArchiveSource(headerFile, offset, offsetPart6, dataFile);
 
             return this.ValidateSource(source) ? source : null;
         }
 
         private NefsArchiveSource ValidateRecent()
         {
-            var source = this.recentListBox.SelectedItem as NefsArchiveSource;
-            if (source == null)
+            var recent = this.recentListBox.SelectedItem as RecentFile;
+            if (recent == null)
             {
                 return null;
             }
 
+            var source = new NefsArchiveSource(recent.HeaderFilePath, recent.HeaderOffset, recent.HeaderPart6Offset, recent.DataFilePath);
             return this.ValidateSource(source) ? source : null;
         }
 
