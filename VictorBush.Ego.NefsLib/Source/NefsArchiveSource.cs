@@ -16,6 +16,7 @@ namespace VictorBush.Ego.NefsLib
         {
             this.HeaderFilePath = nefsFilePath ?? throw new System.ArgumentNullException(nameof(nefsFilePath));
             this.HeaderOffset = 0;
+            this.HeaderPart6Offset = 0;
             this.DataFilePath = nefsFilePath ?? throw new System.ArgumentNullException(nameof(nefsFilePath));
         }
 
@@ -24,25 +25,19 @@ namespace VictorBush.Ego.NefsLib
         /// </summary>
         /// <param name="headerFilePath">File that contains header data.</param>
         /// <param name="headerOffset">Offset to header data.</param>
+        /// <param name="headerPart6Offset">Offset to header part 6 data.</param>
         /// <param name="dataFilePath">File that contains item data.</param>
-        /// <param name="assumeDataIsEncrypted">Indicates whether to assume the item data is encrypted.</param>
         public NefsArchiveSource(
             string headerFilePath,
             ulong headerOffset,
-            string dataFilePath,
-            bool assumeDataIsEncrypted)
+            ulong headerPart6Offset,
+            string dataFilePath)
         {
             this.HeaderFilePath = headerFilePath ?? throw new System.ArgumentNullException(nameof(headerFilePath));
             this.HeaderOffset = headerOffset;
+            this.HeaderPart6Offset = headerPart6Offset;
             this.DataFilePath = dataFilePath ?? throw new System.ArgumentNullException(nameof(dataFilePath));
-            this.AssumeDataIsEncrypted = assumeDataIsEncrypted;
         }
-
-        /// <summary>
-        /// Indicates whether to assume the item data is encrypted. If the header is encrypted, this
-        /// value is ignored and the data is assumed to be encrypted as well.
-        /// </summary>
-        public bool AssumeDataIsEncrypted { get; }
 
         /// <summary>
         /// The file that contents the item data.
@@ -58,6 +53,11 @@ namespace VictorBush.Ego.NefsLib
         /// Offset to the header data.
         /// </summary>
         public ulong HeaderOffset { get; }
+
+        /// <summary>
+        /// Offset to header part 6 data.
+        /// </summary>
+        public ulong HeaderPart6Offset { get; }
 
         /// <summary>
         /// Gets a value indicating whether the archive's header data is in a separate file than the

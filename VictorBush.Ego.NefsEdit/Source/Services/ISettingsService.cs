@@ -2,6 +2,10 @@
 
 namespace VictorBush.Ego.NefsEdit.Services
 {
+    using System.Collections.Generic;
+    using VictorBush.Ego.NefsEdit.Settings;
+    using VictorBush.Ego.NefsLib;
+
     /// <summary>
     /// Settings service.
     /// </summary>
@@ -23,6 +27,21 @@ namespace VictorBush.Ego.NefsEdit.Services
         string Dirt4GameDatDir { get; }
 
         /// <summary>
+        /// Gets or sets the DiRT Rally 1 directory.
+        /// </summary>
+        string DirtRally1Dir { get; set; }
+
+        /// <summary>
+        /// Gets the DiRT Rally 1 executable.
+        /// </summary>
+        string DirtRally1Exe { get; }
+
+        /// <summary>
+        /// Gets the directory that contains game.bin files.
+        /// </summary>
+        string DirtRally1GameBinDir { get; }
+
+        /// <summary>
         /// Gets or sets the DiRT Rally 2 directory.
         /// </summary>
         string DirtRally2Dir { get; set; }
@@ -38,9 +57,19 @@ namespace VictorBush.Ego.NefsEdit.Services
         string DirtRally2GameDatDir { get; }
 
         /// <summary>
+        /// Gets or sets the last state info for the open file dialog.
+        /// </summary>
+        OpenFileDialogState OpenFileDialogState { get; set; }
+
+        /// <summary>
         /// Gets or sets the quick extract directory.
         /// </summary>
         string QuickExtractDir { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of recently opened files.
+        /// </summary>
+        List<NefsArchiveSource> RecentFiles { get; set; }
 
         /// <summary>
         /// Shows a dialog to choose the quick extract dir.

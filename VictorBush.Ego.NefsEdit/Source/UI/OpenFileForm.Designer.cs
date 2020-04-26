@@ -30,13 +30,22 @@
         {
             this.cancelButton = new System.Windows.Forms.Button();
             this.openButton = new System.Windows.Forms.Button();
-            this.typeComboBox = new System.Windows.Forms.ComboBox();
-            this.typeLabel = new System.Windows.Forms.Label();
             this.tablessControl1 = new VictorBush.Ego.NefsEdit.UI.TablessControl();
             this.nefsTabPage = new System.Windows.Forms.TabPage();
+            this.advancedGroupBox = new System.Windows.Forms.GroupBox();
+            this.label1 = new System.Windows.Forms.Label();
+            this.headerPart6OffsetTextBox = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.headerPart6OffsetLabel = new System.Windows.Forms.Label();
+            this.dataFileTextBox = new System.Windows.Forms.TextBox();
+            this.headerOffsetTextBox = new System.Windows.Forms.TextBox();
+            this.dataFileBrowseButton = new System.Windows.Forms.Button();
+            this.advancedCheckBox = new System.Windows.Forms.CheckBox();
             this.fileLabel = new System.Windows.Forms.Label();
             this.nefsFileButton = new System.Windows.Forms.Button();
             this.nefsFileTextBox = new System.Windows.Forms.TextBox();
+            this.recentTabPage = new System.Windows.Forms.TabPage();
+            this.recentListBox = new System.Windows.Forms.ListBox();
             this.gameDatTabPage = new System.Windows.Forms.TabPage();
             this.gameDatDirButton = new System.Windows.Forms.Button();
             this.gameDatDirTextBox = new System.Windows.Forms.TextBox();
@@ -47,29 +56,22 @@
             this.gameExeFileButton = new System.Windows.Forms.Button();
             this.gameExeFileTextBox = new System.Windows.Forms.TextBox();
             this.gameExeFileLabel = new System.Windows.Forms.Label();
-            this.customTabPage = new System.Windows.Forms.TabPage();
-            this.customHeaderOffsetTextBox = new System.Windows.Forms.TextBox();
-            this.customHeaderFileButton = new System.Windows.Forms.Button();
-            this.customHeaderFileTextBox = new System.Windows.Forms.TextBox();
-            this.customHeaderFileLabel = new System.Windows.Forms.Label();
-            this.customDataFileButton = new System.Windows.Forms.Button();
-            this.customHeaderOffsetLabel = new System.Windows.Forms.Label();
-            this.customDataFileTextBox = new System.Windows.Forms.TextBox();
-            this.customDataFileLabel = new System.Windows.Forms.Label();
-            this.customDataIsEncryptedCheckBox = new System.Windows.Forms.CheckBox();
+            this.modeListBox = new System.Windows.Forms.ListBox();
             this.tablessControl1.SuspendLayout();
             this.nefsTabPage.SuspendLayout();
+            this.advancedGroupBox.SuspendLayout();
+            this.recentTabPage.SuspendLayout();
             this.gameDatTabPage.SuspendLayout();
-            this.customTabPage.SuspendLayout();
             this.SuspendLayout();
             // 
             // cancelButton
             // 
             this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(215, 360);
+            this.cancelButton.Location = new System.Drawing.Point(573, 412);
+            this.cancelButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.cancelButton.Name = "cancelButton";
-            this.cancelButton.Size = new System.Drawing.Size(75, 23);
+            this.cancelButton.Size = new System.Drawing.Size(112, 35);
             this.cancelButton.TabIndex = 24;
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
@@ -77,32 +79,14 @@
             // openButton
             // 
             this.openButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.openButton.Location = new System.Drawing.Point(134, 360);
+            this.openButton.Location = new System.Drawing.Point(452, 412);
+            this.openButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.openButton.Name = "openButton";
-            this.openButton.Size = new System.Drawing.Size(75, 23);
+            this.openButton.Size = new System.Drawing.Size(112, 35);
             this.openButton.TabIndex = 23;
             this.openButton.Text = "Open";
             this.openButton.UseVisualStyleBackColor = true;
             this.openButton.Click += new System.EventHandler(this.OpenButton_Click);
-            // 
-            // typeComboBox
-            // 
-            this.typeComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
-            this.typeComboBox.FormattingEnabled = true;
-            this.typeComboBox.Location = new System.Drawing.Point(49, 6);
-            this.typeComboBox.Name = "typeComboBox";
-            this.typeComboBox.Size = new System.Drawing.Size(150, 21);
-            this.typeComboBox.TabIndex = 6;
-            this.typeComboBox.SelectedIndexChanged += new System.EventHandler(this.TypeComboBox_SelectedIndexChanged);
-            // 
-            // typeLabel
-            // 
-            this.typeLabel.AutoSize = true;
-            this.typeLabel.Location = new System.Drawing.Point(12, 9);
-            this.typeLabel.Name = "typeLabel";
-            this.typeLabel.Size = new System.Drawing.Size(31, 13);
-            this.typeLabel.TabIndex = 7;
-            this.typeLabel.Text = "Type";
             // 
             // tablessControl1
             // 
@@ -111,42 +95,145 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tablessControl1.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
             this.tablessControl1.Controls.Add(this.nefsTabPage);
+            this.tablessControl1.Controls.Add(this.recentTabPage);
             this.tablessControl1.Controls.Add(this.gameDatTabPage);
-            this.tablessControl1.Controls.Add(this.customTabPage);
-            this.tablessControl1.Location = new System.Drawing.Point(1, 33);
+            this.tablessControl1.Location = new System.Drawing.Point(210, 14);
+            this.tablessControl1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tablessControl1.Name = "tablessControl1";
             this.tablessControl1.SelectedIndex = 0;
-            this.tablessControl1.Size = new System.Drawing.Size(301, 321);
+            this.tablessControl1.Size = new System.Drawing.Size(481, 388);
             this.tablessControl1.TabIndex = 18;
             // 
             // nefsTabPage
             // 
+            this.nefsTabPage.Controls.Add(this.advancedGroupBox);
+            this.nefsTabPage.Controls.Add(this.advancedCheckBox);
             this.nefsTabPage.Controls.Add(this.fileLabel);
             this.nefsTabPage.Controls.Add(this.nefsFileButton);
             this.nefsTabPage.Controls.Add(this.nefsFileTextBox);
-            this.nefsTabPage.Location = new System.Drawing.Point(4, 25);
+            this.nefsTabPage.Location = new System.Drawing.Point(4, 32);
+            this.nefsTabPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nefsTabPage.Name = "nefsTabPage";
-            this.nefsTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.nefsTabPage.Size = new System.Drawing.Size(293, 292);
+            this.nefsTabPage.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.nefsTabPage.Size = new System.Drawing.Size(473, 352);
             this.nefsTabPage.TabIndex = 0;
             this.nefsTabPage.Text = "NeFS";
             this.nefsTabPage.UseVisualStyleBackColor = true;
             // 
+            // advancedGroupBox
+            // 
+            this.advancedGroupBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.advancedGroupBox.Controls.Add(this.label1);
+            this.advancedGroupBox.Controls.Add(this.headerPart6OffsetTextBox);
+            this.advancedGroupBox.Controls.Add(this.label2);
+            this.advancedGroupBox.Controls.Add(this.headerPart6OffsetLabel);
+            this.advancedGroupBox.Controls.Add(this.dataFileTextBox);
+            this.advancedGroupBox.Controls.Add(this.headerOffsetTextBox);
+            this.advancedGroupBox.Controls.Add(this.dataFileBrowseButton);
+            this.advancedGroupBox.Location = new System.Drawing.Point(7, 106);
+            this.advancedGroupBox.Name = "advancedGroupBox";
+            this.advancedGroupBox.Size = new System.Drawing.Size(459, 238);
+            this.advancedGroupBox.TabIndex = 30;
+            this.advancedGroupBox.TabStop = false;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(4, 19);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(110, 20);
+            this.label1.TabIndex = 24;
+            this.label1.Text = "Header Offset";
+            // 
+            // headerPart6OffsetTextBox
+            // 
+            this.headerPart6OffsetTextBox.Location = new System.Drawing.Point(10, 105);
+            this.headerPart6OffsetTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.headerPart6OffsetTextBox.Name = "headerPart6OffsetTextBox";
+            this.headerPart6OffsetTextBox.Size = new System.Drawing.Size(127, 26);
+            this.headerPart6OffsetTextBox.TabIndex = 29;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(6, 141);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(73, 20);
+            this.label2.TabIndex = 23;
+            this.label2.Text = "Data File";
+            // 
+            // headerPart6OffsetLabel
+            // 
+            this.headerPart6OffsetLabel.AutoSize = true;
+            this.headerPart6OffsetLabel.Location = new System.Drawing.Point(5, 80);
+            this.headerPart6OffsetLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.headerPart6OffsetLabel.Name = "headerPart6OffsetLabel";
+            this.headerPart6OffsetLabel.Size = new System.Drawing.Size(156, 20);
+            this.headerPart6OffsetLabel.TabIndex = 28;
+            this.headerPart6OffsetLabel.Text = "Header Part 6 Offset";
+            // 
+            // dataFileTextBox
+            // 
+            this.dataFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataFileTextBox.Location = new System.Drawing.Point(11, 165);
+            this.dataFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.dataFileTextBox.Name = "dataFileTextBox";
+            this.dataFileTextBox.Size = new System.Drawing.Size(386, 26);
+            this.dataFileTextBox.TabIndex = 26;
+            // 
+            // headerOffsetTextBox
+            // 
+            this.headerOffsetTextBox.Location = new System.Drawing.Point(9, 44);
+            this.headerOffsetTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.headerOffsetTextBox.Name = "headerOffsetTextBox";
+            this.headerOffsetTextBox.Size = new System.Drawing.Size(127, 26);
+            this.headerOffsetTextBox.TabIndex = 25;
+            // 
+            // dataFileBrowseButton
+            // 
+            this.dataFileBrowseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.dataFileBrowseButton.Location = new System.Drawing.Point(408, 162);
+            this.dataFileBrowseButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.dataFileBrowseButton.Name = "dataFileBrowseButton";
+            this.dataFileBrowseButton.Size = new System.Drawing.Size(39, 35);
+            this.dataFileBrowseButton.TabIndex = 27;
+            this.dataFileBrowseButton.Text = "...";
+            this.dataFileBrowseButton.UseVisualStyleBackColor = true;
+            this.dataFileBrowseButton.Click += new System.EventHandler(this.DataFileBrowseButton_Click);
+            // 
+            // advancedCheckBox
+            // 
+            this.advancedCheckBox.AutoSize = true;
+            this.advancedCheckBox.Location = new System.Drawing.Point(15, 83);
+            this.advancedCheckBox.Name = "advancedCheckBox";
+            this.advancedCheckBox.Size = new System.Drawing.Size(106, 24);
+            this.advancedCheckBox.TabIndex = 2;
+            this.advancedCheckBox.Text = "Advanced";
+            this.advancedCheckBox.UseVisualStyleBackColor = true;
+            this.advancedCheckBox.CheckedChanged += new System.EventHandler(this.AdvancedCheckBox_CheckedChanged);
+            // 
             // fileLabel
             // 
             this.fileLabel.AutoSize = true;
-            this.fileLabel.Location = new System.Drawing.Point(6, 8);
+            this.fileLabel.Location = new System.Drawing.Point(9, 12);
+            this.fileLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.fileLabel.Name = "fileLabel";
-            this.fileLabel.Size = new System.Drawing.Size(23, 13);
+            this.fileLabel.Size = new System.Drawing.Size(34, 20);
             this.fileLabel.TabIndex = 0;
             this.fileLabel.Text = "File";
             // 
             // nefsFileButton
             // 
             this.nefsFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.nefsFileButton.Location = new System.Drawing.Point(259, 22);
+            this.nefsFileButton.Location = new System.Drawing.Point(417, 34);
+            this.nefsFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nefsFileButton.Name = "nefsFileButton";
-            this.nefsFileButton.Size = new System.Drawing.Size(26, 23);
+            this.nefsFileButton.Size = new System.Drawing.Size(39, 35);
             this.nefsFileButton.TabIndex = 1;
             this.nefsFileButton.Text = "...";
             this.nefsFileButton.UseVisualStyleBackColor = true;
@@ -156,10 +243,34 @@
             // 
             this.nefsFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.nefsFileTextBox.Location = new System.Drawing.Point(9, 24);
+            this.nefsFileTextBox.Location = new System.Drawing.Point(14, 37);
+            this.nefsFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nefsFileTextBox.Name = "nefsFileTextBox";
-            this.nefsFileTextBox.Size = new System.Drawing.Size(244, 20);
+            this.nefsFileTextBox.Size = new System.Drawing.Size(393, 26);
             this.nefsFileTextBox.TabIndex = 0;
+            // 
+            // recentTabPage
+            // 
+            this.recentTabPage.Controls.Add(this.recentListBox);
+            this.recentTabPage.Location = new System.Drawing.Point(4, 32);
+            this.recentTabPage.Name = "recentTabPage";
+            this.recentTabPage.Padding = new System.Windows.Forms.Padding(3);
+            this.recentTabPage.Size = new System.Drawing.Size(473, 352);
+            this.recentTabPage.TabIndex = 3;
+            this.recentTabPage.Text = "Recent";
+            this.recentTabPage.UseVisualStyleBackColor = true;
+            // 
+            // recentListBox
+            // 
+            this.recentListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.recentListBox.FormattingEnabled = true;
+            this.recentListBox.ItemHeight = 20;
+            this.recentListBox.Location = new System.Drawing.Point(6, 6);
+            this.recentListBox.Name = "recentListBox";
+            this.recentListBox.Size = new System.Drawing.Size(461, 324);
+            this.recentListBox.TabIndex = 26;
             // 
             // gameDatTabPage
             // 
@@ -172,10 +283,11 @@
             this.gameDatTabPage.Controls.Add(this.gameExeFileButton);
             this.gameDatTabPage.Controls.Add(this.gameExeFileTextBox);
             this.gameDatTabPage.Controls.Add(this.gameExeFileLabel);
-            this.gameDatTabPage.Location = new System.Drawing.Point(4, 25);
+            this.gameDatTabPage.Location = new System.Drawing.Point(4, 32);
+            this.gameDatTabPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.gameDatTabPage.Name = "gameDatTabPage";
-            this.gameDatTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.gameDatTabPage.Size = new System.Drawing.Size(293, 292);
+            this.gameDatTabPage.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.gameDatTabPage.Size = new System.Drawing.Size(473, 352);
             this.gameDatTabPage.TabIndex = 1;
             this.gameDatTabPage.Text = "game*.dat";
             this.gameDatTabPage.UseVisualStyleBackColor = true;
@@ -183,9 +295,10 @@
             // gameDatDirButton
             // 
             this.gameDatDirButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.gameDatDirButton.Location = new System.Drawing.Point(261, 66);
+            this.gameDatDirButton.Location = new System.Drawing.Point(421, 102);
+            this.gameDatDirButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.gameDatDirButton.Name = "gameDatDirButton";
-            this.gameDatDirButton.Size = new System.Drawing.Size(26, 23);
+            this.gameDatDirButton.Size = new System.Drawing.Size(39, 35);
             this.gameDatDirButton.TabIndex = 28;
             this.gameDatDirButton.Text = "...";
             this.gameDatDirButton.UseVisualStyleBackColor = true;
@@ -195,26 +308,29 @@
             // 
             this.gameDatDirTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.gameDatDirTextBox.Location = new System.Drawing.Point(11, 68);
+            this.gameDatDirTextBox.Location = new System.Drawing.Point(16, 105);
+            this.gameDatDirTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.gameDatDirTextBox.Name = "gameDatDirTextBox";
-            this.gameDatDirTextBox.Size = new System.Drawing.Size(244, 20);
+            this.gameDatDirTextBox.Size = new System.Drawing.Size(393, 26);
             this.gameDatDirTextBox.TabIndex = 26;
             // 
             // gameDatDirLabel
             // 
             this.gameDatDirLabel.AutoSize = true;
-            this.gameDatDirLabel.Location = new System.Drawing.Point(8, 52);
+            this.gameDatDirLabel.Location = new System.Drawing.Point(12, 80);
+            this.gameDatDirLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.gameDatDirLabel.Name = "gameDatDirLabel";
-            this.gameDatDirLabel.Size = new System.Drawing.Size(100, 13);
+            this.gameDatDirLabel.Size = new System.Drawing.Size(149, 20);
             this.gameDatDirLabel.TabIndex = 27;
             this.gameDatDirLabel.Text = "game*.dat Directory";
             // 
             // gameDatRefreshButton
             // 
             this.gameDatRefreshButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.gameDatRefreshButton.Location = new System.Drawing.Point(10, 263);
+            this.gameDatRefreshButton.Location = new System.Drawing.Point(15, 292);
+            this.gameDatRefreshButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.gameDatRefreshButton.Name = "gameDatRefreshButton";
-            this.gameDatRefreshButton.Size = new System.Drawing.Size(75, 23);
+            this.gameDatRefreshButton.Size = new System.Drawing.Size(112, 35);
             this.gameDatRefreshButton.TabIndex = 25;
             this.gameDatRefreshButton.Text = "Search";
             this.gameDatRefreshButton.UseVisualStyleBackColor = true;
@@ -223,9 +339,10 @@
             // gameDatFilesLabel
             // 
             this.gameDatFilesLabel.AutoSize = true;
-            this.gameDatFilesLabel.Location = new System.Drawing.Point(8, 96);
+            this.gameDatFilesLabel.Location = new System.Drawing.Point(12, 148);
+            this.gameDatFilesLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.gameDatFilesLabel.Name = "gameDatFilesLabel";
-            this.gameDatFilesLabel.Size = new System.Drawing.Size(79, 13);
+            this.gameDatFilesLabel.Size = new System.Drawing.Size(120, 20);
             this.gameDatFilesLabel.TabIndex = 15;
             this.gameDatFilesLabel.Text = "Game Dat Files";
             // 
@@ -235,17 +352,20 @@
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.gameDatFilesListBox.FormattingEnabled = true;
-            this.gameDatFilesListBox.Location = new System.Drawing.Point(10, 112);
+            this.gameDatFilesListBox.ItemHeight = 20;
+            this.gameDatFilesListBox.Location = new System.Drawing.Point(15, 172);
+            this.gameDatFilesListBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.gameDatFilesListBox.Name = "gameDatFilesListBox";
-            this.gameDatFilesListBox.Size = new System.Drawing.Size(275, 147);
+            this.gameDatFilesListBox.Size = new System.Drawing.Size(439, 84);
             this.gameDatFilesListBox.TabIndex = 14;
             // 
             // gameExeFileButton
             // 
             this.gameExeFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.gameExeFileButton.Location = new System.Drawing.Point(260, 22);
+            this.gameExeFileButton.Location = new System.Drawing.Point(419, 34);
+            this.gameExeFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.gameExeFileButton.Name = "gameExeFileButton";
-            this.gameExeFileButton.Size = new System.Drawing.Size(26, 23);
+            this.gameExeFileButton.Size = new System.Drawing.Size(39, 35);
             this.gameExeFileButton.TabIndex = 13;
             this.gameExeFileButton.Text = "...";
             this.gameExeFileButton.UseVisualStyleBackColor = true;
@@ -255,154 +375,64 @@
             // 
             this.gameExeFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.gameExeFileTextBox.Location = new System.Drawing.Point(10, 24);
+            this.gameExeFileTextBox.Location = new System.Drawing.Point(15, 37);
+            this.gameExeFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.gameExeFileTextBox.Name = "gameExeFileTextBox";
-            this.gameExeFileTextBox.Size = new System.Drawing.Size(244, 20);
+            this.gameExeFileTextBox.Size = new System.Drawing.Size(393, 26);
             this.gameExeFileTextBox.TabIndex = 12;
             // 
             // gameExeFileLabel
             // 
             this.gameExeFileLabel.AutoSize = true;
-            this.gameExeFileLabel.Location = new System.Drawing.Point(7, 8);
+            this.gameExeFileLabel.Location = new System.Drawing.Point(10, 12);
+            this.gameExeFileLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.gameExeFileLabel.Name = "gameExeFileLabel";
-            this.gameExeFileLabel.Size = new System.Drawing.Size(91, 13);
+            this.gameExeFileLabel.Size = new System.Drawing.Size(136, 20);
             this.gameExeFileLabel.TabIndex = 12;
             this.gameExeFileLabel.Text = "Game Executable";
             // 
-            // customTabPage
+            // modeListBox
             // 
-            this.customTabPage.Controls.Add(this.customDataIsEncryptedCheckBox);
-            this.customTabPage.Controls.Add(this.customHeaderOffsetTextBox);
-            this.customTabPage.Controls.Add(this.customHeaderFileButton);
-            this.customTabPage.Controls.Add(this.customHeaderFileTextBox);
-            this.customTabPage.Controls.Add(this.customHeaderFileLabel);
-            this.customTabPage.Controls.Add(this.customDataFileButton);
-            this.customTabPage.Controls.Add(this.customHeaderOffsetLabel);
-            this.customTabPage.Controls.Add(this.customDataFileTextBox);
-            this.customTabPage.Controls.Add(this.customDataFileLabel);
-            this.customTabPage.Location = new System.Drawing.Point(4, 25);
-            this.customTabPage.Name = "customTabPage";
-            this.customTabPage.Padding = new System.Windows.Forms.Padding(3);
-            this.customTabPage.Size = new System.Drawing.Size(293, 292);
-            this.customTabPage.TabIndex = 2;
-            this.customTabPage.Text = "Custom";
-            this.customTabPage.UseVisualStyleBackColor = true;
-            // 
-            // customHeaderOffsetTextBox
-            // 
-            this.customHeaderOffsetTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.customHeaderOffsetTextBox.Location = new System.Drawing.Point(9, 68);
-            this.customHeaderOffsetTextBox.Name = "customHeaderOffsetTextBox";
-            this.customHeaderOffsetTextBox.Size = new System.Drawing.Size(71, 20);
-            this.customHeaderOffsetTextBox.TabIndex = 20;
-            // 
-            // customHeaderFileButton
-            // 
-            this.customHeaderFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.customHeaderFileButton.Location = new System.Drawing.Point(229, 22);
-            this.customHeaderFileButton.Name = "customHeaderFileButton";
-            this.customHeaderFileButton.Size = new System.Drawing.Size(26, 23);
-            this.customHeaderFileButton.TabIndex = 19;
-            this.customHeaderFileButton.Text = "...";
-            this.customHeaderFileButton.UseVisualStyleBackColor = true;
-            this.customHeaderFileButton.Click += new System.EventHandler(this.CustomHeaderFileButton_Click);
-            // 
-            // customHeaderFileTextBox
-            // 
-            this.customHeaderFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.customHeaderFileTextBox.Location = new System.Drawing.Point(9, 24);
-            this.customHeaderFileTextBox.Name = "customHeaderFileTextBox";
-            this.customHeaderFileTextBox.Size = new System.Drawing.Size(214, 20);
-            this.customHeaderFileTextBox.TabIndex = 18;
-            // 
-            // customHeaderFileLabel
-            // 
-            this.customHeaderFileLabel.AutoSize = true;
-            this.customHeaderFileLabel.Location = new System.Drawing.Point(6, 8);
-            this.customHeaderFileLabel.Name = "customHeaderFileLabel";
-            this.customHeaderFileLabel.Size = new System.Drawing.Size(61, 13);
-            this.customHeaderFileLabel.TabIndex = 17;
-            this.customHeaderFileLabel.Text = "Header File";
-            // 
-            // customDataFileButton
-            // 
-            this.customDataFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.customDataFileButton.Location = new System.Drawing.Point(229, 110);
-            this.customDataFileButton.Name = "customDataFileButton";
-            this.customDataFileButton.Size = new System.Drawing.Size(26, 23);
-            this.customDataFileButton.TabIndex = 22;
-            this.customDataFileButton.Text = "...";
-            this.customDataFileButton.UseVisualStyleBackColor = true;
-            this.customDataFileButton.Click += new System.EventHandler(this.CustomDataFileButton_Click);
-            // 
-            // customHeaderOffsetLabel
-            // 
-            this.customHeaderOffsetLabel.AutoSize = true;
-            this.customHeaderOffsetLabel.Location = new System.Drawing.Point(6, 52);
-            this.customHeaderOffsetLabel.Name = "customHeaderOffsetLabel";
-            this.customHeaderOffsetLabel.Size = new System.Drawing.Size(73, 13);
-            this.customHeaderOffsetLabel.TabIndex = 16;
-            this.customHeaderOffsetLabel.Text = "Header Offset";
-            // 
-            // customDataFileTextBox
-            // 
-            this.customDataFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.customDataFileTextBox.Location = new System.Drawing.Point(9, 112);
-            this.customDataFileTextBox.Name = "customDataFileTextBox";
-            this.customDataFileTextBox.Size = new System.Drawing.Size(214, 20);
-            this.customDataFileTextBox.TabIndex = 21;
-            // 
-            // customDataFileLabel
-            // 
-            this.customDataFileLabel.AutoSize = true;
-            this.customDataFileLabel.Location = new System.Drawing.Point(6, 96);
-            this.customDataFileLabel.Name = "customDataFileLabel";
-            this.customDataFileLabel.Size = new System.Drawing.Size(49, 13);
-            this.customDataFileLabel.TabIndex = 12;
-            this.customDataFileLabel.Text = "Data File";
-            // 
-            // customDataIsEncryptedCheckBox
-            // 
-            this.customDataIsEncryptedCheckBox.AutoSize = true;
-            this.customDataIsEncryptedCheckBox.Location = new System.Drawing.Point(10, 138);
-            this.customDataIsEncryptedCheckBox.Name = "customDataIsEncryptedCheckBox";
-            this.customDataIsEncryptedCheckBox.Size = new System.Drawing.Size(110, 17);
-            this.customDataIsEncryptedCheckBox.TabIndex = 23;
-            this.customDataIsEncryptedCheckBox.Text = "Data is Encrypted";
-            this.customDataIsEncryptedCheckBox.UseVisualStyleBackColor = true;
+            this.modeListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left)));
+            this.modeListBox.FormattingEnabled = true;
+            this.modeListBox.ItemHeight = 20;
+            this.modeListBox.Location = new System.Drawing.Point(12, 12);
+            this.modeListBox.Name = "modeListBox";
+            this.modeListBox.Size = new System.Drawing.Size(191, 384);
+            this.modeListBox.TabIndex = 25;
+            this.modeListBox.SelectedIndexChanged += new System.EventHandler(this.ModeListBox_SelectedIndexChanged);
             // 
             // OpenFileForm
             // 
             this.AcceptButton = this.openButton;
-            this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
+            this.AutoScaleDimensions = new System.Drawing.SizeF(9F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(302, 395);
+            this.ClientSize = new System.Drawing.Size(704, 466);
+            this.Controls.Add(this.modeListBox);
             this.Controls.Add(this.tablessControl1);
-            this.Controls.Add(this.typeLabel);
-            this.Controls.Add(this.typeComboBox);
             this.Controls.Add(this.openButton);
             this.Controls.Add(this.cancelButton);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+            this.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.MaximizeBox = false;
             this.MinimizeBox = false;
             this.Name = "OpenFileForm";
             this.SizeGripStyle = System.Windows.Forms.SizeGripStyle.Hide;
             this.StartPosition = System.Windows.Forms.FormStartPosition.CenterParent;
             this.Text = "Open";
+            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.OpenFileForm_FormClosing);
             this.Load += new System.EventHandler(this.OpenFileForm_Load);
             this.tablessControl1.ResumeLayout(false);
             this.nefsTabPage.ResumeLayout(false);
             this.nefsTabPage.PerformLayout();
+            this.advancedGroupBox.ResumeLayout(false);
+            this.advancedGroupBox.PerformLayout();
+            this.recentTabPage.ResumeLayout(false);
             this.gameDatTabPage.ResumeLayout(false);
             this.gameDatTabPage.PerformLayout();
-            this.customTabPage.ResumeLayout(false);
-            this.customTabPage.PerformLayout();
             this.ResumeLayout(false);
-            this.PerformLayout();
 
         }
 
@@ -413,29 +443,29 @@
         private System.Windows.Forms.Button nefsFileButton;
         private System.Windows.Forms.Button cancelButton;
         private System.Windows.Forms.Button openButton;
-        private System.Windows.Forms.ComboBox typeComboBox;
-        private System.Windows.Forms.Label typeLabel;
-        private System.Windows.Forms.Button customDataFileButton;
-        private System.Windows.Forms.TextBox customDataFileTextBox;
-        private System.Windows.Forms.Label customDataFileLabel;
-        private System.Windows.Forms.Label customHeaderOffsetLabel;
         private TablessControl tablessControl1;
         private System.Windows.Forms.TabPage nefsTabPage;
         private System.Windows.Forms.TabPage gameDatTabPage;
-        private System.Windows.Forms.TabPage customTabPage;
-        private System.Windows.Forms.Button customHeaderFileButton;
-        private System.Windows.Forms.TextBox customHeaderFileTextBox;
-        private System.Windows.Forms.Label customHeaderFileLabel;
         private System.Windows.Forms.Button gameExeFileButton;
         private System.Windows.Forms.TextBox gameExeFileTextBox;
         private System.Windows.Forms.Label gameExeFileLabel;
-        private System.Windows.Forms.TextBox customHeaderOffsetTextBox;
         private System.Windows.Forms.Label gameDatFilesLabel;
         private System.Windows.Forms.ListBox gameDatFilesListBox;
         private System.Windows.Forms.Button gameDatRefreshButton;
         private System.Windows.Forms.Button gameDatDirButton;
         private System.Windows.Forms.TextBox gameDatDirTextBox;
         private System.Windows.Forms.Label gameDatDirLabel;
-        private System.Windows.Forms.CheckBox customDataIsEncryptedCheckBox;
+        private System.Windows.Forms.ListBox modeListBox;
+        private System.Windows.Forms.TabPage recentTabPage;
+        private System.Windows.Forms.ListBox recentListBox;
+        private System.Windows.Forms.GroupBox advancedGroupBox;
+        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.TextBox headerPart6OffsetTextBox;
+        private System.Windows.Forms.Label label2;
+        private System.Windows.Forms.Label headerPart6OffsetLabel;
+        private System.Windows.Forms.TextBox dataFileTextBox;
+        private System.Windows.Forms.TextBox headerOffsetTextBox;
+        private System.Windows.Forms.Button dataFileBrowseButton;
+        private System.Windows.Forms.CheckBox advancedCheckBox;
     }
 }

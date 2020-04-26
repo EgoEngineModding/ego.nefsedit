@@ -23,13 +23,11 @@ namespace VictorBush.Ego.NefsEdit.UI
     {
         private static readonly ILogger Log = LogHelper.GetLogger();
 
-        private readonly OpenMode openModeCustom = new OpenMode("Custom");
-
+        private readonly OpenMode openModeGameBinDirtRally1 = new OpenMode("game*.bin (DiRT Rally)");
         private readonly OpenMode openModeGameDatDirt4 = new OpenMode("game*.dat (DiRT 4)");
-
         private readonly OpenMode openModeGameDatDirtRally2 = new OpenMode("game*.dat (DiRT Rally 2)");
-
         private readonly OpenMode openModeNefs = new OpenMode("NeFS");
+        private readonly OpenMode openModeRecent = new OpenMode("Recent");
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OpenFileForm"/> class.
@@ -69,19 +67,12 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private IUiService UiService { get; }
 
-        private void CustomDataFileButton_Click(Object sender, EventArgs e)
+        private void AdvancedCheckBox_CheckedChanged(Object sender, EventArgs e)
         {
-            (var result, var path) = this.UiService.ShowOpenFileDialog();
-            if (result != DialogResult.OK)
-            {
-                return;
-            }
-
-            this.customDataFileTextBox.Text = path;
-            this.customDataFileTextBox.ScrollToEnd();
+            this.advancedGroupBox.Enabled = this.advancedCheckBox.Checked;
         }
 
-        private void CustomHeaderFileButton_Click(Object sender, EventArgs e)
+        private void DataFileBrowseButton_Click(Object sender, EventArgs e)
         {
             (var result, var path) = this.UiService.ShowOpenFileDialog();
             if (result != DialogResult.OK)
@@ -89,8 +80,8 @@ namespace VictorBush.Ego.NefsEdit.UI
                 return;
             }
 
-            this.customHeaderFileTextBox.Text = path;
-            this.customHeaderFileTextBox.ScrollToEnd();
+            this.dataFileTextBox.Text = path;
+            this.dataFileTextBox.ScrollToEnd();
         }
 
         /// <summary>
@@ -157,8 +148,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             for (var i = 0; i < gameDatFiles.Count; ++i)
             {
                 var fileName = Path.GetFileName(gameDatFiles[i]);
-                var isDataEncrypted = true;
-                var source = new NefsArchiveSource(gameExePath, headerOffsets[fileName], gameDatFiles[i], isDataEncrypted);
+                // TODO : Part 6 offsets?
+                var source = new NefsArchiveSource(gameExePath, headerOffsets[fileName], 0, gameDatFiles[i]);
                 sources.Add(source);
             }
 
@@ -212,6 +203,69 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.gameExeFileTextBox.ScrollToEnd();
         }
 
+        private void LoadSettings()
+        {
+            this.recentListBox.Items.Clear();
+
+            foreach (var recent in this.SettingsService.RecentFiles)
+            {
+                this.recentListBox.Items.Add(recent);
+            }
+
+            var modeIdx = this.SettingsService.OpenFileDialogState.LastMode;
+            this.modeListBox.SelectedIndex = modeIdx < this.modeListBox.Items.Count ? modeIdx : 0;
+            this.nefsFileTextBox.Text = this.SettingsService.OpenFileDialogState.HeaderPath;
+            this.dataFileTextBox.Text = this.SettingsService.OpenFileDialogState.DataFilePath;
+            this.headerOffsetTextBox.Text = this.SettingsService.OpenFileDialogState.HeaderOffset;
+            this.headerPart6OffsetTextBox.Text = this.SettingsService.OpenFileDialogState.HeaderPart6Offset;
+            this.advancedCheckBox.Checked = this.SettingsService.OpenFileDialogState.IsAdvanced;
+            this.advancedGroupBox.Enabled = this.advancedCheckBox.Checked;
+        }
+
+        private void ModeListBox_SelectedIndexChanged(Object sender, EventArgs e)
+        {
+            if (this.modeListBox.SelectedItem == this.openModeNefs)
+            {
+                // Open NeFS archive
+                this.tablessControl1.SelectedTab = this.nefsTabPage;
+            }
+            else if (this.modeListBox.SelectedItem == this.openModeRecent)
+            {
+                // Open recent
+                this.tablessControl1.SelectedTab = this.recentTabPage;
+            }
+            else if (this.modeListBox.SelectedItem == this.openModeGameBinDirtRally1)
+            {
+                // Open a game*.bin file (DiRT Rally 1)
+                this.tablessControl1.SelectedTab = this.gameDatTabPage;
+                this.gameExeFileTextBox.Text = this.SettingsService.DirtRally1Exe;
+                this.gameExeFileTextBox.ScrollToEnd();
+                this.gameDatDirTextBox.Text = this.SettingsService.DirtRally1GameBinDir;
+                this.gameDatDirTextBox.ScrollToEnd();
+                this.gameDatFilesListBox.Items.Clear();
+            }
+            else if (this.modeListBox.SelectedItem == this.openModeGameDatDirtRally2)
+            {
+                // Open a game*.dat file (DiRT Rally 2)
+                this.tablessControl1.SelectedTab = this.gameDatTabPage;
+                this.gameExeFileTextBox.Text = this.SettingsService.DirtRally2Exe;
+                this.gameExeFileTextBox.ScrollToEnd();
+                this.gameDatDirTextBox.Text = this.SettingsService.DirtRally2GameDatDir;
+                this.gameDatDirTextBox.ScrollToEnd();
+                this.gameDatFilesListBox.Items.Clear();
+            }
+            else if (this.modeListBox.SelectedItem == this.openModeGameDatDirt4)
+            {
+                // Open a game*.dat file (DiRT 4)
+                this.tablessControl1.SelectedTab = this.gameDatTabPage;
+                this.gameExeFileTextBox.Text = this.SettingsService.Dirt4Exe;
+                this.gameExeFileTextBox.ScrollToEnd();
+                this.gameDatDirTextBox.Text = this.SettingsService.Dirt4GameDatDir;
+                this.gameDatDirTextBox.ScrollToEnd();
+                this.gameDatFilesListBox.Items.Clear();
+            }
+        }
+
         private void NefsFileButton_Click(Object sender, EventArgs e)
         {
             (var result, var path) = this.UiService.ShowOpenFileDialog("NeFS Archive (*.nefs)|*.nefs");
@@ -228,133 +282,139 @@ namespace VictorBush.Ego.NefsEdit.UI
         {
             NefsArchiveSource source = null;
 
-            if (this.typeComboBox.SelectedItem == this.openModeNefs)
+            if (this.modeListBox.SelectedItem == this.openModeNefs)
             {
                 source = this.ValidateNefs();
             }
-            else if (this.typeComboBox.SelectedItem == this.openModeGameDatDirtRally2)
+            else if (this.modeListBox.SelectedItem == this.openModeGameDatDirtRally2)
             {
                 source = this.ValidateGameDat();
             }
-            else if (this.typeComboBox.SelectedItem == this.openModeGameDatDirt4)
+            else if (this.modeListBox.SelectedItem == this.openModeGameDatDirt4)
             {
                 source = this.ValidateGameDat();
             }
-            else if (this.typeComboBox.SelectedItem == this.openModeCustom)
+            else if (this.modeListBox.SelectedItem == this.openModeGameBinDirtRally1)
             {
-                source = this.ValidateCustom();
+                source = this.ValidateGameDat();
+            }
+            else if (this.modeListBox.SelectedItem == this.openModeRecent)
+            {
+                source = this.ValidateRecent();
             }
 
             if (source != null)
             {
                 this.DialogResult = DialogResult.OK;
                 this.ArchiveSource = source;
+                this.SettingsService.RecentFiles.Insert(0, source);
                 this.Close();
             }
+        }
+
+        private void OpenFileForm_FormClosing(Object sender, FormClosingEventArgs e)
+        {
+            this.SaveSettings();
         }
 
         private void OpenFileForm_Load(Object sender, EventArgs e)
         {
             // Setup combo box
-            this.typeComboBox.Items.Add(this.openModeNefs);
-            this.typeComboBox.Items.Add(this.openModeGameDatDirtRally2);
-            this.typeComboBox.Items.Add(this.openModeGameDatDirt4);
-            this.typeComboBox.Items.Add(this.openModeCustom);
+            this.modeListBox.Items.Add(this.openModeNefs);
+            this.modeListBox.Items.Add(this.openModeRecent);
+            this.modeListBox.Items.Add(this.openModeGameBinDirtRally1);
+            this.modeListBox.Items.Add(this.openModeGameDatDirtRally2);
+            this.modeListBox.Items.Add(this.openModeGameDatDirt4);
 
             // Select default open mode
-            this.typeComboBox.SelectedItem = this.openModeNefs;
+            this.modeListBox.SelectedItem = this.openModeNefs;
+
+            // Load settings
+            this.LoadSettings();
         }
 
-        private void TypeComboBox_SelectedIndexChanged(Object sender, EventArgs e)
+        /// <summary>
+        /// Saves the current open file dialog state and recently opened files.
+        /// </summary>
+        private void SaveSettings()
         {
-            if (this.typeComboBox.SelectedItem == this.openModeNefs)
+            // Only keep 10 recent items
+            if (this.SettingsService.RecentFiles.Count > 10)
             {
-                // Open NeFS archive
-                this.tablessControl1.SelectedTab = this.nefsTabPage;
-            }
-            else if (this.typeComboBox.SelectedItem == this.openModeGameDatDirtRally2)
-            {
-                // Open a game*.dat file (DiRT Rally 2)
-                this.tablessControl1.SelectedTab = this.gameDatTabPage;
-                this.gameExeFileTextBox.Text = this.SettingsService.DirtRally2Exe;
-                this.gameExeFileTextBox.ScrollToEnd();
-                this.gameDatDirTextBox.Text = this.SettingsService.DirtRally2GameDatDir;
-                this.gameDatDirTextBox.ScrollToEnd();
-                this.gameDatFilesListBox.Items.Clear();
-            }
-            else if (this.typeComboBox.SelectedItem == this.openModeGameDatDirt4)
-            {
-                // Open a game*.dat file (DiRT 4)
-                this.tablessControl1.SelectedTab = this.gameDatTabPage;
-                this.gameExeFileTextBox.Text = this.SettingsService.Dirt4Exe;
-                this.gameExeFileTextBox.ScrollToEnd();
-                this.gameDatDirTextBox.Text = this.SettingsService.Dirt4GameDatDir;
-                this.gameDatDirTextBox.ScrollToEnd();
-                this.gameDatFilesListBox.Items.Clear();
-            }
-            else if (this.typeComboBox.SelectedItem == this.openModeCustom)
-            {
-                // Custom
-                this.tablessControl1.SelectedTab = this.customTabPage;
-            }
-        }
-
-        private NefsArchiveSource ValidateCustom()
-        {
-            if (!this.FileSystem.File.Exists(this.customHeaderFileTextBox.Text))
-            {
-                this.UiService.ShowMessageBox($"Cannot find header file: {this.customHeaderFileTextBox.Text}.");
-                return null;
+                this.SettingsService.RecentFiles.RemoveAt(this.SettingsService.RecentFiles.Count - 1);
             }
 
-            if (!this.FileSystem.File.Exists(this.customDataFileTextBox.Text))
-            {
-                this.UiService.ShowMessageBox($"Cannot find data file: {this.customDataFileTextBox.Text}.");
-                return null;
-            }
-
-            var offsetString = this.customHeaderOffsetTextBox.Text;
-            var offsetNumStyle = NumberStyles.Integer;
-            if (!ulong.TryParse(offsetString, offsetNumStyle, CultureInfo.InvariantCulture, out var offset))
-            {
-                this.UiService.ShowMessageBox($"Invalid header offset {this.customHeaderOffsetTextBox.Text}.");
-                return null;
-            }
-
-            return new NefsArchiveSource(
-                this.customHeaderFileTextBox.Text,
-                offset,
-                this.customDataFileTextBox.Text,
-                this.customDataIsEncryptedCheckBox.Checked);
+            this.SettingsService.OpenFileDialogState.LastMode = this.modeListBox.SelectedIndex;
+            this.SettingsService.OpenFileDialogState.DataFilePath = this.dataFileTextBox.Text;
+            this.SettingsService.OpenFileDialogState.HeaderOffset = this.headerOffsetTextBox.Text;
+            this.SettingsService.OpenFileDialogState.HeaderPart6Offset = this.headerPart6OffsetTextBox.Text;
+            this.SettingsService.OpenFileDialogState.HeaderPath = this.nefsFileTextBox.Text;
+            this.SettingsService.OpenFileDialogState.IsAdvanced = this.advancedCheckBox.Checked;
         }
 
         private NefsArchiveSource ValidateGameDat()
         {
             var selectedItem = this.gameDatFilesListBox.SelectedItem as GameDatFileItem;
-            if (selectedItem == null || !this.FileSystem.File.Exists(selectedItem.Source.DataFilePath))
+            if (selectedItem == null)
             {
-                this.UiService.ShowMessageBox($"Cannot find game*.dat file: {selectedItem?.Source.DataFilePath}.");
                 return null;
             }
 
-            if (!this.FileSystem.File.Exists(this.gameExeFileTextBox.Text))
-            {
-                this.UiService.ShowMessageBox($"Cannot find game executable: {this.gameExeFileTextBox.Text}.");
-                return null;
-            }
-
-            return selectedItem.Source;
+            return this.ValidateSource(selectedItem.Source) ? selectedItem.Source : null;
         }
 
         private NefsArchiveSource ValidateNefs()
         {
-            if (!this.FileSystem.File.Exists(this.nefsFileTextBox.Text))
+            var offsetString = this.advancedCheckBox.Checked ? this.headerOffsetTextBox.Text : "0";
+            var offsetNumStyle = NumberStyles.Integer;
+            if (!ulong.TryParse(offsetString, offsetNumStyle, CultureInfo.InvariantCulture, out var offset))
             {
-                this.UiService.ShowMessageBox($"Cannot find NeFS file: {this.nefsFileTextBox.Text}.");
+                this.UiService.ShowMessageBox($"Invalid header offset {offsetString}.");
                 return null;
             }
 
-            return new NefsArchiveSource(this.nefsFileTextBox.Text);
+            var offsetPart6String = this.advancedCheckBox.Checked ? this.headerPart6OffsetTextBox.Text : "0";
+            if (!ulong.TryParse(offsetString, offsetNumStyle, CultureInfo.InvariantCulture, out var offsetPart6))
+            {
+                this.UiService.ShowMessageBox($"Invalid header part 6 offset {offsetPart6String}.");
+                return null;
+            }
+
+            var source = new NefsArchiveSource(
+                this.nefsFileButton.Text,
+                offset,
+                offsetPart6,
+                this.dataFileTextBox.Text);
+
+            return this.ValidateSource(source) ? source : null;
+        }
+
+        private NefsArchiveSource ValidateRecent()
+        {
+            var source = this.recentListBox.SelectedItem as NefsArchiveSource;
+            if (source == null)
+            {
+                return null;
+            }
+
+            return this.ValidateSource(source) ? source : null;
+        }
+
+        private bool ValidateSource(NefsArchiveSource source)
+        {
+            if (!this.FileSystem.File.Exists(source.HeaderFilePath))
+            {
+                this.UiService.ShowMessageBox($"Cannot find file: {source.HeaderFilePath}.");
+                return false;
+            }
+
+            if (!this.FileSystem.File.Exists(source.DataFilePath))
+            {
+                this.UiService.ShowMessageBox($"Cannot find file: {source.DataFilePath}.");
+                return false;
+            }
+
+            return true;
         }
 
         private class GameDatFileItem
