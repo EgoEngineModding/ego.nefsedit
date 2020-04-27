@@ -100,61 +100,11 @@ namespace VictorBush.Ego.NefsEdit.UI
                 return new List<NefsArchiveSource>();
             }
 
-            var headerOffsets = new Dictionary<string, ulong>();
-            var gameDatFiles = new List<string>();
-
-            // Read whole game exe into memory
-            byte[] gameExeBuffer;
-            using (var t = p.BeginTask(0.20f, "Reading game executable"))
-            using (var reader = this.FileSystem.File.OpenRead(gameExePath))
-            {
-                gameExeBuffer = new byte[reader.Length];
-                await reader.ReadAsync(gameExeBuffer, 0, (int)reader.Length, p.CancellationToken);
-            }
-
             // Search for headers in the exe
-            using (var t = p.BeginTask(0.50f, "Searching for headers"))
+            using (var t = p.BeginTask(1.0f, "Searching for headers"))
             {
-                var searchOffset = 0UL;
-
-                (string DataFileName, ulong Offset)? header;
-                while ((header = await this.Reader.FindHeaderAsync(gameExeBuffer, searchOffset, p)) != null)
-                {
-                    headerOffsets.Add(header.Value.DataFileName, header.Value.Offset);
-                    searchOffset = header.Value.Offset + 4;
-                }
+                return await this.Reader.FindHeadersAsync(gameExePath, gameDatDir, p);
             }
-
-            // Try to match offsets to game.dat files
-            using (var t = p.BeginTask(0.30f, "Searching for game.dat files"))
-            {
-                foreach (var file in this.FileSystem.Directory.EnumerateFiles(gameDatDir))
-                {
-                    var fileName = Path.GetFileName(file);
-                    if (headerOffsets.ContainsKey(fileName))
-                    {
-                        gameDatFiles.Add(file);
-                    }
-                }
-            }
-
-            // Match offsets and files
-            if (gameDatFiles.Count != headerOffsets.Count)
-            {
-                Log.LogError($"Found {gameDatFiles.Count} game*.dat files, but found {headerOffsets.Count} headers in game exectuable.");
-            }
-
-            // Build data sources for the game.dat files
-            var sources = new List<NefsArchiveSource>();
-            for (var i = 0; i < gameDatFiles.Count; ++i)
-            {
-                var fileName = Path.GetFileName(gameDatFiles[i]);
-                // TODO : Part 6 offsets?
-                var source = new NefsArchiveSource(gameExePath, headerOffsets[fileName], 0, gameDatFiles[i]);
-                sources.Add(source);
-            }
-
-            return sources;
         }
 
         private void GameDatDirButton_Click(Object sender, EventArgs e)

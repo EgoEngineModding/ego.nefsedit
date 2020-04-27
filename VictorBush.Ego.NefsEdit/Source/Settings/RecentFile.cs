@@ -71,7 +71,7 @@ namespace VictorBush.Ego.NefsEdit.Settings
                 str += $" [{headerOffsetStr}|{headerPart6OffsetStr}]";
             }
 
-            str += $" [{this.HeaderFilePath}]";
+            str += $" [{this.DataFilePath}]";
 
             return str;
         }

@@ -80,29 +80,55 @@ namespace VictorBush.Ego.NefsLib.IO
         private byte[] RsaPublicKey { get; }
 
         /// <inheritdoc/>
-        public async Task<(string, ulong)?> FindHeaderAsync(byte[] bytes, ulong searchOffset, NefsProgress p)
+        public async Task<List<NefsArchiveSource>> FindHeadersAsync(string exePath, string dataFileDir, NefsProgress p)
         {
-            var i = (long)searchOffset;
-            while (i + 4 <= bytes.Length)
+            var sources = new List<NefsArchiveSource>();
+            var part6Offset = 0U;
+
+            // Load exe into memory
+            var exeBytes = this.FileSystem.File.ReadAllBytes(exePath);
+
+            // Search for the part 6 base offset. For NeFS version 1.6 and 2.0 (maybe others?)
+            // header parts 6 and 7 are stored separate from the other header parts. Not sure of a
+            // good way to find this, but for now we've been lucky that its always started at the
+            // beginning of the ".data" section of the exe. So we can get that offset from the PE header.
+            try
+            {
+                if (!PeHelper.GetRawOffsetToSection(exeBytes, ".data", out var dataSectionOffset))
+                {
+                    Log.LogError("Failed to find part 6 offset; using 0 as offset.");
+                }
+
+                part6Offset = (uint)dataSectionOffset;
+            }
+            catch (Exception ex)
+            {
+                Log.LogError(ex, "Failed to find part 6 offset; using 0 as offset.");
+            }
+
+            // Search for headers
+            var i = 0;
+            while (i + 4 <= exeBytes.Length)
             {
                 var offset = i;
+                i += 4;
+
+                // Check for cancel
+                p.CancellationToken.ThrowIfCancellationRequested();
 
                 // Searching for a NeFS header: Look for 4E 65 46 53 (NeFS). This is the NeFS header
                 // magic number.
-                if (bytes[i++] != 0x4E
-                    || bytes[i++] != 0x65
-                    || bytes[i++] != 0x46
-                    || bytes[i++] != 0x53)
+                if (exeBytes[offset] != 0x4E
+                    || exeBytes[offset + 1] != 0x65
+                    || exeBytes[offset + 2] != 0x46
+                    || exeBytes[offset + 3] != 0x53)
                 {
                     continue;
                 }
 
-                // Check for zlib constant to confirm this is a header. This works for now, but not
-                // the best long term solution.
-                if (bytes[offset + 0x70 + 4] != 0x7A
-                    || bytes[offset + 0x70 + 5] != 0x6C
-                    || bytes[offset + 0x70 + 6] != 0x69
-                    || bytes[offset + 0x70 + 7] != 0x62)
+                // Check for a known version number
+                var version = BitConverter.ToUInt32(exeBytes, offset + 0x68);
+                if (version != 0x20000 && version != 0x10600)
                 {
                     continue;
                 }
@@ -110,7 +136,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 // Try to read header intro
                 try
                 {
-                    using (var byteStream = new MemoryStream(bytes))
+                    using (var byteStream = new MemoryStream(exeBytes))
                     {
                         var (intro, headerStream) = await this.ReadHeaderIntroAsync(byteStream, (ulong)offset, p);
                         using (headerStream)
@@ -138,7 +164,13 @@ namespace VictorBush.Ego.NefsLib.IO
                                 continue;
                             }
 
-                            return (name, (ulong)offset);
+                            // Create archive source for this header
+                            var dataFilePath = Path.Combine(dataFileDir, name);
+                            var source = new NefsArchiveSource(exePath, (ulong)offset, part6Offset, dataFilePath);
+                            sources.Add(source);
+
+                            // Keep looking
+                            offset += (int)intro.HeaderSize;
                         }
                     }
                 }
@@ -149,19 +181,20 @@ namespace VictorBush.Ego.NefsLib.IO
                 }
             }
 
-            return null;
+            return sources;
         }
 
         /// <inheritdoc/>
         public async Task<NefsArchive> ReadArchiveAsync(string filePath, NefsProgress p)
         {
-            return await this.ReadArchiveAsync(filePath, NefsHeader.IntroOffset, filePath, p);
+            return await this.ReadArchiveAsync(filePath, NefsHeader.IntroOffset, 0, filePath, p);
         }
 
         /// <inheritdoc/>
         public async Task<NefsArchive> ReadArchiveAsync(
             string headerFilePath,
             ulong headerOffset,
+            ulong headerPart6Offset,
             string dataFilePath,
             NefsProgress p)
         {
@@ -181,7 +214,7 @@ namespace VictorBush.Ego.NefsLib.IO
             INefsHeader header = null;
             using (var stream = this.FileSystem.File.OpenRead(headerFilePath))
             {
-                header = await this.ReadHeaderAsync(stream, headerOffset, p);
+                header = await this.ReadHeaderAsync(stream, headerOffset, headerPart6Offset, p);
             }
 
             // Create items from header
@@ -194,7 +227,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <inheritdoc/>
         public async Task<NefsArchive> ReadArchiveAsync(NefsArchiveSource source, NefsProgress p)
         {
-            return await this.ReadArchiveAsync(source.HeaderFilePath, source.HeaderOffset, source.DataFilePath, p);
+            return await this.ReadArchiveAsync(source.HeaderFilePath, source.HeaderOffset, source.HeaderPart6Offset, source.DataFilePath, p);
         }
 
         /// <summary>
@@ -303,9 +336,10 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </summary>
         /// <param name="originalStream">The stream to read from.</param>
         /// <param name="offset">The offset to the header from the beginning of the stream.</param>
+        /// <param name="part6Offset">The offset to the start of part 6 data from the beginning of the stream.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header.</returns>
-        internal async Task<INefsHeader> ReadHeaderAsync(Stream originalStream, ulong offset, NefsProgress p)
+        internal async Task<INefsHeader> ReadHeaderAsync(Stream originalStream, ulong offset, ulong part6Offset, NefsProgress p)
         {
             Stream stream;
             INefsHeader header = null;
