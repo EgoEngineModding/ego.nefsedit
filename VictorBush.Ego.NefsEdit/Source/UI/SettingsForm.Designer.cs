@@ -39,13 +39,16 @@
             this.dirt4Button = new System.Windows.Forms.Button();
             this.dirt4Label = new System.Windows.Forms.Label();
             this.dirt4TextBox = new System.Windows.Forms.TextBox();
+            this.dirtRallyButton = new System.Windows.Forms.Button();
+            this.dirtRallyLabel = new System.Windows.Forms.Label();
+            this.dirtRallyTextBox = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // cancelButton
             // 
             this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
-            this.cancelButton.Location = new System.Drawing.Point(189, 142);
+            this.cancelButton.Location = new System.Drawing.Point(189, 175);
             this.cancelButton.Name = "cancelButton";
             this.cancelButton.Size = new System.Drawing.Size(75, 23);
             this.cancelButton.TabIndex = 0;
@@ -56,7 +59,7 @@
             // saveButton
             // 
             this.saveButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.saveButton.Location = new System.Drawing.Point(108, 142);
+            this.saveButton.Location = new System.Drawing.Point(108, 175);
             this.saveButton.Name = "saveButton";
             this.saveButton.Size = new System.Drawing.Size(75, 23);
             this.saveButton.TabIndex = 1;
@@ -77,7 +80,7 @@
             // 
             this.dirtRally2TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.dirtRally2TextBox.Location = new System.Drawing.Point(12, 63);
+            this.dirtRally2TextBox.Location = new System.Drawing.Point(12, 102);
             this.dirtRally2TextBox.Name = "dirtRally2TextBox";
             this.dirtRally2TextBox.Size = new System.Drawing.Size(217, 20);
             this.dirtRally2TextBox.TabIndex = 3;
@@ -94,7 +97,7 @@
             // dirtRally2Label
             // 
             this.dirtRally2Label.AutoSize = true;
-            this.dirtRally2Label.Location = new System.Drawing.Point(12, 47);
+            this.dirtRally2Label.Location = new System.Drawing.Point(12, 86);
             this.dirtRally2Label.Name = "dirtRally2Label";
             this.dirtRally2Label.Size = new System.Drawing.Size(92, 13);
             this.dirtRally2Label.TabIndex = 5;
@@ -103,7 +106,7 @@
             // browseDirtRally2Button
             // 
             this.browseDirtRally2Button.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.browseDirtRally2Button.Location = new System.Drawing.Point(235, 61);
+            this.browseDirtRally2Button.Location = new System.Drawing.Point(235, 100);
             this.browseDirtRally2Button.Name = "browseDirtRally2Button";
             this.browseDirtRally2Button.Size = new System.Drawing.Size(29, 23);
             this.browseDirtRally2Button.TabIndex = 6;
@@ -125,7 +128,7 @@
             // dirt4Button
             // 
             this.dirt4Button.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.dirt4Button.Location = new System.Drawing.Point(235, 100);
+            this.dirt4Button.Location = new System.Drawing.Point(235, 139);
             this.dirt4Button.Name = "dirt4Button";
             this.dirt4Button.Size = new System.Drawing.Size(29, 23);
             this.dirt4Button.TabIndex = 10;
@@ -136,7 +139,7 @@
             // dirt4Label
             // 
             this.dirt4Label.AutoSize = true;
-            this.dirt4Label.Location = new System.Drawing.Point(12, 86);
+            this.dirt4Label.Location = new System.Drawing.Point(12, 125);
             this.dirt4Label.Name = "dirt4Label";
             this.dirt4Label.Size = new System.Drawing.Size(66, 13);
             this.dirt4Label.TabIndex = 9;
@@ -146,10 +149,39 @@
             // 
             this.dirt4TextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.dirt4TextBox.Location = new System.Drawing.Point(12, 102);
+            this.dirt4TextBox.Location = new System.Drawing.Point(12, 141);
             this.dirt4TextBox.Name = "dirt4TextBox";
             this.dirt4TextBox.Size = new System.Drawing.Size(217, 20);
             this.dirt4TextBox.TabIndex = 8;
+            // 
+            // dirtRallyButton
+            // 
+            this.dirtRallyButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.dirtRallyButton.Location = new System.Drawing.Point(236, 61);
+            this.dirtRallyButton.Name = "dirtRallyButton";
+            this.dirtRallyButton.Size = new System.Drawing.Size(29, 23);
+            this.dirtRallyButton.TabIndex = 13;
+            this.dirtRallyButton.Text = "...";
+            this.dirtRallyButton.UseVisualStyleBackColor = true;
+            this.dirtRallyButton.Click += new System.EventHandler(this.DirtRallyButton_Click);
+            // 
+            // dirtRallyLabel
+            // 
+            this.dirtRallyLabel.AutoSize = true;
+            this.dirtRallyLabel.Location = new System.Drawing.Point(13, 47);
+            this.dirtRallyLabel.Name = "dirtRallyLabel";
+            this.dirtRallyLabel.Size = new System.Drawing.Size(83, 13);
+            this.dirtRallyLabel.TabIndex = 12;
+            this.dirtRallyLabel.Text = "DiRT Rally Path";
+            // 
+            // dirtRallyTextBox
+            // 
+            this.dirtRallyTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.dirtRallyTextBox.Location = new System.Drawing.Point(13, 63);
+            this.dirtRallyTextBox.Name = "dirtRallyTextBox";
+            this.dirtRallyTextBox.Size = new System.Drawing.Size(217, 20);
+            this.dirtRallyTextBox.TabIndex = 11;
             // 
             // SettingsForm
             // 
@@ -157,7 +189,10 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.CancelButton = this.cancelButton;
-            this.ClientSize = new System.Drawing.Size(276, 177);
+            this.ClientSize = new System.Drawing.Size(276, 210);
+            this.Controls.Add(this.dirtRallyButton);
+            this.Controls.Add(this.dirtRallyLabel);
+            this.Controls.Add(this.dirtRallyTextBox);
             this.Controls.Add(this.dirt4Button);
             this.Controls.Add(this.dirt4Label);
             this.Controls.Add(this.dirt4TextBox);
@@ -193,5 +228,8 @@
         private System.Windows.Forms.Button dirt4Button;
         private System.Windows.Forms.Label dirt4Label;
         private System.Windows.Forms.TextBox dirt4TextBox;
+        private System.Windows.Forms.Button dirtRallyButton;
+        private System.Windows.Forms.Label dirtRallyLabel;
+        private System.Windows.Forms.TextBox dirtRallyTextBox;
     }
 }

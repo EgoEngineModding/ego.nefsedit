@@ -55,6 +55,17 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.dirt4TextBox.Text = path;
         }
 
+        private void DirtRallyButton_Click(Object sender, EventArgs e)
+        {
+            (var result, var path) = this.UiService.ShowFolderBrowserDialog("Choose the DiRT Rally directory.");
+            if (result != DialogResult.OK)
+            {
+                return;
+            }
+
+            this.dirtRallyTextBox.Text = path;
+        }
+
         private void QuickExtractButton_Click(Object sender, EventArgs e)
         {
             (var result, var path) = this.UiService.ShowFolderBrowserDialog("Choose a quick extract directory.");
@@ -69,6 +80,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         private void SaveButton_Click(Object sender, EventArgs e)
         {
             this.SettingsService.QuickExtractDir = this.quickExtractTextBox.Text;
+            this.SettingsService.DirtRally1Dir = this.dirtRallyTextBox.Text;
             this.SettingsService.DirtRally2Dir = this.dirtRally2TextBox.Text;
             this.SettingsService.Dirt4Dir = this.dirt4TextBox.Text;
             this.SettingsService.Save();
@@ -79,6 +91,9 @@ namespace VictorBush.Ego.NefsEdit.UI
         {
             this.quickExtractTextBox.Text = this.SettingsService.QuickExtractDir;
             this.quickExtractTextBox.ScrollToEnd();
+
+            this.dirtRallyTextBox.Text = this.SettingsService.DirtRally1Dir;
+            this.dirtRallyTextBox.ScrollToEnd();
 
             this.dirtRally2TextBox.Text = this.SettingsService.DirtRally2Dir;
             this.dirtRally2TextBox.ScrollToEnd();

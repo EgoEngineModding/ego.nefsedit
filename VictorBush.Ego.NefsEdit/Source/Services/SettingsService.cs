@@ -212,6 +212,16 @@ namespace VictorBush.Ego.NefsEdit.Services
             var shouldSave = false;
 
             // Try to auto-find game directories if not set
+            if (string.IsNullOrWhiteSpace(this.DirtRally1Dir))
+            {
+                this.DirtRally1Dir = this.FindSteamGameDir(Constants.DirtRally1SteamPath);
+                if (!string.IsNullOrWhiteSpace(this.DirtRally1Dir))
+                {
+                    Log.LogInformation($"Found DiRT Rally directory: {this.DirtRally1Dir}");
+                    shouldSave = true;
+                }
+            }
+
             if (string.IsNullOrWhiteSpace(this.DirtRally2Dir))
             {
                 this.DirtRally2Dir = this.FindSteamGameDir(Constants.DirtRally2SteamPath);
