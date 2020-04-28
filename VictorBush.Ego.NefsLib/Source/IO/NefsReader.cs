@@ -409,7 +409,7 @@ namespace VictorBush.Ego.NefsLib.IO
             {
                 // This is a non-encrypted NeFS header
                 intro = new NefsHeaderIntro();
-                await FileData.ReadDataAsync(stream, offset, intro, p);
+                await FileData.ReadDataAsync(stream, offset, intro, NefsVersion.Version200, p);
 
                 // Copy the entire header to the decrypted stream (nothing to decrypt)
                 stream.Seek((long)offset, SeekOrigin.Begin);
@@ -451,7 +451,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
                 // Read header intro data from decrypted stream
                 intro = new NefsHeaderIntro(isEncrpyted: true);
-                await FileData.ReadDataAsync(decryptedStream, 0, intro, p);
+                await FileData.ReadDataAsync(decryptedStream, 0, intro, NefsVersion.Version200, p);
 
                 // The rest of the header is encrypted using AES-256, decrypt using the key from the
                 // header intro
@@ -494,7 +494,7 @@ namespace VictorBush.Ego.NefsLib.IO
         internal async Task<NefsHeaderIntroToc> ReadHeaderIntroTocAsync(Stream stream, uint offset, NefsProgress p)
         {
             var toc = new NefsHeaderIntroToc();
-            await FileData.ReadDataAsync(stream, offset, toc, p);
+            await FileData.ReadDataAsync(stream, offset, toc, NefsVersion.Version200, p);
             return toc;
         }
 
@@ -526,7 +526,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 using (p.BeginTask(1.0f / numEntries))
                 {
                     var entry = new NefsHeaderPart1Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version200, p);
                     entryOffset += NefsHeaderPart1Entry.Size;
 
                     // Check for duplicate item ids
@@ -573,7 +573,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 using (p.BeginTask(1.0f / numEntries))
                 {
                     var entry = new NefsHeaderPart2Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version200, p);
                     entryOffset += NefsHeaderPart2Entry.Size;
 
                     // Check for duplicate item ids
@@ -768,7 +768,7 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             // Read part 5 data
-            await FileData.ReadDataAsync(stream, offset, part5, p);
+            await FileData.ReadDataAsync(stream, offset, part5, NefsVersion.Version200, p);
             return part5;
         }
 
@@ -818,7 +818,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     }
 
                     var entry = new NefsHeaderPart6Entry(id);
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version200, p);
                     entryOffset += NefsHeaderPart6Entry.Size;
 
                     ids.Add(id);
@@ -857,7 +857,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 using (p.BeginTask(1.0f / numEntries))
                 {
                     var entry = new NefsHeaderPart7Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version200, p);
 
                     // Check for duplicate item ids
                     var id = new NefsItemId(entry.Id.Value);

@@ -135,7 +135,7 @@ namespace VictorBush.Ego.NefsLib.IO
         internal async Task<Nefs16HeaderIntroToc> Read16HeaderIntroTocAsync(Stream stream, uint offset, NefsProgress p)
         {
             var toc = new Nefs16HeaderIntroToc();
-            await FileData.ReadDataAsync(stream, offset, toc, p);
+            await FileData.ReadDataAsync(stream, offset, toc, NefsVersion.Version160, p);
             return toc;
         }
 
@@ -167,7 +167,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 using (p.BeginTask(1.0f / numEntries))
                 {
                     var entry = new Nefs16HeaderPart1Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version160, p);
                     entryOffset += Nefs16HeaderPart1Entry.Size;
 
                     // Check for duplicate item ids
@@ -214,7 +214,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 using (p.BeginTask(1.0f / numEntries))
                 {
                     var entry = new Nefs16HeaderPart2Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version160, p);
                     entryOffset += Nefs16HeaderPart2Entry.Size;
 
                     // Check for duplicate item ids
@@ -372,7 +372,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     for (var chunkIdx = 0; chunkIdx < numChunks; ++chunkIdx)
                     {
                         var chunk = new Nefs16HeaderPart4Chunk();
-                        await FileData.ReadDataAsync(stream, chunkOffset, chunk, p);
+                        await FileData.ReadDataAsync(stream, chunkOffset, chunk, NefsVersion.Version160, p);
                         entry.Chunks.Add(chunk);
 
                         chunkOffset += Nefs16HeaderPart4Chunk.Size;
@@ -406,7 +406,7 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             // Read part 5 data
-            await FileData.ReadDataAsync(stream, offset, part5, p);
+            await FileData.ReadDataAsync(stream, offset, part5, NefsVersion.Version160, p);
             return part5;
         }
 
@@ -456,7 +456,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     }
 
                     var entry = new Nefs16HeaderPart6Entry(id);
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version160, p);
                     entryOffset += Nefs16HeaderPart6Entry.Size;
 
                     ids.Add(id);
@@ -495,7 +495,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 using (p.BeginTask(1.0f / numEntries))
                 {
                     var entry = new Nefs16HeaderPart7Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version160, p);
 
                     // Check for duplicate item ids
                     var id = new NefsItemId(entry.Id.Value);
