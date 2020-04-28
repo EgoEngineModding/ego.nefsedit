@@ -111,6 +111,7 @@
     <Compile Include="Source\NefsArchive.cs" />
     <Compile Include="Source\NefsArchiveSource.cs" />
     <Compile Include="Source\NefsLog.cs" />
+    <Compile Include="Source\NefsVersion.cs" />
     <Compile Include="Source\Progress\NefsProgress.cs" />
     <Compile Include="Source\Progress\NefsProgressEventArgs.cs" />
     <Compile Include="Source\Progress\NefsProgressTask.cs" />
