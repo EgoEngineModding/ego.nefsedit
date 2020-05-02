@@ -88,7 +88,7 @@ Item id:                    {p7?.Id.Value.ToString("X")}
 ";
         }
 
-        private string GetDebugInfoVersion20(NefsItem item, NefsHeader h, NefsItemList items)
+        private string GetDebugInfoVersion20(NefsItem item, Nefs20Header h, NefsItemList items)
         {
             var p1 = h.Part1.EntriesById.GetValueOrDefault(item.Id);
             var p2 = h.Part2.EntriesById.GetValueOrDefault(item.Id);
@@ -180,7 +180,7 @@ Item id:                    {p7?.Id.Value.ToString("X")}
                 return;
             }
 
-            if (archive.Header is NefsHeader h20)
+            if (archive.Header is Nefs20Header h20)
             {
                 this.richTextBox.Text = this.GetDebugInfoVersion20(item, h20, archive.Items);
             }

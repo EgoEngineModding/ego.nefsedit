@@ -38,8 +38,8 @@ namespace VictorBush.Ego.NefsEdit.Tests
             items.Add(file2);
 
             var intro = new NefsHeaderIntro();
-            var toc = new NefsHeaderIntroToc();
-            var header = new NefsHeader(intro, toc, items);
+            var toc = new Nefs20HeaderIntroToc();
+            var header = new Nefs20Header(intro, toc, items);
 
             return new NefsArchive(header, items);
         }

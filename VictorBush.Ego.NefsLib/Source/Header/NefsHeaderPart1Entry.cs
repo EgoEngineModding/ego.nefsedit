@@ -46,12 +46,12 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// The offset into header part 4.
         /// </summary>
-        public UInt64 OffsetIntoPart4 => this.IndexIntoPart4 * NefsHeaderPart4.DataSize;
+        public UInt64 OffsetIntoPart4 => this.IndexIntoPart4 * Nefs20HeaderPart4.DataSize;
 
         /// <summary>
         /// The offset into header part 6.
         /// </summary>
-        public UInt64 OffsetIntoPart6 => this.MetadataIndex * NefsHeaderPart6Entry.Size;
+        public UInt64 OffsetIntoPart6 => this.MetadataIndex * Nefs20HeaderPart6Entry.Size;
 
         /// <summary>
         /// The offset into header part 7.

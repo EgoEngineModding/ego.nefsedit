@@ -8,7 +8,7 @@ namespace VictorBush.Ego.NefsLib.Header
     /// <summary>
     /// An entry in header part 6 for an item in an archive.
     /// </summary>
-    public class NefsHeaderPart6Entry
+    public class Nefs20HeaderPart6Entry
     {
         /// <summary>
         /// The size of a part 6 entry.
@@ -16,10 +16,10 @@ namespace VictorBush.Ego.NefsLib.Header
         public const uint Size = 0x4;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NefsHeaderPart6Entry"/> class.
+        /// Initializes a new instance of the <see cref="Nefs20HeaderPart6Entry"/> class.
         /// </summary>
         /// <param name="id">The item id this entry is for.</param>
-        public NefsHeaderPart6Entry(NefsItemId id)
+        public Nefs20HeaderPart6Entry(NefsItemId id)
         {
             this.Id = id;
         }

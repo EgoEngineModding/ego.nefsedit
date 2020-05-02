@@ -56,7 +56,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             items.Add(file2);
             items.Add(dir1);
 
-            var part4 = new NefsHeaderPart4(items);
+            var part4 = new Nefs20HeaderPart4(items);
             var part1 = new NefsHeaderPart1(items, part4);
 
             /*
@@ -304,7 +304,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             items.Add(dir1);
             items.Add(file3);
 
-            var part4 = new NefsHeaderPart4(items);
+            var part4 = new Nefs20HeaderPart4(items);
 
             /*
             Write
@@ -424,7 +424,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         [Fact]
         public async Task WriterHeaderIntroTocAsync_ValidData_Written()
         {
-            var toc = new NefsHeaderIntroToc();
+            var toc = new Nefs20HeaderIntroToc();
             toc.Data0x04_OffsetToPart1.Value = 111;
             toc.Data0x0c_OffsetToPart2.Value = 222;
             toc.Data0x14_OffsetToPart3.Value = 333;
@@ -433,7 +433,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             toc.Data0x08_OffsetToPart6.Value = 666;
             toc.Data0x10_OffsetToPart7.Value = 777;
             toc.Data0x20_OffsetToPart8.Value = 888;
-            toc.Data0x00_Unknown.Value = 404;
+            toc.Data0x00_NumVolumes.Value = 404;
+            toc.Data0x02_HashBlockSize.Value = 505;
 
             // This chunk of data is unknown, but it must be 0x5C bytes long
             toc.Data0x24_Unknown.Value = new byte[0x5C];
@@ -457,8 +458,11 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             Verify
             */
 
-            // 0x00 unknwon
-            Assert.Equal(404, BitConverter.ToInt32(buffer, offset + 0x00));
+            // Num volumes
+            Assert.Equal(404, BitConverter.ToInt16(buffer, offset + 0x00));
+
+            // Hash block size
+            Assert.Equal(505, BitConverter.ToInt16(buffer, offset + 0x02));
 
             // Offset to part 1
             Assert.Equal(111, BitConverter.ToInt32(buffer, offset + 0x04));

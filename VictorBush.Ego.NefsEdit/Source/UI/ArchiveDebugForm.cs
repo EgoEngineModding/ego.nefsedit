@@ -100,14 +100,11 @@ Is Header Encrypted?        {h.Intro.IsEncrypted}
 
 Header size:                {h.Intro.HeaderSize.ToString("X")}
 Intro size:                 {NefsHeaderIntro.Size.ToString("X")}
-Toc size:                   {NefsHeaderIntroToc.Size.ToString("X")}
+Toc size:                   {Nefs16HeaderIntroToc.Size.ToString("X")}
 Part 1 size:                {h.TableOfContents.Part1Size.ToString("X")}
 Part 2 size:                {h.TableOfContents.Part2Size.ToString("X")}
 Part 3 size:                {h.TableOfContents.Part3Size.ToString("X")}
 Part 4 size:                {h.TableOfContents.Part4Size.ToString("X")}
-Part 5 size:                {h.TableOfContents.Part5Size.ToString("X")}
-Part 6 size:                {h.TableOfContents.Part6Size.ToString("X")}
-Part 7 size:                {h.TableOfContents.Part7Size.ToString("X")}
 Part 8 size:                {(h.Intro.HeaderSize - h.TableOfContents.OffsetToPart8).ToString("X")}
 
 Header Intro
@@ -131,7 +128,10 @@ Offset to Part 5:           {h.TableOfContents.OffsetToPart5.ToString("X")}
 Offset to Part 6:           {h.TableOfContents.OffsetToPart6.ToString("X")}
 Offset to Part 7:           {h.TableOfContents.OffsetToPart7.ToString("X")}
 Offset to Part 8:           {h.TableOfContents.OffsetToPart8.ToString("X")}
-Unknown 0x00:               {h.TableOfContents.Unknown0x00.ToString("X")}
+Num Volumes:                {h.TableOfContents.NumVolumes.ToString("X")}
+Hash Block Size (<< 15):    {h.TableOfContents.HashBlockSize.ToString("X")}
+Block Size (<< 15):         {h.TableOfContents.BlockSize.ToString("X")}
+Split Size (<< 15):         {h.TableOfContents.SplitSize.ToString("X")}
 Unknown 0x28:               {StringHelper.ByteArrayToString(h.TableOfContents.Unknown0x28)}
 
 Header Part 1
@@ -164,7 +164,7 @@ Header Part 7
 ";
         }
 
-        private string GetDebugInfoVersion20(NefsHeader h, NefsArchiveSource source)
+        private string GetDebugInfoVersion20(Nefs20Header h, NefsArchiveSource source)
         {
             var headerPart1String = new StringBuilder();
             foreach (var entry in h.Part1.EntriesByIndex)
@@ -225,14 +225,11 @@ Is Header Encrypted?        {h.Intro.IsEncrypted}
 
 Header size:                {h.Intro.HeaderSize.ToString("X")}
 Intro size:                 {NefsHeaderIntro.Size.ToString("X")}
-Toc size:                   {NefsHeaderIntroToc.Size.ToString("X")}
+Toc size:                   {Nefs20HeaderIntroToc.Size.ToString("X")}
 Part 1 size:                {h.TableOfContents.Part1Size.ToString("X")}
 Part 2 size:                {h.TableOfContents.Part2Size.ToString("X")}
 Part 3 size:                {h.TableOfContents.Part3Size.ToString("X")}
 Part 4 size:                {h.TableOfContents.Part4Size.ToString("X")}
-Part 5 size:                {h.TableOfContents.Part5Size.ToString("X")}
-Part 6 size:                {h.TableOfContents.Part6Size.ToString("X")}
-Part 7 size:                {h.TableOfContents.Part7Size.ToString("X")}
 Part 8 size:                {(h.Intro.HeaderSize - h.TableOfContents.OffsetToPart8).ToString("X")}
 
 Header Intro
@@ -256,7 +253,8 @@ Offset to Part 5:           {h.TableOfContents.OffsetToPart5.ToString("X")}
 Offset to Part 6:           {h.TableOfContents.OffsetToPart6.ToString("X")}
 Offset to Part 7:           {h.TableOfContents.OffsetToPart7.ToString("X")}
 Offset to Part 8:           {h.TableOfContents.OffsetToPart8.ToString("X")}
-Unknown 0x00:               {h.TableOfContents.Unknown0x00.ToString("X")}
+Num Volumes:                {h.TableOfContents.NumVolumes.ToString("X")}
+Hash Block Size (<< 15):    {h.TableOfContents.HashBlockSize.ToString("X")}
 Unknown 0x24:               {StringHelper.ByteArrayToString(h.TableOfContents.Unknown0x24)}
 
 Header Part 1
@@ -325,7 +323,7 @@ Header Part 7
                 return;
             }
 
-            if (archive.Header is NefsHeader h20)
+            if (archive.Header is Nefs20Header h20)
             {
                 this.richTextBox.Text = this.GetDebugInfoVersion20(h20, source);
             }

@@ -12,7 +12,7 @@ namespace VictorBush.Ego.NefsLib.Header
     /// <summary>
     /// Header part 4.
     /// </summary>
-    public class Nefs16HeaderPart4
+    public class Nefs16HeaderPart4 : INefsHeaderPart4
     {
         private static readonly ILogger Log = NefsLog.GetLogger();
         private readonly SortedDictionary<uint, Nefs16HeaderPart4Entry> entriesByIndex;
@@ -147,12 +147,7 @@ namespace VictorBush.Ego.NefsLib.Header
             return chunks;
         }
 
-        /// <summary>
-        /// Gets the index into part 4 for the specified item. The index into part 4 is potentially
-        /// different from the item's id.
-        /// </summary>
-        /// <param name="item">The item to get the index for.</param>
-        /// <returns>The index into part 4.</returns>
+        /// <inheritdoc/>
         public UInt32 GetIndexForItem(NefsItem item)
         {
             // Get index to part 4

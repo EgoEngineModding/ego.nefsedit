@@ -38,7 +38,7 @@ namespace VictorBush.Ego.NefsLib.Utility
         /// <summary>
         /// Offset in a PE section table to the value that specifies the offset to raw data.
         /// </summary>
-        public const uint PeSectionRawDataOffset = 12;
+        public const uint PeSectionRawDataOffset = 20;
 
         /// <summary>
         /// Size of a PE section table.

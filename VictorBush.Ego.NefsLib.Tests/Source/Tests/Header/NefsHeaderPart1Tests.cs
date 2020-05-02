@@ -30,7 +30,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             var dir1 = new NefsItem(new NefsItemId(2), "dir1", new NefsItemId(2), NefsItemType.Directory, dir1DataSource, null, TestHelpers.CreateUnknownData());
             items.Add(dir1);
 
-            var p4 = new NefsHeaderPart4(items);
+            var p4 = new Nefs20HeaderPart4(items);
             var p1 = new NefsHeaderPart1(items, p4);
 
             Assert.Equal(3, p1.EntriesById.Count);
@@ -71,7 +71,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
         public void NefsHeaderPart1_NoItems_EntriesEmpty()
         {
             var items = new NefsItemList(@"C:\archive.nefs");
-            var p4 = new NefsHeaderPart4(items);
+            var p4 = new Nefs20HeaderPart4(items);
             var p1 = new NefsHeaderPart1(items, p4);
             Assert.Empty(p1.EntriesById);
         }

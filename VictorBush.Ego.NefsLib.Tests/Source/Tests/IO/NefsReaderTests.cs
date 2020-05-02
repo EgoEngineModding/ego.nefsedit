@@ -323,7 +323,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             e1p1.Data0x0c_IndexIntoPart4.Value = 0;
             var e1p2 = new NefsHeaderPart2Entry();
             e1p1.Data0x10_Id.Value = e1p1.Id.Value;
-            e1p2.Data0x0c_ExtractedSize.Value = NefsHeaderIntroToc.ChunkSize * 2;
+            e1p2.Data0x0c_ExtractedSize.Value = Nefs20HeaderIntroToc.ChunkSize * 2;
 
             // Item 2 has 1 chunk size
             var e2p1 = new NefsHeaderPart1Entry();
@@ -331,7 +331,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             e2p1.Data0x0c_IndexIntoPart4.Value = 2;
             var e2p2 = new NefsHeaderPart2Entry();
             e2p2.Data0x10_Id.Value = e2p1.Id.Value;
-            e2p2.Data0x0c_ExtractedSize.Value = NefsHeaderIntroToc.ChunkSize;
+            e2p2.Data0x0c_ExtractedSize.Value = Nefs20HeaderIntroToc.ChunkSize;
 
             // Item 3 has no chunks
             var e3p1 = new NefsHeaderPart1Entry();
@@ -339,7 +339,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             e3p1.Data0x0c_IndexIntoPart4.Value = 0xFFFFFFFF;
             var e3p2 = new NefsHeaderPart2Entry();
             e3p2.Data0x10_Id.Value = e3p1.Id.Value;
-            e3p2.Data0x0c_ExtractedSize.Value = NefsHeaderIntroToc.ChunkSize;
+            e3p2.Data0x0c_ExtractedSize.Value = Nefs20HeaderIntroToc.ChunkSize;
 
             // Item 4 is a directory (extracted size == 0)
             var e4p1 = new NefsHeaderPart1Entry();
@@ -355,7 +355,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             e5p1.Data0x0c_IndexIntoPart4.Value = 3;
             var e5p2 = new NefsHeaderPart2Entry();
             e5p2.Data0x10_Id.Value = e5p1.Id.Value;
-            e5p2.Data0x0c_ExtractedSize.Value = (NefsHeaderIntroToc.ChunkSize * 2) + 5;
+            e5p2.Data0x0c_ExtractedSize.Value = (Nefs20HeaderIntroToc.ChunkSize * 2) + 5;
 
             var part1Items = new List<NefsHeaderPart1Entry>
             {
@@ -406,7 +406,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             var offset = (uint)2;
 
             // Test
-            var part4 = await reader.ReadHeaderPart4Async(stream, offset, size, part1, part2, this.p);
+            var part4 = await reader.Read20HeaderPart4Async(stream, offset, size, part1, part2, this.p);
 
             // Verify
             Assert.Equal(3, part4.EntriesByIndex.Count);
@@ -458,12 +458,11 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         {
             var reader = new NefsReader(this.fileSystem);
             NefsHeaderPart2 part2;
-            NefsHeaderPart6 part6;
+            Nefs20HeaderPart6 part6;
 
             var part2Offset = (uint)5;
             var part2Size = 2 * NefsHeaderPart2Entry.Size;
 
-            var part6Size = 2 * NefsHeaderPart6Entry.Size;
             var part6Offset = (uint)5;
 
             // In this test, part 2 is not ordered by id
@@ -508,7 +507,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Test
             using (var part6Stream = new MemoryStream(bytes))
             {
-                part6 = await reader.ReadHeaderPart6Async(part6Stream, part6Offset, part6Size, part2, this.p);
+                part6 = await reader.Read20HeaderPart6Async(part6Stream, part6Offset, 2, part2, this.p);
             }
 
             // Verify
@@ -548,11 +547,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var stream = new MemoryStream(bytes);
             var reader = new NefsReader(this.fileSystem);
-            var size = 2 * NefsHeaderPart7Entry.Size;
             var offset = (uint)5;
 
             // Test
-            var part7 = await reader.ReadHeaderPart7Async(stream, offset, size, this.p);
+            var part7 = await reader.ReadHeaderPart7Async(stream, offset, 2, this.p);
 
             // Verify
             Assert.Equal(2, part7.EntriesByIndex.Count);

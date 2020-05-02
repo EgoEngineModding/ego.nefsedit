@@ -23,9 +23,9 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
             var intro = new NefsHeaderIntro();
             intro.Data0x6c_NumberOfItems.Value = (uint)items.Count;
-            var toc = new NefsHeaderIntroToc();
+            var toc = new Nefs20HeaderIntroToc();
 
-            var header = new NefsHeader(intro, toc, items);
+            var header = new Nefs20Header(intro, toc, items);
 
             return new NefsArchive(header, items);
         }

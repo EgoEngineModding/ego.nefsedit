@@ -11,7 +11,7 @@ namespace VictorBush.Ego.NefsLib.Header
     /// <summary>
     /// Header part 4.
     /// </summary>
-    public class NefsHeaderPart4
+    public class Nefs20HeaderPart4 : INefsHeaderPart4
     {
         /// <summary>
         /// The size of a peice of data in a part 4 entry. This is used to get the offset into part
@@ -19,17 +19,17 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         public const int DataSize = 0x04;
 
-        private readonly SortedDictionary<uint, NefsHeaderPart4Entry> entriesByIndex;
+        private readonly SortedDictionary<uint, Nefs20HeaderPart4Entry> entriesByIndex;
 
         private readonly Dictionary<NefsItemId, uint> indexById;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NefsHeaderPart4"/> class.
+        /// Initializes a new instance of the <see cref="Nefs20HeaderPart4"/> class.
         /// </summary>
         /// <param name="entries">A collection of entries to initialize this object with.</param>
-        internal NefsHeaderPart4(IDictionary<UInt32, NefsHeaderPart4Entry> entries)
+        internal Nefs20HeaderPart4(IDictionary<UInt32, Nefs20HeaderPart4Entry> entries)
         {
-            this.entriesByIndex = new SortedDictionary<UInt32, NefsHeaderPart4Entry>(entries);
+            this.entriesByIndex = new SortedDictionary<UInt32, Nefs20HeaderPart4Entry>(entries);
             this.indexById = new Dictionary<NefsItemId, UInt32>(this.entriesByIndex.ToDictionary(i => i.Value.Id, i => i.Key));
 
             // Compute size
@@ -37,12 +37,12 @@ namespace VictorBush.Ego.NefsLib.Header
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NefsHeaderPart4"/> class from a list of items.
+        /// Initializes a new instance of the <see cref="Nefs20HeaderPart4"/> class from a list of items.
         /// </summary>
         /// <param name="items">The items to initialize from.</param>
-        internal NefsHeaderPart4(NefsItemList items)
+        internal Nefs20HeaderPart4(NefsItemList items)
         {
-            this.entriesByIndex = new SortedDictionary<UInt32, NefsHeaderPart4Entry>();
+            this.entriesByIndex = new SortedDictionary<UInt32, Nefs20HeaderPart4Entry>();
             this.indexById = new Dictionary<NefsItemId, UInt32>();
 
             var nextIdx = 0;
@@ -55,7 +55,7 @@ namespace VictorBush.Ego.NefsLib.Header
                 }
 
                 // Create entry
-                var entry = new NefsHeaderPart4Entry(item.Id);
+                var entry = new Nefs20HeaderPart4Entry(item.Id);
                 entry.ChunkSizes.AddRange(item.DataSource.Size.Chunks.Select(c => c.CumulativeSize));
 
                 // Add to entries list and advance index
@@ -71,13 +71,13 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Gets the list of entries in the correct order.
         /// </summary>
-        public IEnumerable<NefsHeaderPart4Entry> Entries => this.entriesByIndex.Values;
+        public IEnumerable<Nefs20HeaderPart4Entry> Entries => this.entriesByIndex.Values;
 
         /// <summary>
         /// The dictionary of chunk sizes lists. The key is the index into the of chunks sizes. The
         /// value is the part 4 entry for that item.
         /// </summary>
-        public IReadOnlyDictionary<UInt32, NefsHeaderPart4Entry> EntriesByIndex => this.entriesByIndex;
+        public IReadOnlyDictionary<UInt32, Nefs20HeaderPart4Entry> EntriesByIndex => this.entriesByIndex;
 
         /// <summary>
         /// Gets the current size of header part 4.
@@ -145,12 +145,7 @@ namespace VictorBush.Ego.NefsLib.Header
             }
         }
 
-        /// <summary>
-        /// Gets the index into part 4 for the specified item. The index into part 4 is potentially
-        /// different from the item's id.
-        /// </summary>
-        /// <param name="item">The item to get the index for.</param>
-        /// <returns>The index into part 4.</returns>
+        /// <inheritdoc/>
         public UInt32 GetIndexForItem(NefsItem item)
         {
             // Get index to part 4

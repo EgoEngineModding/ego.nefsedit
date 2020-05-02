@@ -183,7 +183,7 @@ namespace VictorBush.Ego.NefsEdit.UI
                 this.AddSubItem(listItem, "compressedSize", item.CompressedSize.ToString("X"));
                 this.AddSubItem(listItem, "extractedSize", item.ExtractedSize.ToString("X"));
 
-                if (archive.Header is NefsHeader h20)
+                if (archive.Header is Nefs20Header h20)
                 {
                     var p1 = h20.Part1.EntriesById[item.Id];
                     this.AddSubItem(listItem, "pt1.0x00", p1.OffsetToData.ToString("X"));

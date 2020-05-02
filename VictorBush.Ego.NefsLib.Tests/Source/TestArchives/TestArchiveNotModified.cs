@@ -50,7 +50,7 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
         public static string File1Name => "file1.txt";
 
-        public static UInt64 File1Offset => NefsHeader.DataOffsetDefault;
+        public static UInt64 File1Offset => Nefs20Header.DataOffsetDefault;
 
         public static string File1PathInArchive => File1Name;
 
@@ -135,9 +135,9 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
             intro.Data0x6c_NumberOfItems.Value = (uint)items.Count;
             intro.Data0x24_AesKeyHexString.Value = Encoding.ASCII.GetBytes(aesString);
 
-            var toc = new NefsHeaderIntroToc();
+            var toc = new Nefs20HeaderIntroToc();
 
-            var header = new NefsHeader(intro, toc, items);
+            var header = new Nefs20Header(intro, toc, items);
 
             return new NefsArchive(header, items);
         }

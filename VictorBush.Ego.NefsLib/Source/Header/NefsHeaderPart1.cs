@@ -29,13 +29,13 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         /// <param name="items">The list of items in the archive sorted by id.</param>
         /// <param name="part4">Header part 4.</param>
-        internal NefsHeaderPart1(NefsItemList items, NefsHeaderPart4 part4)
+        internal NefsHeaderPart1(NefsItemList items, INefsHeaderPart4 part4)
         {
             this.entriesById = new SortedDictionary<NefsItemId, NefsHeaderPart1Entry>();
             var nextMetadataIndex = 0U;
 
-            // Enumerate this list depth first. This determines the metadata index.
-            // The part 1 entries will be sorted by item id.
+            // Enumerate this list depth first. This determines the metadata index. The part 1
+            // entries will be sorted by item id.
             foreach (var item in items.EnumerateDepthFirstByName())
             {
                 var entry = new NefsHeaderPart1Entry();
@@ -58,8 +58,8 @@ namespace VictorBush.Ego.NefsLib.Header
         public IReadOnlyDictionary<NefsItemId, NefsHeaderPart1Entry> EntriesById => this.entriesById;
 
         /// <summary>
-        /// Gets the list of entries in the order they appear in the header. For part 1,
-        /// the items should be sorted by id.
+        /// Gets the list of entries in the order they appear in the header. For part 1, the items
+        /// should be sorted by id.
         /// </summary>
         public IList<NefsHeaderPart1Entry> EntriesByIndex => this.entriesByIndex;
     }

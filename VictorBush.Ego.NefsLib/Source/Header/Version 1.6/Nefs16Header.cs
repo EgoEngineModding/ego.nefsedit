@@ -6,6 +6,7 @@ namespace VictorBush.Ego.NefsLib.Header
     using Microsoft.Extensions.Logging;
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.Item;
+    using VictorBush.Ego.NefsLib.Progress;
 
     /// <summary>
     /// A NeFS archive header.
@@ -45,14 +46,14 @@ namespace VictorBush.Ego.NefsLib.Header
         public Nefs16Header(
             NefsHeaderIntro intro,
             Nefs16HeaderIntroToc toc,
-            Nefs16HeaderPart1 part1,
-            Nefs16HeaderPart2 part2,
-            Nefs16HeaderPart3 part3,
+            NefsHeaderPart1 part1,
+            NefsHeaderPart2 part2,
+            NefsHeaderPart3 part3,
             Nefs16HeaderPart4 part4,
-            Nefs16HeaderPart5 part5,
+            NefsHeaderPart5 part5,
             Nefs16HeaderPart6 part6,
-            Nefs16HeaderPart7 part7,
-            Nefs16HeaderPart8 part8)
+            NefsHeaderPart7 part7,
+            NefsHeaderPart8 part8)
         {
             this.Intro = intro ?? throw new ArgumentNullException(nameof(intro));
             this.TableOfContents = toc ?? throw new ArgumentNullException(nameof(toc));
@@ -77,15 +78,15 @@ namespace VictorBush.Ego.NefsLib.Header
             this.Intro = intro ?? throw new ArgumentNullException(nameof(intro));
             this.TableOfContents = toc ?? throw new ArgumentNullException(nameof(toc));
 
-            this.Part3 = new Nefs16HeaderPart3(items);
+            this.Part3 = new NefsHeaderPart3(items);
             this.Part4 = new Nefs16HeaderPart4(items);
 
-            this.Part1 = new Nefs16HeaderPart1(items, this.Part4);
-            this.Part2 = new Nefs16HeaderPart2(items, this.Part3);
-            this.Part5 = new Nefs16HeaderPart5();
+            this.Part1 = new NefsHeaderPart1(items, this.Part4);
+            this.Part2 = new NefsHeaderPart2(items, this.Part3);
+            this.Part5 = new NefsHeaderPart5();
             this.Part6 = new Nefs16HeaderPart6(items);
-            this.Part7 = new Nefs16HeaderPart7(items);
-            this.Part8 = new Nefs16HeaderPart8(intro.HeaderSize - toc.OffsetToPart8);
+            this.Part7 = new NefsHeaderPart7(items);
+            this.Part8 = new NefsHeaderPart8(intro.HeaderSize - toc.OffsetToPart8);
         }
 
         /// <summary>
@@ -99,17 +100,17 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Header part 1.
         /// </summary>
-        public Nefs16HeaderPart1 Part1 { get; }
+        public NefsHeaderPart1 Part1 { get; }
 
         /// <summary>
         /// Header part 2.
         /// </summary>
-        public Nefs16HeaderPart2 Part2 { get; }
+        public NefsHeaderPart2 Part2 { get; }
 
         /// <summary>
         /// Header part 3.
         /// </summary>
-        public Nefs16HeaderPart3 Part3 { get; }
+        public NefsHeaderPart3 Part3 { get; }
 
         /// <summary>
         /// Header part 4.
@@ -119,7 +120,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Header part 5.
         /// </summary>
-        public Nefs16HeaderPart5 Part5 { get; }
+        public NefsHeaderPart5 Part5 { get; }
 
         /// <summary>
         /// Header part 6.
@@ -129,12 +130,12 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Header part 7.
         /// </summary>
-        public Nefs16HeaderPart7 Part7 { get; }
+        public NefsHeaderPart7 Part7 { get; }
 
         /// <summary>
         /// Header part 8.
         /// </summary>
-        public Nefs16HeaderPart8 Part8 { get; }
+        public NefsHeaderPart8 Part8 { get; }
 
         /// <summary>
         /// The header intro table of contents.
@@ -146,13 +147,7 @@ namespace VictorBush.Ego.NefsLib.Header
         {
             var p1 = this.Part1.EntriesById[id];
             var p2 = this.Part2.EntriesById[id];
-
-            // Check if part 6 exists
-            Nefs16HeaderPart6Entry p6 = null;
-            if (this.Part6.EntriesById.ContainsKey(id))
-            {
-                p6 = this.Part6.EntriesById[id];
-            }
+            var p6 = this.Part6.EntriesById[id];
 
             // Determine type
             var type = p2.Data0x0c_ExtractedSize.Value == 0 ? NefsItemType.Directory : NefsItemType.File;
@@ -165,7 +160,7 @@ namespace VictorBush.Ego.NefsLib.Header
             var extractedSize = p2.Data0x0c_ExtractedSize.Value;
 
             // Transform
-            var transform = new NefsDataTransform(NefsHeaderIntroToc.ChunkSize, true, this.Intro.IsEncrypted ? this.Intro.GetAesKey() : null);
+            var transform = new NefsDataTransform(Nefs20HeaderIntroToc.ChunkSize, true, this.Intro.IsEncrypted ? this.Intro.GetAesKey() : null);
 
             // Data source
             INefsDataSource dataSource;
@@ -206,12 +201,13 @@ namespace VictorBush.Ego.NefsLib.Header
         }
 
         /// <inheritdoc/>
-        public NefsItemList CreateItemList(String dataFilePath)
+        public NefsItemList CreateItemList(String dataFilePath, NefsProgress p)
         {
             var items = new NefsItemList(dataFilePath);
 
             foreach (var entry in this.Part1.EntriesById)
             {
+                p.CancellationToken.ThrowIfCancellationRequested();
                 var id = entry.Key;
 
                 try

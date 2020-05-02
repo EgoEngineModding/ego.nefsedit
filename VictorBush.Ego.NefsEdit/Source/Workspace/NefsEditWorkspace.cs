@@ -282,6 +282,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                         Log.LogInformation($"Opening archive:");
                         Log.LogInformation($"Header file: {source.HeaderFilePath}");
                         Log.LogInformation($"Header offset: {source.HeaderOffset}");
+                        Log.LogInformation($"Header part 6 offset: {source.HeaderPart6Offset}");
                         Log.LogInformation($"Data file: {source.DataFilePath}");
                     }
                     else

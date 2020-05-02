@@ -6,11 +6,12 @@ namespace VictorBush.Ego.NefsLib.Header
     using Microsoft.Extensions.Logging;
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.Item;
+    using VictorBush.Ego.NefsLib.Progress;
 
     /// <summary>
     /// A NeFS archive header.
     /// </summary>
-    public class NefsHeader : INefsHeader
+    public class Nefs20Header : INefsHeader
     {
         /// <summary>
         /// Offset to the first data item used in most archives.
@@ -30,7 +31,7 @@ namespace VictorBush.Ego.NefsLib.Header
         private static readonly ILogger Log = NefsLog.GetLogger();
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NefsHeader"/> class.
+        /// Initializes a new instance of the <see cref="Nefs20Header"/> class.
         /// </summary>
         /// <param name="intro">Header intro.</param>
         /// <param name="toc">Header intro table of contents.</param>
@@ -42,15 +43,15 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="part6">Header part 6.</param>
         /// <param name="part7">Header part 7.</param>
         /// <param name="part8">Header part 8.</param>
-        public NefsHeader(
+        public Nefs20Header(
             NefsHeaderIntro intro,
-            NefsHeaderIntroToc toc,
+            Nefs20HeaderIntroToc toc,
             NefsHeaderPart1 part1,
             NefsHeaderPart2 part2,
             NefsHeaderPart3 part3,
-            NefsHeaderPart4 part4,
+            Nefs20HeaderPart4 part4,
             NefsHeaderPart5 part5,
-            NefsHeaderPart6 part6,
+            Nefs20HeaderPart6 part6,
             NefsHeaderPart7 part7,
             NefsHeaderPart8 part8)
         {
@@ -67,23 +68,23 @@ namespace VictorBush.Ego.NefsLib.Header
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="NefsHeader"/> class.
+        /// Initializes a new instance of the <see cref="Nefs20Header"/> class.
         /// </summary>
         /// <param name="intro">Header intro.</param>
         /// <param name="toc">Header intro table of contents.</param>
         /// <param name="items">List of items.</param>
-        public NefsHeader(NefsHeaderIntro intro, NefsHeaderIntroToc toc, NefsItemList items)
+        public Nefs20Header(NefsHeaderIntro intro, Nefs20HeaderIntroToc toc, NefsItemList items)
         {
             this.Intro = intro ?? throw new ArgumentNullException(nameof(intro));
             this.TableOfContents = toc ?? throw new ArgumentNullException(nameof(toc));
 
             this.Part3 = new NefsHeaderPart3(items);
-            this.Part4 = new NefsHeaderPart4(items);
+            this.Part4 = new Nefs20HeaderPart4(items);
 
             this.Part1 = new NefsHeaderPart1(items, this.Part4);
             this.Part2 = new NefsHeaderPart2(items, this.Part3);
             this.Part5 = new NefsHeaderPart5();
-            this.Part6 = new NefsHeaderPart6(items);
+            this.Part6 = new Nefs20HeaderPart6(items);
             this.Part7 = new NefsHeaderPart7(items);
             this.Part8 = new NefsHeaderPart8(intro.HeaderSize - toc.OffsetToPart8);
         }
@@ -114,7 +115,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Header part 4.
         /// </summary>
-        public NefsHeaderPart4 Part4 { get; }
+        public Nefs20HeaderPart4 Part4 { get; }
 
         /// <summary>
         /// Header part 5.
@@ -124,7 +125,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Header part 6.
         /// </summary>
-        public NefsHeaderPart6 Part6 { get; }
+        public Nefs20HeaderPart6 Part6 { get; }
 
         /// <summary>
         /// Header part 7.
@@ -139,20 +140,14 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// The header intro table of contents.
         /// </summary>
-        public NefsHeaderIntroToc TableOfContents { get; }
+        public Nefs20HeaderIntroToc TableOfContents { get; }
 
         /// <inheritdoc/>
         public NefsItem CreateItemInfo(NefsItemId id, NefsItemList dataSourceList)
         {
             var p1 = this.Part1.EntriesById[id];
             var p2 = this.Part2.EntriesById[id];
-
-            // Check if part 6 exists
-            NefsHeaderPart6Entry p6 = null;
-            if (this.Part6.EntriesById.ContainsKey(id))
-            {
-                p6 = this.Part6.EntriesById[id];
-            }
+            var p6 = this.Part6.EntriesById[id];
 
             // Determine type
             var type = p2.Data0x0c_ExtractedSize.Value == 0 ? NefsItemType.Directory : NefsItemType.File;
@@ -165,7 +160,7 @@ namespace VictorBush.Ego.NefsLib.Header
             var extractedSize = p2.Data0x0c_ExtractedSize.Value;
 
             // Transform
-            var transform = new NefsDataTransform(NefsHeaderIntroToc.ChunkSize, true, this.Intro.IsEncrypted ? this.Intro.GetAesKey() : null);
+            var transform = new NefsDataTransform(Nefs20HeaderIntroToc.ChunkSize, true, this.Intro.IsEncrypted ? this.Intro.GetAesKey() : null);
 
             // Data source
             INefsDataSource dataSource;
@@ -206,12 +201,13 @@ namespace VictorBush.Ego.NefsLib.Header
         }
 
         /// <inheritdoc/>
-        public NefsItemList CreateItemList(string dataFilePath)
+        public NefsItemList CreateItemList(string dataFilePath, NefsProgress p)
         {
             var items = new NefsItemList(dataFilePath);
 
             foreach (var entry in this.Part1.EntriesById)
             {
+                p.CancellationToken.ThrowIfCancellationRequested();
                 var id = entry.Key;
 
                 try

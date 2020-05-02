@@ -57,7 +57,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
         [Fact]
         public void GetChunkSizesForItem_ItemIsDirectory_EmptyList()
         {
-            var p4 = new NefsHeaderPart4(this.testItems);
+            var p4 = new Nefs20HeaderPart4(this.testItems);
             var sizes = p4.GetChunkSizesForItem(this.dir1);
             Assert.Empty(sizes);
         }
@@ -65,7 +65,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
         [Fact]
         public void GetChunkSizesForItem_ItemIsNotCompressed_EmptyList()
         {
-            var p4 = new NefsHeaderPart4(this.testItems);
+            var p4 = new Nefs20HeaderPart4(this.testItems);
             var sizes = p4.GetChunkSizesForItem(this.file4NotCompressed);
             Assert.Empty(sizes);
         }
@@ -73,7 +73,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
         [Fact]
         public void GetChunkSizesForItem_ItemValid_ChunkSizesReturned()
         {
-            var p4 = new NefsHeaderPart4(this.testItems);
+            var p4 = new Nefs20HeaderPart4(this.testItems);
 
             var file1Sizes = p4.GetChunkSizesForItem(this.file1);
             Assert.Equal(3, file1Sizes.Count);
@@ -91,21 +91,21 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
         [Fact]
         public void GetIndexForItem_ItemIsDirectory_ZeroReturned()
         {
-            var p4 = new NefsHeaderPart4(this.testItems);
+            var p4 = new Nefs20HeaderPart4(this.testItems);
             Assert.Equal(0U, p4.GetIndexForItem(this.dir1));
         }
 
         [Fact]
         public void GetIndexForItem_ItemIsUncompressed_NegativeOneReturned()
         {
-            var p4 = new NefsHeaderPart4(this.testItems);
+            var p4 = new Nefs20HeaderPart4(this.testItems);
             Assert.Equal(0xFFFFFFFFU, p4.GetIndexForItem(this.file4NotCompressed));
         }
 
         [Fact]
         public void GetIndexForItem_ItemIsValue_IndexReturned()
         {
-            var p4 = new NefsHeaderPart4(this.testItems);
+            var p4 = new Nefs20HeaderPart4(this.testItems);
             Assert.Equal(0U, p4.GetIndexForItem(this.file1));
             Assert.Equal(3U, p4.GetIndexForItem(this.file2));
             Assert.Equal(6U, p4.GetIndexForItem(this.file3));
@@ -114,7 +114,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
         [Fact]
         public void NefsHeaderPart4_MultipleItems_EntriesPopulated()
         {
-            var p4 = new NefsHeaderPart4(this.testItems);
+            var p4 = new Nefs20HeaderPart4(this.testItems);
 
             // Dir 1 and file 4 should not have entries. Only compressed files have entries in part 4.
             Assert.Equal(3, p4.EntriesByIndex.Count);
@@ -148,7 +148,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
         public void NefsHeaderPart4_NoItems_EntriesEmpty()
         {
             var items = new NefsItemList(@"C:\archive.nefs");
-            var p4 = new NefsHeaderPart4(items);
+            var p4 = new Nefs20HeaderPart4(items);
             Assert.Empty(p4.EntriesByIndex);
             Assert.Equal(0U, p4.Size);
         }

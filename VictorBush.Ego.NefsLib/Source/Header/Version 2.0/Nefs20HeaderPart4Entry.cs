@@ -9,13 +9,13 @@ namespace VictorBush.Ego.NefsLib.Header
     /// <summary>
     /// An entry in header part 4 for an item in an archive.
     /// </summary>
-    public class NefsHeaderPart4Entry
+    public class Nefs20HeaderPart4Entry
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="NefsHeaderPart4Entry"/> class.
+        /// Initializes a new instance of the <see cref="Nefs20HeaderPart4Entry"/> class.
         /// </summary>
         /// <param name="id">The id of the item this entry is for.</param>
-        internal NefsHeaderPart4Entry(NefsItemId id)
+        internal Nefs20HeaderPart4Entry(NefsItemId id)
         {
             this.Id = id;
         }

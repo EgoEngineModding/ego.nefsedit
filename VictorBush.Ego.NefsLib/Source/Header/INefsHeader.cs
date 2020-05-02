@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsLib.Header
 {
     using VictorBush.Ego.NefsLib.Item;
+    using VictorBush.Ego.NefsLib.Progress;
 
     /// <summary>
     /// A NeFS archive header.
@@ -26,8 +27,9 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Generates a new item list from the header metadata.
         /// </summary>
         /// <param name="dataFilePath">The path to the data file for the item list.</param>
+        /// <param name="p">Progress info.</param>
         /// <returns>A new <see cref="NefsItemList"/>.</returns>
-        NefsItemList CreateItemList(string dataFilePath);
+        NefsItemList CreateItemList(string dataFilePath, NefsProgress p);
 
         /// <summary>
         /// Gets the directory id for an item. If the item is in the root directory, the directory
