@@ -18,13 +18,13 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
     public class NefsWriterTests
     {
         private const string TempDir = @"C:\temp";
-        private readonly INefsCompressor compressor;
         private readonly MockFileSystem fileSystem = new MockFileSystem();
+        private readonly INefsTransformer transformer;
 
         public NefsWriterTests()
         {
             this.fileSystem.AddDirectory(TempDir);
-            this.compressor = new NefsCompressor(this.fileSystem);
+            this.transformer = new NefsTransformer(this.fileSystem);
         }
 
         [Fact]
@@ -56,7 +56,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             items.Add(file2);
             items.Add(dir1);
 
-            var part4 = new NefsHeaderPart4(items);
+            var part4 = new Nefs20HeaderPart4(items);
             var part1 = new NefsHeaderPart1(items, part4);
 
             /*
@@ -84,10 +84,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Data offset (8 bytes)
             Assert.Equal(10, BitConverter.ToInt64(buffer, offset + 0));
 
-            // Metadata index
+            // Index part 2
             Assert.Equal(1, BitConverter.ToInt32(buffer, offset + 8));
 
-            // Index to part 4
+            // Index part 4
             Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0x0c));
 
             // Item id
@@ -102,10 +102,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Data offset (8 bytes)
             Assert.Equal(20, BitConverter.ToInt64(buffer, offset + 0));
 
-            // Metadata index
+            // Index part 2
             Assert.Equal(2, BitConverter.ToInt32(buffer, offset + 8));
 
-            // Index to part 4
+            // Index part 4
             Assert.Equal(2, BitConverter.ToInt32(buffer, offset + 0x0c));
 
             // Item id
@@ -120,10 +120,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Data offset (8 bytes)
             Assert.Equal(0, BitConverter.ToInt64(buffer, offset + 0));
 
-            // Metadata index
+            // Index part 2
             Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 8));
 
-            // Index to part 4
+            // Index part 4
             Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0x0c));
 
             // Item id
@@ -304,7 +304,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             items.Add(dir1);
             items.Add(file3);
 
-            var part4 = new NefsHeaderPart4(items);
+            var part4 = new Nefs20HeaderPart4(items);
 
             /*
             Write
@@ -375,7 +375,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             intro.Data0x04_ExpectedHash.Value = hash;
             intro.Data0x64_HeaderSize.Value = 12345;
             intro.Data0x6c_NumberOfItems.Value = 9876;
-            intro.Data0x68_Unknown.Value = 101;
+            intro.Data0x68_NefsVersion.Value = 101;
             intro.Data0x70_UnknownZlib.Value = 202;
             intro.Data0x78_Unknown.Value = 303;
 
@@ -424,7 +424,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
         [Fact]
         public async Task WriterHeaderIntroTocAsync_ValidData_Written()
         {
-            var toc = new NefsHeaderIntroToc();
+            var toc = new Nefs20HeaderIntroToc();
             toc.Data0x04_OffsetToPart1.Value = 111;
             toc.Data0x0c_OffsetToPart2.Value = 222;
             toc.Data0x14_OffsetToPart3.Value = 333;
@@ -433,7 +433,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             toc.Data0x08_OffsetToPart6.Value = 666;
             toc.Data0x10_OffsetToPart7.Value = 777;
             toc.Data0x20_OffsetToPart8.Value = 888;
-            toc.Data0x00_Unknown.Value = 404;
+            toc.Data0x00_NumVolumes.Value = 404;
+            toc.Data0x02_HashBlockSize.Value = 505;
 
             // This chunk of data is unknown, but it must be 0x5C bytes long
             toc.Data0x24_Unknown.Value = new byte[0x5C];
@@ -457,8 +458,11 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             Verify
             */
 
-            // 0x00 unknwon
-            Assert.Equal(404, BitConverter.ToInt32(buffer, offset + 0x00));
+            // Num volumes
+            Assert.Equal(404, BitConverter.ToInt16(buffer, offset + 0x00));
+
+            // Hash block size
+            Assert.Equal(505, BitConverter.ToInt16(buffer, offset + 0x02));
 
             // Offset to part 1
             Assert.Equal(111, BitConverter.ToInt32(buffer, offset + 0x04));
@@ -490,7 +494,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
         private NefsWriter CreateWriter()
         {
-            return new NefsWriter(TempDir, this.fileSystem, this.compressor);
+            return new NefsWriter(TempDir, this.fileSystem, this.transformer);
         }
 
         private void VerifyArrraySlice(

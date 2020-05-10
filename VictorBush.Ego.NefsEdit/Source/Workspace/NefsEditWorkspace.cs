@@ -18,7 +18,6 @@ namespace VictorBush.Ego.NefsEdit.Workspace
     using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Item;
     using VictorBush.Ego.NefsLib.Progress;
-    using VictorBush.Ego.NefsLib.Utility;
 
     /// <summary>
     /// Handles archive and item operations.
@@ -38,7 +37,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// <param name="settingsService">The settings service to use.</param>
         /// <param name="nefsReader">The nefs reader to use.</param>
         /// <param name="nefsWriter">The nefs wrtier to use.</param>
-        /// <param name="nefsCompressor">The nefs compressor to use.</param>
+        /// <param name="nefsTransformer">The nefs transformer to use.</param>
         public NefsEditWorkspace(
             IFileSystem fileSystem,
             IProgressService progressService,
@@ -46,7 +45,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             ISettingsService settingsService,
             INefsReader nefsReader,
             INefsWriter nefsWriter,
-            INefsCompressor nefsCompressor)
+            INefsTransformer nefsTransformer)
         {
             this.FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
             this.ProgressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
@@ -54,7 +53,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             this.SettingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
             this.NefsReader = nefsReader ?? throw new ArgumentNullException(nameof(nefsReader));
             this.NefsWriter = nefsWriter ?? throw new ArgumentNullException(nameof(nefsWriter));
-            this.NefsCompressor = nefsCompressor ?? throw new ArgumentNullException(nameof(nefsCompressor));
+            this.NefsTransformer = nefsTransformer ?? throw new ArgumentNullException(nameof(nefsTransformer));
 
             this.Archive = null;
             this.ArchiveSource = null;
@@ -105,7 +104,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// <inheritdoc/>
         public IReadOnlyList<NefsItem> SelectedItems => this.selectedItems;
 
-        private INefsCompressor NefsCompressor { get; }
+        private INefsTransformer NefsTransformer { get; }
 
         private IProgressService ProgressService { get; }
 
@@ -283,6 +282,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                         Log.LogInformation($"Opening archive:");
                         Log.LogInformation($"Header file: {source.HeaderFilePath}");
                         Log.LogInformation($"Header offset: {source.HeaderOffset}");
+                        Log.LogInformation($"Header part 6 offset: {source.HeaderPart6Offset}");
                         Log.LogInformation($"Data file: {source.DataFilePath}");
                     }
                     else
@@ -377,7 +377,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 
             var fileSize = this.FileSystem.FileInfo.FromFileName(fileName).Length;
             var itemSize = new NefsItemSize((uint)fileSize);
-            var newDataSource = new NefsFileDataSource(fileName, 0, itemSize, item.DataSource.Size.IsCompressed);
+            var newDataSource = new NefsFileDataSource(fileName, 0, itemSize, false);
             var cmd = new ReplaceFileCommand(item, item.DataSource, item.State, newDataSource);
             this.UndoBuffer.Execute(cmd);
             return true;
@@ -490,7 +490,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             }
 
             // Currently don't support saving encrypted archives
-            if (this.Archive.Header.Intro.IsEncrypted)
+            if (this.Archive.Header.IsEncrypted)
             {
                 this.UiService.ShowMessageBox("Saving encrypted archives is not supported.", icon: MessageBoxIcon.Error);
                 return false;
@@ -530,11 +530,6 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 
         private async Task<bool> ExtractFileAsync(NefsItem item, string outputFilePath, NefsProgress p)
         {
-            // If header is encrypted, then assume data is encrypted. For archives like game.dat,
-            // the header isn't encrypted, but the data is.
-            var isEncrypted = this.Archive.Header.Intro.IsEncrypted || this.ArchiveSource.AssumeDataIsEncrypted;
-            var isCompressed = item.DataSource.Size.IsCompressed;
-
             try
             {
                 // Create target directory if needed
@@ -545,27 +540,14 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 }
 
                 // Extract the file
-                if (isCompressed)
-                {
-                    await this.NefsCompressor.DecompressFileAsync(
-                        item.DataSource.FilePath,
-                        (Int64)item.DataSource.Offset,
-                        item.DataSource.Size.ChunkSizes,
-                        outputFilePath,
-                        0,
-                        p,
-                        isEncrypted ? this.Archive.Header.Intro.GetAesKey() : null);
-                }
-                else
-                {
-                    // Item not compressed, just extract it
-                    using (var inputStream = this.FileSystem.File.OpenRead(item.DataSource.FilePath))
-                    using (var outputStream = this.FileSystem.File.OpenWrite(outputFilePath))
-                    {
-                        inputStream.Seek((long)item.DataSource.Offset, SeekOrigin.Begin);
-                        await inputStream.CopyPartialAsync(outputStream, item.DataSource.Size.ExtractedSize, p.CancellationToken);
-                    }
-                }
+                await this.NefsTransformer.DetransformFileAsync(
+                    item.DataSource.FilePath,
+                    (Int64)item.DataSource.Offset,
+                    outputFilePath,
+                    0,
+                    item.ExtractedSize,
+                    item.DataSource.Size.Chunks,
+                    p);
 
                 return true;
             }

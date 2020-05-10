@@ -29,6 +29,11 @@ namespace VictorBush.Ego.NefsLib.Tests
         };
 
         /// <summary>
+        /// Transform used for common test items.
+        /// </summary>
+        internal static NefsDataTransform TestTransform { get; } = new NefsDataTransform(100, true);
+
+        /// <summary>
         /// Creates a mock file system for data type tests that includes a test file.
         /// </summary>
         /// <returns>A mock file system.</returns>
@@ -37,6 +42,55 @@ namespace VictorBush.Ego.NefsLib.Tests
             var fs = new MockFileSystem();
             fs.AddFile(DataTypesTestFilePath, new MockFileData(DataTypesTestData));
             return fs;
+        }
+
+        /// <summary>
+        /// Creates an item for testing.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="dirId">The directory id.</param>
+        /// <param name="fileName">The item name.</param>
+        /// <returns>The new item.</returns>
+        internal static NefsItem CreateDirectory(
+            uint id,
+            uint dirId,
+            string fileName)
+        {
+            return new NefsItem(
+                Guid.NewGuid(),
+                new NefsItemId(id),
+                fileName,
+                new NefsItemId(dirId),
+                NefsItemType.Directory,
+                new NefsEmptyDataSource(),
+                null,
+                CreateUnknownData());
+        }
+
+        /// <summary>
+        /// Creates an item for testing.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="dirId">The directory id.</param>
+        /// <param name="fileName">The item name.</param>
+        /// <param name="dataSource">The data source.</param>
+        /// <returns>The new item.</returns>
+        internal static NefsItem CreateFile(
+            uint id,
+            uint dirId,
+            string fileName,
+            INefsDataSource dataSource)
+        {
+            var transform = TestTransform;
+            return new NefsItem(
+                Guid.NewGuid(),
+                new NefsItemId(id),
+                fileName,
+                new NefsItemId(dirId),
+                NefsItemType.File,
+                dataSource,
+                transform,
+                CreateUnknownData());
         }
 
         /// <summary>
@@ -59,14 +113,18 @@ namespace VictorBush.Ego.NefsLib.Tests
             IReadOnlyList<UInt32> chunkSizes,
             NefsItemType type)
         {
-            var size = new NefsItemSize(extractedSize, chunkSizes);
+            var transform = TestTransform;
+            var chunks = NefsDataChunk.CreateChunkList(chunkSizes, transform);
+            var size = new NefsItemSize(extractedSize, chunks);
             var dataSource = new NefsFileDataSource(@"C:\source.txt", dataOffset, size, extractedSize != chunkSizes.LastOrDefault());
             return new NefsItem(
+                Guid.NewGuid(),
                 new NefsItemId(id),
                 fileName,
                 new NefsItemId(dirId),
                 type,
                 dataSource,
+                transform,
                 CreateUnknownData());
         }
 

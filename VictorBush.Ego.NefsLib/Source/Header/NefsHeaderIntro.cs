@@ -58,14 +58,14 @@ namespace VictorBush.Ego.NefsLib.Header
         public UInt32 MagicNumber => this.Data0x00_MagicNumber.Value;
 
         /// <summary>
+        /// The NeFS format version.
+        /// </summary>
+        public UInt32 NefsVersion => this.Data0x68_NefsVersion.Value;
+
+        /// <summary>
         /// The number of items in the archive.
         /// </summary>
         public UInt32 NumberOfItems => this.Data0x6c_NumberOfItems.Value;
-
-        /// <summary>
-        /// Appears to be a constant number expected to be 0x20000.
-        /// </summary>
-        public UInt32 Unknown0x68 => this.Data0x68_Unknown.Value;
 
         /// <summary>
         /// 8 bytes; Another constant; the last four bytes are "zlib" in ASCII.
@@ -105,7 +105,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Data at offset 0x68.
         /// </summary>
         [FileData]
-        internal UInt32Type Data0x68_Unknown { get; } = new UInt32Type(0x0068);
+        internal UInt32Type Data0x68_NefsVersion { get; } = new UInt32Type(0x0068);
 
         /// <summary>
         /// Data at offset 0x6c.

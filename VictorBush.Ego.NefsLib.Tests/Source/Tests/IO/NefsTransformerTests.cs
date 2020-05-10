@@ -9,11 +9,13 @@ namespace VictorBush.Ego.NefsLib.Tests.IO
     using System.Linq;
     using System.Text;
     using System.Threading.Tasks;
+    using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Progress;
+    using VictorBush.Ego.NefsLib.Utility;
     using Xunit;
 
-    public class NefsCompressorTests
+    public class NefsTransformerTests
     {
         /// <summary>
         /// Input data string. 100 characters long. Gets encoded to ASCII for test.
@@ -110,34 +112,57 @@ namespace VictorBush.Ego.NefsLib.Tests.IO
                    new object[] { CompressAsyncTest8 },
             };
 
-        [MemberData(nameof(CompressAsyncTests))]
-        [Theory]
-        public async Task CompressAsync_VariousData_DataCompressed(CompressAsyncTestData test)
+        [Fact]
+        public async Task DetransformAsync_ExtractedSizeSmallerThanTransformed_DataExtracted()
         {
-            var input = Encoding.ASCII.GetBytes(InputDataString);
+            // There are situations in version 1.6 headers where the extracted size is smaller than
+            // the compressed size, resulting in extra garbage data/padding at the end of an
+            // extracted file. Need to make sure this extra garbage data is ignored.
+            const string Data = "Hello there!";
+            var dataBytes = Encoding.ASCII.GetBytes(Data);
 
-            using (var inputStream = new MemoryStream(input))
+            var aesStr = "542E5211BD8A3AE494554DA4A18884B1C546258BCCA4B76D055D52602819525A";
+            var aes = StringHelper.FromHexString(aesStr);
+            var chunkSize = 0x10000U;
+            var transform = new NefsDataTransform(chunkSize, false, aes);
+            var transformer = new NefsTransformer(this.fileSystem);
+
+            using (var inputStream = new MemoryStream())
+            using (var transformedStream = new MemoryStream())
             using (var outputStream = new MemoryStream())
             {
-                var c = new NefsCompressor(this.fileSystem);
-                var size = await c.CompressAsync(inputStream, test.Offset, test.Length, outputStream, 0, test.ChunkSize, new NefsProgress());
+                // Copy data to input stream
+                inputStream.Write(dataBytes, 0, dataBytes.Length);
 
-                // Read data from output stream
-                var resultData = new byte[outputStream.Length];
+                // Add some garbage data to end of stream
+                await transformedStream.WriteAsync(Encoding.ASCII.GetBytes("HAHAHAHAHA"), 0, 10);
+
+                // Transform
+                await transformer.TransformAsync(inputStream, 0, (uint)dataBytes.Length, transformedStream, 0, transform, new NefsProgress());
+                transformedStream.Seek(0, SeekOrigin.Begin);
+
+                // Setup chunk info
+                var extractedSize = Data.Length;
+                var transformedSize = transformedStream.Length;
+                var chunk = new NefsDataChunk((uint)transformedSize, (uint)transformedSize, transform);
+                var chunks = new List<NefsDataChunk> { chunk };
+
+                // Extract
+                await transformer.DetransformAsync(transformedStream, 0, outputStream, 0, (uint)extractedSize, chunks, new NefsProgress());
                 outputStream.Seek(0, SeekOrigin.Begin);
-                await outputStream.ReadAsync(resultData, 0, (int)outputStream.Length);
+
+                var outputBytes = new byte[Data.Length];
+                await outputStream.ReadAsync(outputBytes, 0, (int)outputStream.Length);
+                var outputStr = Encoding.ASCII.GetString(outputBytes);
 
                 // Verify
-                Assert.Equal(test.Length, size.ExtractedSize);
-                Assert.Equal(test.ExpectedChunks.Count, size.ChunkSizes.Count);
-                Assert.True(test.ExpectedChunks.SequenceEqual(size.ChunkSizes));
-                Assert.Equal(test.ExpectedData.Length, resultData.Length);
-                Assert.True(test.ExpectedData.SequenceEqual(resultData));
+                Assert.Equal(extractedSize, outputStream.Length);
+                Assert.Equal(Data, outputStr);
             }
         }
 
         [Fact]
-        public async Task DecompressFileAsync_NotEncrypted_DataDecompressed()
+        public async Task DetransformFileAsync_NotEncrypted_DataDecompressed()
         {
             const string Data = @"Hello. This is the input data. It is not encrypted.
 Hello. This is the input data. It is not encrypted.
@@ -166,19 +191,47 @@ Hello. This is the input data. It is not encrypted.";
             var compressedFilePath = @"C:\compressed.dat";
             var destFilePath = @"C:\dest.txt";
             var chunkSize = 0x10000U;
+            var transform = new NefsDataTransform(chunkSize, true);
 
             this.fileSystem.AddFile(sourceFilePath, new MockFileData(Data));
 
             // Compress the source data
-            var c = new NefsCompressor(this.fileSystem);
-            var size = await c.CompressFileAsync(sourceFilePath, compressedFilePath, chunkSize, new NefsProgress());
+            var transformer = new NefsTransformer(this.fileSystem);
+            var size = await transformer.TransformFileAsync(sourceFilePath, compressedFilePath, transform, new NefsProgress());
 
             // Decompress the data
-            await c.DecompressFileAsync(compressedFilePath, 0, size.ChunkSizes, destFilePath, 0, new NefsProgress());
+            await transformer.DetransformFileAsync(compressedFilePath, 0, destFilePath, 0, (uint)Data.Length, size.Chunks, new NefsProgress());
 
             // Verify
             var decompressedText = this.fileSystem.File.ReadAllText(destFilePath);
             Assert.Equal(Data, decompressedText);
+        }
+
+        [MemberData(nameof(CompressAsyncTests))]
+        [Theory]
+        public async Task TransformAsync_VariousData_DataCompressed(CompressAsyncTestData test)
+        {
+            var input = Encoding.ASCII.GetBytes(InputDataString);
+
+            using (var inputStream = new MemoryStream(input))
+            using (var outputStream = new MemoryStream())
+            {
+                var transformer = new NefsTransformer(this.fileSystem);
+                var transform = new NefsDataTransform(test.ChunkSize, true);
+                var size = await transformer.TransformAsync(inputStream, test.Offset, test.Length, outputStream, 0, transform, new NefsProgress());
+
+                // Read data from output stream
+                var resultData = new byte[outputStream.Length];
+                outputStream.Seek(0, SeekOrigin.Begin);
+                await outputStream.ReadAsync(resultData, 0, (int)outputStream.Length);
+
+                // Verify
+                Assert.Equal(test.Length, size.ExtractedSize);
+                Assert.Equal(test.ExpectedChunks.Count, size.Chunks.Count);
+                Assert.True(test.ExpectedChunks.SequenceEqual(size.Chunks.Select(c => c.CumulativeSize)));
+                Assert.Equal(test.ExpectedData.Length, resultData.Length);
+                Assert.True(test.ExpectedData.SequenceEqual(resultData));
+            }
         }
 
         private string PrintByteArray(byte[] bytes)

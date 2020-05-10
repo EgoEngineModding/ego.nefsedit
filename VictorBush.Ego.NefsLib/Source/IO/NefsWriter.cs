@@ -26,21 +26,16 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </summary>
         /// <param name="tempDirPath">Path to a directory that can be used to write temporary files.</param>
         /// <param name="fileSystem">The file system to use.</param>
-        /// <param name="compressor">Interface used to compress data.</param>
+        /// <param name="transfomer">Interface used to compress and encrypt data.</param>
         public NefsWriter(
             string tempDirPath,
             IFileSystem fileSystem,
-            INefsCompressor compressor)
+            INefsTransformer transfomer)
         {
             this.TempDirectoryPath = tempDirPath ?? throw new ArgumentNullException(nameof(tempDirPath));
             this.FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-            this.Compressor = compressor ?? throw new ArgumentNullException(nameof(compressor));
+            this.Transformer = transfomer ?? throw new ArgumentNullException(nameof(transfomer));
         }
-
-        /// <summary>
-        /// The compressor used to compress item data.
-        /// </summary>
-        private INefsCompressor Compressor { get; }
 
         /// <summary>
         /// The file system.
@@ -52,10 +47,21 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </summary>
         private string TempDirectoryPath { get; }
 
+        /// <summary>
+        /// The transfomer used to compress and encrypt item data.
+        /// </summary>
+        private INefsTransformer Transformer { get; }
+
         /// <inheritdoc/>
         public async Task<NefsArchive> WriteArchiveAsync(string destFilePath, NefsArchive nefs, NefsProgress p)
         {
             NefsArchive newArchive = null;
+
+            // Check header version
+            if (!(nefs.Header is Nefs20Header header))
+            {
+                throw new NotSupportedException("Can only write v2.0 files right now.");
+            }
 
             // Setup temp working directory
             var workDir = this.PrepareWorkingDirectory(destFilePath);
@@ -64,7 +70,7 @@ namespace VictorBush.Ego.NefsLib.IO
             var tempFilePath = Path.Combine(workDir, "temp.nefs");
             using (var file = this.FileSystem.File.Open(tempFilePath, FileMode.Create))
             {
-                newArchive = await this.WriteArchiveAsync(file, nefs.Header, nefs.Items, workDir, p);
+                newArchive = await this.WriteArchiveAsync(file, header, nefs.Items, workDir, p);
             }
 
             // Copy to final destination
@@ -85,7 +91,7 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             using (var t = p.BeginTask(1.0f))
             {
-                await FileData.WriteDataAsync(stream, offset, intro, p);
+                await FileData.WriteDataAsync(stream, offset, intro, NefsVersion.Version200, p);
             }
         }
 
@@ -97,11 +103,11 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="toc">The table of contents to write.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>An async task.</returns>
-        internal async Task WriteHeaderIntroTocAsync(Stream stream, UInt64 offset, NefsHeaderIntroToc toc, NefsProgress p)
+        internal async Task WriteHeaderIntroTocAsync(Stream stream, UInt64 offset, Nefs20HeaderIntroToc toc, NefsProgress p)
         {
             using (var t = p.BeginTask(1.0f))
             {
-                await FileData.WriteDataAsync(stream, offset, toc, p);
+                await FileData.WriteDataAsync(stream, offset, toc, NefsVersion.Version200, p);
             }
         }
 
@@ -117,7 +123,7 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             foreach (var entry in part1.EntriesByIndex)
             {
-                await FileData.WriteDataAsync(stream, offset, entry, p);
+                await FileData.WriteDataAsync(stream, offset, entry, NefsVersion.Version200, p);
                 offset += NefsHeaderPart1Entry.Size;
             }
         }
@@ -134,7 +140,7 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             foreach (var entry in part2.EntriesByIndex)
             {
-                await FileData.WriteDataAsync(stream, offset, entry, p);
+                await FileData.WriteDataAsync(stream, offset, entry, NefsVersion.Version200, p);
                 offset += NefsHeaderPart2Entry.Size;
             }
         }
@@ -169,17 +175,12 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="part4">The data to write.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>An async task.</returns>
-        internal async Task WriteHeaderPart4Async(Stream stream, UInt64 offset, NefsHeaderPart4 part4, NefsProgress p)
+        internal async Task WriteHeaderPart4Async(Stream stream, UInt64 offset, Nefs20HeaderPart4 part4, NefsProgress p)
         {
-            stream.Seek((long)offset, SeekOrigin.Begin);
-
-            foreach (var entry in part4.Entries)
+            foreach (var entry in part4.EntriesByIndex)
             {
-                foreach (var chunkSize in entry.ChunkSizes)
-                {
-                    var data = BitConverter.GetBytes(chunkSize);
-                    await stream.WriteAsync(data, 0, data.Length, p.CancellationToken);
-                }
+                await FileData.WriteDataAsync(stream, offset, entry, NefsVersion.Version200, p);
+                offset += Nefs20HeaderPart4Entry.Size;
             }
         }
 
@@ -193,7 +194,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart5Async(Stream stream, UInt64 offset, NefsHeaderPart5 part5, NefsProgress p)
         {
-            await FileData.WriteDataAsync(stream, offset, part5, p);
+            await FileData.WriteDataAsync(stream, offset, part5, NefsVersion.Version200, p);
         }
 
         /// <summary>
@@ -204,12 +205,12 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="part6">The data to write.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>An async task.</returns>
-        internal async Task WriteHeaderPart6Async(Stream stream, UInt64 offset, NefsHeaderPart6 part6, NefsProgress p)
+        internal async Task WriteHeaderPart6Async(Stream stream, UInt64 offset, Nefs20HeaderPart6 part6, NefsProgress p)
         {
             foreach (var entry in part6.EntriesByIndex)
             {
-                await FileData.WriteDataAsync(stream, offset, entry, p);
-                offset += NefsHeaderPart6Entry.Size;
+                await FileData.WriteDataAsync(stream, offset, entry, NefsVersion.Version200, p);
+                offset += Nefs20HeaderPart6Entry.Size;
             }
         }
 
@@ -225,7 +226,7 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             foreach (var entry in part7.EntriesByIndex)
             {
-                await FileData.WriteDataAsync(stream, offset, entry, p);
+                await FileData.WriteDataAsync(stream, offset, entry, NefsVersion.Version200, p);
                 offset += NefsHeaderPart7Entry.Size;
             }
         }
@@ -240,7 +241,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart8Async(Stream stream, UInt64 offset, NefsHeaderPart8 part8, NefsProgress p)
         {
-            await FileData.WriteDataAsync(stream, offset, part8, p);
+            await FileData.WriteDataAsync(stream, offset, part8, NefsVersion.Version200, p);
         }
 
         /// <summary>
@@ -249,9 +250,8 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="item">The item to prepare.</param>
         /// <param name="workDir">The temporary working directory.</param>
         /// <param name="items">The source items list.</param>
-        /// <param name="chunkSize">The chunk size to use.</param>
         /// <param name="p">Progress info.</param>
-        private async Task PrepareItemAsync(NefsItem item, string workDir, NefsItemList items, UInt32 chunkSize, NefsProgress p)
+        private async Task PrepareItemAsync(NefsItem item, string workDir, NefsItemList items, NefsProgress p)
         {
             // Deleted items should not be prepared
             if (item.State == NefsItemState.Removed)
@@ -284,7 +284,7 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             // Compress to temp location if needed
-            if (item.DataSource.ShouldCompress)
+            if (!item.DataSource.IsTransformed)
             {
                 // Prepare the working directory
                 var filePathInArchive = items.GetItemFilePath(item.Id);
@@ -292,12 +292,12 @@ namespace VictorBush.Ego.NefsLib.IO
                 var fileWorkDir = Path.Combine(workDir, filePathInArchiveHash);
                 this.FileSystem.ResetOrCreateDirectory(fileWorkDir);
 
-                // Compress the file
+                // Transform the file
                 var destFilePath = Path.Combine(workDir, "inject.dat");
-                var newSize = await this.Compressor.CompressFileAsync(item.DataSource, destFilePath, chunkSize, p);
+                var newSize = await this.Transformer.TransformFileAsync(item.DataSource, destFilePath, item.Transform, p);
 
-                // Update data source to point to the compressed temp file
-                var dataSource = new NefsFileDataSource(destFilePath, 0, newSize, false);
+                // Update data source to point to the transformed temp file
+                var dataSource = new NefsFileDataSource(destFilePath, 0, newSize, isTransformed: true);
                 item.UpdateDataSource(dataSource, NefsItemState.Replaced);
             }
         }
@@ -312,13 +312,11 @@ namespace VictorBush.Ego.NefsLib.IO
         /// The source items list to prepare. This list nor its items are modified.
         /// </param>
         /// <param name="workDir">The temporary working directory.</param>
-        /// <param name="chunkSize">The chunk size to use.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>A prepared item list ready for writing.</returns>
         private async Task<NefsItemList> PrepareItemsAsync(
             NefsItemList sourceItems,
             string workDir,
-            UInt32 chunkSize,
             NefsProgress p)
         {
             // Create a new items list - original source list is not modified. The new list is
@@ -336,7 +334,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 else
                 {
                     // Compress any new or replaced files and update chunk sizes
-                    await this.PrepareItemAsync(item, workDir, sourceItems, chunkSize, p);
+                    await this.PrepareItemAsync(item, workDir, sourceItems, p);
                 }
             }
 
@@ -386,7 +384,7 @@ namespace VictorBush.Ego.NefsLib.IO
         private async Task UpdateHashAsync(
             Stream stream,
             UInt64 headerOffset,
-            NefsHeader header,
+            Nefs20Header header,
             NefsProgress p)
         {
             // The hash is of the entire header expect for the expected hash
@@ -428,7 +426,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>A new NefsArchive object containing the updated header and item metadata.</returns>
         private async Task<NefsArchive> WriteArchiveAsync(
             Stream stream,
-            NefsHeader sourceHeader,
+            Nefs20Header sourceHeader,
             NefsItemList sourceItems,
             string workDir,
             NefsProgress p)
@@ -442,35 +440,35 @@ namespace VictorBush.Ego.NefsLib.IO
             NefsItemList items;
             using (var t = p.BeginTask(taskWeightPrepareItems, "Preparing items"))
             {
-                items = await this.PrepareItemsAsync(sourceItems, workDir, NefsHeader.ChunkSize, p);
+                items = await this.PrepareItemsAsync(sourceItems, workDir, p);
             }
 
             // Determine number of items
             var numItems = items.Count;
 
             // Update header parts 3 and 4 first (need to know their sizes)
-            var p4 = new NefsHeaderPart4(items);
+            var p4 = new Nefs20HeaderPart4(items);
             var p3 = new NefsHeaderPart3(items);
 
             // Compute header size
             var introSize = NefsHeaderIntro.Size;
-            var tocSize = NefsHeaderIntroToc.Size;
-            var p1Size = numItems * NefsHeaderPart1Entry.Size;
-            var p2Size = numItems * NefsHeaderPart2Entry.Size;
+            var tocSize = Nefs20HeaderIntroToc.Size;
+            var p1Size = numItems * NefsHeaderPart1Entry.Size; // TODO : What about duplicates?
+            var p2Size = numItems * NefsHeaderPart2Entry.Size; // TODO : What about duplicates?
             var p3Size = p3.Size;
             var p4Size = p4.Size;
             var p5Size = NefsHeaderPart5.Size;
-            var p6Size = numItems * NefsHeaderPart6Entry.Size;
+            var p6Size = numItems * Nefs20HeaderPart6Entry.Size;
             var p7Size = numItems * NefsHeaderPart7Entry.Size;
             var p8Size = sourceHeader.Intro.HeaderSize - sourceHeader.TableOfContents.OffsetToPart8;
             var headerSize = introSize + tocSize + p1Size + p2Size + p3Size + p4Size + p5Size + p6Size + p7Size + p8Size;
 
             // Determine first data offset. There are two known offset values. If the header is
             // large enough, the second (larger) offset is used.
-            var firstDataOffset = NefsHeader.DataOffsetDefault;
+            var firstDataOffset = Nefs20Header.DataOffsetDefault;
             if (headerSize > firstDataOffset)
             {
-                firstDataOffset = NefsHeader.DataOffsetLarge;
+                firstDataOffset = Nefs20Header.DataOffsetLarge;
             }
 
             // Write item data
@@ -483,7 +481,7 @@ namespace VictorBush.Ego.NefsLib.IO
             // Update remaining header data
             var p1 = new NefsHeaderPart1(items, p4);
             var p2 = new NefsHeaderPart2(items, p3);
-            var p6 = new NefsHeaderPart6(items);
+            var p6 = new Nefs20HeaderPart6(items);
             var p7 = new NefsHeaderPart7(items);
 
             // Compute total archive size
@@ -497,13 +495,14 @@ namespace VictorBush.Ego.NefsLib.IO
             intro.Data0x00_MagicNumber.Value = sourceHeader.Intro.MagicNumber;
             intro.Data0x24_AesKeyHexString.Value = sourceHeader.Intro.AesKeyHexString;
             intro.Data0x64_HeaderSize.Value = (uint)headerSize;
-            intro.Data0x68_Unknown.Value = sourceHeader.Intro.Unknown0x68;
+            intro.Data0x68_NefsVersion.Value = sourceHeader.Intro.NefsVersion;
             intro.Data0x6c_NumberOfItems.Value = (uint)numItems;
             intro.Data0x70_UnknownZlib.Value = sourceHeader.Intro.Unknown0x70zlib;
             intro.Data0x78_Unknown.Value = sourceHeader.Intro.Unknown0x78;
 
-            var toc = new NefsHeaderIntroToc();
-            toc.Data0x00_Unknown.Value = sourceHeader.TableOfContents.Unknown0x00;
+            var toc = new Nefs20HeaderIntroToc();
+            toc.Data0x00_NumVolumes.Value = sourceHeader.TableOfContents.NumVolumes;
+            toc.Data0x02_HashBlockSize.Value = sourceHeader.TableOfContents.Data0x02_HashBlockSize.Value;
             toc.Data0x04_OffsetToPart1.Value = introSize + tocSize;
             toc.Data0x0c_OffsetToPart2.Value = toc.OffsetToPart1 + (uint)p1Size;
             toc.Data0x14_OffsetToPart3.Value = toc.OffsetToPart2 + (uint)p2Size;
@@ -518,7 +517,7 @@ namespace VictorBush.Ego.NefsLib.IO
             var p8 = new NefsHeaderPart8((uint)p8Size);
 
             // Create new header object
-            var header = new NefsHeader(intro, toc, p1, p2, p3, p4, p5, p6, p7, p8);
+            var header = new Nefs20Header(intro, toc, p1, p2, p3, p4, p5, p6, p7, p8);
 
             // Write the header
             using (var t = p.BeginTask(taskWeightHeader, "Writing header"))
@@ -541,7 +540,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="header">The header to write.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The async task.</returns>
-        private async Task WriteHeaderAsync(Stream stream, UInt64 headerOffset, NefsHeader header, NefsProgress p)
+        private async Task WriteHeaderAsync(Stream stream, UInt64 headerOffset, Nefs20Header header, NefsProgress p)
         {
             // Calc weight of each task (8 parts + intro + table of contents)
             var weight = 1.0f / 10.0f;
@@ -551,13 +550,13 @@ namespace VictorBush.Ego.NefsLib.IO
 
             using (var t = p.BeginTask(weight, "Writing header intro"))
             {
-                var offset = headerOffset + NefsHeader.IntroOffset;
+                var offset = headerOffset + Nefs20Header.IntroOffset;
                 await this.WriteHeaderIntroAsync(stream, offset, header.Intro, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header intro table of contents"))
             {
-                var offset = headerOffset + NefsHeaderIntroToc.Offset;
+                var offset = headerOffset + Nefs20HeaderIntroToc.Offset;
                 await this.WriteHeaderIntroTocAsync(stream, offset, header.TableOfContents, p);
             }
 
@@ -648,12 +647,12 @@ namespace VictorBush.Ego.NefsLib.IO
             // Determine data source
             var srcFile = item.DataSource.FilePath;
             var srcOffset = item.DataSource.Offset;
-            var srcSize = item.DataSource.Size.Size;
+            var srcSize = item.DataSource.Size.TransformedSize;
 
-            // The data should already be compressed (if needed) by this point
-            if (item.DataSource.ShouldCompress)
+            // The data should already be transformed (if needed) by this point
+            if (!item.DataSource.IsTransformed)
             {
-                throw new InvalidOperationException($"Item data compresseion should be handled before calling {nameof(this.WriteItemAsync)}.");
+                throw new InvalidOperationException($"Item data transformation should be handled before calling {nameof(this.WriteItemAsync)}.");
             }
 
             // There are weird things with non-compressed files. Checking if:

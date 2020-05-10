@@ -20,7 +20,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         internal NefsHeaderPart5()
         {
-            this.Data0x0C_FirstDataOffset.Value = NefsHeader.DataOffsetDefault;
+            this.Data0x0C_FirstDataOffset.Value = Nefs20Header.DataOffsetDefault;
         }
 
         /// <summary>

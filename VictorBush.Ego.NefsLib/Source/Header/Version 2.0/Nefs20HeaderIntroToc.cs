@@ -8,8 +8,14 @@ namespace VictorBush.Ego.NefsLib.Header
     /// <summary>
     /// Header intro table of contents. Contains offsets to other header parts.
     /// </summary>
-    public class NefsHeaderIntroToc
+    public class Nefs20HeaderIntroToc : INefsHeaderIntroToc
     {
+        /// <summary>
+        /// Size of data chunks a file is broken up into before each chunk is compressed and
+        /// inserted into the archive.
+        /// </summary>
+        public const uint ChunkSize = 0x10000;
+
         /// <summary>
         /// Offset to the table of contents in the header.
         /// </summary>
@@ -21,86 +27,50 @@ namespace VictorBush.Ego.NefsLib.Header
         public const uint Size = 0x80;
 
         /// <summary>
-        /// Offset the header part 1.
+        /// Hash block size.
         /// </summary>
+        public UInt32 HashBlockSize => (UInt32)this.Data0x02_HashBlockSize.Value << 15;
+
+        /// <summary>
+        /// Number of volumes.
+        /// </summary>
+        public UInt16 NumVolumes => this.Data0x00_NumVolumes.Value;
+
+        /// <inheritdoc/>
         public UInt32 OffsetToPart1 => this.Data0x04_OffsetToPart1.Value;
 
-        /// <summary>
-        /// Offset to header part 2.
-        /// </summary>
+        /// <inheritdoc/>
         public UInt32 OffsetToPart2 => this.Data0x0c_OffsetToPart2.Value;
 
-        /// <summary>
-        /// Offset to header part 3 (the filename/directory strings list).
-        /// </summary>
+        /// <inheritdoc/>
         public UInt32 OffsetToPart3 => this.Data0x14_OffsetToPart3.Value;
 
-        /// <summary>
-        /// Offset to header part 4.
-        /// </summary>
+        /// <inheritdoc/>
         public UInt32 OffsetToPart4 => this.Data0x18_OffsetToPart4.Value;
 
-        /// <summary>
-        /// Offset to header part 5.
-        /// </summary>
+        /// <inheritdoc/>
         public UInt32 OffsetToPart5 => this.Data0x1c_OffsetToPart5.Value;
 
-        /// <summary>
-        /// Offset to header part 6.
-        /// </summary>
+        /// <inheritdoc/>
         public UInt32 OffsetToPart6 => this.Data0x08_OffsetToPart6.Value;
 
-        /// <summary>
-        /// Offset to header part 7.
-        /// </summary>
+        /// <inheritdoc/>
         public UInt32 OffsetToPart7 => this.Data0x10_OffsetToPart7.Value;
 
-        /// <summary>
-        /// Offset to header part 8.
-        /// </summary>
+        /// <inheritdoc/>
         public UInt32 OffsetToPart8 => this.Data0x20_OffsetToPart8.Value;
 
-        /// <summary>
-        /// The size of header part 1.
-        /// </summary>
+        /// <inheritdoc/>
         public uint Part1Size => this.OffsetToPart2 - this.OffsetToPart1;
 
-        /// <summary>
-        /// The size of header part 2.
-        /// </summary>
+        /// <inheritdoc/>
         public uint Part2Size => this.OffsetToPart3 - this.OffsetToPart2;
 
-        /// <summary>
-        /// The size of header part 3.
-        /// </summary>
+        /// <inheritdoc/>
         public uint Part3Size => this.OffsetToPart4 - this.OffsetToPart3;
 
-        /// <summary>
-        /// The size of header part 4.
-        /// </summary>
+        /// <inheritdoc/>
         public uint Part4Size => this.OffsetToPart5 - this.OffsetToPart4;
-
-        /// <summary>
-        /// The size of header part 5.
-        /// </summary>
-        public uint Part5Size => this.OffsetToPart6 > 0
-            ? this.OffsetToPart6 - this.OffsetToPart5
-            : this.OffsetToPart8 - this.OffsetToPart5;
-
-        /// <summary>
-        /// The size of header part 6.
-        /// </summary>
-        public uint Part6Size => this.OffsetToPart6 > 0 ? this.OffsetToPart7 - this.OffsetToPart6 : 0;
-
-        /// <summary>
-        /// The size of header part 7.
-        /// </summary>
-        public uint Part7Size => this.OffsetToPart6 > 0 ? this.OffsetToPart8 - this.OffsetToPart7 : 0;
-
-        /// <summary>
-        /// Unknown, maybe constant (01 00 00 01).
-        /// </summary>
-        public UInt32 Unknown0x00 => this.Data0x00_Unknown.Value;
 
         /// <summary>
         /// Unknown chunk of data.
@@ -111,7 +81,13 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Data at offset 0x00.
         /// </summary>
         [FileData]
-        internal UInt32Type Data0x00_Unknown { get; } = new UInt32Type(0x0000);
+        internal UInt16Type Data0x00_NumVolumes { get; } = new UInt16Type(0x0000);
+
+        /// <summary>
+        /// Data at offset 0x02. This is the low 16-bits of a 32-bit value.
+        /// </summary>
+        [FileData]
+        internal UInt16Type Data0x02_HashBlockSize { get; } = new UInt16Type(0x0002);
 
         /// <summary>
         /// Data at offset 0x04.
@@ -166,5 +142,9 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         [FileData]
         internal ByteArrayType Data0x24_Unknown { get; } = new ByteArrayType(0x0024, 0x5c);
+
+        /// <inheritdoc/>
+        public UInt32 ComputeNumChunks(uint extractedSize) =>
+            (uint)Math.Ceiling(extractedSize / (double)ChunkSize);
     }
 }

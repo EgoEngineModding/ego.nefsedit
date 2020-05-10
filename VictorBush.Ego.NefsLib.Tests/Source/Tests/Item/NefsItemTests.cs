@@ -13,8 +13,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
         public void Clone_ItemCloned()
         {
             var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
-            var itemId = new NefsItemId(TestArchiveNotModified.File3ItemId);
-            var item = NefsItem.CreateFromHeader(itemId, nefs.Header, nefs.Items);
+            var item = nefs.Header.CreateItemInfo(TestArchiveNotModified.File3Guid, nefs.Items);
             item.UpdateState(NefsItemState.Replaced);
 
             var clone = item.Clone() as NefsItem;
@@ -37,11 +36,10 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
         public void CreateHeaderFromFile_ItemIsCompressed_ItemCreated()
         {
             var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
-            var itemId = new NefsItemId(TestArchiveNotModified.File2ItemId);
-            var item = NefsItem.CreateFromHeader(itemId, nefs.Header, nefs.Items);
+            var item = nefs.Header.CreateItemInfo(TestArchiveNotModified.File2Guid, nefs.Items);
 
             // File2 is compressed
-            var expected = nefs.Items.GetItem(itemId);
+            var expected = nefs.Items.GetItem(item.Guid);
             Assert.Equal(expected.CompressedSize, item.CompressedSize);
             Assert.Equal(expected.DirectoryId, item.DirectoryId);
             Assert.Equal(expected.ExtractedSize, item.ExtractedSize);
@@ -51,22 +49,22 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
             Assert.Equal(NefsItemType.File, item.Type);
             Assert.Equal(@"C:\archive.nefs", item.DataSource.FilePath);
             Assert.Equal(expected.DataSource.Offset, item.DataSource.Offset);
-            Assert.False(item.DataSource.ShouldCompress);
-            Assert.Equal(expected.DataSource.Size.ChunkSizes.Count, item.DataSource.Size.ChunkSizes.Count);
-            Assert.True(expected.DataSource.Size.ChunkSizes.SequenceEqual(item.DataSource.Size.ChunkSizes));
+            Assert.True(item.DataSource.IsTransformed);
+            Assert.Equal(expected.DataSource.Size.Chunks.Count, item.DataSource.Size.Chunks.Count);
+            Assert.True(expected.DataSource.Size.Chunks.Select(c => c.CumulativeSize).SequenceEqual(item.DataSource.Size.Chunks.Select(c => c.CumulativeSize)));
             Assert.Equal(expected.ExtractedSize, item.DataSource.Size.ExtractedSize);
-            Assert.True(item.DataSource.Size.IsCompressed);
-            Assert.Equal(expected.CompressedSize, item.DataSource.Size.Size);
+            Assert.Equal(expected.CompressedSize, item.DataSource.Size.TransformedSize);
+            Assert.True(item.Transform.IsZlibCompressed);
+            Assert.NotNull(item.Transform);
         }
 
         [Fact]
         public void CreateHeaderFromFile_ItemIsDirectory_ItemCreated()
         {
             var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
-            var itemId = new NefsItemId(TestArchiveNotModified.Dir1ItemId);
-            var item = NefsItem.CreateFromHeader(itemId, nefs.Header, nefs.Items);
+            var item = nefs.Header.CreateItemInfo(TestArchiveNotModified.Dir1Guid, nefs.Items);
 
-            var expected = nefs.Items.GetItem(itemId);
+            var expected = nefs.Items.GetItem(item.Guid);
             Assert.Equal(0U, item.CompressedSize);
             Assert.Equal(expected.DirectoryId, item.DirectoryId);
             Assert.Equal(0U, item.ExtractedSize);
@@ -76,22 +74,21 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
             Assert.Equal(NefsItemType.Directory, item.Type);
             Assert.Equal("", item.DataSource.FilePath);
             Assert.Equal(0U, item.DataSource.Offset);
-            Assert.False(item.DataSource.ShouldCompress);
-            Assert.Empty(item.DataSource.Size.ChunkSizes);
+            Assert.True(item.DataSource.IsTransformed);
+            Assert.Empty(item.DataSource.Size.Chunks);
             Assert.Equal(0U, item.DataSource.Size.ExtractedSize);
-            Assert.False(item.DataSource.Size.IsCompressed);
-            Assert.Equal(0U, item.DataSource.Size.Size);
+            Assert.Equal(0U, item.DataSource.Size.TransformedSize);
+            Assert.Null(item.Transform);
         }
 
         [Fact]
         public void CreateHeaderFromFile_ItemIsNotCompressed_ItemCreated()
         {
             var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
-            var itemId = new NefsItemId(TestArchiveNotModified.File3ItemId);
-            var item = NefsItem.CreateFromHeader(itemId, nefs.Header, nefs.Items);
+            var item = nefs.Header.CreateItemInfo(TestArchiveNotModified.File3Guid, nefs.Items);
 
             // File3 is not compressed
-            var expected = nefs.Items.GetItem(itemId);
+            var expected = nefs.Items.GetItem(item.Guid);
             Assert.Equal(expected.CompressedSize, item.CompressedSize);
             Assert.Equal(expected.DirectoryId, item.DirectoryId);
             Assert.Equal(expected.ExtractedSize, item.ExtractedSize);
@@ -101,12 +98,14 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
             Assert.Equal(NefsItemType.File, item.Type);
             Assert.Equal(@"C:\archive.nefs", item.DataSource.FilePath);
             Assert.Equal(expected.DataSource.Offset, item.DataSource.Offset);
-            Assert.False(item.DataSource.ShouldCompress);
-            Assert.Single(item.DataSource.Size.ChunkSizes);
-            Assert.Equal(expected.ExtractedSize, item.DataSource.Size.ChunkSizes[0]);
+            Assert.True(item.DataSource.IsTransformed);
+            Assert.Single(item.DataSource.Size.Chunks);
+            Assert.Equal(expected.ExtractedSize, item.DataSource.Size.Chunks[0].CumulativeSize);
+            Assert.Equal(expected.ExtractedSize, item.DataSource.Size.Chunks[0].Size);
             Assert.Equal(expected.ExtractedSize, item.DataSource.Size.ExtractedSize);
-            Assert.False(item.DataSource.Size.IsCompressed);
-            Assert.Equal(expected.CompressedSize, item.DataSource.Size.Size);
+            Assert.Equal(expected.CompressedSize, item.DataSource.Size.TransformedSize);
+            Assert.False(item.DataSource.Size.Chunks[0].Transform.IsZlibCompressed);
+            Assert.NotNull(item.Transform);
         }
     }
 }

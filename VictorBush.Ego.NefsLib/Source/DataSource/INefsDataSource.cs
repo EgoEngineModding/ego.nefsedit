@@ -16,15 +16,17 @@ namespace VictorBush.Ego.NefsLib.DataSource
         string FilePath { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the data in this data source has had any applicable
+        /// transformations applied. When replacing a file in an archive, the replacement data
+        /// source will most likely set this to false. When the archive is saved, the transformation
+        /// is applied.
+        /// </summary>
+        bool IsTransformed { get; }
+
+        /// <summary>
         /// Gets the offset in the source file where the data begins.
         /// </summary>
         UInt64 Offset { get; }
-
-        /// <summary>
-        /// Gets a value indicating whether the item's data should be compressed before writing into
-        /// the target NeFS archive.
-        /// </summary>
-        bool ShouldCompress { get; }
 
         /// <summary>
         /// Gets the size information about the source data.

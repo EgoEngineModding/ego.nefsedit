@@ -47,5 +47,20 @@ namespace VictorBush.Ego.NefsLib.Utility
                 bytesRemaining -= bytesToRead;
             }
         }
+
+        /// <summary>
+        /// Copies data from a stream to another stream.
+        /// </summary>
+        /// <param name="stream">The input stream to copy from.</param>
+        /// <param name="destination">The destination stream to write to.</param>
+        /// <param name="cancelToken">A cancellation token.</param>
+        /// <returns>An async task.</returns>
+        public static async Task CopyToAsync(
+            this Stream stream,
+            Stream destination,
+            CancellationToken cancelToken)
+        {
+            await stream.CopyToAsync(destination, CopyBufferSize, cancelToken);
+        }
     }
 }

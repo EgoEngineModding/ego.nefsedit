@@ -61,7 +61,7 @@
     <Compile Include="Source\Tests\Header\NefsHeaderPart4Tests.cs" />
     <Compile Include="Source\Tests\Header\NefsHeaderPart3Tests.cs" />
     <Compile Include="Source\Integration\DirtRally2Tests.cs" />
-    <Compile Include="Source\Tests\IO\NefsCompressorTests.cs" />
+    <Compile Include="Source\Tests\IO\NefsTransformerTests.cs" />
     <Compile Include="Source\Tests\IO\NefsReaderTests.cs" />
     <Compile Include="Source\Tests\IO\NefsWriterTests.cs" />
     <Compile Include="Source\Tests\Item\NefsItemListTests.cs" />

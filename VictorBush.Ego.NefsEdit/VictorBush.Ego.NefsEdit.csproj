@@ -59,6 +59,8 @@
     <Compile Include="Source\Commands\UndoBuffer.cs" />
     <Compile Include="Source\Commands\INefsEditCommand.cs" />
     <Compile Include="Source\Commands\ReplaceFileCommand.cs" />
+    <Compile Include="Source\Settings\OpenFileDialogState.cs" />
+    <Compile Include="Source\Settings\RecentFile.cs" />
     <Compile Include="Source\UI\ItemDebugForm.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -140,7 +142,7 @@
     <Compile Include="Source\Utility\ListViewColumnSorter.cs" />
     <Compile Include="Source\Utility\LogHelper.cs" />
     <Compile Include="Source\Utility\RichTextWriter.cs" />
-    <Compile Include="Source\Utility\Settings.cs" />
+    <Compile Include="Source\Settings\Settings.cs" />
     <EmbeddedResource Include="Source\UI\ItemDebugForm.resx">
       <DependentUpon>ItemDebugForm.cs</DependentUpon>
     </EmbeddedResource>

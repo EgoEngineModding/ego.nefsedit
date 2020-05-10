@@ -19,44 +19,51 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart1Entry"/> class.
         /// </summary>
-        internal NefsHeaderPart1Entry()
+        /// <param name="guid">The Guid of the item this metadata belongs to.</param>
+        internal NefsHeaderPart1Entry(Guid guid)
         {
+            this.Guid = guid;
         }
 
         /// <summary>
-        /// The unique identifier of this item in the archive.
+        /// The unique identifier of the item this data is for.
+        /// </summary>
+        public Guid Guid { get; }
+
+        /// <summary>
+        /// The id of the item. It is possible to have duplicate item's with the same id.
         /// </summary>
         public NefsItemId Id => new NefsItemId(this.Data0x10_Id.Value);
 
         /// <summary>
-        /// The index into header part 4 for this item. For the actual offset, see <see cref="OffsetIntoPart4"/>.
+        /// The index used for parts 2 and 7 for this item.
         /// </summary>
-        public UInt32 IndexIntoPart4 => this.Data0x0c_IndexIntoPart4.Value;
+        public UInt32 IndexPart2 => this.Data0x08_IndexPart2.Value;
 
         /// <summary>
-        /// The index used for parts 2, 6, and 7 for this item.
+        /// The index into header part 4 for this item. For the actual offset, see <see cref="OffsetIntoPart4"/>.
         /// </summary>
-        public UInt32 MetadataIndex => this.Data0x08_MetadataIndex.Value;
+        public UInt32 IndexPart4 => this.Data0x0c_IndexPart4.Value;
 
         /// <summary>
         /// The offset into header part 2.
         /// </summary>
-        public UInt64 OffsetIntoPart2 => this.MetadataIndex * NefsHeaderPart2Entry.Size;
+        public UInt64 OffsetIntoPart2 => this.IndexPart2 * NefsHeaderPart2Entry.Size;
 
         /// <summary>
         /// The offset into header part 4.
         /// </summary>
-        public UInt64 OffsetIntoPart4 => this.IndexIntoPart4 * NefsHeaderPart4.DataSize;
+        public UInt64 OffsetIntoPart4 => this.IndexPart4 * Nefs20HeaderPart4Entry.Size;
 
         /// <summary>
         /// The offset into header part 6.
         /// </summary>
-        public UInt64 OffsetIntoPart6 => this.MetadataIndex * NefsHeaderPart6Entry.Size;
+        public UInt64 OffsetIntoPart6 => this.IndexPart2 * Nefs20HeaderPart6Entry.Size;
 
         /// <summary>
         /// The offset into header part 7.
         /// </summary>
-        public UInt64 OffsetIntoPart7 => this.MetadataIndex * NefsHeaderPart7Entry.Size;
+        public UInt64 OffsetIntoPart7 => this.IndexPart2 * NefsHeaderPart7Entry.Size;
 
         /// <summary>
         /// The absolute offset to the file's data in the archive. For directories, this is 0.
@@ -73,13 +80,13 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Data at offset 0x08.
         /// </summary>
         [FileData]
-        internal UInt32Type Data0x08_MetadataIndex { get; } = new UInt32Type(0x08);
+        internal UInt32Type Data0x08_IndexPart2 { get; } = new UInt32Type(0x08);
 
         /// <summary>
         /// Data at offset 0x0c.
         /// </summary>
         [FileData]
-        internal UInt32Type Data0x0c_IndexIntoPart4 { get; } = new UInt32Type(0x0c);
+        internal UInt32Type Data0x0c_IndexPart4 { get; } = new UInt32Type(0x0c);
 
         /// <summary>
         /// Data at offset 0x10.

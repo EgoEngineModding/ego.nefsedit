@@ -3,12 +3,14 @@
 namespace VictorBush.Ego.NefsEdit.Services
 {
     using System;
+    using System.Collections.Generic;
     using System.IO;
     using System.IO.Abstractions;
     using System.Windows.Forms;
     using System.Xml.Serialization;
     using Microsoft.Extensions.Logging;
     using Microsoft.Win32;
+    using VictorBush.Ego.NefsEdit.Settings;
     using VictorBush.Ego.NefsEdit.Utility;
 
     /// <summary>
@@ -46,6 +48,19 @@ namespace VictorBush.Ego.NefsEdit.Services
         public String Dirt4GameDatDir => Path.Combine(this.Dirt4Dir, Constants.Dirt4GameDatPath);
 
         /// <inheritdoc/>
+        public String DirtRally1Dir
+        {
+            get => this.Settings.DirtRally1Dir;
+            set => this.Settings.DirtRally1Dir = value;
+        }
+
+        /// <inheritdoc/>
+        public String DirtRally1Exe => Path.Combine(this.DirtRally1Dir, Constants.DirtRally1ExeName);
+
+        /// <inheritdoc/>
+        public String DirtRally1GameBinDir => Path.Combine(this.DirtRally1Dir, Constants.DirtRally1GameBinPath);
+
+        /// <inheritdoc/>
         public String DirtRally2Dir
         {
             get => this.Settings.DirtRally2Dir;
@@ -59,10 +74,24 @@ namespace VictorBush.Ego.NefsEdit.Services
         public String DirtRally2GameDatDir => Path.Combine(this.DirtRally2Dir, Constants.DirtRally2GameDatPath);
 
         /// <inheritdoc/>
+        public OpenFileDialogState OpenFileDialogState
+        {
+            get => this.Settings.OpenFileDialogState;
+            set => this.Settings.OpenFileDialogState = value;
+        }
+
+        /// <inheritdoc/>
         public string QuickExtractDir
         {
             get => this.Settings.QuickExtractDir ?? "";
             set => this.Settings.QuickExtractDir = value;
+        }
+
+        /// <inheritdoc/>
+        public List<RecentFile> RecentFiles
+        {
+            get => this.Settings.RecentFiles;
+            set => this.Settings.RecentFiles = value;
         }
 
         private IFileSystem FileSystem { get; }
@@ -138,7 +167,7 @@ namespace VictorBush.Ego.NefsEdit.Services
             try
             {
                 // Serialize to XML file
-                using (var writer = this.FileSystem.File.OpenWrite(SettingsFilePath))
+                using (var writer = this.FileSystem.File.Open(SettingsFilePath, FileMode.Create))
                 {
                     var xs = new XmlSerializer(typeof(Settings));
                     xs.Serialize(writer, this.Settings);
@@ -183,6 +212,16 @@ namespace VictorBush.Ego.NefsEdit.Services
             var shouldSave = false;
 
             // Try to auto-find game directories if not set
+            if (string.IsNullOrWhiteSpace(this.DirtRally1Dir))
+            {
+                this.DirtRally1Dir = this.FindSteamGameDir(Constants.DirtRally1SteamPath);
+                if (!string.IsNullOrWhiteSpace(this.DirtRally1Dir))
+                {
+                    Log.LogInformation($"Found DiRT Rally directory: {this.DirtRally1Dir}");
+                    shouldSave = true;
+                }
+            }
+
             if (string.IsNullOrWhiteSpace(this.DirtRally2Dir))
             {
                 this.DirtRally2Dir = this.FindSteamGameDir(Constants.DirtRally2SteamPath);
@@ -217,6 +256,7 @@ namespace VictorBush.Ego.NefsEdit.Services
         {
             this.Settings = new Settings
             {
+                DirtRally1Dir = this.FindSteamGameDir(Constants.DirtRally1SteamPath),
                 DirtRally2Dir = this.FindSteamGameDir(Constants.DirtRally2SteamPath),
                 Dirt4Dir = this.FindSteamGameDir(Constants.Dirt4SteamPath),
             };

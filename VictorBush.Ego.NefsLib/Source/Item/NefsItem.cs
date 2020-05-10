@@ -4,7 +4,6 @@ namespace VictorBush.Ego.NefsLib.Item
 {
     using System;
     using VictorBush.Ego.NefsLib.DataSource;
-    using VictorBush.Ego.NefsLib.Header;
 
     /// <summary>
     /// An item in a NeFS archive (file or directory).
@@ -14,27 +13,35 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsItem"/> class.
         /// </summary>
-        /// <param name="id">The item id (index).</param>
+        /// <param name="guid">The unique identifier for this item.</param>
+        /// <param name="id">The item id.</param>
         /// <param name="fileName">The file name within the archive.</param>
         /// <param name="directoryId">The directory id the item is in.</param>
         /// <param name="type">The type of item.</param>
         /// <param name="dataSource">The data source for the item's data.</param>
+        /// <param name="transform">
+        /// The transform that is applied to this item's data. Can be null if no transform.
+        /// </param>
         /// <param name="unknownData">Unknown metadata.</param>
         /// <param name="state">The item state.</param>
         public NefsItem(
+            Guid guid,
             NefsItemId id,
             string fileName,
             NefsItemId directoryId,
             NefsItemType type,
             INefsDataSource dataSource,
+            NefsDataTransform transform,
             NefsItemUnknownData unknownData,
             NefsItemState state = NefsItemState.None)
         {
+            this.Guid = guid;
             this.Id = id;
             this.DirectoryId = directoryId;
             this.Type = type;
             this.DataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
             this.State = state;
+            this.Transform = transform;
 
             // Unknown data
             this.Part6Unknown0x00 = unknownData.Part6Unknown0x00;
@@ -49,7 +56,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <summary>
         /// The size of the item's data in the archive.
         /// </summary>
-        public UInt32 CompressedSize => this.DataSource?.Size.Size ?? 0;
+        public UInt32 CompressedSize => this.DataSource?.Size.TransformedSize ?? 0;
 
         /// <summary>
         /// The current data source for this item.
@@ -73,7 +80,13 @@ namespace VictorBush.Ego.NefsLib.Item
         public string FileName { get; }
 
         /// <summary>
-        /// The id of this item.
+        /// A unique identifier for this item.
+        /// </summary>
+        public Guid Guid { get; }
+
+        /// <summary>
+        /// The id of this item. This is not guaranteed to be unique in an archive, there can be
+        /// items with duplicate id values. For a unique identifer, use <see cref="Guid"/>.
         /// </summary>
         public NefsItemId Id { get; }
 
@@ -104,75 +117,14 @@ namespace VictorBush.Ego.NefsLib.Item
         public NefsItemState State { get; private set; }
 
         /// <summary>
+        /// The transform that is applied to this item's data. Is null if no transform.
+        /// </summary>
+        public NefsDataTransform Transform { get; }
+
+        /// <summary>
         /// The type of item this is.
         /// </summary>
         public NefsItemType Type { get; }
-
-        /// <summary>
-        /// Creates an item from header data.
-        /// </summary>
-        /// <param name="id">The item id.</param>
-        /// <param name="header">The header data.</param>
-        /// <param name="dataSourceList">The item list to use as the item data source.</param>
-        /// <returns>A new <see cref="NefsItem"/>.</returns>
-        public static NefsItem CreateFromHeader(NefsItemId id, NefsHeader header, NefsItemList dataSourceList)
-        {
-            var p1 = header.Part1.EntriesById[id];
-            var p2 = header.Part2.EntriesById[id];
-
-            // Check if part 6 exists
-            NefsHeaderPart6Entry p6 = null;
-            if (header.Part6.EntriesById.ContainsKey(id))
-            {
-                p6 = header.Part6.EntriesById[id];
-            }
-
-            // Determine type
-            var type = p2.Data0x0c_ExtractedSize.Value == 0 ? NefsItemType.Directory : NefsItemType.File;
-
-            // Find parent
-            var parentId = header.GetItemDirectoryId(id);
-
-            // Offset and size
-            var dataOffset = p1.Data0x00_OffsetToData.Value;
-            var extractedSize = p2.Data0x0c_ExtractedSize.Value;
-
-            // Data source
-            INefsDataSource dataSource;
-            if (type == NefsItemType.Directory)
-            {
-                // Item is a directory
-                dataSource = new NefsEmptyDataSource();
-            }
-            else if (p1.IndexIntoPart4 == 0xFFFFFFFFU)
-            {
-                // Item is not compressed
-                var size = new NefsItemSize(extractedSize);
-                dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
-            }
-            else
-            {
-                // Item is compressed
-                var p4 = header.Part4.EntriesByIndex[p1.IndexIntoPart4];
-                var size = new NefsItemSize(extractedSize, p4.ChunkSizes);
-                dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
-            }
-
-            // File name and path
-            var fileName = header.GetItemFileName(id);
-
-            // Gather unknown metadata
-            var unknown = new NefsItemUnknownData
-            {
-                Part6Unknown0x00 = p6?.Byte0 ?? 0,
-                Part6Unknown0x01 = p6?.Byte1 ?? 0,
-                Part6Unknown0x02 = p6?.Byte2 ?? 0,
-                Part6Unknown0x03 = p6?.Byte3 ?? 0,
-            };
-
-            // Create item
-            return new NefsItem(id, fileName, parentId, type, dataSource, unknown);
-        }
 
         /// <summary>
         /// Clones this item metadata.
@@ -189,11 +141,13 @@ namespace VictorBush.Ego.NefsLib.Item
             };
 
             return new NefsItem(
+                this.Guid,
                 this.Id,
                 this.FileName,
                 this.DirectoryId,
                 this.Type,
                 this.DataSource,
+                this.Transform,
                 unknownData,
                 state: this.State);
         }

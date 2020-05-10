@@ -16,7 +16,7 @@ namespace VictorBush.Ego.NefsLib
         /// </summary>
         /// <param name="header">The archive's header.</param>
         /// <param name="items">List of items for this archive.</param>
-        public NefsArchive(NefsHeader header, NefsItemList items)
+        public NefsArchive(INefsHeader header, NefsItemList items)
         {
             this.Header = header ?? throw new ArgumentNullException(nameof(header));
             this.Items = items ?? throw new ArgumentNullException(nameof(items));
@@ -25,7 +25,7 @@ namespace VictorBush.Ego.NefsLib
         /// <summary>
         /// NeFS file header.
         /// </summary>
-        public NefsHeader Header { get; }
+        public INefsHeader Header { get; }
 
         /// <summary>
         /// List of items in this archive. This list should always be ordered by item id.

@@ -15,12 +15,12 @@ namespace VictorBush.Ego.NefsLib.DataSource
         public string FilePath => "";
 
         /// <inheritdoc/>
+        public Boolean IsTransformed => true;
+
+        /// <inheritdoc/>
         public UInt64 Offset => 0;
 
         /// <inheritdoc/>
-        public Boolean ShouldCompress => false;
-
-        /// <inheritdoc/>
-        public NefsItemSize Size => new NefsItemSize(0, new List<UInt32>());
+        public NefsItemSize Size => new NefsItemSize(0, new List<NefsDataChunk>());
     }
 }

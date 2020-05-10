@@ -16,25 +16,26 @@ namespace VictorBush.Ego.NefsLib.DataSource
         /// <param name="filePath">The path of the file that contain's the data.</param>
         /// <param name="offset">The offset in the source file where the data begins.</param>
         /// <param name="size">Size information about the item's data.</param>
-        /// <param name="shouldCompress">
-        /// A value indicating whether to compress the data when putting into the archive.
+        /// <param name="isTransformed">
+        /// Whether the data in this data source has already been transformed (encrypted,
+        /// compressed, etc).
         /// </param>
-        public NefsFileDataSource(string filePath, UInt64 offset, NefsItemSize size, bool shouldCompress)
+        public NefsFileDataSource(string filePath, UInt64 offset, NefsItemSize size, bool isTransformed)
         {
             this.FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
             this.Offset = offset;
             this.Size = size;
-            this.ShouldCompress = shouldCompress;
+            this.IsTransformed = isTransformed;
         }
 
         /// <inheritdoc/>
         public string FilePath { get; }
 
         /// <inheritdoc/>
-        public UInt64 Offset { get; }
+        public Boolean IsTransformed { get; }
 
         /// <inheritdoc/>
-        public bool ShouldCompress { get; }
+        public UInt64 Offset { get; }
 
         /// <inheritdoc/>
         public NefsItemSize Size { get; }
