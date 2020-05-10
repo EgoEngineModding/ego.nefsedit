@@ -50,6 +50,55 @@ namespace VictorBush.Ego.NefsLib.Tests
         /// <param name="id">The item id.</param>
         /// <param name="dirId">The directory id.</param>
         /// <param name="fileName">The item name.</param>
+        /// <returns>The new item.</returns>
+        internal static NefsItem CreateDirectory(
+            uint id,
+            uint dirId,
+            string fileName)
+        {
+            return new NefsItem(
+                Guid.NewGuid(),
+                new NefsItemId(id),
+                fileName,
+                new NefsItemId(dirId),
+                NefsItemType.Directory,
+                new NefsEmptyDataSource(),
+                null,
+                CreateUnknownData());
+        }
+
+        /// <summary>
+        /// Creates an item for testing.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="dirId">The directory id.</param>
+        /// <param name="fileName">The item name.</param>
+        /// <param name="dataSource">The data source.</param>
+        /// <returns>The new item.</returns>
+        internal static NefsItem CreateFile(
+            uint id,
+            uint dirId,
+            string fileName,
+            INefsDataSource dataSource)
+        {
+            var transform = TestTransform;
+            return new NefsItem(
+                Guid.NewGuid(),
+                new NefsItemId(id),
+                fileName,
+                new NefsItemId(dirId),
+                NefsItemType.File,
+                dataSource,
+                transform,
+                CreateUnknownData());
+        }
+
+        /// <summary>
+        /// Creates an item for testing.
+        /// </summary>
+        /// <param name="id">The item id.</param>
+        /// <param name="dirId">The directory id.</param>
+        /// <param name="fileName">The item name.</param>
         /// <param name="dataOffset">Data offset.</param>
         /// <param name="extractedSize">Extracted size.</param>
         /// <param name="chunkSizes">Compressed chunks sizes.</param>
@@ -69,6 +118,7 @@ namespace VictorBush.Ego.NefsLib.Tests
             var size = new NefsItemSize(extractedSize, chunks);
             var dataSource = new NefsFileDataSource(@"C:\source.txt", dataOffset, size, extractedSize != chunkSizes.LastOrDefault());
             return new NefsItem(
+                Guid.NewGuid(),
                 new NefsItemId(id),
                 fileName,
                 new NefsItemId(dirId),

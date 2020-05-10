@@ -21,8 +21,8 @@ namespace VictorBush.Ego.NefsLib.Tests.Tests.Item
             list.Add(file1);
 
             Assert.Equal(2, list.Count);
-            Assert.Equal("file1.txt", list.GetItem(file1.Id).FileName);
-            Assert.Equal("dir1", list.GetItem(dir1.Id).FileName);
+            Assert.Equal("file1.txt", list.GetItem(file1.Guid).FileName);
+            Assert.Equal("dir1", list.GetItem(dir1.Guid).FileName);
             Assert.Equal("dir1\\file1.txt", list.GetItemFilePath(file1.Id));
         }
 

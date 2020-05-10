@@ -12,6 +12,8 @@ namespace VictorBush.Ego.NefsLib.Item
     /// </summary>
     public class NefsItemList : ICloneable
     {
+        private readonly Dictionary<Guid, NefsItem> itemsByGuid = new Dictionary<Guid, NefsItem>();
+
         private readonly SortedDictionary<NefsItemId, ItemContainer> itemsById =
             new SortedDictionary<NefsItemId, ItemContainer>();
 
@@ -49,6 +51,9 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <param name="item">The item to add.</param>
         public void Add(NefsItem item)
         {
+            // Add to guid lookup
+            this.itemsByGuid.Add(item.Guid, item);
+
             // Check if duplicate id
             if (this.itemsById.ContainsKey(item.Id))
             {
@@ -88,6 +93,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// </summary>
         public void Clear()
         {
+            this.itemsByGuid.Clear();
             this.rootItems.Clear();
             this.itemsById.Clear();
         }
@@ -112,13 +118,13 @@ namespace VictorBush.Ego.NefsLib.Item
         }
 
         /// <summary>
-        /// Checks if the item list contains an item with the specified id.
+        /// Checks if the item list contains an item with the specified Guid.
         /// </summary>
-        /// <param name="id">The id to check.</param>
+        /// <param name="guid">The Guid to check.</param>
         /// <returns>True if the list contains the item id.</returns>
-        public bool ContainsKey(NefsItemId id)
+        public bool ContainsKey(Guid guid)
         {
-            return this.itemsById.ContainsKey(id);
+            return this.itemsByGuid.ContainsKey(guid);
         }
 
         /// <summary>
@@ -181,13 +187,13 @@ namespace VictorBush.Ego.NefsLib.Item
         }
 
         /// <summary>
-        /// Gets the item with the specified id. Throws an exception if not found.
+        /// Gets the item with the specified Guid. Throws an exception if not found.
         /// </summary>
-        /// <param name="id">The id of the item to get.</param>
-        /// <returns>The <see cref="NefsItem"/>.</returns>
-        public IReadOnlyList<NefsItem> GetItem(NefsItemId id)
+        /// <param name="guid">The guid to get the item for.</param>
+        /// <returns>The item.</returns>
+        public NefsItem GetItem(Guid guid)
         {
-            return this.itemsById[id].Items;
+            return this.itemsByGuid[guid];
         }
 
         /// <summary>
@@ -252,6 +258,16 @@ namespace VictorBush.Ego.NefsLib.Item
             // First child id is based on children items being sorted by id, NOT by file name
             var item = this.itemsById[id];
             return item.Children.Count > 0 ? item.Children.OrderBy(i => i.Value.Items.First().Id).First().Value.Items.First().Id : id;
+        }
+
+        /// <summary>
+        /// Gets all items with the specified id. Throws an exception if not found.
+        /// </summary>
+        /// <param name="id">The id of the items to get.</param>
+        /// <returns>The <see cref="NefsItem"/>.</returns>
+        public IReadOnlyList<NefsItem> GetItems(NefsItemId id)
+        {
+            return this.itemsById[id].Items;
         }
 
         /// <summary>

@@ -145,9 +145,15 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <inheritdoc/>
         public NefsItem CreateItemInfo(uint part1Index, NefsItemList dataSourceList)
         {
-            var p1 = this.Part1.EntriesByIndex[(int)part1Index];
+            return this.CreateItemInfo(this.Part1.EntriesByIndex[(int)part1Index].Guid, dataSourceList);
+        }
+
+        /// <inheritdoc/>
+        public NefsItem CreateItemInfo(Guid guid, NefsItemList dataSourceList)
+        {
+            var p1 = this.Part1.EntriesByGuid[guid];
             var p2 = this.Part2.EntriesByIndex[(int)p1.IndexPart2];
-            var p6 = this.Part6.EntriesByIndex[(int)part1Index];
+            var p6 = this.Part6.EntriesByGuid[guid];
             var id = p1.Id;
 
             // Determine type
@@ -227,15 +233,15 @@ namespace VictorBush.Ego.NefsLib.Header
         }
 
         /// <inheritdoc/>
-        public NefsItemId GetItemDirectoryId(uint metadataIndex)
+        public NefsItemId GetItemDirectoryId(uint indexPart2)
         {
-            return new NefsItemId(this.Part2.EntriesByIndex[(int)metadataIndex].Data0x00_DirectoryId.Value);
+            return new NefsItemId(this.Part2.EntriesByIndex[(int)indexPart2].Data0x00_DirectoryId.Value);
         }
 
         /// <inheritdoc/>
-        public string GetItemFileName(uint metadataIndex)
+        public string GetItemFileName(uint indexPart2)
         {
-            var offsetIntoPart3 = this.Part2.EntriesByIndex[(int)metadataIndex].Data0x08_OffsetIntoPart3.Value;
+            var offsetIntoPart3 = this.Part2.EntriesByIndex[(int)indexPart2].Data0x08_OffsetIntoPart3.Value;
             return this.Part3.FileNamesByOffset[offsetIntoPart3];
         }
     }

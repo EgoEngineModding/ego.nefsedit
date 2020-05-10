@@ -2,6 +2,7 @@
 
 namespace VictorBush.Ego.NefsLib.Header
 {
+    using System;
     using VictorBush.Ego.NefsLib.Item;
     using VictorBush.Ego.NefsLib.Progress;
 
@@ -24,6 +25,14 @@ namespace VictorBush.Ego.NefsLib.Header
         NefsItem CreateItemInfo(uint part1Index, NefsItemList dataSourceList);
 
         /// <summary>
+        /// Builds an item object from header data.
+        /// </summary>
+        /// <param name="guid">The guid of the item.</param>
+        /// <param name="dataSourceList">The item list to use as the item data source.</param>
+        /// <returns>A new <see cref="NefsItem"/>.</returns>
+        NefsItem CreateItemInfo(Guid guid, NefsItemList dataSourceList);
+
+        /// <summary>
         /// Generates a new item list from the header metadata.
         /// </summary>
         /// <param name="dataFilePath">The path to the data file for the item list.</param>
@@ -35,19 +44,15 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Gets the directory id for an item. If the item is in the root directory, the directory
         /// id will equal the item's id.
         /// </summary>
-        /// 
-
-
-   // TODO  /// <param name="id">The item id.</param>
+        /// <param name="indexPart2">The index into part 2.</param>
         /// <returns>The directory id.</returns>
-        NefsItemId GetItemDirectoryId(uint metadataIndex);
+        NefsItemId GetItemDirectoryId(uint indexPart2);
 
         /// <summary>
         /// Gets the file name of an item.
         /// </summary>
-
- //TODO       /// <param name="id">The item id.</param>
+        /// <param name="indexPart2">The index into part 2.</param>
         /// <returns>The item's file name.</returns>
-        string GetItemFileName(uint metadataIndex);
+        string GetItemFileName(uint indexPart2);
     }
 }

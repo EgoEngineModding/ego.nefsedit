@@ -307,7 +307,7 @@ namespace VictorBush.Ego.NefsLib.IO
             using (p.BeginTask(weight, "Reading header part 7"))
             {
                 var numEntries = (uint)part2.EntriesByIndex.Count;
-                part7 = await this.ReadHeaderPart7Async(part6Stream, (uint)part6Offset + toc.OffsetToPart7, part2, p);
+                part7 = await this.ReadHeaderPart7Async(part6Stream, (uint)part6Offset + toc.OffsetToPart7, numEntries, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 8"))
@@ -506,7 +506,8 @@ namespace VictorBush.Ego.NefsLib.IO
 
             using (p.BeginTask(weight, "Reading header part 7"))
             {
-                part7 = await this.ReadHeaderPart7Async(part6Stream, (uint)part6Offset + toc.OffsetToPart7, part2, p);
+                var numEntries = (uint)part2.EntriesByIndex.Count;
+                part7 = await this.ReadHeaderPart7Async(part6Stream, (uint)part6Offset + toc.OffsetToPart7, numEntries, p);
             }
 
             using (p.BeginTask(weight, "Reading header part 8"))
@@ -953,14 +954,13 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </summary>
         /// <param name="stream">The stream to read from.</param>
         /// <param name="offset">The offset to the header part from the beginning of the stream.</param>
-        /// <param name="part2">Header part 2. Used to determine number of entries.</param>
+        /// <param name="numEntries">Number of entries.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header part.</returns>
-        internal async Task<NefsHeaderPart7> ReadHeaderPart7Async(Stream stream, uint offset, NefsHeaderPart2 part2, NefsProgress p)
+        internal async Task<NefsHeaderPart7> ReadHeaderPart7Async(Stream stream, uint offset, uint numEntries, NefsProgress p)
         {
             var entries = new List<NefsHeaderPart7Entry>();
-            var numItems = part2.EntriesByIndex.Count;
-            var size = numItems * NefsHeaderPart7Entry.Size;
+            var size = numEntries * NefsHeaderPart7Entry.Size;
 
             // Validate inputs
             if (!this.ValidateHeaderPartStream(stream, offset, (uint)size, "7"))
@@ -971,9 +971,9 @@ namespace VictorBush.Ego.NefsLib.IO
             // Get entries in part 7
             var entryOffset = offset;
 
-            for (var i = 0; i < numItems; ++i)
+            for (var i = 0; i < numEntries; ++i)
             {
-                using (p.BeginTask(1.0f / numItems))
+                using (p.BeginTask(1.0f / numEntries))
                 {
                     // Read the entry data
                     var entry = new NefsHeaderPart7Entry();

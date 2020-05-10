@@ -4,6 +4,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 {
     using System.IO;
     using System.IO.Abstractions.TestingHelpers;
+    using System.Linq;
     using System.Threading.Tasks;
     using System.Windows.Forms;
     using Moq;
@@ -47,7 +48,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items.GetItem(itemId);
+            var item = w.Archive.Items.GetItems(itemId).First();
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 
@@ -85,7 +86,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items.GetItem(itemId);
+            var item = w.Archive.Items.GetItems(itemId).First();
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 
@@ -129,7 +130,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items.GetItem(itemId);
+            var item = w.Archive.Items.GetItems(itemId).First();
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 
@@ -181,7 +182,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items.GetItem(itemId);
+            var item = w.Archive.Items.GetItems(itemId).First();
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 
@@ -275,7 +276,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items.GetItem(itemId);
+            var item = w.Archive.Items.GetItems(itemId).First();
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 
@@ -440,7 +441,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
 
             // Modify archvie
             var itemId = new NefsItemId(0);
-            var item = w.Archive.Items.GetItem(itemId);
+            var item = w.Archive.Items.GetItems(itemId).First();
             var cmd = new RemoveFileCommand(item, item.State);
             w.Execute(cmd);
 

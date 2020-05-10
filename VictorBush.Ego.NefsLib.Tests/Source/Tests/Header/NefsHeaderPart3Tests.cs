@@ -18,21 +18,20 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
 
             var file1Chunks = NefsDataChunk.CreateChunkList(new List<UInt32> { 11, 12, 13 }, TestHelpers.TestTransform);
             var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, file1Chunks));
-            var file1 = new NefsItem(new NefsItemId(0), "file1", new NefsItemId(0), NefsItemType.File, file1DataSource, TestHelpers.TestTransform, TestHelpers.CreateUnknownData());
+            var file1 = TestHelpers.CreateFile(0, 0, "file1", file1DataSource);
             items.Add(file1);
 
             var file2Chunks = NefsDataChunk.CreateChunkList(new List<UInt32> { 14, 15, 16 }, TestHelpers.TestTransform);
             var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, file2Chunks));
-            var file2 = new NefsItem(new NefsItemId(1), "file2", new NefsItemId(1), NefsItemType.File, file2DataSource, TestHelpers.TestTransform, TestHelpers.CreateUnknownData());
+            var file2 = TestHelpers.CreateFile(1, 1, "file2", file2DataSource);
             items.Add(file2);
 
-            var dir1DataSource = new NefsEmptyDataSource();
-            var dir1 = new NefsItem(new NefsItemId(2), "dir1", new NefsItemId(2), NefsItemType.Directory, dir1DataSource, null, TestHelpers.CreateUnknownData());
+            var dir1 = TestHelpers.CreateDirectory(2, 2, "dir1");
             items.Add(dir1);
 
             var file3Chunks = NefsDataChunk.CreateChunkList(new List<UInt32> { 22, 23, 24 }, TestHelpers.TestTransform);
             var file3DataSource = new NefsItemListDataSource(items, 222, new NefsItemSize(333, file3Chunks));
-            var file3 = new NefsItem(new NefsItemId(3), "file3", dir1.Id, NefsItemType.File, file3DataSource, TestHelpers.TestTransform, TestHelpers.CreateUnknownData());
+            var file3 = TestHelpers.CreateFile(3, dir1.Id.Value, "file3", file3DataSource);
             items.Add(file3);
 
             var p3 = new NefsHeaderPart3(items);

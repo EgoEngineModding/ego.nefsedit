@@ -304,7 +304,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             // Find the parent directory
             var parentId = this.Workspace.Archive.Items.GetItemDirectoryId(this.Directory.DirectoryId);
-            var parent = this.Workspace.Archive.Items.GetItem(parentId).First();
+            var parent = this.Workspace.Archive.Items.GetItems(parentId).First();
             if (parent == this.Directory)
             {
                 // If the parent == the current dir, then display root
