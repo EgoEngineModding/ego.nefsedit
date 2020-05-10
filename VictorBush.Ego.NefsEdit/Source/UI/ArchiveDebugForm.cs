@@ -71,10 +71,9 @@ namespace VictorBush.Ego.NefsEdit.UI
             var headerPart6String = new StringBuilder();
             foreach (var entry in h.Part6.EntriesByIndex)
             {
-                headerPart6String.Append($"0x{entry.Byte0.ToString("X")}".PadRight(20));
-                headerPart6String.Append($"0x{entry.Byte1.ToString("X")}".PadRight(20));
-                headerPart6String.Append($"0x{entry.Byte2.ToString("X")}".PadRight(20));
-                headerPart6String.Append($"0x{entry.Byte3.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Volume.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Flags.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Unknown0x3.ToString("X")}".PadRight(20));
                 headerPart6String.Append("\n");
             }
 
@@ -196,10 +195,9 @@ Header Part 7
             var headerPart6String = new StringBuilder();
             foreach (var entry in h.Part6.EntriesByIndex)
             {
-                headerPart6String.Append($"0x{entry.Byte0.ToString("X")}".PadRight(20));
-                headerPart6String.Append($"0x{entry.Byte1.ToString("X")}".PadRight(20));
-                headerPart6String.Append($"0x{entry.Byte2.ToString("X")}".PadRight(20));
-                headerPart6String.Append($"0x{entry.Byte3.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Volume.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Flags.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{entry.Unknown0x3.ToString("X")}".PadRight(20));
                 headerPart6String.Append("\n");
             }
 

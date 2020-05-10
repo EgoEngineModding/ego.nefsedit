@@ -1,0 +1,58 @@
+﻿// See LICENSE.txt for license information.
+
+namespace VictorBush.Ego.NefsLib.Header
+{
+    using System;
+
+    /// <summary>
+    /// Bitfield flags for part 6 data.
+    /// </summary>
+    [Flags]
+    public enum Nefs20HeaderPart6Flags
+    {
+        /// <summary>
+        /// No flags set.
+        /// </summary>
+        None = 0x0,
+
+        /// <summary>
+        /// Unknown.
+        /// </summary>
+        Unknown0x01 = 0x1,
+
+        /// <summary>
+        /// Unknown.
+        /// </summary>
+        Unknown0x02 = 0x2,
+
+        /// <summary>
+        /// A flag indicating whether this item is a directory.
+        /// </summary>
+        IsDirectory = 0x4,
+
+        /// <summary>
+        /// Unknown.
+        /// </summary>
+        Unknown0x08 = 0x8,
+
+        /// <summary>
+        /// Unknown.
+        /// </summary>
+        Unknown0x10 = 0x10,
+
+        /// <summary>
+        /// Unknown.
+        /// </summary>
+        Unknown0x20 = 0x20,
+
+        /// <summary>
+        /// Unknown.
+        /// </summary>
+        Unknown0x40 = 0x40,
+
+        /// <summary>
+        /// Unknown.
+        /// </summary>
+        Unknown0x80 = 0x80,
+    }
+}

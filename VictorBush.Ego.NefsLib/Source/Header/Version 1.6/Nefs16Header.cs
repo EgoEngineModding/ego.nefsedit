@@ -156,8 +156,8 @@ namespace VictorBush.Ego.NefsLib.Header
             var p6 = this.Part6.EntriesByGuid[guid];
             var id = p1.Id;
 
-            // Determine type
-            var type = p2.Data0x0c_ExtractedSize.Value == 0 ? NefsItemType.Directory : NefsItemType.File;
+            // Gather attributes
+            var attributes = p6.CreateAttributes();
 
             // Find parent
             var parentId = this.GetItemDirectoryId(p1.IndexPart2);
@@ -171,7 +171,7 @@ namespace VictorBush.Ego.NefsLib.Header
 
             // Data source
             INefsDataSource dataSource;
-            if (type == NefsItemType.Directory)
+            if (attributes.IsDirectory)
             {
                 // Item is a directory
                 dataSource = new NefsEmptyDataSource();
@@ -196,17 +196,8 @@ namespace VictorBush.Ego.NefsLib.Header
             // File name and path
             var fileName = this.GetItemFileName(p1.IndexPart2);
 
-            // Gather unknown metadata
-            var unknown = new NefsItemUnknownData
-            {
-                Part6Unknown0x00 = p6?.Byte0 ?? 0,
-                Part6Unknown0x01 = p6?.Byte1 ?? 0,
-                Part6Unknown0x02 = p6?.Byte2 ?? 0,
-                Part6Unknown0x03 = p6?.Byte3 ?? 0,
-            };
-
             // Create item
-            return new NefsItem(p1.Guid, id, fileName, parentId, type, dataSource, transform, unknown);
+            return new NefsItem(p1.Guid, id, fileName, parentId, dataSource, transform, attributes);
         }
 
         /// <inheritdoc/>

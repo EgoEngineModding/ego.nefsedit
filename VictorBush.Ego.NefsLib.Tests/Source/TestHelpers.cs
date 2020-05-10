@@ -56,15 +56,16 @@ namespace VictorBush.Ego.NefsLib.Tests
             uint dirId,
             string fileName)
         {
+            var attributes = new NefsItemAttributes(isDirectory: true);
+
             return new NefsItem(
                 Guid.NewGuid(),
                 new NefsItemId(id),
                 fileName,
                 new NefsItemId(dirId),
-                NefsItemType.Directory,
                 new NefsEmptyDataSource(),
                 null,
-                CreateUnknownData());
+                attributes);
         }
 
         /// <summary>
@@ -81,16 +82,17 @@ namespace VictorBush.Ego.NefsLib.Tests
             string fileName,
             INefsDataSource dataSource)
         {
+            var attributes = new NefsItemAttributes(isTransformed: true);
+
             var transform = TestTransform;
             return new NefsItem(
                 Guid.NewGuid(),
                 new NefsItemId(id),
                 fileName,
                 new NefsItemId(dirId),
-                NefsItemType.File,
                 dataSource,
                 transform,
-                CreateUnknownData());
+                attributes);
         }
 
         /// <summary>
@@ -113,6 +115,10 @@ namespace VictorBush.Ego.NefsLib.Tests
             IReadOnlyList<UInt32> chunkSizes,
             NefsItemType type)
         {
+            var attributes = new NefsItemAttributes(
+                isDirectory: type == NefsItemType.Directory,
+                isTransformed: true);
+
             var transform = TestTransform;
             var chunks = NefsDataChunk.CreateChunkList(chunkSizes, transform);
             var size = new NefsItemSize(extractedSize, chunks);
@@ -122,25 +128,9 @@ namespace VictorBush.Ego.NefsLib.Tests
                 new NefsItemId(id),
                 fileName,
                 new NefsItemId(dirId),
-                type,
                 dataSource,
                 transform,
-                CreateUnknownData());
-        }
-
-        /// <summary>
-        /// Creates empty unknown header data.
-        /// </summary>
-        /// <returns>An empty <see cref="NefsItemUnknownData"/>.</returns>
-        internal static NefsItemUnknownData CreateUnknownData()
-        {
-            return new NefsItemUnknownData
-            {
-                Part6Unknown0x00 = 0,
-                Part6Unknown0x01 = 0,
-                Part6Unknown0x02 = 0,
-                Part6Unknown0x03 = 0,
-            };
+                attributes);
         }
     }
 }

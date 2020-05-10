@@ -17,41 +17,38 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <param name="id">The item id.</param>
         /// <param name="fileName">The file name within the archive.</param>
         /// <param name="directoryId">The directory id the item is in.</param>
-        /// <param name="type">The type of item.</param>
         /// <param name="dataSource">The data source for the item's data.</param>
         /// <param name="transform">
         /// The transform that is applied to this item's data. Can be null if no transform.
         /// </param>
-        /// <param name="unknownData">Unknown metadata.</param>
+        /// <param name="attributes">Additional attributes.</param>
         /// <param name="state">The item state.</param>
         public NefsItem(
             Guid guid,
             NefsItemId id,
             string fileName,
             NefsItemId directoryId,
-            NefsItemType type,
             INefsDataSource dataSource,
             NefsDataTransform transform,
-            NefsItemUnknownData unknownData,
+            NefsItemAttributes attributes,
             NefsItemState state = NefsItemState.None)
         {
             this.Guid = guid;
             this.Id = id;
             this.DirectoryId = directoryId;
-            this.Type = type;
             this.DataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
             this.State = state;
             this.Transform = transform;
-
-            // Unknown data
-            this.Part6Unknown0x00 = unknownData.Part6Unknown0x00;
-            this.Part6Unknown0x01 = unknownData.Part6Unknown0x01;
-            this.Part6Unknown0x02 = unknownData.Part6Unknown0x02;
-            this.Part6Unknown0x03 = unknownData.Part6Unknown0x03;
+            this.Attributes = attributes;
 
             // Save file name
             this.FileName = fileName ?? throw new ArgumentNullException(nameof(fileName));
         }
+
+        /// <summary>
+        /// Additional item attributes.
+        /// </summary>
+        public NefsItemAttributes Attributes { get; }
 
         /// <summary>
         /// The size of the item's data in the archive.
@@ -124,7 +121,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <summary>
         /// The type of item this is.
         /// </summary>
-        public NefsItemType Type { get; }
+        public NefsItemType Type => this.Attributes.IsDirectory ? NefsItemType.Directory : NefsItemType.File;
 
         /// <summary>
         /// Clones this item metadata.
@@ -132,23 +129,14 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <returns>A new <see cref="NefsItem"/>.</returns>
         public object Clone()
         {
-            var unknownData = new NefsItemUnknownData
-            {
-                Part6Unknown0x00 = this.Part6Unknown0x00,
-                Part6Unknown0x01 = this.Part6Unknown0x01,
-                Part6Unknown0x02 = this.Part6Unknown0x02,
-                Part6Unknown0x03 = this.Part6Unknown0x03,
-            };
-
             return new NefsItem(
                 this.Guid,
                 this.Id,
                 this.FileName,
                 this.DirectoryId,
-                this.Type,
                 this.DataSource,
                 this.Transform,
-                unknownData,
+                this.Attributes,
                 state: this.State);
         }
 

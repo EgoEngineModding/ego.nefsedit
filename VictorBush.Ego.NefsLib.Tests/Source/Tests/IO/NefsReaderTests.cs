@@ -488,17 +488,15 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             Assert.Equal(2, part6.EntriesByIndex.Count);
 
             var e1 = part6.EntriesByIndex[0];
-            Assert.Equal(0x11, e1.Byte0);
-            Assert.Equal(0x12, e1.Byte1);
-            Assert.Equal(0x13, e1.Byte2);
-            Assert.Equal(0x14, e1.Byte3);
+            Assert.Equal(0x1211, e1.Volume);
+            Assert.Equal(0x13, (byte)e1.Flags);
+            Assert.Equal(0x14, e1.Unknown0x3);
             Assert.Same(e1, part6.EntriesByGuid[part1.EntriesByIndex[0].Guid]);
 
             var e2 = part6.EntriesByIndex[1];
-            Assert.Equal(0x21, e2.Byte0);
-            Assert.Equal(0x22, e2.Byte1);
-            Assert.Equal(0x23, e2.Byte2);
-            Assert.Equal(0x24, e2.Byte3);
+            Assert.Equal(0x2221, e2.Volume);
+            Assert.Equal(0x23, (byte)e2.Flags);
+            Assert.Equal(0x24, e2.Unknown0x3);
             Assert.Same(e2, part6.EntriesByGuid[part1.EntriesByIndex[1].Guid]);
         }
 

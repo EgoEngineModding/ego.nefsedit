@@ -37,11 +37,20 @@ namespace VictorBush.Ego.NefsLib.Header
             // Sort part 6 by item id. Part 1 and part 6 order must match.
             foreach (var item in items.EnumerateDepthFirstByName())
             {
+                var flags = Nefs20HeaderPart6Flags.None;
+                flags |= item.Attributes.V20Unknown0x01 ? Nefs20HeaderPart6Flags.Unknown0x01 : 0;
+                flags |= item.Attributes.V20Unknown0x02 ? Nefs20HeaderPart6Flags.Unknown0x02 : 0;
+                flags |= item.Attributes.IsDirectory ? Nefs20HeaderPart6Flags.IsDirectory : 0;
+                flags |= item.Attributes.V20Unknown0x08 ? Nefs20HeaderPart6Flags.Unknown0x08 : 0;
+                flags |= item.Attributes.V20Unknown0x10 ? Nefs20HeaderPart6Flags.Unknown0x10 : 0;
+                flags |= item.Attributes.V20Unknown0x20 ? Nefs20HeaderPart6Flags.Unknown0x20 : 0;
+                flags |= item.Attributes.V20Unknown0x40 ? Nefs20HeaderPart6Flags.Unknown0x40 : 0;
+                flags |= item.Attributes.V20Unknown0x80 ? Nefs20HeaderPart6Flags.Unknown0x80 : 0;
+
                 var entry = new Nefs20HeaderPart6Entry(item.Guid);
-                entry.Data0x00_Byte0.Value[0] = item.Part6Unknown0x00;
-                entry.Data0x01_Byte1.Value[0] = item.Part6Unknown0x01;
-                entry.Data0x02_Byte2.Value[0] = item.Part6Unknown0x02;
-                entry.Data0x03_Byte3.Value[0] = item.Part6Unknown0x03;
+                entry.Data0x00_Volume.Value = item.Attributes.Part6Volume;
+                entry.Data0x02_Flags.Value = (byte)flags;
+                entry.Data0x03_Unknown.Value = item.Attributes.Part6Unknown0x3;
 
                 this.entriesByGuid.Add(item.Guid, entry);
                 this.entriesByIndex.Add(entry);

@@ -147,23 +147,27 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
         {
             var items = new NefsItemList(filePath);
 
+            var file1Attributes = new NefsItemAttributes(isTransformed: true);
             var file1Chunks = NefsDataChunk.CreateChunkList(File1ChunkSizes, TestHelpers.TestTransform);
             var file1DataSource = new NefsItemListDataSource(items, File1Offset, new NefsItemSize(File1ExtractedSize, file1Chunks));
-            var file1 = new NefsItem(File1Guid, new NefsItemId(File1ItemId), File1Name, new NefsItemId(File1DirectoryId), NefsItemType.File, file1DataSource, TestHelpers.TestTransform, TestHelpers.CreateUnknownData());
+            var file1 = new NefsItem(File1Guid, new NefsItemId(File1ItemId), File1Name, new NefsItemId(File1DirectoryId), file1DataSource, TestHelpers.TestTransform, file1Attributes);
             items.Add(file1);
 
+            var dir1Attributes = new NefsItemAttributes(isDirectory: true);
             var dir1DataSource = new NefsEmptyDataSource();
-            var dir1 = new NefsItem(Dir1Guid, new NefsItemId(Dir1ItemId), Dir1Name, new NefsItemId(Dir1DirectoryId), NefsItemType.Directory, dir1DataSource, null, TestHelpers.CreateUnknownData());
+            var dir1 = new NefsItem(Dir1Guid, new NefsItemId(Dir1ItemId), Dir1Name, new NefsItemId(Dir1DirectoryId), dir1DataSource, null, dir1Attributes);
             items.Add(dir1);
 
+            var file2Attributes = new NefsItemAttributes(isTransformed: true);
             var file2Chunks = NefsDataChunk.CreateChunkList(File2ChunkSizes, TestHelpers.TestTransform);
             var file2DataSource = new NefsItemListDataSource(items, File2Offset, new NefsItemSize(File2ExtractedSize, file2Chunks));
-            var file2 = new NefsItem(File2Guid, new NefsItemId(File2ItemId), File2Name, new NefsItemId(File2DirectoryId), NefsItemType.File, file2DataSource, TestHelpers.TestTransform, TestHelpers.CreateUnknownData());
+            var file2 = new NefsItem(File2Guid, new NefsItemId(File2ItemId), File2Name, new NefsItemId(File2DirectoryId), file2DataSource, TestHelpers.TestTransform, file2Attributes);
             items.Add(file2);
 
+            var file3Attributes = new NefsItemAttributes(isTransformed: true);
             var file3Chunks = NefsDataChunk.CreateChunkList(File3ChunkSizes, TestHelpers.TestTransform);
             var file3DataSource = new NefsItemListDataSource(items, File3Offset, new NefsItemSize(File3ExtractedSize, file3Chunks));
-            var file3 = new NefsItem(File3Guid, new NefsItemId(File3ItemId), File3Name, new NefsItemId(File3DirectoryId), NefsItemType.File, file3DataSource, TestHelpers.TestTransform, TestHelpers.CreateUnknownData());
+            var file3 = new NefsItem(File3Guid, new NefsItemId(File3ItemId), File3Name, new NefsItemId(File3DirectoryId), file3DataSource, TestHelpers.TestTransform, file3Attributes);
             items.Add(file3);
 
             Assert.Equal((int)NumItems, items.Count);

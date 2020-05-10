@@ -61,24 +61,23 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             var debugColumns = new ColumnHeader[]
             {
-                new ColumnHeader() { Name = "pt1.0x00", Text = "[pt1.0x00] Offset to Data" },
-                new ColumnHeader() { Name = "pt1.0x08", Text = "[pt1.0x08] Index into pt2" },
-                new ColumnHeader() { Name = "pt1.0x0c", Text = "[pt1.0x0c] Index into pt4 (chunk sizes)" },
-                new ColumnHeader() { Name = "pt1.0x10", Text = "[pt1.0x10] Id" },
+                new ColumnHeader() { Name = "pt1.0x00", Text = "Offset to Data [pt1.0x00]" },
+                new ColumnHeader() { Name = "pt1.0x08", Text = "Index Part 2 [pt1.0x08]" },
+                new ColumnHeader() { Name = "pt1.0x0c", Text = "Index Part 4 [pt1.0x0c]" },
+                new ColumnHeader() { Name = "pt1.0x10", Text = "Id [pt1.0x10]" },
 
-                new ColumnHeader() { Name = "pt2.0x00", Text = "[pt2.0x00] Directory Id" },
-                new ColumnHeader() { Name = "pt2.0x04", Text = "[pt2.0x04] First Child" },
-                new ColumnHeader() { Name = "pt2.0x08", Text = "[pt2.0x08] Offset into pt3 (filename strings)" },
-                new ColumnHeader() { Name = "pt2.0x0c", Text = "[pt2.0x0c] Extracted size" },
-                new ColumnHeader() { Name = "pt2.0x10", Text = "[pt2.0x10] Id" },
+                new ColumnHeader() { Name = "pt2.0x00", Text = "Directory Id [pt2.0x00]" },
+                new ColumnHeader() { Name = "pt2.0x04", Text = "First Child [pt2.0x04]" },
+                new ColumnHeader() { Name = "pt2.0x08", Text = "Pt3 offset (filename strings) [pt2.0x08]" },
+                new ColumnHeader() { Name = "pt2.0x0c", Text = "Extracted size [pt2.0x0c]" },
+                new ColumnHeader() { Name = "pt2.0x10", Text = "Id [pt2.0x10]" },
 
-                new ColumnHeader() { Name = "pt6.0x00", Text = "[pt6.0x00]" },
-                new ColumnHeader() { Name = "pt6.0x01", Text = "[pt6.0x01]" },
-                new ColumnHeader() { Name = "pt6.0x02", Text = "[pt6.0x02]" },
-                new ColumnHeader() { Name = "pt6.0x03", Text = "[pt6.0x03]" },
+                new ColumnHeader() { Name = "pt6.0x00", Text = "Volume [pt6.0x00]" },
+                new ColumnHeader() { Name = "pt6.0x02", Text = "Flags [pt6.0x02]" },
+                new ColumnHeader() { Name = "pt6.0x03", Text = "Unknown [pt6.0x03]" },
 
-                new ColumnHeader() { Name = "pt7.0x00", Text = "[pt7.0x00]" },
-                new ColumnHeader() { Name = "pt7.0x04", Text = "[pt7.0x04]" },
+                new ColumnHeader() { Name = "pt7.0x00", Text = "Sibling Id [pt7.0x00]" },
+                new ColumnHeader() { Name = "pt7.0x04", Text = "Id [pt7.0x04]" },
             };
 
             this.itemsListView.ShowItemToolTips = true;
@@ -200,14 +199,13 @@ namespace VictorBush.Ego.NefsEdit.UI
                     this.AddSubItem(listItem, "pt2.0x10", p2.Id.Value.ToString("X"));
 
                     var p6 = h20.Part6.EntriesByGuid[item.Guid];
-                    this.AddSubItem(listItem, "pt6.0x00", p6?.Byte0.ToString("X"));
-                    this.AddSubItem(listItem, "pt6.0x01", p6?.Byte1.ToString("X"));
-                    this.AddSubItem(listItem, "pt6.0x02", p6?.Byte2.ToString("X"));
-                    this.AddSubItem(listItem, "pt6.0x03", p6?.Byte3.ToString("X"));
+                    this.AddSubItem(listItem, "pt6.0x00", p6.Volume.ToString("X"));
+                    this.AddSubItem(listItem, "pt6.0x02", ((byte)p6.Flags).ToString("X"));
+                    this.AddSubItem(listItem, "pt6.0x03", p6.Unknown0x3.ToString("X"));
 
                     var p7 = h20.Part7.EntriesByIndex[(int)p1.IndexPart2];
-                    this.AddSubItem(listItem, "pt7.0x00", p7?.SiblingId.Value.ToString("X"));
-                    this.AddSubItem(listItem, "pt7.0x04", p7?.Id.Value.ToString("X"));
+                    this.AddSubItem(listItem, "pt7.0x00", p7.SiblingId.Value.ToString("X"));
+                    this.AddSubItem(listItem, "pt7.0x04", p7.Id.Value.ToString("X"));
                 }
                 else if (archive.Header is Nefs16Header h16)
                 {
@@ -225,14 +223,13 @@ namespace VictorBush.Ego.NefsEdit.UI
                     this.AddSubItem(listItem, "pt2.0x10", p2.Id.Value.ToString("X"));
 
                     var p6 = h16.Part6.EntriesByGuid[item.Guid];
-                    this.AddSubItem(listItem, "pt6.0x00", p6?.Byte0.ToString("X"));
-                    this.AddSubItem(listItem, "pt6.0x01", p6?.Byte1.ToString("X"));
-                    this.AddSubItem(listItem, "pt6.0x02", p6?.Byte2.ToString("X"));
-                    this.AddSubItem(listItem, "pt6.0x03", p6?.Byte3.ToString("X"));
+                    this.AddSubItem(listItem, "pt6.0x00", p6.Volume.ToString("X"));
+                    this.AddSubItem(listItem, "pt6.0x02", ((byte)p6.Flags).ToString("X"));
+                    this.AddSubItem(listItem, "pt6.0x03", p6.Unknown0x3.ToString("X"));
 
                     var p7 = h16.Part7.EntriesByIndex[(int)p1.IndexPart2];
-                    this.AddSubItem(listItem, "pt7.0x00", p7?.SiblingId.Value.ToString("X"));
-                    this.AddSubItem(listItem, "pt7.0x04", p7?.Id.Value.ToString("X"));
+                    this.AddSubItem(listItem, "pt7.0x00", p7.SiblingId.Value.ToString("X"));
+                    this.AddSubItem(listItem, "pt7.0x04", p7.Id.Value.ToString("X"));
                 }
 
                 if (item.Type == NefsItemType.Directory)
@@ -240,11 +237,10 @@ namespace VictorBush.Ego.NefsEdit.UI
                     listItem.BackColor = Color.LightBlue;
                 }
 
-                // TODO : Highlight duplicates
-                //if (item..Any())
-                //{
-                //    listItem.BackColor = Color.LightPink;
-                //}
+                if (item.Attributes.IsDuplicated)
+                {
+                    listItem.BackColor = Color.LightPink;
+                }
 
                 this.listItems.Add(item, listItem);
                 this.itemsListView.Items.Add(listItem);
