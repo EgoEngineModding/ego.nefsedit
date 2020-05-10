@@ -40,10 +40,10 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             var items = new NefsItemList(@"C:\archive.nefs");
 
             var item1Attributes = new NefsItemAttributes(
-                v20Unknown0x01: true,
+                isTransformed: true,
                 v20Unknown0x02: true,
                 isDirectory: true,
-                v20Unknown0x08: true,
+                isDuplicated: true,
                 v20Unknown0x10: true,
                 v20Unknown0x20: true,
                 v20Unknown0x40: true,

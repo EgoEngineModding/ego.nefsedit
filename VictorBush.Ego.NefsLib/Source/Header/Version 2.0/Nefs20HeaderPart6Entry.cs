@@ -70,10 +70,10 @@ namespace VictorBush.Ego.NefsLib.Header
         public NefsItemAttributes CreateAttributes()
         {
             return new NefsItemAttributes(
-                v20Unknown0x01: this.Flags.HasFlag(Nefs20HeaderPart6Flags.Unknown0x01),
+                isTransformed: this.Flags.HasFlag(Nefs20HeaderPart6Flags.IsTransformed),
                 v20Unknown0x02: this.Flags.HasFlag(Nefs20HeaderPart6Flags.Unknown0x02),
                 isDirectory: this.Flags.HasFlag(Nefs20HeaderPart6Flags.IsDirectory),
-                v20Unknown0x08: this.Flags.HasFlag(Nefs20HeaderPart6Flags.Unknown0x08),
+                isDuplicated: this.Flags.HasFlag(Nefs20HeaderPart6Flags.IsDuplicated),
                 v20Unknown0x10: this.Flags.HasFlag(Nefs20HeaderPart6Flags.Unknown0x10),
                 v20Unknown0x20: this.Flags.HasFlag(Nefs20HeaderPart6Flags.Unknown0x20),
                 v20Unknown0x40: this.Flags.HasFlag(Nefs20HeaderPart6Flags.Unknown0x40),

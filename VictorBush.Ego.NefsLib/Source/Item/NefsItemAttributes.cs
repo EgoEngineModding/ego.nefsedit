@@ -20,9 +20,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <param name="v16Unknown0x10">Unknown flag 0x10 (v1.6).</param>
         /// <param name="v16Unknown0x40">Unknown flag 0x40 (v1.6).</param>
         /// <param name="v16Unknown0x80">Unknown flag 0x80 (v1.6).</param>
-        /// <param name="v20Unknown0x01">Unknown flag 0x01.</param>
         /// <param name="v20Unknown0x02">Unknown flag 0x02.</param>
-        /// <param name="v20Unknown0x08">Unknown flag 0x08.</param>
         /// <param name="v20Unknown0x10">Unknown flag 0x10.</param>
         /// <param name="v20Unknown0x20">Unknown flag 0x20.</param>
         /// <param name="v20Unknown0x40">Unknown flag 0x40.</param>
@@ -38,9 +36,7 @@ namespace VictorBush.Ego.NefsLib.Item
             bool v16Unknown0x10 = false,
             bool v16Unknown0x40 = false,
             bool v16Unknown0x80 = false,
-            bool v20Unknown0x01 = false,
             bool v20Unknown0x02 = false,
-            bool v20Unknown0x08 = false,
             bool v20Unknown0x10 = false,
             bool v20Unknown0x20 = false,
             bool v20Unknown0x40 = false,
@@ -56,9 +52,7 @@ namespace VictorBush.Ego.NefsLib.Item
             this.V16Unknown0x10 = v16Unknown0x10;
             this.V16Unknown0x40 = v16Unknown0x40;
             this.V16Unknown0x80 = v16Unknown0x80;
-            this.V20Unknown0x01 = v20Unknown0x01;
             this.V20Unknown0x02 = v20Unknown0x02;
-            this.V20Unknown0x08 = v20Unknown0x08;
             this.V20Unknown0x10 = v20Unknown0x10;
             this.V20Unknown0x20 = v20Unknown0x20;
             this.V20Unknown0x40 = v20Unknown0x40;
@@ -120,17 +114,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <summary>
         /// Version 2.0 unknown flag.
         /// </summary>
-        public bool V20Unknown0x01 { get; }
-
-        /// <summary>
-        /// Version 2.0 unknown flag.
-        /// </summary>
         public bool V20Unknown0x02 { get; }
-
-        /// <summary>
-        /// Version 2.0 unknown flag.
-        /// </summary>
-        public bool V20Unknown0x08 { get; }
 
         /// <summary>
         /// Version 2.0 unknown flag.

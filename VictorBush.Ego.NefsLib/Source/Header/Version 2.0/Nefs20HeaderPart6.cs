@@ -38,10 +38,10 @@ namespace VictorBush.Ego.NefsLib.Header
             foreach (var item in items.EnumerateDepthFirstByName())
             {
                 var flags = Nefs20HeaderPart6Flags.None;
-                flags |= item.Attributes.V20Unknown0x01 ? Nefs20HeaderPart6Flags.Unknown0x01 : 0;
+                flags |= item.Attributes.IsTransformed ? Nefs20HeaderPart6Flags.IsTransformed : 0;
                 flags |= item.Attributes.V20Unknown0x02 ? Nefs20HeaderPart6Flags.Unknown0x02 : 0;
                 flags |= item.Attributes.IsDirectory ? Nefs20HeaderPart6Flags.IsDirectory : 0;
-                flags |= item.Attributes.V20Unknown0x08 ? Nefs20HeaderPart6Flags.Unknown0x08 : 0;
+                flags |= item.Attributes.IsDuplicated ? Nefs20HeaderPart6Flags.IsDuplicated : 0;
                 flags |= item.Attributes.V20Unknown0x10 ? Nefs20HeaderPart6Flags.Unknown0x10 : 0;
                 flags |= item.Attributes.V20Unknown0x20 ? Nefs20HeaderPart6Flags.Unknown0x20 : 0;
                 flags |= item.Attributes.V20Unknown0x40 ? Nefs20HeaderPart6Flags.Unknown0x40 : 0;

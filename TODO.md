@@ -1,5 +1,6 @@
 # TODO
 - Fix game.dat extract
+- Flags for version 2.0: I think there is probably IsZlib and IsAes instead of a single IsTransformed.
 - Logging verbosity options (i.e., settings save/lod, etc can be debug). Cleanup info/dbg/wrn/error usage.
 - Save window position, size, pane locations, etc for next startup.
 - Add a recent files list (https://github.com/victorbush/ego.nefsedit/issues/7).

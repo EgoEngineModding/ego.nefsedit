@@ -79,10 +79,13 @@ namespace VictorBush.Ego.NefsLib.IO
         private byte[] RsaPublicKey { get; }
 
         /// <inheritdoc/>
+        /// <remarks>
+        /// This method isn't pretty, but it works. It's based on assumptions that may break.
+        /// </remarks>
         public async Task<List<NefsArchiveSource>> FindHeadersAsync(string exePath, string dataFileDir, NefsProgress p)
         {
             var sources = new List<NefsArchiveSource>();
-            var part6Offset = 0U;
+            var nextPart6Offset = 0U;
 
             // Load exe into memory
             var exeBytes = this.FileSystem.File.ReadAllBytes(exePath);
@@ -98,7 +101,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     Log.LogError("Failed to find part 6 offset; using 0 as offset.");
                 }
 
-                part6Offset = (uint)dataSectionOffset;
+                nextPart6Offset = (uint)dataSectionOffset;
             }
             catch (Exception ex)
             {
@@ -140,15 +143,28 @@ namespace VictorBush.Ego.NefsLib.IO
                         var (intro, headerStream) = await this.ReadHeaderIntroAsync(byteStream, (ulong)offset, p);
                         using (headerStream)
                         {
-                            // Read table of contents
                             INefsHeaderIntroToc toc;
+                            uint p6Size;
+                            uint p7Size;
+
+                            // Read table of contents
                             if (version == (int)NefsVersion.Version200)
                             {
                                 toc = await this.Read20HeaderIntroTocAsync(headerStream, Nefs20HeaderIntroToc.Offset, p);
+
+                                var numPart1Entries = toc.Part1Size / NefsHeaderPart1Entry.Size;
+                                var numPart2Entries = toc.Part2Size / NefsHeaderPart2Entry.Size;
+                                p6Size = numPart1Entries * Nefs20HeaderPart6Entry.Size;
+                                p7Size = numPart2Entries * NefsHeaderPart7Entry.Size;
                             }
                             else
                             {
                                 toc = await this.Read16HeaderIntroTocAsync(headerStream, Nefs16HeaderIntroToc.Offset, p);
+
+                                var numPart1Entries = toc.Part1Size / NefsHeaderPart1Entry.Size;
+                                var numPart2Entries = toc.Part2Size / NefsHeaderPart2Entry.Size;
+                                p6Size = numPart1Entries * Nefs16HeaderPart6Entry.Size;
+                                p7Size = numPart2Entries * NefsHeaderPart7Entry.Size;
                             }
 
                             // Read part 5
@@ -173,11 +189,30 @@ namespace VictorBush.Ego.NefsLib.IO
 
                             // Create archive source for this header
                             var dataFilePath = Path.Combine(dataFileDir, name);
-                            var source = new NefsArchiveSource(exePath, (ulong)offset, part6Offset, dataFilePath);
+                            var source = new NefsArchiveSource(exePath, (ulong)offset, nextPart6Offset, dataFilePath);
                             sources.Add(source);
 
                             // Keep looking
                             offset += (int)intro.HeaderSize;
+
+                            // Find next part 6 offset
+                            nextPart6Offset += p6Size + p7Size;
+
+                            // Not sure best way to find next part 6 offset. There is padding between the end
+                            // of part 7 and the next part 6.
+                            while (nextPart6Offset + 4 < exeBytes.Length)
+                            {
+                                // This is based on the assumption that the first part 6 entry is
+                                // always 00 00 XX 00
+                                if (exeBytes[nextPart6Offset + 0] == 0
+                                    && exeBytes[nextPart6Offset + 1] == 0
+                                    && exeBytes[nextPart6Offset + 3] == 0)
+                                {
+                                    break;
+                                }
+
+                                nextPart6Offset++;
+                            }
                         }
                     }
                 }

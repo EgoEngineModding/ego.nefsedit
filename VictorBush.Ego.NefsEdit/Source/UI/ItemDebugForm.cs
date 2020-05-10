@@ -137,10 +137,10 @@ Part 6
 0x02:                       {((byte)p6.Flags).ToString("X")}
 0x03:                       {p6.Unknown0x3.ToString("X")}
 
-Unknown 0x01                {attributes.V20Unknown0x01}
+IsTransformed               {attributes.IsTransformed}
 Unknown 0x02                {attributes.V20Unknown0x02}
 IsDirectory                 {attributes.IsDirectory}
-Unknown 0x08                {attributes.V20Unknown0x08}
+IsDuplicated                {attributes.IsDuplicated}
 Unknown 0x10                {attributes.V20Unknown0x10}
 Unknown 0x20                {attributes.V20Unknown0x20}
 Unknown 0x40                {attributes.V20Unknown0x40}

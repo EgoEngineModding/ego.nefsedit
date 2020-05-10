@@ -17,8 +17,7 @@ namespace VictorBush.Ego.NefsLib.Item
         private readonly SortedDictionary<NefsItemId, ItemContainer> itemsById =
             new SortedDictionary<NefsItemId, ItemContainer>();
 
-        private readonly SortedList<string, ItemContainer> rootItems =
-            new SortedList<string, ItemContainer>();
+        private readonly List<ItemContainer> rootItems = new List<ItemContainer>();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsItemList"/> class.
@@ -69,7 +68,7 @@ namespace VictorBush.Ego.NefsLib.Item
             if (item.DirectoryId == item.Id)
             {
                 // Add to root list
-                this.rootItems.Add(item.FileName, container);
+                this.rootItems.Add(container);
             }
             else
             {
@@ -80,7 +79,7 @@ namespace VictorBush.Ego.NefsLib.Item
                 }
 
                 var parentContainer = this.itemsById[item.DirectoryId];
-                parentContainer.Children.Add(item.FileName, container);
+                parentContainer.Children.Add(container);
                 container.Parent = parentContainer;
             }
 
@@ -141,7 +140,7 @@ namespace VictorBush.Ego.NefsLib.Item
         public IEnumerable<NefsItem> EnumerateDepthFirstById()
         {
             var items = new List<NefsItem>();
-            foreach (var item in this.rootItems.Values.OrderBy(i => i.Items.First().Id))
+            foreach (var item in this.rootItems.OrderBy(i => i.Items.First().Id))
             {
                 items.AddRange(item.Items);
                 items.AddRange(item.EnumerateDepthFirstById());
@@ -157,7 +156,7 @@ namespace VictorBush.Ego.NefsLib.Item
         public IEnumerable<NefsItem> EnumerateDepthFirstByName()
         {
             var items = new List<NefsItem>();
-            foreach (var item in this.rootItems.Values)
+            foreach (var item in this.rootItems.OrderBy(i => i.Items.First().FileName))
             {
                 items.AddRange(item.Items);
                 items.AddRange(item.EnumerateDepthFirstByName());
@@ -174,7 +173,7 @@ namespace VictorBush.Ego.NefsLib.Item
         public IEnumerable<NefsItem> EnumerateItemChildren(NefsItemId id)
         {
             var item = this.itemsById[id];
-            return item.Children.Values.SelectMany(v => v.Items);
+            return item.Children.SelectMany(v => v.Items);
         }
 
         /// <summary>
@@ -183,7 +182,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <returns>Items in the root directory.</returns>
         public IEnumerable<NefsItem> EnumerateRootItems()
         {
-            return this.rootItems.Values.SelectMany(v => v.Items);
+            return this.rootItems.SelectMany(v => v.Items).OrderBy(i => i.FileName);
         }
 
         /// <summary>
@@ -257,7 +256,7 @@ namespace VictorBush.Ego.NefsLib.Item
         {
             // First child id is based on children items being sorted by id, NOT by file name
             var item = this.itemsById[id];
-            return item.Children.Count > 0 ? item.Children.OrderBy(i => i.Value.Items.First().Id).First().Value.Items.First().Id : id;
+            return item.Children.Count > 0 ? item.Children.OrderBy(i => i.Items.First().Id).First().Items.First().Id : id;
         }
 
         /// <summary>
@@ -281,8 +280,8 @@ namespace VictorBush.Ego.NefsLib.Item
         {
             // Sibling id is based on children items being sorted by id, NOT by file name
             var item = this.itemsById[id];
-            var parentList = item.Parent?.Children.OrderBy(i => i.Value.Items.First().Id).Select(i => i.Value.Items.First().Id).ToList()
-                ?? this.rootItems.OrderBy(i => i.Value.Items.First().Id).Select(i => i.Value.Items.First().Id).ToList();
+            var parentList = item.Parent?.Children.OrderBy(i => i.Items.First().Id).Select(i => i.Items.First().Id).ToList()
+                ?? this.rootItems.OrderBy(i => i.Items.First().Id).Select(i => i.Items.First().Id).ToList();
             var itemIndex = parentList.IndexOf(item.Items.First().Id);
 
             if (itemIndex == parentList.Count - 1)
@@ -312,12 +311,12 @@ namespace VictorBush.Ego.NefsLib.Item
             // Check if in root
             if (item.Parent == null)
             {
-                this.rootItems.Remove(item.Items.First().FileName);
+                this.rootItems.Remove(item);
             }
             else
             {
                 // Remove item from parent
-                item.Parent?.Children.Remove(item.Items.First().FileName);
+                item.Parent?.Children.Remove(item);
                 item.Parent = null;
             }
         }
@@ -330,9 +329,9 @@ namespace VictorBush.Ego.NefsLib.Item
             }
 
             /// <summary>
-            /// List of children sorted by file name.
+            /// List of children.
             /// </summary>
-            public SortedList<string, ItemContainer> Children { get; } = new SortedList<string, ItemContainer>();
+            public List<ItemContainer> Children { get; } = new List<ItemContainer>();
 
             /// <summary>
             /// This is a list to handle duplicate items.
@@ -348,7 +347,7 @@ namespace VictorBush.Ego.NefsLib.Item
             public IEnumerable<NefsItem> EnumerateDepthFirstById()
             {
                 var items = new List<NefsItem>();
-                foreach (var child in this.Children.Values.OrderBy(i => i.Items.First().Id))
+                foreach (var child in this.Children.OrderBy(i => i.Items.First().Id))
                 {
                     items.AddRange(child.Items);
                     items.AddRange(child.EnumerateDepthFirstById());
@@ -364,7 +363,7 @@ namespace VictorBush.Ego.NefsLib.Item
             public IEnumerable<NefsItem> EnumerateDepthFirstByName()
             {
                 var items = new List<NefsItem>();
-                foreach (var child in this.Children.Values)
+                foreach (var child in this.Children.OrderBy(i => i.Items.First().FileName))
                 {
                     items.AddRange(child.Items);
                     items.AddRange(child.EnumerateDepthFirstByName());

@@ -16,9 +16,9 @@ namespace VictorBush.Ego.NefsLib.Header
         None = 0x0,
 
         /// <summary>
-        /// Unknown.
+        /// Indicates if the item's data has transforms applied (compressed, encrypted, etc).
         /// </summary>
-        Unknown0x01 = 0x1,
+        IsTransformed = 0x1,
 
         /// <summary>
         /// Unknown.
@@ -31,9 +31,9 @@ namespace VictorBush.Ego.NefsLib.Header
         IsDirectory = 0x4,
 
         /// <summary>
-        /// Unknown.
+        /// Indicates if item has duplicate entries with the same id.
         /// </summary>
-        Unknown0x08 = 0x8,
+        IsDuplicated = 0x8,
 
         /// <summary>
         /// Unknown.

@@ -163,8 +163,9 @@ namespace VictorBush.Ego.NefsEdit.UI
 
                         if (parent == null)
                         {
-                            // TODO : FIX THIS
-                            MessageBox.Show("LOL");
+                            // TODO : FIX THIS ?
+                            Log.LogDebug("Could not find parent directory.");
+                            continue;
                         }
 
                         var newNode = parent.Nodes.Add(item.FileName);
