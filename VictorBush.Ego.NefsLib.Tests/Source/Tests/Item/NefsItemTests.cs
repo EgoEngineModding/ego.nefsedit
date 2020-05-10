@@ -85,7 +85,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Item
         public void CreateHeaderFromFile_ItemIsNotCompressed_ItemCreated()
         {
             var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
-            var item = nefs.Header.CreateItemInfo(TestArchiveNotModified.File2Guid, nefs.Items);
+            var item = nefs.Header.CreateItemInfo(TestArchiveNotModified.File3Guid, nefs.Items);
 
             // File3 is not compressed
             var expected = nefs.Items.GetItem(item.Guid);

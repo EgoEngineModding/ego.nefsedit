@@ -167,7 +167,7 @@ namespace VictorBush.Ego.NefsLib.Header
             var extractedSize = p2.Data0x0c_ExtractedSize.Value;
 
             // Transform
-            var transform = new NefsDataTransform(Nefs20HeaderIntroToc.ChunkSize, true, this.Intro.IsEncrypted ? this.Intro.GetAesKey() : null);
+            var transform = new NefsDataTransform(this.TableOfContents.BlockSize, true, this.Intro.IsEncrypted ? this.Intro.GetAesKey() : null);
 
             // Data source
             INefsDataSource dataSource;

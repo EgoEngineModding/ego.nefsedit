@@ -48,7 +48,7 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
         public static UInt32 File1DirectoryId => File1ItemId;
 
-        public static UInt32 File1ExtractedSize => 100;
+        public static UInt32 File1ExtractedSize => 0x27000;
 
         public static Guid File1Guid { get; } = Guid.NewGuid();
 
@@ -73,7 +73,7 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
         public static UInt32 File2DirectoryId => Dir1ItemId;
 
-        public static UInt32 File2ExtractedSize => 50;
+        public static UInt32 File2ExtractedSize => 0x26000;
 
         public static Guid File2Guid { get; } = Guid.NewGuid();
 
@@ -121,7 +121,7 @@ namespace VictorBush.Ego.NefsLib.Tests.TestArchives
 
         public static UInt32 File4DirectoryId => Dir1ItemId;
 
-        public static UInt32 File4ExtractedSize => 30;
+        public static UInt32 File4ExtractedSize => 0x29000;
 
         public static Guid File4Guid { get; } = Guid.NewGuid();
 

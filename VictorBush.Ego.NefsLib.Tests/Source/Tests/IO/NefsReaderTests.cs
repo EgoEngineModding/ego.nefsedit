@@ -380,7 +380,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             var part4 = await reader.Read20HeaderPart4Async(stream, offset, size, part1, this.p);
 
             // Verify
-            Assert.Equal(3, part4.EntriesByIndex.Count);
+            Assert.Equal(7, part4.EntriesByIndex.Count);
 
             // Item 1
             Assert.Equal((uint)0x14131211, part4.EntriesByIndex[0].CumulativeChunkSize);
