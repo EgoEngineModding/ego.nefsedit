@@ -13,7 +13,8 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsItem"/> class.
         /// </summary>
-        /// <param name="id">The item id (index).</param>
+        /// <param name="guid">The unique identifier for this item.</param>
+        /// <param name="id">The item id.</param>
         /// <param name="fileName">The file name within the archive.</param>
         /// <param name="directoryId">The directory id the item is in.</param>
         /// <param name="type">The type of item.</param>
@@ -24,6 +25,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <param name="unknownData">Unknown metadata.</param>
         /// <param name="state">The item state.</param>
         public NefsItem(
+            Guid guid,
             NefsItemId id,
             string fileName,
             NefsItemId directoryId,
@@ -33,6 +35,7 @@ namespace VictorBush.Ego.NefsLib.Item
             NefsItemUnknownData unknownData,
             NefsItemState state = NefsItemState.None)
         {
+            this.Guid = guid;
             this.Id = id;
             this.DirectoryId = directoryId;
             this.Type = type;
@@ -77,7 +80,13 @@ namespace VictorBush.Ego.NefsLib.Item
         public string FileName { get; }
 
         /// <summary>
-        /// The id of this item.
+        /// A unique identifier for this item.
+        /// </summary>
+        public Guid Guid { get; }
+
+        /// <summary>
+        /// The id of this item. This is not guaranteed to be unique in an archive, there can be
+        /// items with duplicate id values. For a unique identifer, use <see cref="Guid"/>.
         /// </summary>
         public NefsItemId Id { get; }
 
@@ -132,6 +141,7 @@ namespace VictorBush.Ego.NefsLib.Item
             };
 
             return new NefsItem(
+                this.Guid,
                 this.Id,
                 this.FileName,
                 this.DirectoryId,

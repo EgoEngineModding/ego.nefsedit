@@ -45,8 +45,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             foreach (var entry in h.Part1.EntriesByIndex)
             {
                 headerPart1String.Append($"0x{entry.OffsetToData.ToString("X")}".PadRight(20));
-                headerPart1String.Append($"0x{entry.MetadataIndex.ToString("X")}".PadRight(20));
-                headerPart1String.Append($"0x{entry.IndexIntoPart4.ToString("X")}".PadRight(20));
+                headerPart1String.Append($"0x{entry.IndexPart2.ToString("X")}".PadRight(20));
+                headerPart1String.Append($"0x{entry.IndexPart4.ToString("X")}".PadRight(20));
                 headerPart1String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
                 headerPart1String.Append("\n");
             }
@@ -170,8 +170,8 @@ Header Part 7
             foreach (var entry in h.Part1.EntriesByIndex)
             {
                 headerPart1String.Append($"0x{entry.OffsetToData.ToString("X")}".PadRight(20));
-                headerPart1String.Append($"0x{entry.MetadataIndex.ToString("X")}".PadRight(20));
-                headerPart1String.Append($"0x{entry.IndexIntoPart4.ToString("X")}".PadRight(20));
+                headerPart1String.Append($"0x{entry.IndexPart2.ToString("X")}".PadRight(20));
+                headerPart1String.Append($"0x{entry.IndexPart4.ToString("X")}".PadRight(20));
                 headerPart1String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
                 headerPart1String.Append("\n");
             }

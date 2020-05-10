@@ -18,10 +18,10 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Builds an item object from header data.
         /// </summary>
-        /// <param name="id">The item id.</param>
+        /// <param name="part1Index">The index in part 1.</param>
         /// <param name="dataSourceList">The item list to use as the item data source.</param>
         /// <returns>A new <see cref="NefsItem"/>.</returns>
-        NefsItem CreateItemInfo(NefsItemId id, NefsItemList dataSourceList);
+        NefsItem CreateItemInfo(uint part1Index, NefsItemList dataSourceList);
 
         /// <summary>
         /// Generates a new item list from the header metadata.
@@ -35,15 +35,19 @@ namespace VictorBush.Ego.NefsLib.Header
         /// Gets the directory id for an item. If the item is in the root directory, the directory
         /// id will equal the item's id.
         /// </summary>
-        /// <param name="id">The item id.</param>
+        /// 
+
+
+   // TODO  /// <param name="id">The item id.</param>
         /// <returns>The directory id.</returns>
-        NefsItemId GetItemDirectoryId(NefsItemId id);
+        NefsItemId GetItemDirectoryId(uint metadataIndex);
 
         /// <summary>
         /// Gets the file name of an item.
         /// </summary>
-        /// <param name="id">The item id.</param>
+
+ //TODO       /// <param name="id">The item id.</param>
         /// <returns>The item's file name.</returns>
-        string GetItemFileName(NefsItemId id);
+        string GetItemFileName(uint metadataIndex);
     }
 }

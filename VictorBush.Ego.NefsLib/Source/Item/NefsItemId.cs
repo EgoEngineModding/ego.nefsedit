@@ -5,17 +5,18 @@ namespace VictorBush.Ego.NefsLib.Item
     using System;
 
     /// <summary>
-    /// A unique identifier for an item in a NeFS archive.
+    /// A (kind of) unique identifier for an item in a NeFS archive. Used to identify parent/sibling
+    /// relationships. There can be items with duplicate ids in an archive though.
     /// </summary>
     public struct NefsItemId : IComparable<NefsItemId>
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsItemId"/> struct.
         /// </summary>
-        /// <param name="value">The value of the id.</param>
-        public NefsItemId(UInt32 value)
+        /// <param name="id">The value of the id.</param>
+        public NefsItemId(UInt32 id)
         {
-            this.Value = value;
+            this.Value = id;
         }
 
         /// <summary>

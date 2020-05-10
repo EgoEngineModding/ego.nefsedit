@@ -3,8 +3,7 @@
 namespace VictorBush.Ego.NefsLib.Header
 {
     using System;
-    using System.Collections.Generic;
-    using VictorBush.Ego.NefsLib.Item;
+    using VictorBush.Ego.NefsLib.DataTypes;
 
     /// <summary>
     /// An entry in header part 4 for an item in an archive.
@@ -12,31 +11,28 @@ namespace VictorBush.Ego.NefsLib.Header
     public class Nefs20HeaderPart4Entry
     {
         /// <summary>
+        /// The size of a part 4 entry. This is used to get the offset into part 4 from an index
+        /// into part 4.
+        /// </summary>
+        public const uint Size = 0x4;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Nefs20HeaderPart4Entry"/> class.
         /// </summary>
-        /// <param name="id">The id of the item this entry is for.</param>
-        internal Nefs20HeaderPart4Entry(NefsItemId id)
+        internal Nefs20HeaderPart4Entry()
         {
-            this.Id = id;
         }
 
         /// <summary>
-        /// <para>List of cumulative chunk sizes.</para>
-        /// <list type="bullet">
-        /// <item>First entry is size of first chunk.</item>
-        /// <item>Second entry is size of first + second chunk.</item>
-        /// <item>Last entry is size of all chunks together.</item>
-        /// </list>
-        /// <para>
-        /// To get the size of a specific chunk, simply subtract the previous chunk size entry. If
-        /// the item is not compressed, the list should only have one entry equal to the extracted size.
-        /// </para>
+        /// Cumulative size of this data chunk. To get the size of this chunk, subtract the previous
+        /// chunk's cumulative size.
         /// </summary>
-        public List<UInt32> ChunkSizes { get; } = new List<UInt32>();
+        public UInt32 CumulativeChunkSize => this.Data0x00_CumulativeChunkSize.Value;
 
         /// <summary>
-        /// The id of the item this entry belongs to.
+        /// Data at offset 0x00.
         /// </summary>
-        public NefsItemId Id { get; }
+        [FileData]
+        internal UInt32Type Data0x00_CumulativeChunkSize { get; } = new UInt32Type(0x00);
     }
 }

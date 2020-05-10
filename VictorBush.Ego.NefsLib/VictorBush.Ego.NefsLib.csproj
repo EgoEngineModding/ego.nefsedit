@@ -81,7 +81,6 @@
     <Compile Include="Source\Header\Version 1.6\Nefs16Header.cs" />
     <Compile Include="Source\Header\Version 1.6\Nefs16HeaderIntroToc.cs" />
     <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart4.cs" />
-    <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart4Chunk.cs" />
     <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart4Entry.cs" />
     <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart4TransformType.cs" />
     <Compile Include="Source\Header\Version 1.6\Nefs16HeaderPart6.cs" />

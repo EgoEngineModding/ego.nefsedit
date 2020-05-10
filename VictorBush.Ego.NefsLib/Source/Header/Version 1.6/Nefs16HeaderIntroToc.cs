@@ -11,12 +11,6 @@ namespace VictorBush.Ego.NefsLib.Header
     public class Nefs16HeaderIntroToc : INefsHeaderIntroToc
     {
         /// <summary>
-        /// Size of data chunks a file is broken up into before each chunk is compressed and
-        /// inserted into the archive.
-        /// </summary>
-        public const uint ChunkSize = 0x20000;
-
-        /// <summary>
         /// Offset to the table of contents in the header.
         /// </summary>
         public const uint Offset = NefsHeaderIntro.Size;
@@ -27,7 +21,8 @@ namespace VictorBush.Ego.NefsLib.Header
         public const uint Size = 0x80;
 
         /// <summary>
-        /// Block size.
+        /// Block size (chunk size). The size of chunks data is split up into before any transforms
+        /// are applied.
         /// </summary>
         public UInt32 BlockSize => (UInt32)this.Data0x04_BlockSize.Value << 15;
 
@@ -164,5 +159,9 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         [FileData]
         internal ByteArrayType Data0x28_Unknown { get; } = new ByteArrayType(0x0028, 0x58);
+
+        /// <inheritdoc/>
+        public UInt32 ComputeNumChunks(uint extractedSize) =>
+            (uint)Math.Ceiling(extractedSize / (double)this.BlockSize);
     }
 }

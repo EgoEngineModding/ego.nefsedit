@@ -4,7 +4,6 @@ namespace VictorBush.Ego.NefsLib.Header
 {
     using System;
     using System.Collections.Generic;
-    using System.Linq;
     using Microsoft.Extensions.Logging;
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.Item;
@@ -15,21 +14,21 @@ namespace VictorBush.Ego.NefsLib.Header
     public class Nefs16HeaderPart4 : INefsHeaderPart4
     {
         private static readonly ILogger Log = NefsLog.GetLogger();
-        private readonly SortedDictionary<uint, Nefs16HeaderPart4Entry> entriesByIndex;
-
-        private readonly Dictionary<NefsItemId, uint> indexById;
+        private readonly List<Nefs16HeaderPart4Entry> entriesByIndex;
+        private readonly Dictionary<Guid, uint> indexLookup;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Nefs16HeaderPart4"/> class.
         /// </summary>
         /// <param name="entries">A collection of entries to initialize this object with.</param>
-        internal Nefs16HeaderPart4(IDictionary<UInt32, Nefs16HeaderPart4Entry> entries)
+        /// <param name="indexLookup">
+        /// A dictionary that matches an item Guid to a part 4 index. This is used to find the
+        /// correct index part 4 value for an item.
+        /// </param>
+        internal Nefs16HeaderPart4(IEnumerable<Nefs16HeaderPart4Entry> entries, Dictionary<Guid, uint> indexLookup)
         {
-            this.entriesByIndex = new SortedDictionary<UInt32, Nefs16HeaderPart4Entry>(entries);
-            this.indexById = new Dictionary<NefsItemId, UInt32>(this.entriesByIndex.ToDictionary(i => i.Value.Id, i => i.Key));
-
-            // Compute size
-            this.ComputeSize();
+            this.entriesByIndex = new List<Nefs16HeaderPart4Entry>(entries);
+            this.indexLookup = new Dictionary<Guid, uint>(indexLookup);
         }
 
         /// <summary>
@@ -38,100 +37,86 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <param name="items">The items to initialize from.</param>
         internal Nefs16HeaderPart4(NefsItemList items)
         {
-            this.entriesByIndex = new SortedDictionary<UInt32, Nefs16HeaderPart4Entry>();
-            this.indexById = new Dictionary<NefsItemId, UInt32>();
+            this.entriesByIndex = new List<Nefs16HeaderPart4Entry>();
+            this.indexLookup = new Dictionary<Guid, uint>();
 
-            var nextIdx = 0;
+            var nextStartIdx = 0U;
+
             foreach (var item in items.EnumerateById())
             {
-                if (item.Type == NefsItemType.Directory)
+                if (item.Type == NefsItemType.Directory || item.DataSource.Size.Chunks.Count == 0)
                 {
                     // Item does not have a part 4 entry
                     continue;
                 }
 
-                // Create entry
-                var entry = new Nefs16HeaderPart4Entry(item.Id);
+                // Log this start index to item's Guid to allow lookup later
+                this.indexLookup.Add(item.Guid, nextStartIdx);
 
-                // Process chunks
+                // Create entry for each data chunk
                 foreach (var chunk in item.DataSource.Size.Chunks)
                 {
-                    var c = new Nefs16HeaderPart4Chunk();
-                    c.Data0x00_CumulativeBlockSize.Value = chunk.CumulativeSize;
-                    c.Data0x04_TransformType.Value = (ushort)this.GetTransformType(chunk.Transform);
-                    c.Data0x06_Checksum.Value = 0; // TODO
-                    entry.Chunks.Add(c);
+                    // Create entry
+                    var entry = new Nefs16HeaderPart4Entry();
+                    entry.Data0x00_CumulativeBlockSize.Value = chunk.CumulativeSize;
+                    entry.Data0x04_TransformType.Value = (ushort)this.GetTransformType(chunk.Transform);
+                    entry.Data0x06_Checksum.Value = 0; // TODO
+                    this.entriesByIndex.Add(entry);
+
+                    nextStartIdx++;
                 }
-
-                // Add to entries list and advance index
-                this.entriesByIndex.Add((uint)nextIdx, entry);
-                this.indexById.Add(item.Id, (uint)nextIdx);
-                nextIdx += entry.Chunks.Count;
             }
-
-            // Compute size
-            this.ComputeSize();
         }
 
         /// <summary>
-        /// Gets the list of entries in the correct order.
+        /// List of data chunk info in order as they appear in the header.
         /// </summary>
-        public IEnumerable<Nefs16HeaderPart4Entry> Entries => this.entriesByIndex.Values;
-
-        /// <summary>
-        /// The dictionary of chunk sizes lists. The key is the index into the of chunks sizes. The
-        /// value is the part 4 entry for that item.
-        /// </summary>
-        public IReadOnlyDictionary<UInt32, Nefs16HeaderPart4Entry> EntriesByIndex => this.entriesByIndex;
+        public IReadOnlyList<Nefs16HeaderPart4Entry> EntriesByIndex => this.entriesByIndex;
 
         /// <summary>
         /// Gets the current size of header part 4.
         /// </summary>
-        public UInt32 Size { get; private set; }
+        public UInt32 Size => (uint)(this.entriesByIndex.Count * Nefs20HeaderPart4Entry.Size);
 
         /// <summary>
         /// Creates a list of chunk metadata for an item.
         /// </summary>
-        /// <param name="id">The item id.</param>
+        /// <param name="index">The part 4 index where the chunk list starts at.</param>
+        /// <param name="numChunks">The number of chunks.</param>
+        /// <param name="chunkSize">The raw chunk size used in the transform.</param>
         /// <param name="aes256key">The AES 256 key to use if chunk is encrypted.</param>
         /// <returns>A list of chunk data.</returns>
-        public List<NefsDataChunk> CreateChunksListForItem(NefsItemId id, byte[] aes256key)
+        public List<NefsDataChunk> CreateChunksList(uint index, uint numChunks, uint chunkSize, byte[] aes256key)
         {
-            if (!this.indexById.ContainsKey(id))
-            {
-                return new List<NefsDataChunk>();
-            }
-
             var chunks = new List<NefsDataChunk>();
-            var idx = this.indexById[id];
-            var entry = this.entriesByIndex[idx];
 
-            for (var i = 0; i < entry.Chunks.Count; ++i)
+            for (var i = index; i < index + numChunks; ++i)
             {
-                var cumulativeSize = entry.Chunks[i].CumulativeBlockSize;
+                var entry = this.entriesByIndex[(int)i];
+                var cumulativeSize = entry.CumulativeBlockSize;
                 var size = cumulativeSize;
 
-                if (i > 0)
+                if (i > index)
                 {
-                    size -= entry.Chunks[i - 1].CumulativeBlockSize;
+                    size -= this.entriesByIndex[(int)i - 1].CumulativeBlockSize;
                 }
 
                 // Determine transform -- need to clean this up
                 NefsDataTransform transform;
-                var transformVal = entry.Chunks[i].Data0x04_TransformType.Value;
+                var transformVal = entry.Data0x04_TransformType.Value;
 
                 switch (transformVal)
                 {
                     case (int)Nefs16HeaderPart4TransformType.Zlib:
-                        transform = new NefsDataTransform(Nefs16HeaderIntroToc.ChunkSize, true);
+                        transform = new NefsDataTransform(chunkSize, true);
                         break;
 
                     case (int)Nefs16HeaderPart4TransformType.Aes:
-                        transform = new NefsDataTransform(Nefs16HeaderIntroToc.ChunkSize, false, aes256key);
+                        transform = new NefsDataTransform(chunkSize, false, aes256key);
                         break;
 
                     case (int)Nefs16HeaderPart4TransformType.None:
-                        transform = new NefsDataTransform(Nefs16HeaderIntroToc.ChunkSize, false);
+                        transform = new NefsDataTransform(chunkSize, false);
                         break;
 
                     default:
@@ -159,19 +144,7 @@ namespace VictorBush.Ego.NefsLib.Header
             else
             {
                 // Get index into part 4
-                return this.indexById[item.Id];
-            }
-        }
-
-        /// <summary>
-        /// Calculates the total size of header part 4 in bytes.
-        /// </summary>
-        private void ComputeSize()
-        {
-            this.Size = 0;
-            foreach (var entry in this.entriesByIndex.Values)
-            {
-                this.Size += (uint)(entry.Chunks.Count * Nefs16HeaderPart4Chunk.Size);
+                return this.indexLookup[item.Guid];
             }
         }
 

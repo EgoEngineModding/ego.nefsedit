@@ -5,6 +5,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using System;
     using System.Collections.Generic;
     using System.Drawing;
+    using System.Linq;
     using System.Windows.Forms;
     using Microsoft.Extensions.Logging;
     using VictorBush.Ego.NefsEdit.Commands;
@@ -185,51 +186,51 @@ namespace VictorBush.Ego.NefsEdit.UI
 
                 if (archive.Header is Nefs20Header h20)
                 {
-                    var p1 = h20.Part1.EntriesById[item.Id];
+                    var p1 = h20.Part1.EntriesByGuid[item.Guid];
                     this.AddSubItem(listItem, "pt1.0x00", p1.OffsetToData.ToString("X"));
-                    this.AddSubItem(listItem, "pt1.0x08", p1.MetadataIndex.ToString("X"));
-                    this.AddSubItem(listItem, "pt1.0x0c", p1.IndexIntoPart4.ToString("X"));
+                    this.AddSubItem(listItem, "pt1.0x08", p1.IndexPart2.ToString("X"));
+                    this.AddSubItem(listItem, "pt1.0x0c", p1.IndexPart4.ToString("X"));
                     this.AddSubItem(listItem, "pt1.0x10", p1.Id.Value.ToString("X"));
 
-                    var p2 = h20.Part2.EntriesById[item.Id];
+                    var p2 = h20.Part2.EntriesByIndex[(int)p1.IndexPart2];
                     this.AddSubItem(listItem, "pt2.0x00", p2.DirectoryId.Value.ToString("X"));
                     this.AddSubItem(listItem, "pt2.0x04", p2.FirstChildId.Value.ToString("X"));
                     this.AddSubItem(listItem, "pt2.0x08", p2.OffsetIntoPart3.ToString("X"));
                     this.AddSubItem(listItem, "pt2.0x0c", p2.ExtractedSize.ToString("X"));
                     this.AddSubItem(listItem, "pt2.0x10", p2.Id.Value.ToString("X"));
 
-                    var p6 = h20.Part6.EntriesById.GetValueOrDefault(item.Id);
+                    var p6 = h20.Part6.EntriesByGuid[item.Guid];
                     this.AddSubItem(listItem, "pt6.0x00", p6?.Byte0.ToString("X"));
                     this.AddSubItem(listItem, "pt6.0x01", p6?.Byte1.ToString("X"));
                     this.AddSubItem(listItem, "pt6.0x02", p6?.Byte2.ToString("X"));
                     this.AddSubItem(listItem, "pt6.0x03", p6?.Byte3.ToString("X"));
 
-                    var p7 = h20.Part7.EntriesById.GetValueOrDefault(item.Id);
+                    var p7 = h20.Part7.EntriesByIndex[(int)p1.IndexPart2];
                     this.AddSubItem(listItem, "pt7.0x00", p7?.SiblingId.Value.ToString("X"));
                     this.AddSubItem(listItem, "pt7.0x04", p7?.Id.Value.ToString("X"));
                 }
                 else if (archive.Header is Nefs16Header h16)
                 {
-                    var p1 = h16.Part1.EntriesById[item.Id];
+                    var p1 = h16.Part1.EntriesByGuid[item.Guid];
                     this.AddSubItem(listItem, "pt1.0x00", p1.OffsetToData.ToString("X"));
-                    this.AddSubItem(listItem, "pt1.0x08", p1.MetadataIndex.ToString("X"));
-                    this.AddSubItem(listItem, "pt1.0x0c", p1.IndexIntoPart4.ToString("X"));
+                    this.AddSubItem(listItem, "pt1.0x08", p1.IndexPart2.ToString("X"));
+                    this.AddSubItem(listItem, "pt1.0x0c", p1.IndexPart4.ToString("X"));
                     this.AddSubItem(listItem, "pt1.0x10", p1.Id.Value.ToString("X"));
 
-                    var p2 = h16.Part2.EntriesById[item.Id];
+                    var p2 = h16.Part2.EntriesByIndex[(int)p1.IndexPart2];
                     this.AddSubItem(listItem, "pt2.0x00", p2.DirectoryId.Value.ToString("X"));
                     this.AddSubItem(listItem, "pt2.0x04", p2.FirstChildId.Value.ToString("X"));
                     this.AddSubItem(listItem, "pt2.0x08", p2.OffsetIntoPart3.ToString("X"));
                     this.AddSubItem(listItem, "pt2.0x0c", p2.ExtractedSize.ToString("X"));
                     this.AddSubItem(listItem, "pt2.0x10", p2.Id.Value.ToString("X"));
 
-                    var p6 = h16.Part6.EntriesById.GetValueOrDefault(item.Id);
+                    var p6 = h16.Part6.EntriesByGuid[item.Guid];
                     this.AddSubItem(listItem, "pt6.0x00", p6?.Byte0.ToString("X"));
                     this.AddSubItem(listItem, "pt6.0x01", p6?.Byte1.ToString("X"));
                     this.AddSubItem(listItem, "pt6.0x02", p6?.Byte2.ToString("X"));
                     this.AddSubItem(listItem, "pt6.0x03", p6?.Byte3.ToString("X"));
 
-                    var p7 = h16.Part7.EntriesById.GetValueOrDefault(item.Id);
+                    var p7 = h16.Part7.EntriesByIndex[(int)p1.IndexPart2];
                     this.AddSubItem(listItem, "pt7.0x00", p7?.SiblingId.Value.ToString("X"));
                     this.AddSubItem(listItem, "pt7.0x04", p7?.Id.Value.ToString("X"));
                 }
@@ -238,6 +239,12 @@ namespace VictorBush.Ego.NefsEdit.UI
                 {
                     listItem.BackColor = Color.LightBlue;
                 }
+
+                // TODO : Highlight duplicates
+                //if (item..Any())
+                //{
+                //    listItem.BackColor = Color.LightPink;
+                //}
 
                 this.listItems.Add(item, listItem);
                 this.itemsListView.Items.Add(listItem);

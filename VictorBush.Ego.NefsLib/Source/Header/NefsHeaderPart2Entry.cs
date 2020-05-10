@@ -42,7 +42,8 @@ namespace VictorBush.Ego.NefsLib.Header
         public NefsItemId FirstChildId => new NefsItemId(this.Data0x04_FirstChildId.Value);
 
         /// <summary>
-        /// The unique identifier of this item in the archive.
+        /// The id of the item. For duplicate items, this may not correspond to an entry in part 1.
+        /// In such a case, there may be multiple part 1 entries that share a part 2 entry.
         /// </summary>
         public NefsItemId Id => new NefsItemId(this.Data0x10_Id.Value);
 

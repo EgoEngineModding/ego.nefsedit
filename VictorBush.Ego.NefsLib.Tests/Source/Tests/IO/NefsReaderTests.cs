@@ -320,7 +320,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Item 1 has 2 chunk sizes
             var e1p1 = new NefsHeaderPart1Entry();
             e1p1.Data0x10_Id.Value = 0;
-            e1p1.Data0x0c_IndexIntoPart4.Value = 0;
+            e1p1.Data0x0c_IndexPart4.Value = 0;
             var e1p2 = new NefsHeaderPart2Entry();
             e1p1.Data0x10_Id.Value = e1p1.Id.Value;
             e1p2.Data0x0c_ExtractedSize.Value = Nefs20HeaderIntroToc.ChunkSize * 2;
@@ -328,7 +328,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Item 2 has 1 chunk size
             var e2p1 = new NefsHeaderPart1Entry();
             e2p1.Data0x10_Id.Value = 1;
-            e2p1.Data0x0c_IndexIntoPart4.Value = 2;
+            e2p1.Data0x0c_IndexPart4.Value = 2;
             var e2p2 = new NefsHeaderPart2Entry();
             e2p2.Data0x10_Id.Value = e2p1.Id.Value;
             e2p2.Data0x0c_ExtractedSize.Value = Nefs20HeaderIntroToc.ChunkSize;
@@ -336,7 +336,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Item 3 has no chunks
             var e3p1 = new NefsHeaderPart1Entry();
             e3p1.Data0x10_Id.Value = 2;
-            e3p1.Data0x0c_IndexIntoPart4.Value = 0xFFFFFFFF;
+            e3p1.Data0x0c_IndexPart4.Value = 0xFFFFFFFF;
             var e3p2 = new NefsHeaderPart2Entry();
             e3p2.Data0x10_Id.Value = e3p1.Id.Value;
             e3p2.Data0x0c_ExtractedSize.Value = Nefs20HeaderIntroToc.ChunkSize;
@@ -344,7 +344,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Item 4 is a directory (extracted size == 0)
             var e4p1 = new NefsHeaderPart1Entry();
             e4p1.Data0x10_Id.Value = 3;
-            e4p1.Data0x0c_IndexIntoPart4.Value = 0;
+            e4p1.Data0x0c_IndexPart4.Value = 0;
             var e4p2 = new NefsHeaderPart2Entry();
             e4p2.Data0x10_Id.Value = e4p1.Id.Value;
             e4p2.Data0x0c_ExtractedSize.Value = 0;
@@ -352,7 +352,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Item 5 has 3 chunks
             var e5p1 = new NefsHeaderPart1Entry();
             e5p1.Data0x10_Id.Value = 4;
-            e5p1.Data0x0c_IndexIntoPart4.Value = 3;
+            e5p1.Data0x0c_IndexPart4.Value = 3;
             var e5p2 = new NefsHeaderPart2Entry();
             e5p2.Data0x10_Id.Value = e5p1.Id.Value;
             e5p2.Data0x0c_ExtractedSize.Value = (Nefs20HeaderIntroToc.ChunkSize * 2) + 5;

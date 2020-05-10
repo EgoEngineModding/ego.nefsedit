@@ -12,7 +12,6 @@ namespace VictorBush.Ego.NefsEdit.UI
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.Header;
     using VictorBush.Ego.NefsLib.Item;
-    using VictorBush.Ego.NefsLib.Utility;
     using WeifenLuo.WinFormsUI.Docking;
 
     /// <summary>
@@ -45,10 +44,12 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private string GetDebugInfoVersion16(NefsItem item, Nefs16Header h, NefsItemList items)
         {
-            var p1 = h.Part1.EntriesById.GetValueOrDefault(item.Id);
-            var p2 = h.Part2.EntriesById.GetValueOrDefault(item.Id);
-            var p6 = h.Part6.EntriesById.GetValueOrDefault(item.Id);
-            var p7 = h.Part7.EntriesById.GetValueOrDefault(item.Id);
+            var p1 = h.Part1.EntriesByGuid[item.Guid];
+            var p2 = h.Part2.EntriesByIndex[(int)p1.IndexPart2];
+            var p6 = h.Part6.EntriesByGuid[item.Guid];
+            var p7 = h.Part7.EntriesByIndex[(int)p1.IndexPart2];
+            var numChunks = h.TableOfContents.ComputeNumChunks(p2.ExtractedSize);
+            var chunkSize = h.TableOfContents.BlockSize;
 
             return $@"Item Info
 -----------------------------------------------------------
@@ -58,8 +59,8 @@ Item path:                  {items.GetItemFilePath(item.Id)}
 Part 1
 -----------------------------------------------------------
 Offset to data:             {p1?.OffsetToData.ToString("X")}
-Index in part 2:            {p1?.MetadataIndex.ToString("X")}
-Index in part 4:            {p1?.IndexIntoPart4.ToString("X")}
+Index in part 2:            {p1?.IndexPart2.ToString("X")}
+Index in part 4:            {p1?.IndexPart4.ToString("X")}
 Id:                         {p1?.Id.Value.ToString("X")}
 
 Part 2
@@ -72,7 +73,7 @@ Id:                         {p2?.Id.Value.ToString("X")}
 
 Part 4
 -----------------------------------------------------------
-Chunks                      {this.PrintChunkSizesToString(h.Part4.CreateChunksListForItem(item.Id, h.Intro.GetAesKey()))}
+Chunks                      {this.PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, chunkSize, h.Intro.GetAesKey()))}
 
 Part 6
 -----------------------------------------------------------
@@ -90,10 +91,11 @@ Item id:                    {p7?.Id.Value.ToString("X")}
 
         private string GetDebugInfoVersion20(NefsItem item, Nefs20Header h, NefsItemList items)
         {
-            var p1 = h.Part1.EntriesById.GetValueOrDefault(item.Id);
-            var p2 = h.Part2.EntriesById.GetValueOrDefault(item.Id);
-            var p6 = h.Part6.EntriesById.GetValueOrDefault(item.Id);
-            var p7 = h.Part7.EntriesById.GetValueOrDefault(item.Id);
+            var p1 = h.Part1.EntriesByGuid[item.Guid];
+            var p2 = h.Part2.EntriesByIndex[(int)p1.IndexPart2];
+            var p6 = h.Part6.EntriesByGuid[item.Guid];
+            var p7 = h.Part7.EntriesByIndex[(int)p1.IndexPart2];
+            var numChunks = h.TableOfContents.ComputeNumChunks(p2.ExtractedSize);
 
             return $@"Item Info
 -----------------------------------------------------------
@@ -103,8 +105,8 @@ Item path:                  {items.GetItemFilePath(item.Id)}
 Part 1
 -----------------------------------------------------------
 Offset to data:             {p1?.OffsetToData.ToString("X")}
-Index in part 2:            {p1?.MetadataIndex.ToString("X")}
-Index in part 4:            {p1?.IndexIntoPart4.ToString("X")}
+Index in part 2:            {p1?.IndexPart2.ToString("X")}
+Index in part 4:            {p1?.IndexPart4.ToString("X")}
 Id:                         {p1?.Id.Value.ToString("X")}
 
 Part 2
@@ -117,7 +119,7 @@ Id:                         {p2?.Id.Value.ToString("X")}
 
 Part 4
 -----------------------------------------------------------
-Chunks                      {this.PrintChunkSizesToString(h.Part4.CreateChunksListForItem(item.Id, item.Transform))}
+Chunks                      {this.PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, item.Transform))}
 
 Part 6
 -----------------------------------------------------------

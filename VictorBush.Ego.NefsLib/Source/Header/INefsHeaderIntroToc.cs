@@ -68,5 +68,12 @@ namespace VictorBush.Ego.NefsLib.Header
         /// The size of header part 4.
         /// </summary>
         uint Part4Size { get; }
+
+        /// <summary>
+        /// Computes how many chunks a file will be split up into based on extracted size.
+        /// </summary>
+        /// <param name="extractedSize">The extracted size of the file.</param>
+        /// <returns>The number of data chunks to expect.</returns>
+        UInt32 ComputeNumChunks(uint extractedSize);
     }
 }

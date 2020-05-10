@@ -143,17 +143,18 @@ namespace VictorBush.Ego.NefsLib.Header
         public Nefs20HeaderIntroToc TableOfContents { get; }
 
         /// <inheritdoc/>
-        public NefsItem CreateItemInfo(NefsItemId id, NefsItemList dataSourceList)
+        public NefsItem CreateItemInfo(uint part1Index, NefsItemList dataSourceList)
         {
-            var p1 = this.Part1.EntriesById[id];
-            var p2 = this.Part2.EntriesById[id];
-            var p6 = this.Part6.EntriesById[id];
+            var p1 = this.Part1.EntriesByIndex[(int)part1Index];
+            var p2 = this.Part2.EntriesByIndex[(int)p1.IndexPart2];
+            var p6 = this.Part6.EntriesByIndex[(int)part1Index];
+            var id = p1.Id;
 
             // Determine type
             var type = p2.Data0x0c_ExtractedSize.Value == 0 ? NefsItemType.Directory : NefsItemType.File;
 
             // Find parent
-            var parentId = this.GetItemDirectoryId(id);
+            var parentId = this.GetItemDirectoryId(p1.IndexPart2);
 
             // Offset and size
             var dataOffset = p1.Data0x00_OffsetToData.Value;
@@ -170,7 +171,7 @@ namespace VictorBush.Ego.NefsLib.Header
                 dataSource = new NefsEmptyDataSource();
                 transform = null;
             }
-            else if (p1.IndexIntoPart4 == 0xFFFFFFFFU)
+            else if (p1.IndexPart4 == 0xFFFFFFFFU)
             {
                 // Item is not compressed
                 var size = new NefsItemSize(extractedSize);
@@ -179,13 +180,14 @@ namespace VictorBush.Ego.NefsLib.Header
             else
             {
                 // Item is compressed
-                var chunks = this.Part4.CreateChunksListForItem(id, transform);
+                var numChunks = this.TableOfContents.ComputeNumChunks(p2.ExtractedSize);
+                var chunks = this.Part4.CreateChunksList(p1.IndexPart4, numChunks, transform);
                 var size = new NefsItemSize(extractedSize, chunks);
                 dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
             }
 
             // File name and path
-            var fileName = this.GetItemFileName(id);
+            var fileName = this.GetItemFileName(p1.IndexPart2);
 
             // Gather unknown metadata
             var unknown = new NefsItemUnknownData
@@ -197,7 +199,7 @@ namespace VictorBush.Ego.NefsLib.Header
             };
 
             // Create item
-            return new NefsItem(id, fileName, parentId, type, dataSource, transform, unknown);
+            return new NefsItem(p1.Guid, id, fileName, parentId, type, dataSource, transform, unknown);
         }
 
         /// <inheritdoc/>
@@ -205,19 +207,18 @@ namespace VictorBush.Ego.NefsLib.Header
         {
             var items = new NefsItemList(dataFilePath);
 
-            foreach (var entry in this.Part1.EntriesById)
+            for (var i = 0; i < this.Part1.EntriesByIndex.Count; ++i)
             {
                 p.CancellationToken.ThrowIfCancellationRequested();
-                var id = entry.Key;
 
                 try
                 {
-                    var item = this.CreateItemInfo(id, items);
+                    var item = this.CreateItemInfo((uint)i, items);
                     items.Add(item);
                 }
                 catch (Exception)
                 {
-                    Log.LogError($"Failed to create item {id}, skipping.");
+                    Log.LogError($"Failed to create item with part 1 index {i}, skipping.");
                 }
             }
 
@@ -225,15 +226,15 @@ namespace VictorBush.Ego.NefsLib.Header
         }
 
         /// <inheritdoc/>
-        public NefsItemId GetItemDirectoryId(NefsItemId id)
+        public NefsItemId GetItemDirectoryId(uint metadataIndex)
         {
-            return new NefsItemId(this.Part2.EntriesById[id].Data0x00_DirectoryId.Value);
+            return new NefsItemId(this.Part2.EntriesByIndex[(int)metadataIndex].Data0x00_DirectoryId.Value);
         }
 
         /// <inheritdoc/>
-        public string GetItemFileName(NefsItemId id)
+        public string GetItemFileName(uint metadataIndex)
         {
-            var offsetIntoPart3 = this.Part2.EntriesById[id].Data0x08_OffsetIntoPart3.Value;
+            var offsetIntoPart3 = this.Part2.EntriesByIndex[(int)metadataIndex].Data0x08_OffsetIntoPart3.Value;
             return this.Part3.FileNamesByOffset[offsetIntoPart3];
         }
     }

@@ -142,5 +142,9 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         [FileData]
         internal ByteArrayType Data0x24_Unknown { get; } = new ByteArrayType(0x0024, 0x5c);
+
+        /// <inheritdoc/>
+        public UInt32 ComputeNumChunks(uint extractedSize) =>
+            (uint)Math.Ceiling(extractedSize / (double)ChunkSize);
     }
 }

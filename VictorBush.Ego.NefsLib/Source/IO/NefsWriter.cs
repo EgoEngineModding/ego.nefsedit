@@ -177,15 +177,10 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart4Async(Stream stream, UInt64 offset, Nefs20HeaderPart4 part4, NefsProgress p)
         {
-            stream.Seek((long)offset, SeekOrigin.Begin);
-
-            foreach (var entry in part4.Entries)
+            foreach (var entry in part4.EntriesByIndex)
             {
-                foreach (var chunkSize in entry.ChunkSizes)
-                {
-                    var data = BitConverter.GetBytes(chunkSize);
-                    await stream.WriteAsync(data, 0, data.Length, p.CancellationToken);
-                }
+                await FileData.WriteDataAsync(stream, offset, entry, NefsVersion.Version200, p);
+                offset += Nefs20HeaderPart4Entry.Size;
             }
         }
 
@@ -458,8 +453,8 @@ namespace VictorBush.Ego.NefsLib.IO
             // Compute header size
             var introSize = NefsHeaderIntro.Size;
             var tocSize = Nefs20HeaderIntroToc.Size;
-            var p1Size = numItems * NefsHeaderPart1Entry.Size;
-            var p2Size = numItems * NefsHeaderPart2Entry.Size;
+            var p1Size = numItems * NefsHeaderPart1Entry.Size; // TODO : What about duplicates?
+            var p2Size = numItems * NefsHeaderPart2Entry.Size; // TODO : What about duplicates?
             var p3Size = p3.Size;
             var p4Size = p4.Size;
             var p5Size = NefsHeaderPart5.Size;

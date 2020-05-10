@@ -49,6 +49,14 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <param name="item">The item to add.</param>
         public void Add(NefsItem item)
         {
+            // Check if duplicate id
+            if (this.itemsById.ContainsKey(item.Id))
+            {
+                var existingContainer = this.itemsById[item.Id];
+                existingContainer.Items.Add(item);
+                return;
+            }
+
             // Create a container for the item
             var container = new ItemContainer(item);
 
@@ -117,7 +125,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// Enumerates items in order by id.
         /// </summary>
         /// <returns>List of items.</returns>
-        public IEnumerable<NefsItem> EnumerateById() => this.itemsById.Values.Select(v => v.Item);
+        public IEnumerable<NefsItem> EnumerateById() => this.itemsById.Values.SelectMany(v => v.Items);
 
         /// <summary>
         /// Enumerates item in depth-first order based on directory structure, but sorts children by
@@ -127,9 +135,9 @@ namespace VictorBush.Ego.NefsLib.Item
         public IEnumerable<NefsItem> EnumerateDepthFirstById()
         {
             var items = new List<NefsItem>();
-            foreach (var item in this.rootItems.Values.OrderBy(i => i.Item.Id))
+            foreach (var item in this.rootItems.Values.OrderBy(i => i.Items.First().Id))
             {
-                items.Add(item.Item);
+                items.AddRange(item.Items);
                 items.AddRange(item.EnumerateDepthFirstById());
             }
 
@@ -145,7 +153,7 @@ namespace VictorBush.Ego.NefsLib.Item
             var items = new List<NefsItem>();
             foreach (var item in this.rootItems.Values)
             {
-                items.Add(item.Item);
+                items.AddRange(item.Items);
                 items.AddRange(item.EnumerateDepthFirstByName());
             }
 
@@ -160,7 +168,7 @@ namespace VictorBush.Ego.NefsLib.Item
         public IEnumerable<NefsItem> EnumerateItemChildren(NefsItemId id)
         {
             var item = this.itemsById[id];
-            return item.Children.Values.Select(v => v.Item);
+            return item.Children.Values.SelectMany(v => v.Items);
         }
 
         /// <summary>
@@ -169,7 +177,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <returns>Items in the root directory.</returns>
         public IEnumerable<NefsItem> EnumerateRootItems()
         {
-            return this.rootItems.Values.Select(v => v.Item);
+            return this.rootItems.Values.SelectMany(v => v.Items);
         }
 
         /// <summary>
@@ -177,9 +185,9 @@ namespace VictorBush.Ego.NefsLib.Item
         /// </summary>
         /// <param name="id">The id of the item to get.</param>
         /// <returns>The <see cref="NefsItem"/>.</returns>
-        public NefsItem GetItem(NefsItemId id)
+        public IReadOnlyList<NefsItem> GetItem(NefsItemId id)
         {
-            return this.itemsById[id].Item;
+            return this.itemsById[id].Items;
         }
 
         /// <summary>
@@ -196,7 +204,7 @@ namespace VictorBush.Ego.NefsLib.Item
                 return id;
             }
 
-            return item.Parent.Item.Id;
+            return item.Parent.Items.First().Id;
         }
 
         /// <summary>
@@ -206,7 +214,7 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <returns>The item's file name.</returns>
         public string GetItemFileName(NefsItemId id)
         {
-            return this.itemsById[id].Item.FileName;
+            return this.itemsById[id].Items.First().FileName;
         }
 
         /// <summary>
@@ -243,7 +251,7 @@ namespace VictorBush.Ego.NefsLib.Item
         {
             // First child id is based on children items being sorted by id, NOT by file name
             var item = this.itemsById[id];
-            return item.Children.Count > 0 ? item.Children.OrderBy(i => i.Value.Item.Id).First().Value.Item.Id : id;
+            return item.Children.Count > 0 ? item.Children.OrderBy(i => i.Value.Items.First().Id).First().Value.Items.First().Id : id;
         }
 
         /// <summary>
@@ -257,9 +265,9 @@ namespace VictorBush.Ego.NefsLib.Item
         {
             // Sibling id is based on children items being sorted by id, NOT by file name
             var item = this.itemsById[id];
-            var parentList = item.Parent?.Children.OrderBy(i => i.Value.Item.Id).Select(i => i.Value.Item.Id).ToList()
-                ?? this.rootItems.OrderBy(i => i.Value.Item.Id).Select(i => i.Value.Item.Id).ToList();
-            var itemIndex = parentList.IndexOf(item.Item.Id);
+            var parentList = item.Parent?.Children.OrderBy(i => i.Value.Items.First().Id).Select(i => i.Value.Items.First().Id).ToList()
+                ?? this.rootItems.OrderBy(i => i.Value.Items.First().Id).Select(i => i.Value.Items.First().Id).ToList();
+            var itemIndex = parentList.IndexOf(item.Items.First().Id);
 
             if (itemIndex == parentList.Count - 1)
             {
@@ -288,12 +296,12 @@ namespace VictorBush.Ego.NefsLib.Item
             // Check if in root
             if (item.Parent == null)
             {
-                this.rootItems.Remove(item.Item.FileName);
+                this.rootItems.Remove(item.Items.First().FileName);
             }
             else
             {
                 // Remove item from parent
-                item.Parent?.Children.Remove(item.Item.FileName);
+                item.Parent?.Children.Remove(item.Items.First().FileName);
                 item.Parent = null;
             }
         }
@@ -302,7 +310,7 @@ namespace VictorBush.Ego.NefsLib.Item
         {
             public ItemContainer(NefsItem item)
             {
-                this.Item = item;
+                this.Items = new List<NefsItem> { item };
             }
 
             /// <summary>
@@ -310,7 +318,10 @@ namespace VictorBush.Ego.NefsLib.Item
             /// </summary>
             public SortedList<string, ItemContainer> Children { get; } = new SortedList<string, ItemContainer>();
 
-            public NefsItem Item { get; set; }
+            /// <summary>
+            /// This is a list to handle duplicate items.
+            /// </summary>
+            public List<NefsItem> Items { get; set; }
 
             public ItemContainer Parent { get; set; }
 
@@ -321,9 +332,9 @@ namespace VictorBush.Ego.NefsLib.Item
             public IEnumerable<NefsItem> EnumerateDepthFirstById()
             {
                 var items = new List<NefsItem>();
-                foreach (var child in this.Children.Values.OrderBy(i => i.Item.Id))
+                foreach (var child in this.Children.Values.OrderBy(i => i.Items.First().Id))
                 {
-                    items.Add(child.Item);
+                    items.AddRange(child.Items);
                     items.AddRange(child.EnumerateDepthFirstById());
                 }
 
@@ -339,7 +350,7 @@ namespace VictorBush.Ego.NefsLib.Item
                 var items = new List<NefsItem>();
                 foreach (var child in this.Children.Values)
                 {
-                    items.Add(child.Item);
+                    items.AddRange(child.Items);
                     items.AddRange(child.EnumerateDepthFirstByName());
                 }
 

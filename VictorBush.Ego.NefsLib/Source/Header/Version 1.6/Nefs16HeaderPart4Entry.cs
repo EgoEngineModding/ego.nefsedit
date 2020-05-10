@@ -3,8 +3,7 @@
 namespace VictorBush.Ego.NefsLib.Header
 {
     using System;
-    using System.Collections.Generic;
-    using VictorBush.Ego.NefsLib.Item;
+    using VictorBush.Ego.NefsLib.DataTypes;
 
     /// <summary>
     /// An entry in header part 4 for an item in an archive.
@@ -12,22 +11,49 @@ namespace VictorBush.Ego.NefsLib.Header
     public class Nefs16HeaderPart4Entry
     {
         /// <summary>
+        /// The size of a part 4 entry. This is used to get the offset into part 4 from an index
+        /// into part 4.
+        /// </summary>
+        public const uint Size = 0x8;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="Nefs16HeaderPart4Entry"/> class.
         /// </summary>
-        /// <param name="id">The id of the item this entry is for.</param>
-        internal Nefs16HeaderPart4Entry(NefsItemId id)
+        internal Nefs16HeaderPart4Entry()
         {
-            this.Id = id;
         }
 
         /// <summary>
-        /// Chunk metadata.
+        /// Checksum of the chunk.
         /// </summary>
-        public List<Nefs16HeaderPart4Chunk> Chunks { get; } = new List<Nefs16HeaderPart4Chunk>();
+        public UInt16 Checksum => this.Data0x06_Checksum.Value;
 
         /// <summary>
-        /// The id of the item this entry belongs to.
+        /// Cumulative block size of this chunk.
         /// </summary>
-        public NefsItemId Id { get; }
+        public UInt32 CumulativeBlockSize => this.Data0x00_CumulativeBlockSize.Value;
+
+        /// <summary>
+        /// Transformation applied to this chunk.
+        /// </summary>
+        public Nefs16HeaderPart4TransformType TransformType => (Nefs16HeaderPart4TransformType)this.Data0x04_TransformType.Value;
+
+        /// <summary>
+        /// Data at offset 0x00.
+        /// </summary>
+        [FileData]
+        internal UInt32Type Data0x00_CumulativeBlockSize { get; } = new UInt32Type(0x00);
+
+        /// <summary>
+        /// Data at offset 0x04.
+        /// </summary>
+        [FileData]
+        internal UInt16Type Data0x04_TransformType { get; } = new UInt16Type(0x04);
+
+        /// <summary>
+        /// Data at offset 0x06.
+        /// </summary>
+        [FileData]
+        internal UInt16Type Data0x06_Checksum { get; } = new UInt16Type(0x06);
     }
 }
