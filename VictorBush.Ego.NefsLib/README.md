@@ -36,16 +36,22 @@ Below are some general notes on design philosophy for NefsLib.
 - Wait to apply changes to an items list until the archive is written.
 	- Replacement files aren't compressed until the writer begins to write.
 	- This allows an application to queue up multiple changes and support undo/redo before triggering a save.
-- Be aware of an item id vs a generic list index
-	- Some header parts contain a list of item metadata. This list can be accessed by an index into this list.
-		- The list is not guaranteed to be sorted by item id.
-		- The part 1 entry for an item contains the index to use to access the item metadata in other parts.
-        - Header part 1 is sorted by id.
-        - Header parts 2, 6, and 7 are sorted by depth-first directory structure with children sorted by file name.
-	- The header part classes (NefsHeaderPart*X*) retain the order of data when a header is read.
-		- They provide two ways to access this data:
-			- A list of entries that retains the order as read in from the header. This allows enumerating the entries by index.
-			- A dictionary keyed by item id and sorted by item id. This allows enumerating the entries by item id.
+- Be aware of an item id vs index vs Guid.
+	- Types of identifiers:
+		- Guid - used internally by NefsLib to track items and metadata.
+		- Id - used by a NeFS archive to identify items and reference parent/sibling relationships (i.e., match a file to its directory). This is not guaranteed to be unique since an item can have duplicate entries with the same id.
+		- Index Part 2 - an index value stored in part 1 used to index into part 2 and 7.
+		- Index Part 4 - an index value stored in part 1 used to index into part 4.
+	- Header part 1 contains a list of all items. Each item has an id.
+		- The number of entries is equal to the number of items specified in the header intro.
+		- It is possible for an item to have duplicates with the same id.
+		- Typically items are sorted by id. However, it does not seem to be guaranteed (example: DiRT Rally is not sorted by id).
+	- Header part 2 data is accessed using the Index Part 2 value.
+		- The number of entries in part 1 is not guaranteed to equal the number of entries in part 2.
+		- Items are sorted by dept-first directory structure (sorted by file name).
+	- Header part 4 data is accessed using the Index Part 4 value.
+	- Header part 6 data is ordered the same as part 1 and has the same number of entries.
+	- Header part 7 data is ordered the same as part 2 and has the same number of entries.
 	- The NefsItemList can be enumerated in multiple ways:
         - by id.
         - by a depth-first traversal of the directory structure with children sorted by file name.

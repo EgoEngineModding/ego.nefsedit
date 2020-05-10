@@ -136,7 +136,7 @@ Unknown 0x28:               {StringHelper.ByteArrayToString(h.TableOfContents.Un
 
 Header Part 1
 -----------------------------------------------------------
-Data Offset         Metadata index      Index to Part 4     Id
+Data Offset         Index Part 2       Index Part 4        Id
 {headerPart1String.ToString()}
 Header Part 2
 -----------------------------------------------------------
@@ -259,7 +259,7 @@ Unknown 0x24:               {StringHelper.ByteArrayToString(h.TableOfContents.Un
 
 Header Part 1
 -----------------------------------------------------------
-Data Offset         Metadata index      Index to Part 4     Id
+Data Offset         Index Part 2        Index Part 4        Id
 {headerPart1String.ToString()}
 Header Part 2
 -----------------------------------------------------------

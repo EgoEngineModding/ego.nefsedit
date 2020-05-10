@@ -1,11 +1,5 @@
 # TODO
-- Fix p6 and p7 order --- 
-#part 6 == #part 1
-#part 7 == #part 2
-
-- Remove EntriesById and cleanup Id vs index.
 - Fix game.dat extract
-- Chunk size source rather than hard code?
 - Logging verbosity options (i.e., settings save/lod, etc can be debug)
 - Save window position, size, pane locations, etc for next startup.
 - Add a recent files list (https://github.com/victorbush/ego.nefsedit/issues/7).

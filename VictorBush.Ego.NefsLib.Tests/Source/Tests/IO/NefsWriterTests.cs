@@ -84,10 +84,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Data offset (8 bytes)
             Assert.Equal(10, BitConverter.ToInt64(buffer, offset + 0));
 
-            // Metadata index
+            // Index part 2
             Assert.Equal(1, BitConverter.ToInt32(buffer, offset + 8));
 
-            // Index to part 4
+            // Index part 4
             Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0x0c));
 
             // Item id
@@ -102,10 +102,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Data offset (8 bytes)
             Assert.Equal(20, BitConverter.ToInt64(buffer, offset + 0));
 
-            // Metadata index
+            // Index part 2
             Assert.Equal(2, BitConverter.ToInt32(buffer, offset + 8));
 
-            // Index to part 4
+            // Index part 4
             Assert.Equal(2, BitConverter.ToInt32(buffer, offset + 0x0c));
 
             // Item id
@@ -120,10 +120,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Data offset (8 bytes)
             Assert.Equal(0, BitConverter.ToInt64(buffer, offset + 0));
 
-            // Metadata index
+            // Index part 2
             Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 8));
 
-            // Index to part 4
+            // Index part 4
             Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0x0c));
 
             // Item id
