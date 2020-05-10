@@ -167,7 +167,7 @@ namespace VictorBush.Ego.NefsEdit.Services
             try
             {
                 // Serialize to XML file
-                using (var writer = this.FileSystem.File.OpenWrite(SettingsFilePath))
+                using (var writer = this.FileSystem.File.Open(SettingsFilePath, FileMode.Create))
                 {
                     var xs = new XmlSerializer(typeof(Settings));
                     xs.Serialize(writer, this.Settings);
