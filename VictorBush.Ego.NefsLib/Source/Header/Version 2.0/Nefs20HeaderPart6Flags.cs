@@ -16,14 +16,14 @@ namespace VictorBush.Ego.NefsLib.Header
         None = 0x0,
 
         /// <summary>
-        /// Indicates if the item's data has transforms applied (compressed, encrypted, etc).
+        /// Indicates if the item's data is zlib compressed.
         /// </summary>
-        IsTransformed = 0x1,
+        IsZlib = 0x1,
 
         /// <summary>
-        /// Unknown.
+        /// Indicates if the item's data is AES encrypted.
         /// </summary>
-        Unknown0x02 = 0x2,
+        IsAes = 0x2,
 
         /// <summary>
         /// A flag indicating whether this item is a directory.

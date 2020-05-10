@@ -82,7 +82,7 @@ namespace VictorBush.Ego.NefsLib.Tests
             string fileName,
             INefsDataSource dataSource)
         {
-            var attributes = new NefsItemAttributes(isTransformed: true);
+            var attributes = new NefsItemAttributes(v20IsZlib: true);
 
             var transform = TestTransform;
             return new NefsItem(
@@ -117,7 +117,7 @@ namespace VictorBush.Ego.NefsLib.Tests
         {
             var attributes = new NefsItemAttributes(
                 isDirectory: type == NefsItemType.Directory,
-                isTransformed: true);
+                v16IsTransformed: true);
 
             var transform = TestTransform;
             var chunks = NefsDataChunk.CreateChunkList(chunkSizes, transform);

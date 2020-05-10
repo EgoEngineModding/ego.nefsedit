@@ -82,14 +82,14 @@ Part 6
 0x02:                       {((byte)p6.Flags).ToString("X")}
 0x03:                       {p6.Unknown0x3.ToString("X")}
 
-IsTransformed               {attributes.IsTransformed}
-IsDirectory                 {attributes.IsDirectory}
-IsDuplicated                {attributes.IsDuplicated}
-IsCacheable                 {attributes.IsCacheable}
-Unknown 0x10                {attributes.V16Unknown0x10}
-IsPatched                   {attributes.IsPatched}
-Unknown 0x40                {attributes.V16Unknown0x40}
-Unknown 0x80                {attributes.V16Unknown0x80}
+IsTransformed:              {attributes.V16IsTransformed}
+IsDirectory:                {attributes.IsDirectory}
+IsDuplicated:               {attributes.IsDuplicated}
+IsCacheable:                {attributes.IsCacheable}
+Unknown 0x10:               {attributes.V16Unknown0x10}
+IsPatched:                  {attributes.IsPatched}
+Unknown 0x40:               {attributes.V16Unknown0x40}
+Unknown 0x80:               {attributes.V16Unknown0x80}
 
 Part 7
 -----------------------------------------------------------
@@ -137,14 +137,14 @@ Part 6
 0x02:                       {((byte)p6.Flags).ToString("X")}
 0x03:                       {p6.Unknown0x3.ToString("X")}
 
-IsTransformed               {attributes.IsTransformed}
-Unknown 0x02                {attributes.V20Unknown0x02}
-IsDirectory                 {attributes.IsDirectory}
-IsDuplicated                {attributes.IsDuplicated}
-Unknown 0x10                {attributes.V20Unknown0x10}
-Unknown 0x20                {attributes.V20Unknown0x20}
-Unknown 0x40                {attributes.V20Unknown0x40}
-Unknown 0x80                {attributes.V20Unknown0x80}
+IsZlib:                     {attributes.V20IsZlib}
+IsAes:                      {attributes.V20IsAes}
+IsDirectory:                {attributes.IsDirectory}
+IsDuplicated:               {attributes.IsDuplicated}
+Unknown 0x10:               {attributes.V20Unknown0x10}
+Unknown 0x20:               {attributes.V20Unknown0x20}
+Unknown 0x40:               {attributes.V20Unknown0x40}
+Unknown 0x80:               {attributes.V20Unknown0x80}
 
 Part 7
 -----------------------------------------------------------

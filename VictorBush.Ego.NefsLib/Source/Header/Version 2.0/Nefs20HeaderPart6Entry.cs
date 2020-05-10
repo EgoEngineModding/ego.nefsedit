@@ -70,8 +70,8 @@ namespace VictorBush.Ego.NefsLib.Header
         public NefsItemAttributes CreateAttributes()
         {
             return new NefsItemAttributes(
-                isTransformed: this.Flags.HasFlag(Nefs20HeaderPart6Flags.IsTransformed),
-                v20Unknown0x02: this.Flags.HasFlag(Nefs20HeaderPart6Flags.Unknown0x02),
+                v20IsZlib: this.Flags.HasFlag(Nefs20HeaderPart6Flags.IsZlib),
+                v20IsAes: this.Flags.HasFlag(Nefs20HeaderPart6Flags.IsAes),
                 isDirectory: this.Flags.HasFlag(Nefs20HeaderPart6Flags.IsDirectory),
                 isDuplicated: this.Flags.HasFlag(Nefs20HeaderPart6Flags.IsDuplicated),
                 v20Unknown0x10: this.Flags.HasFlag(Nefs20HeaderPart6Flags.Unknown0x10),

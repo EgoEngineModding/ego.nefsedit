@@ -70,7 +70,7 @@ namespace VictorBush.Ego.NefsLib.Header
         public NefsItemAttributes CreateAttributes()
         {
             return new NefsItemAttributes(
-                isTransformed: this.Flags.HasFlag(Nefs16HeaderPart6Flags.IsTransformed),
+                v16IsTransformed: this.Flags.HasFlag(Nefs16HeaderPart6Flags.IsTransformed),
                 isDirectory: this.Flags.HasFlag(Nefs16HeaderPart6Flags.IsDirectory),
                 isDuplicated: this.Flags.HasFlag(Nefs16HeaderPart6Flags.IsDuplicated),
                 isCacheable: this.Flags.HasFlag(Nefs16HeaderPart6Flags.IsCacheable),

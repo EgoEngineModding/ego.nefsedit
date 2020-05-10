@@ -17,7 +17,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             var items = new NefsItemList(@"C:\archive.nefs");
 
             var item1Attributes = new NefsItemAttributes(
-                isTransformed: true,
+                v16IsTransformed: true,
                 isDirectory: true,
                 isDuplicated: true,
                 isCacheable: true,
@@ -40,8 +40,8 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             var items = new NefsItemList(@"C:\archive.nefs");
 
             var item1Attributes = new NefsItemAttributes(
-                isTransformed: true,
-                v20Unknown0x02: true,
+                v20IsZlib: true,
+                v20IsAes: true,
                 isDirectory: true,
                 isDuplicated: true,
                 v20Unknown0x10: true,

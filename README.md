@@ -7,4 +7,4 @@ There are two components to this project.
 - NefsEdit - a Windows Forms application that uses NefsLib.
 
 ## Acknowledgements
-Special thanks to [@Gigi1237]( https://github.com/Gigi1237 ) for encryption work.
+[@Gigi1237]( https://github.com/Gigi1237 ) - encryption/reversing contributions

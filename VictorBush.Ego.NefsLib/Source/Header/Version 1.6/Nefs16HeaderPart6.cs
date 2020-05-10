@@ -38,7 +38,7 @@ namespace VictorBush.Ego.NefsLib.Header
             foreach (var item in items.EnumerateById())
             {
                 var flags = Nefs16HeaderPart6Flags.None;
-                flags |= item.Attributes.IsTransformed ? Nefs16HeaderPart6Flags.IsTransformed : 0;
+                flags |= item.Attributes.V16IsTransformed ? Nefs16HeaderPart6Flags.IsTransformed : 0;
                 flags |= item.Attributes.IsDirectory ? Nefs16HeaderPart6Flags.IsDirectory : 0;
                 flags |= item.Attributes.IsDuplicated ? Nefs16HeaderPart6Flags.IsDuplicated : 0;
                 flags |= item.Attributes.IsCacheable ? Nefs16HeaderPart6Flags.IsCacheable : 0;

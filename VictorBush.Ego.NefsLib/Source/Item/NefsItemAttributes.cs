@@ -16,11 +16,12 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <param name="isDirectory">Indicates if item is directory.</param>
         /// <param name="isDuplicated">Indicates if item has duplicates.</param>
         /// <param name="isPatched">Indicates if item is patched.</param>
-        /// <param name="isTransformed">Indicates if item's data has transformations applied.</param>
+        /// <param name="v16IsTransformed">Indicates if item's data has transformations applied.</param>
         /// <param name="v16Unknown0x10">Unknown flag 0x10 (v1.6).</param>
         /// <param name="v16Unknown0x40">Unknown flag 0x40 (v1.6).</param>
         /// <param name="v16Unknown0x80">Unknown flag 0x80 (v1.6).</param>
-        /// <param name="v20Unknown0x02">Unknown flag 0x02.</param>
+        /// <param name="v20IsZlib">Version 2.0 - Indicates if item's data is zlib compressed.</param>
+        /// <param name="v20IsAes">Version 2.0 - Indicates if item's data is AES encrypted.</param>
         /// <param name="v20Unknown0x10">Unknown flag 0x10.</param>
         /// <param name="v20Unknown0x20">Unknown flag 0x20.</param>
         /// <param name="v20Unknown0x40">Unknown flag 0x40.</param>
@@ -32,11 +33,12 @@ namespace VictorBush.Ego.NefsLib.Item
             bool isDirectory = false,
             bool isDuplicated = false,
             bool isPatched = false,
-            bool isTransformed = false,
+            bool v16IsTransformed = false,
             bool v16Unknown0x10 = false,
             bool v16Unknown0x40 = false,
             bool v16Unknown0x80 = false,
-            bool v20Unknown0x02 = false,
+            bool v20IsZlib = false,
+            bool v20IsAes = false,
             bool v20Unknown0x10 = false,
             bool v20Unknown0x20 = false,
             bool v20Unknown0x40 = false,
@@ -48,11 +50,12 @@ namespace VictorBush.Ego.NefsLib.Item
             this.IsDirectory = isDirectory;
             this.IsDuplicated = isDuplicated;
             this.IsPatched = isPatched;
-            this.IsTransformed = isTransformed;
+            this.V16IsTransformed = v16IsTransformed;
             this.V16Unknown0x10 = v16Unknown0x10;
             this.V16Unknown0x40 = v16Unknown0x40;
             this.V16Unknown0x80 = v16Unknown0x80;
-            this.V20Unknown0x02 = v20Unknown0x02;
+            this.V20IsZlib = v20IsZlib;
+            this.V20IsAes = v20IsAes;
             this.V20Unknown0x10 = v20Unknown0x10;
             this.V20Unknown0x20 = v20Unknown0x20;
             this.V20Unknown0x40 = v20Unknown0x40;
@@ -82,11 +85,6 @@ namespace VictorBush.Ego.NefsLib.Item
         public bool IsPatched { get; }
 
         /// <summary>
-        /// A flag indicating whether the item's data has transforms applied (compressed, encrypted, etc).
-        /// </summary>
-        public bool IsTransformed { get; }
-
-        /// <summary>
         /// Unknown data (from part 6).
         /// </summary>
         public byte Part6Unknown0x3 { get; }
@@ -95,6 +93,12 @@ namespace VictorBush.Ego.NefsLib.Item
         /// Meaning unknown (from part 6).
         /// </summary>
         public UInt16 Part6Volume { get; }
+
+        /// <summary>
+        /// Version 1.6 - A flag indicating whether the item's data has transforms applied
+        /// (compressed, encrypted, etc).
+        /// </summary>
+        public bool V16IsTransformed { get; }
 
         /// <summary>
         /// Version 1.6 unknown flag.
@@ -112,9 +116,14 @@ namespace VictorBush.Ego.NefsLib.Item
         public bool V16Unknown0x80 { get; }
 
         /// <summary>
-        /// Version 2.0 unknown flag.
+        /// Version 2.0 - indicates whether the item's data is AES encrypted.
         /// </summary>
-        public bool V20Unknown0x02 { get; }
+        public bool V20IsAes { get; }
+
+        /// <summary>
+        /// Version 2.0 - indicates whether the item's data is zlib compressed.
+        /// </summary>
+        public bool V20IsZlib { get; }
 
         /// <summary>
         /// Version 2.0 unknown flag.
