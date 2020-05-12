@@ -514,7 +514,7 @@ namespace VictorBush.Ego.NefsLib.IO
             toc.Data0x24_Unknown.Value = sourceHeader.TableOfContents.Unknown0x24;
 
             // Part 8 - not writing anything for now
-            var p8 = new NefsHeaderPart8((uint)p8Size);
+            var p8 = new NefsHeaderPart8(p8Size);
 
             // Create new header object
             var header = new Nefs20Header(intro, toc, p1, p2, p3, p4, p5, p6, p7, p8);

@@ -35,7 +35,7 @@ namespace VictorBush.Ego.NefsLib.Header
             this.entriesByGuid = new Dictionary<Guid, Nefs20HeaderPart6Entry>();
 
             // Sort part 6 by item id. Part 1 and part 6 order must match.
-            foreach (var item in items.EnumerateDepthFirstByName())
+            foreach (var item in items.EnumerateById())
             {
                 var flags = Nefs20HeaderPart6Flags.None;
                 flags |= item.Attributes.V20IsZlib ? Nefs20HeaderPart6Flags.IsZlib : 0;
