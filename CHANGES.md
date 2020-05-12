@@ -1,5 +1,12 @@
 # Changelog
 
+## Version 0.6.0
+- Added support for NeFS version 1.6.
+- Added recent files list and improved open file dialog.
+- Added support for handling duplicate items in archives.
+- Improved finding and loading NeFS headers from executables.
+- Fixed various loading bugs NeFS version 2.0 headers.
+
 ## Version 0.5.0
 - Added ability to open game.dat files (archives with separate header/data files).
 - Added ability to close an archive.
