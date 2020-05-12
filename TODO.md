@@ -1,4 +1,5 @@
 # TODO
+- Checksum in part 4 entries for nefs version 1.6.
 - Logging verbosity options (i.e., settings save/lod, etc can be debug). Cleanup info/dbg/wrn/error usage.
 - Save window position, size, pane locations, etc for next startup.
 - Console logging performance issues (https://github.com/victorbush/ego.nefsedit/issues/8).
