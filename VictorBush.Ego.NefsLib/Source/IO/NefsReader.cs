@@ -91,9 +91,11 @@ namespace VictorBush.Ego.NefsLib.IO
             var exeBytes = this.FileSystem.File.ReadAllBytes(exePath);
 
             // Search for the part 6 base offset. For NeFS version 1.6 and 2.0 (maybe others?)
-            // header parts 6 and 7 are stored separate from the other header parts. Not sure of a
-            // good way to find this, but for now we've been lucky that its always started at the
-            // beginning of the ".data" section of the exe. So we can get that offset from the PE header.
+            // header parts 6 and 7 are stored separate from the other header parts. So far all the
+            // part 6/7 data has been in the ".data" section of the exe. So we can get that offset
+            // from the PE header. Some games (e.g. Grid 2) have other data that comes before the
+            // part 6/7 data in the ".data" section. So we have to look for a pattern that looks
+            // like the data we are looking for.
             try
             {
                 if (!PeHelper.GetRawOffsetToSection(exeBytes, ".data", out var dataSectionOffset))
@@ -147,6 +149,10 @@ namespace VictorBush.Ego.NefsLib.IO
                             uint p6Size;
                             uint p7Size;
 
+                            // Find next part 6 offset - there may be padding or other data before
+                            // the part 6/7 data
+                            nextPart6Offset = this.FindNextPart6Offset(nextPart6Offset, exeBytes);
+
                             // Read table of contents
                             if (version == (int)NefsVersion.Version200)
                             {
@@ -195,24 +201,8 @@ namespace VictorBush.Ego.NefsLib.IO
                             // Keep looking
                             offset += (int)intro.HeaderSize;
 
-                            // Find next part 6 offset
+                            // Update part 6 search offset to skip the one we just used
                             nextPart6Offset += p6Size + p7Size;
-
-                            // Not sure best way to find next part 6 offset. There is padding
-                            // between the end of part 7 and the next part 6.
-                            while (nextPart6Offset + 4 < exeBytes.Length)
-                            {
-                                // This is based on the assumption that the first part 6 entry is
-                                // always 00 00 XX 00
-                                if (exeBytes[nextPart6Offset + 0] == 0
-                                    && exeBytes[nextPart6Offset + 1] == 0
-                                    && exeBytes[nextPart6Offset + 3] == 0)
-                                {
-                                    break;
-                                }
-
-                                nextPart6Offset++;
-                            }
                         }
                     }
                 }
@@ -1047,6 +1037,51 @@ namespace VictorBush.Ego.NefsLib.IO
 
             await stream.ReadAsync(part8.AllTheData.Value, 0, (int)size, p.CancellationToken);
             return part8;
+        }
+
+        /// <summary>
+        /// A quick hack for trying to find part 6 data in an exe using simple pattern matching.
+        /// </summary>
+        /// <param name="nextOffset">The offset to start looking at.</param>
+        /// <param name="bytes">The exe bytes to search.</param>
+        /// <returns>The next part 6 offset.</returns>
+        private uint FindNextPart6Offset(uint nextOffset, byte[] bytes)
+        {
+            var numPatternsMatched = 0;
+            var o = nextOffset;
+
+            // Look for a pattern that looks like a part 6 header. This is based on the assumption
+            // that the first part 6 entry is always 00 00 XX 00, where XX is a value greater than
+            // 0. I've yet to see a part 6 entry with a different pattern. We'll look for 4 of these
+            // entries in a row and consider that a find.
+            while (o + 4 < bytes.Length)
+            {
+                if (bytes[o + 0] == 0
+                    && bytes[o + 1] == 0
+                    && bytes[o + 2] > 0
+                    && bytes[o + 3] == 0)
+                {
+                    numPatternsMatched++;
+
+                    if (numPatternsMatched == 4)
+                    {
+                        break;
+                    }
+                    else
+                    {
+                        o += 4;
+                        continue;
+                    }
+                }
+                else
+                {
+                    numPatternsMatched = 0;
+                    o++;
+                    nextOffset = o;
+                }
+            }
+
+            return nextOffset;
         }
 
         private bool ValidateHash(Stream stream, ulong offset, NefsHeaderIntro intro)

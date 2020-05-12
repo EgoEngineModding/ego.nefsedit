@@ -25,10 +25,14 @@ namespace VictorBush.Ego.NefsEdit.UI
         private static readonly ILogger Log = LogHelper.GetLogger();
 
         private readonly OpenMode openModeGameBinDirtRally1 = new OpenMode("game*.bin (DiRT Rally)");
+        private readonly OpenMode openModeGameDatCustom = new OpenMode("game*.dat/bin (Custom)");
         private readonly OpenMode openModeGameDatDirt4 = new OpenMode("game*.dat (DiRT 4)");
         private readonly OpenMode openModeGameDatDirtRally2 = new OpenMode("game*.dat (DiRT Rally 2)");
         private readonly OpenMode openModeNefs = new OpenMode("NeFS");
         private readonly OpenMode openModeRecent = new OpenMode("Recent");
+
+        private string gameDatCustomDirPath = "";
+        private string gameDatCustomExePath = "";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OpenFileForm"/> class.
@@ -171,6 +175,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.headerPart6OffsetTextBox.Text = this.SettingsService.OpenFileDialogState.HeaderPart6Offset;
             this.advancedCheckBox.Checked = this.SettingsService.OpenFileDialogState.IsAdvanced;
             this.advancedGroupBox.Enabled = this.advancedCheckBox.Checked;
+            this.gameDatCustomExePath = this.SettingsService.OpenFileDialogState.GameDatCustomExePath;
+            this.gameDatCustomDirPath = this.SettingsService.OpenFileDialogState.GameDatCustomDatDirPath;
         }
 
         private void ModeListBox_SelectedIndexChanged(Object sender, EventArgs e)
@@ -215,6 +221,16 @@ namespace VictorBush.Ego.NefsEdit.UI
                 this.gameDatDirTextBox.ScrollToEnd();
                 this.gameDatFilesListBox.Items.Clear();
             }
+            else if (this.modeListBox.SelectedItem == this.openModeGameDatCustom)
+            {
+                // Search an executable for game.bin/game.dat files
+                this.tablessControl1.SelectedTab = this.gameDatTabPage;
+                this.gameExeFileTextBox.Text = this.gameDatCustomExePath;
+                this.gameExeFileTextBox.ScrollToEnd();
+                this.gameDatDirTextBox.Text = this.gameDatCustomDirPath;
+                this.gameDatDirTextBox.ScrollToEnd();
+                this.gameDatFilesListBox.Items.Clear();
+            }
         }
 
         private void NefsFileButton_Click(Object sender, EventArgs e)
@@ -249,6 +265,10 @@ namespace VictorBush.Ego.NefsEdit.UI
             {
                 source = this.ValidateGameDat();
             }
+            else if (this.modeListBox.SelectedItem == this.openModeGameDatCustom)
+            {
+                source = this.ValidateGameDat();
+            }
             else if (this.modeListBox.SelectedItem == this.openModeRecent)
             {
                 source = this.ValidateRecent();
@@ -278,6 +298,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.modeListBox.Items.Add(this.openModeGameBinDirtRally1);
             this.modeListBox.Items.Add(this.openModeGameDatDirtRally2);
             this.modeListBox.Items.Add(this.openModeGameDatDirt4);
+            this.modeListBox.Items.Add(this.openModeGameDatCustom);
 
             // Select default open mode
             this.modeListBox.SelectedItem = this.openModeNefs;
@@ -303,6 +324,8 @@ namespace VictorBush.Ego.NefsEdit.UI
             this.SettingsService.OpenFileDialogState.HeaderPart6Offset = this.headerPart6OffsetTextBox.Text;
             this.SettingsService.OpenFileDialogState.HeaderPath = this.nefsFileTextBox.Text;
             this.SettingsService.OpenFileDialogState.IsAdvanced = this.advancedCheckBox.Checked;
+            this.SettingsService.OpenFileDialogState.GameDatCustomDatDirPath = this.gameDatCustomDirPath;
+            this.SettingsService.OpenFileDialogState.GameDatCustomExePath = this.gameDatCustomExePath;
 
             this.SettingsService.Save();
         }

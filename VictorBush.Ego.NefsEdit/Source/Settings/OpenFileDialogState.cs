@@ -16,6 +16,16 @@ namespace VictorBush.Ego.NefsEdit.Settings
         public string DataFilePath { get; set; }
 
         /// <summary>
+        /// The game*.dat/bin custom mode game.dat path.
+        /// </summary>
+        public string GameDatCustomDatDirPath { get; set; }
+
+        /// <summary>
+        /// The game*.dat/bin custom mode exe path.
+        /// </summary>
+        public string GameDatCustomExePath { get; set; }
+
+        /// <summary>
         /// The header offset value.
         /// </summary>
         public string HeaderOffset { get; set; }
