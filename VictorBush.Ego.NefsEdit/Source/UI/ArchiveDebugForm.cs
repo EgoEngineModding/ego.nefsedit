@@ -72,7 +72,7 @@ namespace VictorBush.Ego.NefsEdit.UI
             foreach (var entry in h.Part6.EntriesByIndex)
             {
                 headerPart6String.Append($"0x{entry.Volume.ToString("X")}".PadRight(20));
-                headerPart6String.Append($"0x{entry.Flags.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{((byte)entry.Flags).ToString("X")}".PadRight(20));
                 headerPart6String.Append($"0x{entry.Unknown0x3.ToString("X")}".PadRight(20));
                 headerPart6String.Append("\n");
             }
@@ -146,7 +146,7 @@ Header Part 3
 {headerPart3String.ToString()}
 Header Part 4
 -----------------------------------------------------------
-Number of files:            {h.Part4.EntriesByIndex.Count.ToString("X")}
+Number of entries:          {h.Part4.EntriesByIndex.Count.ToString("X")}
 
 Header Part 5
 -----------------------------------------------------------
@@ -196,7 +196,7 @@ Header Part 7
             foreach (var entry in h.Part6.EntriesByIndex)
             {
                 headerPart6String.Append($"0x{entry.Volume.ToString("X")}".PadRight(20));
-                headerPart6String.Append($"0x{entry.Flags.ToString("X")}".PadRight(20));
+                headerPart6String.Append($"0x{((byte)entry.Flags).ToString("X")}".PadRight(20));
                 headerPart6String.Append($"0x{entry.Unknown0x3.ToString("X")}".PadRight(20));
                 headerPart6String.Append("\n");
             }
@@ -268,7 +268,7 @@ Header Part 3
 {headerPart3String.ToString()}
 Header Part 4
 -----------------------------------------------------------
-Number of files:            {h.Part4.EntriesByIndex.Count.ToString("X")}
+Number of entries:          {h.Part4.EntriesByIndex.Count.ToString("X")}
 
 Header Part 5
 -----------------------------------------------------------

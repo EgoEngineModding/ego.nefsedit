@@ -198,8 +198,8 @@ namespace VictorBush.Ego.NefsLib.IO
                             // Find next part 6 offset
                             nextPart6Offset += p6Size + p7Size;
 
-                            // Not sure best way to find next part 6 offset. There is padding between the end
-                            // of part 7 and the next part 6.
+                            // Not sure best way to find next part 6 offset. There is padding
+                            // between the end of part 7 and the next part 6.
                             while (nextPart6Offset + 4 < exeBytes.Length)
                             {
                                 // This is based on the assumption that the first part 6 entry is
@@ -686,6 +686,7 @@ namespace VictorBush.Ego.NefsLib.IO
         internal async Task<INefsHeader> ReadHeaderAsync(Stream originalStream, ulong offset, ulong part6Offset, NefsProgress p)
         {
             Stream stream;
+            Stream part6Stream;
             INefsHeader header = null;
             NefsHeaderIntro intro = null;
 
@@ -695,24 +696,28 @@ namespace VictorBush.Ego.NefsLib.IO
                 (intro, stream) = await this.ReadHeaderIntroAsync(originalStream, offset, p);
             }
 
+            // For now, assume that if the header is encrypted, then the part 6 data is not
+            // separated. We've only seen encrypted headers in some nefs 2.0 archives (i.e., DLC content).
+            part6Stream = intro.IsEncrypted ? stream : originalStream;
+
             using (p.BeginTask(0.8f))
             {
                 if (intro.NefsVersion == 0x20000)
                 {
                     // 2.0.0
                     Log.LogInformation("Detected NeFS version 2.0.");
-                    header = await this.Read20HeaderAsync(stream, 0, originalStream, part6Offset, intro, p);
+                    header = await this.Read20HeaderAsync(stream, 0, part6Stream, part6Offset, intro, p);
                 }
                 else if (intro.NefsVersion == 0x10600)
                 {
                     // 1.6.0
                     Log.LogInformation("Detected NeFS version 1.6.");
-                    header = await this.Read16HeaderAsync(stream, 0, originalStream, part6Offset, intro, p);
+                    header = await this.Read16HeaderAsync(stream, 0, part6Stream, part6Offset, intro, p);
                 }
                 else
                 {
                     Log.LogInformation($"Detected unkown NeFS version {intro.NefsVersion}.");
-                    header = await this.Read20HeaderAsync(stream, 0, originalStream, part6Offset, intro, p);
+                    header = await this.Read20HeaderAsync(stream, 0, part6Stream, part6Offset, intro, p);
                 }
             }
 
