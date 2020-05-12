@@ -5,7 +5,7 @@
 - Added recent files list and improved open file dialog.
 - Added support for handling duplicate items in archives.
 - Improved finding and loading NeFS headers from executables.
-- Fixed various loading bugs NeFS version 2.0 headers.
+- Fixed various loading bugs for NeFS version 2.0 headers.
 
 ## Version 0.5.0
 - Added ability to open game.dat files (archives with separate header/data files).
