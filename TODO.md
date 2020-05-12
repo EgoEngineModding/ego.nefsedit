@@ -1,5 +1,5 @@
 # TODO
-- Part 4 reading is very slow
+- Fix writing 2.0 nefs
 - Logging verbosity options (i.e., settings save/lod, etc can be debug). Cleanup info/dbg/wrn/error usage.
 - Save window position, size, pane locations, etc for next startup.
 - Console logging performance issues (https://github.com/victorbush/ego.nefsedit/issues/8).
