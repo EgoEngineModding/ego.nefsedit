@@ -365,7 +365,7 @@ namespace VictorBush.Ego.NefsLib.IO
         internal async Task<Nefs16HeaderIntroToc> Read16HeaderIntroTocAsync(Stream stream, uint offset, NefsProgress p)
         {
             var toc = new Nefs16HeaderIntroToc();
-            await FileData.ReadDataAsync(stream, offset, toc, NefsVersion.Version160, p);
+            await FileData.ReadDataAsync(stream, offset, toc, p);
             return toc;
         }
 
@@ -398,7 +398,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 using (p.BeginTask(1.0f / numEntries))
                 {
                     var entry = new Nefs16HeaderPart4Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version200, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
                     entryOffset += Nefs16HeaderPart4Entry.Size;
 
                     entries.Add(entry);
@@ -453,7 +453,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
                     // Read the entry data
                     var entry = new Nefs16HeaderPart6Entry(guid);
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version160, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
                     entryOffset += Nefs16HeaderPart6Entry.Size;
 
                     entries.Add(entry);
@@ -565,7 +565,7 @@ namespace VictorBush.Ego.NefsLib.IO
         internal async Task<Nefs20HeaderIntroToc> Read20HeaderIntroTocAsync(Stream stream, uint offset, NefsProgress p)
         {
             var toc = new Nefs20HeaderIntroToc();
-            await FileData.ReadDataAsync(stream, offset, toc, NefsVersion.Version200, p);
+            await FileData.ReadDataAsync(stream, offset, toc, p);
             return toc;
         }
 
@@ -598,7 +598,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 using (p.BeginTask(1.0f / numEntries))
                 {
                     var entry = new Nefs20HeaderPart4Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version200, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
                     entryOffset += Nefs20HeaderPart4Entry.Size;
 
                     entries.Add(entry);
@@ -653,7 +653,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
                     // Read the entry data
                     var entry = new Nefs20HeaderPart6Entry(guid);
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version200, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
                     entryOffset += Nefs20HeaderPart6Entry.Size;
 
                     entries.Add(entry);
@@ -748,7 +748,7 @@ namespace VictorBush.Ego.NefsLib.IO
             {
                 // This is a non-encrypted NeFS header
                 intro = new NefsHeaderIntro();
-                await FileData.ReadDataAsync(stream, offset, intro, NefsVersion.Version200, p);
+                await FileData.ReadDataAsync(stream, offset, intro, p);
 
                 // Copy the entire header to the decrypted stream (nothing to decrypt)
                 stream.Seek((long)offset, SeekOrigin.Begin);
@@ -790,7 +790,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
                 // Read header intro data from decrypted stream
                 intro = new NefsHeaderIntro(isEncrpyted: true);
-                await FileData.ReadDataAsync(decryptedStream, 0, intro, NefsVersion.Version200, p);
+                await FileData.ReadDataAsync(decryptedStream, 0, intro, p);
 
                 // The rest of the header is encrypted using AES-256, decrypt using the key from the
                 // header intro
@@ -849,7 +849,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 {
                     var guid = Guid.NewGuid();
                     var entry = new NefsHeaderPart1Entry(guid);
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version200, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
                     entryOffset += NefsHeaderPart1Entry.Size;
                     entries.Add(entry);
                 }
@@ -885,7 +885,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 using (p.BeginTask(1.0f / numEntries))
                 {
                     var entry = new NefsHeaderPart2Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version200, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
                     entryOffset += NefsHeaderPart2Entry.Size;
 
                     entries.Add(entry);
@@ -975,7 +975,7 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             // Read part 5 data
-            await FileData.ReadDataAsync(stream, offset, part5, NefsVersion.Version200, p);
+            await FileData.ReadDataAsync(stream, offset, part5, p);
             return part5;
         }
 
@@ -1007,7 +1007,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 {
                     // Read the entry data
                     var entry = new NefsHeaderPart7Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, NefsVersion.Version200, p);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
                     entryOffset += NefsHeaderPart7Entry.Size;
 
                     entries.Add(entry);

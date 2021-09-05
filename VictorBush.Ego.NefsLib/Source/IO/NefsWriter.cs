@@ -91,7 +91,7 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             using (var t = p.BeginTask(1.0f))
             {
-                await FileData.WriteDataAsync(stream, offset, intro, NefsVersion.Version200, p);
+                await FileData.WriteDataAsync(stream, offset, intro, p);
             }
         }
 
@@ -107,7 +107,7 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             using (var t = p.BeginTask(1.0f))
             {
-                await FileData.WriteDataAsync(stream, offset, toc, NefsVersion.Version200, p);
+                await FileData.WriteDataAsync(stream, offset, toc, p);
             }
         }
 
@@ -123,7 +123,7 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             foreach (var entry in part1.EntriesByIndex)
             {
-                await FileData.WriteDataAsync(stream, offset, entry, NefsVersion.Version200, p);
+                await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += NefsHeaderPart1Entry.Size;
             }
         }
@@ -140,7 +140,7 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             foreach (var entry in part2.EntriesByIndex)
             {
-                await FileData.WriteDataAsync(stream, offset, entry, NefsVersion.Version200, p);
+                await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += NefsHeaderPart2Entry.Size;
             }
         }
@@ -179,7 +179,7 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             foreach (var entry in part4.EntriesByIndex)
             {
-                await FileData.WriteDataAsync(stream, offset, entry, NefsVersion.Version200, p);
+                await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += Nefs20HeaderPart4Entry.Size;
             }
         }
@@ -194,7 +194,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart5Async(Stream stream, UInt64 offset, NefsHeaderPart5 part5, NefsProgress p)
         {
-            await FileData.WriteDataAsync(stream, offset, part5, NefsVersion.Version200, p);
+            await FileData.WriteDataAsync(stream, offset, part5, p);
         }
 
         /// <summary>
@@ -209,7 +209,7 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             foreach (var entry in part6.EntriesByIndex)
             {
-                await FileData.WriteDataAsync(stream, offset, entry, NefsVersion.Version200, p);
+                await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += Nefs20HeaderPart6Entry.Size;
             }
         }
@@ -226,7 +226,7 @@ namespace VictorBush.Ego.NefsLib.IO
         {
             foreach (var entry in part7.EntriesByIndex)
             {
-                await FileData.WriteDataAsync(stream, offset, entry, NefsVersion.Version200, p);
+                await FileData.WriteDataAsync(stream, offset, entry, p);
                 offset += NefsHeaderPart7Entry.Size;
             }
         }
@@ -241,7 +241,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>An async task.</returns>
         internal async Task WriteHeaderPart8Async(Stream stream, UInt64 offset, NefsHeaderPart8 part8, NefsProgress p)
         {
-            await FileData.WriteDataAsync(stream, offset, part8, NefsVersion.Version200, p);
+            await FileData.WriteDataAsync(stream, offset, part8, p);
         }
 
         /// <summary>
