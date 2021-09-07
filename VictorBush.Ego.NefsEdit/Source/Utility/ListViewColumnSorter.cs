@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsEdit.Utility
 {
     using System.Collections;
+    using System.Globalization;
     using System.Windows.Forms;
 
     /// <summary>
@@ -30,7 +31,7 @@ namespace VictorBush.Ego.NefsEdit.Utility
             this.Order = SortOrder.None;
 
             // Initialize the CaseInsensitiveComparer object
-            this.objectCompare = new CaseInsensitiveComparer();
+            this.objectCompare = new CaseInsensitiveComparer(System.Globalization.CultureInfo.InvariantCulture);
         }
 
         /// <summary>
@@ -63,10 +64,21 @@ namespace VictorBush.Ego.NefsEdit.Utility
             listviewX = (ListViewItem)x;
             listviewY = (ListViewItem)y;
 
-            // Compare the two items
-            compareResult = this.objectCompare.Compare(
-                listviewX.SubItems[this.SortColumn].Text,
-                listviewY.SubItems[this.SortColumn].Text);
+            var xText = listviewX.SubItems[this.SortColumn].Text;
+            var yText = listviewY.SubItems[this.SortColumn].Text;
+
+            // Compare as uint if possible, otherwise sort by text
+            if (uint.TryParse(xText, NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var xInt)
+                && uint.TryParse(yText, NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var yInt))
+            {
+                compareResult = this.objectCompare.Compare(xInt, yInt);
+            }
+            else
+            {
+                compareResult = this.objectCompare.Compare(
+                    listviewX.SubItems[this.SortColumn].Text,
+                    listviewY.SubItems[this.SortColumn].Text);
+            }
 
             // Calculate correct return value based on object comparison
             if (this.Order == SortOrder.Ascending)
