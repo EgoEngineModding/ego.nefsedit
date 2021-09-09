@@ -8,12 +8,15 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{2C89B121-5782-4369-AB4E-318ACDD6024F}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		CHANGES.md = CHANGES.md
+		README.md = README.md
 		SharedAssemblyInfo.cs = SharedAssemblyInfo.cs
+		TODO.md = TODO.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VictorBush.Ego.NefsLib", "VictorBush.Ego.NefsLib\VictorBush.Ego.NefsLib.csproj", "{C3A546A4-7C78-4FA2-98DD-D056858A57D9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VictorBush.Ego.NefsLib", "VictorBush.Ego.NefsLib\VictorBush.Ego.NefsLib.csproj", "{C3A546A4-7C78-4FA2-98DD-D056858A57D9}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VictorBush.Ego.NefsLib.Tests", "VictorBush.Ego.NefsLib.Tests\VictorBush.Ego.NefsLib.Tests.csproj", "{2F06464E-5954-4A40-A3CE-A8529E7371E2}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VictorBush.Ego.NefsLib.Tests", "VictorBush.Ego.NefsLib.Tests\VictorBush.Ego.NefsLib.Tests.csproj", "{2F06464E-5954-4A40-A3CE-A8529E7371E2}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VictorBush.Ego.NefsEdit.Tests", "VictorBush.Ego.NefsEdit.Tests\VictorBush.Ego.NefsEdit.Tests.csproj", "{40723AAF-DC4B-4DFE-BE01-90C562C7E298}"
 EndProject

@@ -2,7 +2,7 @@
 
 NeFS Edit is an application that supports browsing, extracting, and modifying contents of NeFS archives. These archive files are used by Ego Engine games such as DiRT 4 and DiRT Rally 2.
 
-Requires .NET Framework 4.7.2.
+Requires .NET Framework 4.8.
 
 ## Features
 - Open and browse NeFS archives (included encrypted archives).
