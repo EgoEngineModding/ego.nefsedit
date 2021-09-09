@@ -1,3 +1,4 @@
 /.vs/
 /TestResults/
 /releases/
+*.csproj.user
