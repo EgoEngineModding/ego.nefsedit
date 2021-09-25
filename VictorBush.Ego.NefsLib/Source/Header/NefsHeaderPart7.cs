@@ -13,6 +13,11 @@ namespace VictorBush.Ego.NefsLib.Header
         private readonly List<NefsHeaderPart7Entry> entriesByIndex;
 
         /// <summary>
+        /// The size of a part 7 entry.
+        /// </summary>
+        public const int EntrySize = 0x8;
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart7"/> class.
         /// </summary>
         /// <param name="entries">A list of entries to instantiate this part with.</param>
@@ -38,6 +43,8 @@ namespace VictorBush.Ego.NefsLib.Header
                 this.entriesByIndex.Add(entry);
             }
         }
+
+        public int Size => this.entriesByIndex.Count * EntrySize;
 
         /// <summary>
         /// Gets the list of entries in the order they appear in the header.

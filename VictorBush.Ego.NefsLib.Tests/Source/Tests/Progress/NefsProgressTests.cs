@@ -26,6 +26,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.Progress
             Assert.Equal("", p.StatusSubMessage);
         }
 
+
         [Fact]
         public void Test_MultipleTasks()
         {

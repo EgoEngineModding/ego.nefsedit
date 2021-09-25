@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsLib.Header
 {
     using System;
+    using System.Collections.Generic;
     using VictorBush.Ego.NefsLib.Item;
 
     /// <summary>
@@ -13,7 +14,9 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Gets the current size of header part 4.
         /// </summary>
-        UInt32 Size { get; }
+        int Size { get; }
+
+        IReadOnlyList<INefsHeaderPartEntry> EntriesByIndex { get; }
 
         /// <summary>
         /// Gets the index into part 4 for the specified item. The index into part 4 is potentially

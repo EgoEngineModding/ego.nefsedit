@@ -73,10 +73,15 @@ namespace VictorBush.Ego.NefsLib.Header
         /// </summary>
         public IReadOnlyList<Nefs16HeaderPart4Entry> EntriesByIndex => this.entriesByIndex;
 
+        public const int EntrySize = 0x8;
+
+
         /// <summary>
         /// Gets the current size of header part 4.
         /// </summary>
-        public UInt32 Size => (uint)(this.entriesByIndex.Count * Nefs20HeaderPart4Entry.Size);
+        public int Size => this.entriesByIndex.Count * EntrySize;
+
+        IReadOnlyList<INefsHeaderPartEntry> INefsHeaderPart4.EntriesByIndex => this.entriesByIndex;
 
         /// <summary>
         /// Creates a list of chunk metadata for an item.

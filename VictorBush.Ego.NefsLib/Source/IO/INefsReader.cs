@@ -4,6 +4,7 @@ namespace VictorBush.Ego.NefsLib.IO
 {
     using System.Collections.Generic;
     using System.Threading.Tasks;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
     using VictorBush.Ego.NefsLib.Progress;
 
     /// <summary>
@@ -18,40 +19,55 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="dataFileDir">The directory that contains data files (i.e.: game.dat, game.bin).</param>
         /// <param name="p">Progress info.</param>
         /// <returns>List of archive sources for discovered headers.</returns>
-        Task<List<NefsArchiveSource>> FindHeadersAsync(string exePath, string dataFileDir, NefsProgress p);
+        //Task<List<NefsArchiveSource>> FindHeadersAsync(string exePath, string dataFileDir, NefsProgress p);
 
         /// <summary>
-        /// Reads a NeFS archive from the file system.
+        /// Reads a standard NeFS archive from the file system.
         /// </summary>
-        /// <param name="filePath">The path to the archive to load.</param>
+        /// <param name="filePath">The file path of the archive to read.</param>
         /// <param name="p">Progress information.</param>
         /// <returns>The loaded <see cref="NefsArchive"/>.</returns>
-        Task<NefsArchive> ReadArchiveAsync(string filePath, NefsProgress p);
+        //Task<NefsArchive> ReadArchiveAsync(string filePath, NefsProgress p);
 
         /// <summary>
-        /// Reads a NeFS archive from the file system when the header and item data are in separate files.
+        /// Reads a standard NeFS archive from the file system.
         /// </summary>
-        /// <param name="source">The source of the archive to open.</param>
+        /// <param name="filePath">The file path of the archive to read.</param>
+        /// <param name="headerOffset">The offset to the header intro.</param>
         /// <param name="p">Progress information.</param>
         /// <returns>The loaded <see cref="NefsArchive"/>.</returns>
-        Task<NefsArchive> ReadArchiveAsync(
-            NefsArchiveSource source,
-            NefsProgress p);
+        //Task<NefsArchive> ReadArchiveAsync(string filePath, long headerOffset, NefsProgress p);
 
         /// <summary>
-        /// Reads a NeFS archive from the file system when the header and item data are in separate files.
+        /// Reads a NeFS archive from the specified source.
         /// </summary>
-        /// <param name="headerFilePath">The path to the file that contains the header.</param>
-        /// <param name="headerOffset">The offset to where the header data begins.</param>
-        /// <param name="headerPart6Offset">The offset to where part 6 and 7 data begins.</param>
-        /// <param name="dataFilePath">The path to the file that contains the item data.</param>
+        /// <param name="source">The archive source.</param>
         /// <param name="p">Progress information.</param>
         /// <returns>The loaded <see cref="NefsArchive"/>.</returns>
-        Task<NefsArchive> ReadArchiveAsync(
-            string headerFilePath,
-            ulong headerOffset,
-            ulong headerPart6Offset,
-            string dataFilePath,
-            NefsProgress p);
+        //Task<NefsArchive> ReadArchiveAsync(NefsArchiveSource source, NefsProgress p);
+
+        /// <summary>
+        /// Reads a NeFS archive with a split header. For example, archives like game.dat or
+        /// game.bin have their headers stored in the game's executable file.
+        /// </summary>
+        /// <param name="dataFilePath">The archive file path containing the file data (i.e., game.dat).</param>
+        /// <param name="headerFilePath">
+        /// The file path containing the header data (i.e., the game executable).
+        /// </param>
+        /// <param name="primaryOffset">The offset to the header intro.</param>
+        /// <param name="primarySize">The size of the primary header data. Use null if unknown.</param>
+        /// <param name="secondaryOffset">The offset to header part 6.</param>
+        /// <param name="secondarySize">
+        /// The size of the secondary header data (part 6/7). Use null if unknown.
+        /// </param>
+        /// <param name="p">Progress information.</param>
+        /// <returns>The loaded <see cref="NefsArchive"/>.</returns>
+        //Task<NefsArchive> ReadArchiveAsync(string dataFilePath, string headerFilePath, long primaryOffset, int? primarySize, long secondaryOffset, int? secondarySize, NefsProgress p);
+
+        Task<NefsArchive> ReadArchiveAsync(string filePath, long headerOffset, NefsProgress p);
+        Task<NefsArchive> ReadArchiveAsync(NefsArchiveSource source, NefsProgress p);
+        //Task<NefsArchive> ReadGameDatArchiveAsync(string dataFilePath, string headerFilePath, long primaryOffset, int? primarySize, long secondaryOffset, int? secondarySize, NefsProgress p);
+        //Task<NefsArchive> ReadNefsInjectArchiveAsync(string dataFilePath, string nefsInjectFilePath, NefsProgress p);
+
     }
 }

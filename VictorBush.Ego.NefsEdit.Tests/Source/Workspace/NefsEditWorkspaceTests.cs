@@ -13,6 +13,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
     using VictorBush.Ego.NefsEdit.Tests.Services;
     using VictorBush.Ego.NefsEdit.Workspace;
     using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
     using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Item;
     using VictorBush.Ego.NefsLib.Progress;
@@ -62,8 +63,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.False(closed);
             Assert.Same(archive, w.Archive);
             Assert.True(w.ArchiveIsModified);
-            Assert.Equal(archivePath, w.ArchiveSource.DataFilePath);
-            Assert.Equal(archivePath, w.ArchiveSource.HeaderFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.FilePath);
         }
 
         [Fact]
@@ -151,8 +151,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.False(closed);
             Assert.Same(archive, w.Archive);
             Assert.True(w.ArchiveIsModified);
-            Assert.Equal(archivePath, w.ArchiveSource.DataFilePath);
-            Assert.Equal(archivePath, w.ArchiveSource.HeaderFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.FilePath);
 
             // Verify writer was called
             this.nefsWriterMock.Verify(
@@ -193,7 +192,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             this.nefsWriterMock.Setup(n => n.WriteArchiveAsync(
                 It.IsAny<string>(),
                 It.IsAny<NefsArchive>(),
-                It.IsAny<NefsProgress>())).ReturnsAsync(archive);
+                It.IsAny<NefsProgress>())).ReturnsAsync((archive, NefsArchiveSource.Standard(archivePath)));
 
             // Close the archive
             var result = await w.CloseArchiveAsync();
@@ -287,7 +286,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             this.nefsWriterMock.Setup(n => n.WriteArchiveAsync(
                 It.IsAny<string>(),
                 It.IsAny<NefsArchive>(),
-                It.IsAny<NefsProgress>())).ReturnsAsync(archive);
+                It.IsAny<NefsProgress>())).ReturnsAsync((archive, NefsArchiveSource.Standard(archivePath)));
 
             // Open another archive
             var archive2Path = @"C:\archive.nefs";
@@ -301,8 +300,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.True(opened);
             Assert.Same(archive2, w.Archive);
             Assert.False(w.ArchiveIsModified);
-            Assert.Equal(archive2Path, w.ArchiveSource.DataFilePath);
-            Assert.Equal(archive2Path, w.ArchiveSource.HeaderFilePath);
+            Assert.Equal(archive2Path, w.ArchiveSource.FilePath);
 
             // Verify writer was called
             this.nefsWriterMock.Verify(
@@ -344,8 +342,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.True(opened);
             Assert.Same(archive2, w.Archive);
             Assert.False(w.ArchiveIsModified);
-            Assert.Equal(archive2Path, w.ArchiveSource.DataFilePath);
-            Assert.Equal(archive2Path, w.ArchiveSource.HeaderFilePath);
+            Assert.Equal(archive2Path, w.ArchiveSource.FilePath);
 
             // Verify writer was not called
             this.nefsWriterMock.Verify(
@@ -392,8 +389,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.True(result);
             Assert.Same(archive, w.Archive);
             Assert.True(opened);
-            Assert.Equal(filePath, w.ArchiveSource.DataFilePath);
-            Assert.Equal(filePath, w.ArchiveSource.HeaderFilePath);
+            Assert.Equal(filePath, w.ArchiveSource.FilePath);
         }
 
         [Fact]
@@ -460,8 +456,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.False(saved);
             Assert.Same(archive, w.Archive);
             Assert.True(w.ArchiveIsModified);
-            Assert.Equal(archivePath, w.ArchiveSource.DataFilePath);
-            Assert.Equal(archivePath, w.ArchiveSource.HeaderFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.FilePath);
         }
 
         [Fact]
@@ -489,7 +484,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
                     It.IsAny<string>(),
                     It.IsAny<NefsArchive>(),
                     It.IsAny<NefsProgress>()))
-                .ReturnsAsync(savedArchive);
+                .ReturnsAsync((savedArchive, NefsArchiveSource.Standard(archivePath)));
 
             // Save archive
             var result = await w.SaveArchiveAsync(archivePath);
@@ -498,8 +493,7 @@ namespace VictorBush.Ego.NefsEdit.Tests.Workspace
             Assert.True(saved);
             Assert.Same(savedArchive, w.Archive);
             Assert.False(w.ArchiveIsModified);
-            Assert.Equal(archivePath, w.ArchiveSource.DataFilePath);
-            Assert.Equal(archivePath, w.ArchiveSource.HeaderFilePath);
+            Assert.Equal(archivePath, w.ArchiveSource.FilePath);
         }
 
         private NefsEditWorkspace CreateWorkspace()

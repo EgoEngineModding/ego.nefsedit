@@ -7,7 +7,7 @@ namespace VictorBush.Ego.NefsEdit.Services
     using System.Windows.Forms;
     using System.Windows.Threading;
     using VictorBush.Ego.NefsEdit.UI;
-    using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
     using VictorBush.Ego.NefsLib.IO;
 
     /// <summary>
@@ -76,12 +76,13 @@ namespace VictorBush.Ego.NefsEdit.Services
         }
 
         /// <inheritdoc/>
-        public (DialogResult Result, string FileName) ShowSaveFileDialog(string defaultName)
+        public (DialogResult Result, string FileName) ShowSaveFileDialog(string defaultName, string filter = null)
         {
             using (var dialog = new SaveFileDialog())
             {
                 dialog.OverwritePrompt = true;
                 dialog.FileName = defaultName;
+                dialog.Filter = filter;
                 var result = dialog.ShowDialog();
                 return (result, dialog.FileName);
             }

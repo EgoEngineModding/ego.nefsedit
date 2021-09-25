@@ -20,7 +20,7 @@ namespace VictorBush.Ego.NefsLib.DataSource
         /// Whether the data in this data source has already been transformed (encrypted,
         /// compressed, etc).
         /// </param>
-        public NefsFileDataSource(string filePath, UInt64 offset, NefsItemSize size, bool isTransformed)
+        public NefsFileDataSource(string filePath, long offset, NefsItemSize size, bool isTransformed)
         {
             this.FilePath = filePath ?? throw new ArgumentNullException(nameof(filePath));
             this.Offset = offset;
@@ -35,7 +35,7 @@ namespace VictorBush.Ego.NefsLib.DataSource
         public Boolean IsTransformed { get; }
 
         /// <inheritdoc/>
-        public UInt64 Offset { get; }
+        public long Offset { get; }
 
         /// <inheritdoc/>
         public NefsItemSize Size { get; }

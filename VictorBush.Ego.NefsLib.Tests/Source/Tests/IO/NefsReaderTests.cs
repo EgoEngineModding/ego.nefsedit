@@ -9,7 +9,6 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
     using System.Threading;
     using VictorBush.Ego.NefsLib.Header;
     using VictorBush.Ego.NefsLib.IO;
-    using VictorBush.Ego.NefsLib.Item;
     using VictorBush.Ego.NefsLib.Progress;
     using Xunit;
 
@@ -38,8 +37,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var stream = new MemoryStream(bytes);
             var reader = new NefsReader(this.fileSystem);
-            var size = NefsHeaderPart1Entry.Size + 2;
-            var offset = (uint)5;
+            var size = NefsHeaderPart1.EntrySize + 2;
+            var offset = 5;
 
             // Test
             var part1 = await reader.ReadHeaderPart1Async(stream, offset, size, this.p);
@@ -103,8 +102,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var stream = new MemoryStream(bytes);
             var reader = new NefsReader(this.fileSystem);
-            var size = 2 * NefsHeaderPart1Entry.Size;
-            var offset = (uint)5;
+            var size = 2 * NefsHeaderPart1.EntrySize;
+            var offset = 5;
 
             // Test
             var part1 = await reader.ReadHeaderPart1Async(stream, offset, size, this.p);
@@ -158,8 +157,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var stream = new MemoryStream(bytes);
             var reader = new NefsReader(this.fileSystem);
-            var size = NefsHeaderPart2Entry.Size + 2;
-            var offset = (uint)5;
+            var size = NefsHeaderPart2.EntrySize + 2;
+            var offset = 5;
 
             // Test
             var part2 = await reader.ReadHeaderPart2Async(stream, offset, size, this.p);
@@ -196,8 +195,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var stream = new MemoryStream(bytes);
             var reader = new NefsReader(this.fileSystem);
-            var size = 2 * NefsHeaderPart2Entry.Size;
-            var offset = (uint)5;
+            var size = 2 * NefsHeaderPart2.EntrySize;
+            var offset = 5;
 
             // Test
             var part2 = await reader.ReadHeaderPart2Async(stream, offset, size, this.p);
@@ -236,8 +235,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var stream = new MemoryStream(bytes);
             var reader = new NefsReader(this.fileSystem);
-            var size = (uint)9;
-            var offset = (uint)2;
+            var size = 9;
+            var offset = 2;
 
             // Test
             var part3 = await reader.ReadHeaderPart3Async(stream, offset, size, this.p);
@@ -267,8 +266,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var stream = new MemoryStream(bytes);
             var reader = new NefsReader(this.fileSystem);
-            var size = (uint)9;
-            var offset = (uint)2;
+            var size = 9;
+            var offset = 2;
 
             // Test
             var part3 = await reader.ReadHeaderPart3Async(stream, offset, size, this.p);
@@ -296,8 +295,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var stream = new MemoryStream(bytes);
             var reader = new NefsReader(this.fileSystem);
-            var size = (uint)9;
-            var offset = (uint)2;
+            var size = 9;
+            var offset = 2;
 
             // Test
             var part3 = await reader.ReadHeaderPart3Async(stream, offset, size, this.p);
@@ -373,11 +372,11 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var stream = new MemoryStream(bytes);
             var reader = new NefsReader(this.fileSystem);
-            var size = (uint)28;
-            var offset = (uint)2;
+            var size = 28;
+            var offset = 2;
 
             // Test
-            var part4 = await reader.Read20HeaderPart4Async(stream, offset, size, part1, this.p);
+            var part4 = await reader.ReadHeaderPart4Version20Async(stream, offset, size, part1, this.p);
 
             // Verify
             Assert.Equal(7, part4.EntriesByIndex.Count);
@@ -415,8 +414,8 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var stream = new MemoryStream(bytes);
             var reader = new NefsReader(this.fileSystem);
-            var size = (uint)16;
-            var offset = (uint)5;
+            var size = 16;
+            var offset = 5;
 
             // Test
             var part5 = await reader.ReadHeaderPart5Async(stream, offset, size, this.p);
@@ -434,10 +433,10 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             NefsHeaderPart1 part1;
             Nefs20HeaderPart6 part6;
 
-            var part1Offset = (uint)5;
-            var part1Size = 2 * NefsHeaderPart1Entry.Size;
+            var part1Offset = 5;
+            var part1Size = 2 * NefsHeaderPart1.EntrySize;
 
-            var part6Offset = (uint)5;
+            var part6Offset = 5;
 
             // NOTE: Part 6 is ordered in the same way part 1 is
             byte[] part1Bytes =
@@ -481,7 +480,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             // Test
             using (var part6Stream = new MemoryStream(bytes))
             {
-                part6 = await reader.Read20HeaderPart6Async(part6Stream, part6Offset, part1, this.p);
+                part6 = await reader.ReadHeaderPart6Version20Async(part6Stream, part6Offset, part1, this.p);
             }
 
             // Verify
@@ -519,7 +518,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             var stream = new MemoryStream(bytes);
             var reader = new NefsReader(this.fileSystem);
-            var offset = (uint)5;
+            var offset = 5;
 
             // Test
             var part7 = await reader.ReadHeaderPart7Async(stream, offset, 2, this.p);

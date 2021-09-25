@@ -5,6 +5,7 @@ namespace VictorBush.Ego.NefsLib.Header
     using System;
     using System.Text;
     using VictorBush.Ego.NefsLib.DataTypes;
+    using VictorBush.Ego.NefsLib.Source.Utility;
     using VictorBush.Ego.NefsLib.Utility;
 
     /// <summary>
@@ -20,7 +21,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// The size of this section.
         /// </summary>
-        public const uint Size = 0x80;
+        public const int Size = 0x80;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderIntro"/> class.
@@ -40,7 +41,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Expected hash of header.
         /// </summary>
-        public byte[] ExpectedHash => this.Data0x04_ExpectedHash.Value;
+        public Sha256Hash ExpectedHash => new Sha256Hash(this.Data0x04_ExpectedHash.Value);
 
         /// <summary>
         /// Size of header in bytes.

@@ -8,7 +8,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
     using VictorBush.Ego.NefsLib.Progress;
 
     /// <summary>
-    /// A base for different data types that supports reading in data from a file.
+    /// A base for different data types that supports reading in data from a data stream.
     /// </summary>
     public abstract class DataType
     {
@@ -30,7 +30,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         /// <summary>
         /// Number of bytes.
         /// </summary>
-        public abstract uint Size { get; }
+        public abstract int Size { get; }
 
         /// <summary>
         /// Gets the data as an array of bytes.
@@ -39,81 +39,80 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         public abstract byte[] GetBytes();
 
         /// <summary>
-        /// Reads in data from the file.
+        /// Reads in data from a sream.
         /// </summary>
-        /// <param name="file">The file stream to read from.</param>
+        /// <param name="stream">The stream to read from.</param>
         /// <param name="baseOffset">
-        /// The base offset where to read in the file. The offset of the data type instance is added
-        /// to the base offset.
+        /// The base offset where to read in the stream. The offset of the data type instance is
+        /// added to the base offset.
         /// </param>
         /// <param name="p">Progress info.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public abstract Task ReadAsync(Stream file, UInt64 baseOffset, NefsProgress p);
+        public abstract Task ReadAsync(Stream stream, long baseOffset, NefsProgress p);
 
         /// <summary>
         /// Writes the stored data in little endian format.
         /// </summary>
-        /// <param name="file">The file stream to read from.</param>
-        public void Write(Stream file) => this.Write(file);
+        /// <param name="stream">The stream to read from.</param>
+        public void Write(Stream stream) => this.Write(stream);
 
         /// <summary>
         /// Writes the stored data in little endian format.
         /// </summary>
-        /// <param name="file">The file stream to read from.</param>
+        /// <param name="stream">The stream to read from.</param>
         /// <param name="baseOffset">Base offset to write at.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The async task.</returns>
-        public async Task WriteAsync(Stream file, UInt64 baseOffset, NefsProgress p)
+        public async Task WriteAsync(Stream stream, long baseOffset, NefsProgress p)
         {
-            var actualOffset = (long)baseOffset + this.Offset;
+            var actualOffset = baseOffset + this.Offset;
 
             // Validate inputs
-            if (file == null)
+            if (stream == null)
             {
-                throw new ArgumentNullException("File stream required to read data from.");
+                throw new ArgumentNullException("Stream required to read data from.");
             }
 
             if (actualOffset < 0)
             {
-                var ex = new InvalidOperationException("Invalid offset into file.");
-                throw ex;
+                throw new InvalidOperationException("Invalid offset into stream.");
             }
 
-            file.Seek(actualOffset, SeekOrigin.Begin);
-            await file.WriteAsync(this.GetBytes(), 0, (int)this.Size, p.CancellationToken);
+            stream.Seek(actualOffset, SeekOrigin.Begin);
+            await stream.WriteAsync(this.GetBytes(), 0, this.Size, p.CancellationToken);
         }
 
         /// <summary>
-        /// Reads the data from the specified filestream.
+        /// Reads the data from the specified stream.
         /// </summary>
-        /// <param name="file">The file stream to read from.</param>
+        /// <param name="stream">The stream to read from.</param>
         /// <param name="baseOffset">
-        /// The base offset where to read in the file. The offset of the data type instance is added
-        /// to the base offset.
+        /// The base offset where to read in the stream. The offset of the data type instance is
+        /// added to the base offset.
         /// </param>
         /// <param name="p">Progress info.</param>
-        /// <returns>Byte array containing the data read from the file.</returns>
-        protected async Task<byte[]> ReadFileAsync(Stream file, UInt64 baseOffset, NefsProgress p)
+        /// <returns>Byte array containing the data read from the stream.</returns>
+        protected async Task<byte[]> DoReadAsync(Stream stream, long baseOffset, NefsProgress p)
         {
             var actualOffset = (long)baseOffset + this.Offset;
 
             // Validate inputs
-            if (file == null)
+            if (stream == null)
             {
-                throw new ArgumentNullException("File stream required to read data from.");
+                throw new ArgumentNullException("Stream required to read data from.");
             }
 
             if (actualOffset < 0
-             || actualOffset >= file.Length)
+             || actualOffset >= stream.Length)
             {
-                var ex = new InvalidOperationException("Invalid offset into file.");
+                var ex = new InvalidOperationException("Invalid offset into stream.");
                 throw ex;
             }
 
-            // Read data from file
+            // Read data from stream
             var temp = new byte[this.Size];
-            file.Seek(actualOffset, SeekOrigin.Begin);
-            var bytesRead = await file.ReadAsync(temp, 0, (int)this.Size, p.CancellationToken);
+            stream.Seek(actualOffset, SeekOrigin.Begin);
+            var bytesRead = await stream.ReadAsync(temp, 0, this.Size, p.CancellationToken);
 
             if (bytesRead != this.Size)
             {

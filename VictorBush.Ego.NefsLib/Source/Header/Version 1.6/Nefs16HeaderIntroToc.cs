@@ -18,7 +18,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// The size of this section.
         /// </summary>
-        public const uint Size = 0x80;
+        public const int Size = 0x80;
 
         /// <summary>
         /// Block size (chunk size). The size of chunks data is split up into before any transforms

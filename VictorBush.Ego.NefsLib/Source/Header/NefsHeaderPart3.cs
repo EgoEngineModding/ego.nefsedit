@@ -61,7 +61,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// The current size of header part 3.
         /// </summary>
-        public uint Size { get; private set; }
+        public int Size { get; private set; }
 
         /// <summary>
         /// Rebuilds the string table from a list of strings. The strings must be unique.
@@ -80,7 +80,7 @@ namespace VictorBush.Ego.NefsLib.Header
             }
 
             // Update header size
-            this.Size = (uint)offset;
+            this.Size = offset;
         }
     }
 }

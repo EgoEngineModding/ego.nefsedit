@@ -68,28 +68,6 @@ namespace VictorBush.Ego.NefsLib.Header
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Nefs20Header"/> class.
-        /// </summary>
-        /// <param name="intro">Header intro.</param>
-        /// <param name="toc">Header intro table of contents.</param>
-        /// <param name="items">List of items.</param>
-        public Nefs20Header(NefsHeaderIntro intro, Nefs20HeaderIntroToc toc, NefsItemList items)
-        {
-            this.Intro = intro ?? throw new ArgumentNullException(nameof(intro));
-            this.TableOfContents = toc ?? throw new ArgumentNullException(nameof(toc));
-
-            this.Part3 = new NefsHeaderPart3(items);
-            this.Part4 = new Nefs20HeaderPart4(items);
-
-            this.Part1 = new NefsHeaderPart1(items, this.Part4);
-            this.Part2 = new NefsHeaderPart2(items, this.Part3);
-            this.Part5 = new NefsHeaderPart5();
-            this.Part6 = new Nefs20HeaderPart6(items);
-            this.Part7 = new NefsHeaderPart7(items);
-            this.Part8 = new NefsHeaderPart8(intro.HeaderSize - toc.OffsetToPart8);
-        }
-
-        /// <summary>
         /// The header intro.
         /// </summary>
         public NefsHeaderIntro Intro { get; }
@@ -163,7 +141,7 @@ namespace VictorBush.Ego.NefsLib.Header
             var parentId = this.GetItemDirectoryId(p1.IndexPart2);
 
             // Offset and size
-            var dataOffset = p1.Data0x00_OffsetToData.Value;
+            var dataOffset = (long)p1.Data0x00_OffsetToData.Value;
             var extractedSize = p2.Data0x0c_ExtractedSize.Value;
 
             // Transform

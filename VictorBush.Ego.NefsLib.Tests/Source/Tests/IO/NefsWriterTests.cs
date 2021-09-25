@@ -35,13 +35,13 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             this.fileSystem.AddFile(sourcePath, new MockFileData("hi"));
             var sourceArchive = TestArchiveNotModified.Create(sourcePath);
             var writer = this.CreateWriter();
-            var archive = await writer.WriteArchiveAsync(@"C:\dest.nefs", sourceArchive, new NefsProgress());
+            var (archive, _) = await writer.WriteArchiveAsync(@"C:\dest.nefs", sourceArchive, new NefsProgress());
 
             Assert.Equal(sourceArchive.Items.Count, archive.Items.Count);
 
             // Try to read archive again
             var reader = new NefsReader(this.fileSystem);
-            var readArchive = await reader.ReadArchiveAsync(destPath, new NefsProgress());
+            var readArchive = await reader.ReadArchiveAsync(destPath, 0, new NefsProgress());
             Assert.Equal(sourceArchive.Items.Count, readArchive.Items.Count);
         }
 
@@ -69,7 +69,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             using (var ms = new MemoryStream())
             {
-                await writer.WriteHeaderPart1Async(ms, (uint)offset, part1, new NefsProgress());
+                await writer.WriteHeaderPartWithEntriesAsync(ms, offset, part1.EntriesByIndex, new NefsProgress());
                 buffer = ms.ToArray();
             }
 
@@ -97,7 +97,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             file2
             */
 
-            offset += (int)NefsHeaderPart1Entry.Size;
+            offset += NefsHeaderPart1.EntrySize;
 
             // Data offset (8 bytes)
             Assert.Equal(20, BitConverter.ToInt64(buffer, offset + 0));
@@ -115,7 +115,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             dir1
             */
 
-            offset += (int)NefsHeaderPart1Entry.Size;
+            offset += NefsHeaderPart1.EntrySize;
 
             // Data offset (8 bytes)
             Assert.Equal(0, BitConverter.ToInt64(buffer, offset + 0));
@@ -156,7 +156,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             using (var ms = new MemoryStream())
             {
-                await writer.WriteHeaderPart2Async(ms, (uint)offset, part2, new NefsProgress());
+                await writer.WriteHeaderPartWithEntriesAsync(ms, offset, part2.EntriesByIndex, new NefsProgress());
                 buffer = ms.ToArray();
             }
 
@@ -187,7 +187,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             file3
             */
 
-            offset += (int)NefsHeaderPart2Entry.Size;
+            offset += NefsHeaderPart2.EntrySize;
 
             // Dir id
             Assert.Equal(2, BitConverter.ToInt32(buffer, offset + 0));
@@ -208,7 +208,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             file1
             */
 
-            offset += (int)NefsHeaderPart2Entry.Size;
+            offset += NefsHeaderPart2.EntrySize;
 
             // Dir id
             Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0));
@@ -229,7 +229,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
             file2
             */
 
-            offset += (int)NefsHeaderPart2Entry.Size;
+            offset += NefsHeaderPart2.EntrySize;
 
             // Dir id
             Assert.Equal(1, BitConverter.ToInt32(buffer, offset + 0));
@@ -316,7 +316,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             using (var ms = new MemoryStream())
             {
-                await writer.WriteHeaderPart4Async(ms, (uint)offset, part4, new NefsProgress());
+                await writer.WriteHeaderPartWithEntriesAsync(ms, offset, part4.EntriesByIndex, new NefsProgress());
                 buffer = ms.ToArray();
             }
 
@@ -351,7 +351,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             using (var ms = new MemoryStream())
             {
-                await writer.WriteHeaderPart5Async(ms, (uint)offset, part5, new NefsProgress());
+                await writer.WriteHeaderPartAsync(ms, offset, part5, new NefsProgress());
                 buffer = ms.ToArray();
             }
 
@@ -388,7 +388,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             using (var ms = new MemoryStream())
             {
-                await writer.WriteHeaderIntroAsync(ms, 0U, intro, new NefsProgress());
+                await writer.WriteHeaderPartAsync(ms, 0, intro, new NefsProgress());
                 buffer = ms.ToArray();
             }
 
@@ -450,7 +450,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.IO
 
             using (var ms = new MemoryStream())
             {
-                await writer.WriteHeaderIntroTocAsync(ms, (uint)offset, toc, new NefsProgress());
+                await writer.WriteHeaderPartAsync(ms, offset, toc, new NefsProgress());
                 buffer = ms.ToArray();
             }
 

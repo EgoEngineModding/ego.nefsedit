@@ -5,6 +5,7 @@ namespace VictorBush.Ego.NefsLib.Header
     using System;
     using System.Collections.Generic;
     using System.Linq;
+    using VictorBush.Ego.NefsLib.DataTypes;
     using VictorBush.Ego.NefsLib.Item;
 
     /// <summary>
@@ -14,6 +15,12 @@ namespace VictorBush.Ego.NefsLib.Header
     {
         private readonly Dictionary<Guid, NefsHeaderPart1Entry> entriesByGuid;
         private readonly List<NefsHeaderPart1Entry> entriesByIndex;
+
+        /// <summary>
+        /// The size of a part 1 entry.
+        /// </summary>
+        public const int EntrySize = 0x14;
+
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart1"/> class.
@@ -40,7 +47,7 @@ namespace VictorBush.Ego.NefsLib.Header
             foreach (var item in items.EnumerateDepthFirstByName())
             {
                 var entry = new NefsHeaderPart1Entry(item.Guid);
-                entry.Data0x00_OffsetToData.Value = item.DataSource.Offset;
+                entry.Data0x00_OffsetToData.Value = (ulong)item.DataSource.Offset;
                 entry.Data0x08_IndexPart2.Value = indexPart2++;
                 entry.Data0x10_Id.Value = item.Id.Value;
                 entry.Data0x0c_IndexPart4.Value = part4.GetIndexForItem(item);
@@ -51,6 +58,8 @@ namespace VictorBush.Ego.NefsLib.Header
             // Sort part 1 by item id
             this.entriesByIndex = new List<NefsHeaderPart1Entry>(this.entriesByGuid.Values.OrderBy(e => e.Id));
         }
+
+        public int Size => this.entriesByIndex.Count * EntrySize;
 
         /// <summary>
         /// Gets entries for each item in the archive, accessible by Guid.

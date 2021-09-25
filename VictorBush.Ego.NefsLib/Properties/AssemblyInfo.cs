@@ -1,6 +1,7 @@
 ﻿// See LICENSE.txt for license information.
 
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 // General Information about an assembly is controlled through the following
@@ -21,3 +22,7 @@ using System.Runtime.InteropServices;
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid("c3a546a4-7c78-4fa2-98dd-d056858a57d9")]
+
+// Allow tests to access internals
+[assembly: InternalsVisibleTo("VictorBush.Ego.NefsLib.Tests")]
+[assembly: InternalsVisibleTo("VictorBush.Ego.NefsEdit.Tests")]

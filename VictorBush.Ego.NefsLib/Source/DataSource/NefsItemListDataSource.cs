@@ -27,7 +27,7 @@ namespace VictorBush.Ego.NefsLib.DataSource
         /// <param name="size">The size of the item's data in bytes.</param>
         public NefsItemListDataSource(
             NefsItemList items,
-            UInt64 offset,
+            long offset,
             NefsItemSize size)
         {
             this.Items = items ?? throw new ArgumentNullException(nameof(items));
@@ -43,7 +43,7 @@ namespace VictorBush.Ego.NefsLib.DataSource
         public bool IsTransformed => true;
 
         /// <inheritdoc/>
-        public UInt64 Offset { get; }
+        public long Offset { get; }
 
         /// <inheritdoc/>
         public NefsItemSize Size { get; }

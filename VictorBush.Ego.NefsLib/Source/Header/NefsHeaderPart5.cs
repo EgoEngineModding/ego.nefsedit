@@ -13,7 +13,7 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// The size of header part 5.
         /// </summary>
-        public const uint Size = 0x10;
+        public const int Size = 0x10;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart5"/> class.

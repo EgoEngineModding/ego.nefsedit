@@ -18,7 +18,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         /// </summary>
         /// <param name="offset">See <see cref="DataType.Offset"/>.</param>
         /// <param name="size">The size of the array in bytes.</param>
-        public ByteArrayType(int offset, uint size)
+        public ByteArrayType(int offset, int size)
             : base(offset)
         {
             if (size == 0)
@@ -33,12 +33,12 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         /// <summary>
         /// The size of the array in bytes.
         /// </summary>
-        public override uint Size { get; }
+        public override int Size { get; }
 
         /// <summary>
         /// The current data value.
         /// </summary>
-        public byte[] Value { get; set; }
+        public byte[] Value { get; set; } // TODO : Setting this should be fixed. Need to validate size.
 
         /// <inheritdoc/>
         public override byte[] GetBytes()
@@ -53,7 +53,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         /// The offset from the beginning of the array to get the integer from.
         /// </param>
         /// <returns>A <see cref="UInt32"/>.</returns>
-        public UInt32 GetUInt32(UInt64 offset)
+        public UInt32 GetUInt32(long offset)
         {
             if (offset >= this.Size)
             {
@@ -69,9 +69,9 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         }
 
         /// <inheritdoc/>
-        public override async Task ReadAsync(Stream file, UInt64 baseOffset, NefsProgress p)
+        public override async Task ReadAsync(Stream file, long baseOffset, NefsProgress p)
         {
-            this.Value = await this.ReadFileAsync(file, baseOffset, p);
+            this.Value = await this.DoReadAsync(file, baseOffset, p);
         }
 
         /// <inheritdoc/>

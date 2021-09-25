@@ -15,7 +15,7 @@ namespace VictorBush.Ego.NefsLib.Tests.DataTypes
         public void ByteArrayType_ValidSize_SizeSet()
         {
             var data = new ByteArrayType(0, 6);
-            Assert.Equal((uint)6, data.Size);
+            Assert.Equal(6, data.Size);
         }
 
         [Fact]

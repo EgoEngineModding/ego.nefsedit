@@ -7,6 +7,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Workspace;
     using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
     using VictorBush.Ego.NefsLib.Header;
     using VictorBush.Ego.NefsLib.Utility;
     using WeifenLuo.WinFormsUI.Docking;
@@ -37,6 +38,34 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private void ArchiveDebugForm_Load(Object sender, EventArgs e)
         {
+        }
+
+        private string GetArchiveSourceInfo(NefsArchiveSource source)
+        {
+            switch (source)
+            {
+                case StandardSource standardSource:
+                    return $@"Standard NeFS archive.
+Archive file:               {standardSource.FilePath}
+Header offset:              0";
+
+                case NefsInjectSource nefsInjectSource:
+                    return $@"NefsInject archive.
+Data file:                  {nefsInjectSource.DataFilePath}
+NefsInject file:            {nefsInjectSource.NefsInjectFilePath}";
+
+                case GameDatSource gameDatSource:
+                    return $@"GameDat archive.
+Data file:                  {gameDatSource.DataFilePath}
+Header file:                {gameDatSource.HeaderFilePath}
+Primary offset:             {gameDatSource.PrimaryOffset}
+Primary size:               {gameDatSource.PrimarySize}
+Secondary offset:           {gameDatSource.SecondaryOffset}
+Secondary size:             {gameDatSource.SecondarySize}";
+
+                default:
+                    return "Unknown archive source.";
+            }
         }
 
         private string GetDebugInfoVersion16(Nefs16Header h, NefsArchiveSource source)
@@ -85,12 +114,16 @@ namespace VictorBush.Ego.NefsEdit.UI
                 headerPart7String.Append("\n");
             }
 
+            var headerPart8String = new StringBuilder();
+            foreach (var hash in h.Part8.FileDataHashes)
+            {
+                headerPart8String.Append(hash);
+                headerPart8String.Append("\n");
+            }
+
             return $@"Archive Source
 -----------------------------------------------------------
-Header source file:         {source.HeaderFilePath}
-Header offset:              {source.HeaderOffset.ToString("X")}
-Data file path:             {source.DataFilePath}
-Is header/data separate:    {source.IsHeaderSeparate}
+{this.GetArchiveSourceInfo(source)}
 
 General Info
 -----------------------------------------------------------
@@ -109,7 +142,7 @@ Part 8 size:                {(h.Intro.HeaderSize - h.TableOfContents.OffsetToPar
 Header Intro
 -----------------------------------------------------------
 Magic Number:               {h.Intro.MagicNumber.ToString("X")}
-Expected SHA-256 hash:      {StringHelper.ByteArrayToString(h.Intro.ExpectedHash)}
+Expected SHA-256 hash:      {h.Intro.ExpectedHash}
 AES 256 key hex string:     {StringHelper.ByteArrayToString(h.Intro.AesKeyHexString)}
 Header size:                {h.Intro.HeaderSize.ToString("X")}
 NeFS version:               {h.Intro.NefsVersion.ToString("X")}
@@ -136,14 +169,14 @@ Unknown 0x28:               {StringHelper.ByteArrayToString(h.TableOfContents.Un
 Header Part 1
 -----------------------------------------------------------
 Data Offset         Index Part 2       Index Part 4        Id
-{headerPart1String.ToString()}
+{headerPart1String}
 Header Part 2
 -----------------------------------------------------------
 Directory Id        First child Id      Part 3 offset       Extracted size      Id
-{headerPart2String.ToString()}
+{headerPart2String}
 Header Part 3
 -----------------------------------------------------------
-{headerPart3String.ToString()}
+{headerPart3String}
 Header Part 4
 -----------------------------------------------------------
 Number of entries:          {h.Part4.EntriesByIndex.Count.ToString("X")}
@@ -154,12 +187,15 @@ Archive size:               {h.Part5.ArchiveSize.ToString("X")}
 First data offset:          {h.Part5.FirstDataOffset.ToString("X")}
 Archive name string offset: {h.Part5.ArchiveNameStringOffset.ToString("X")}
 
-Header Part 6
+Header Part 6 (Count: {h.Part7.EntriesByIndex.Count})
 -----------------------------------------------------------
-{headerPart6String.ToString()}
-Header Part 7
+{headerPart6String}
+Header Part 7 (Count: {h.Part7.EntriesByIndex.Count})
 -----------------------------------------------------------
-{headerPart7String.ToString()}
+{headerPart7String}
+Header Part 8 (Count: {h.Part8.FileDataHashes.Count})
+-----------------------------------------------------------
+{headerPart8String}
 ";
         }
 
@@ -209,12 +245,16 @@ Header Part 7
                 headerPart7String.Append("\n");
             }
 
+            var headerPart8String = new StringBuilder();
+            foreach (var hash in h.Part8.FileDataHashes)
+            {
+                headerPart8String.Append(hash);
+                headerPart8String.Append("\n");
+            }
+
             return $@"Archive Source
 -----------------------------------------------------------
-Header source file:         {source.HeaderFilePath}
-Header offset:              {source.HeaderOffset.ToString("X")}
-Data file path:             {source.DataFilePath}
-Is header/data separate:    {source.IsHeaderSeparate}
+{this.GetArchiveSourceInfo(source)}
 
 General Info
 -----------------------------------------------------------
@@ -233,7 +273,7 @@ Part 8 size:                {(h.Intro.HeaderSize - h.TableOfContents.OffsetToPar
 Header Intro
 -----------------------------------------------------------
 Magic Number:               {h.Intro.MagicNumber.ToString("X")}
-Expected SHA-256 hash:      {StringHelper.ByteArrayToString(h.Intro.ExpectedHash)}
+Expected SHA-256 hash:      {h.Intro.ExpectedHash}
 AES 256 key hex string:     {StringHelper.ByteArrayToString(h.Intro.AesKeyHexString)}
 Header size:                {h.Intro.HeaderSize.ToString("X")}
 NeFS version:               {h.Intro.NefsVersion.ToString("X")}
@@ -258,14 +298,14 @@ Unknown 0x24:               {StringHelper.ByteArrayToString(h.TableOfContents.Un
 Header Part 1
 -----------------------------------------------------------
 Data Offset         Index Part 2        Index Part 4        Id
-{headerPart1String.ToString()}
+{headerPart1String}
 Header Part 2
 -----------------------------------------------------------
 Directory Id        First child Id      Part 3 offset       Extracted size      Id
-{headerPart2String.ToString()}
+{headerPart2String}
 Header Part 3
 -----------------------------------------------------------
-{headerPart3String.ToString()}
+{headerPart3String}
 Header Part 4
 -----------------------------------------------------------
 Number of entries:          {h.Part4.EntriesByIndex.Count.ToString("X")}
@@ -276,12 +316,15 @@ Archive size:               {h.Part5.ArchiveSize.ToString("X")}
 First data offset:          {h.Part5.FirstDataOffset.ToString("X")}
 Archive name string offset: {h.Part5.ArchiveNameStringOffset.ToString("X")}
 
-Header Part 6
+Header Part 6 (Count: {h.Part6.EntriesByIndex.Count})
 -----------------------------------------------------------
-{headerPart6String.ToString()}
-Header Part 7
+{headerPart6String}
+Header Part 7 (Count: {h.Part7.EntriesByIndex.Count})
 -----------------------------------------------------------
-{headerPart7String.ToString()}
+{headerPart7String}
+Header Part 8 (Count: {h.Part8.FileDataHashes.Count})
+-----------------------------------------------------------
+{headerPart8String}
 ";
         }
 

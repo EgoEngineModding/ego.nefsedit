@@ -122,7 +122,7 @@ namespace VictorBush.Ego.NefsLib.Tests
             var transform = TestTransform;
             var chunks = NefsDataChunk.CreateChunkList(chunkSizes, transform);
             var size = new NefsItemSize(extractedSize, chunks);
-            var dataSource = new NefsFileDataSource(@"C:\source.txt", dataOffset, size, extractedSize != chunkSizes.LastOrDefault());
+            var dataSource = new NefsFileDataSource(@"C:\source.txt", (long)dataOffset, size, extractedSize != chunkSizes.LastOrDefault());
             return new NefsItem(
                 Guid.NewGuid(),
                 new NefsItemId(id),

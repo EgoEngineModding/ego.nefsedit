@@ -3,6 +3,7 @@
 namespace VictorBush.Ego.NefsLib.IO
 {
     using System.Threading.Tasks;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
     using VictorBush.Ego.NefsLib.Progress;
 
     /// <summary>
@@ -17,6 +18,8 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="nefs">The archive to write.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>An updated archive object containing updated metadata.</returns>
-        Task<NefsArchive> WriteArchiveAsync(string destFilePath, NefsArchive nefs, NefsProgress p);
+        Task<(NefsArchive Archive, NefsArchiveSource Source)> WriteArchiveAsync(string destFilePath, NefsArchive nefs, NefsProgress p);
+
+        Task<(NefsArchive Archive, NefsArchiveSource Source)> WriteNefsInjectArchiveAsync(string dataFilePath, string nefsInjectFilePath, NefsArchive nefs, NefsProgress p);
     }
 }

@@ -2,7 +2,6 @@
 
 namespace VictorBush.Ego.NefsLib.DataSource
 {
-    using System;
     using VictorBush.Ego.NefsLib.Item;
 
     /// <summary>
@@ -26,7 +25,7 @@ namespace VictorBush.Ego.NefsLib.DataSource
         /// <summary>
         /// Gets the offset in the source file where the data begins.
         /// </summary>
-        UInt64 Offset { get; }
+        long Offset { get; }
 
         /// <summary>
         /// Gets the size information about the source data.

@@ -24,7 +24,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         }
 
         /// <inheritdoc/>
-        public override uint Size => UInt16TypeSize;
+        public override int Size => UInt16TypeSize;
 
         /// <summary>
         /// The current data value.
@@ -38,9 +38,9 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         }
 
         /// <inheritdoc/>
-        public override async Task ReadAsync(Stream file, UInt64 baseOffset, NefsProgress p)
+        public override async Task ReadAsync(Stream file, long baseOffset, NefsProgress p)
         {
-            var temp = await this.ReadFileAsync(file, baseOffset, p);
+            var temp = await this.DoReadAsync(file, baseOffset, p);
             this.Value = BitConverter.ToUInt16(temp, 0);
         }
 

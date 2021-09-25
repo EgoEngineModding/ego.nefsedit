@@ -8,13 +8,13 @@ namespace VictorBush.Ego.NefsLib.Header
     /// <summary>
     /// An entry in header part 4 for an item in an archive.
     /// </summary>
-    public class Nefs20HeaderPart4Entry
+    public class Nefs20HeaderPart4Entry : INefsHeaderPartEntry
     {
         /// <summary>
         /// The size of a part 4 entry. This is used to get the offset into part 4 from an index
         /// into part 4.
         /// </summary>
-        public const uint Size = 0x4;
+        public int Size => Nefs20HeaderPart4.EntrySize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Nefs20HeaderPart4Entry"/> class.

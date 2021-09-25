@@ -258,7 +258,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             // Archive has been modified; prompt to save before exit
             var result = this.UiService.ShowMessageBox(
-                $"Save archive {this.Workspace.ArchiveSource.DataFilePath}?", "Save?", MessageBoxButtons.YesNoCancel);
+                $"Save archive {this.Workspace.ArchiveSource.FilePath}?", "Save?", MessageBoxButtons.YesNoCancel);
 
             if (result == DialogResult.Yes)
             {
@@ -379,7 +379,7 @@ namespace VictorBush.Ego.NefsEdit.UI
         private void UpdateTitle()
         {
             var archive = this.Workspace.Archive;
-            var archivePath = archive != null ? this.Workspace.ArchiveSource.DataFilePath : "";
+            var archivePath = archive != null ? this.Workspace.ArchiveSource.FilePath : "";
             var modifiedStar = this.Workspace.ArchiveIsModified ? "*" : "";
             var separator = archive != null ? " - " : "";
 

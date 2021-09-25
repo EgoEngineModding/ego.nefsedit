@@ -59,7 +59,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         /// <param name="obj">The object whose [FileData] fields to read.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task ReadDataAsync(Stream file, UInt64 baseOffset, object obj, NefsProgress p)
+        public static async Task ReadDataAsync(Stream file, long baseOffset, object obj, NefsProgress p)
         {
             foreach (var data in GetDataList(obj))
             {
@@ -75,7 +75,7 @@ namespace VictorBush.Ego.NefsLib.DataTypes
         /// <param name="obj">The object whose [FileData] fields to write.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>A <see cref="Task"/> representing the asynchronous operation.</returns>
-        public static async Task WriteDataAsync(Stream file, UInt64 baseOffset, object obj, NefsProgress p)
+        public static async Task WriteDataAsync(Stream file, long baseOffset, object obj, NefsProgress p)
         {
             foreach (var data in GetDataList(obj))
             {

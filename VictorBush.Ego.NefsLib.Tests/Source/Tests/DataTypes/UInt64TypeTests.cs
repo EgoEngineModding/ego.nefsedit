@@ -53,7 +53,7 @@ namespace VictorBush.Ego.NefsLib.Tests.NefsLib.DataTypes
         public void Size_8bytes()
         {
             var data = new UInt64Type(0);
-            Assert.Equal((uint)8, data.Size);
+            Assert.Equal(8, data.Size);
         }
     }
 }

@@ -8,12 +8,11 @@ namespace VictorBush.Ego.NefsLib.Header
     /// <summary>
     /// An entry in header part 7 for an item in an archive.
     /// </summary>
-    public class NefsHeaderPart7Entry
+    public class NefsHeaderPart7Entry : INefsHeaderPartEntry
     {
-        /// <summary>
-        /// The size of a part 7 entry.
-        /// </summary>
-        public const uint Size = 0x8;
+
+
+        public int Size => NefsHeaderPart7.EntrySize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart7Entry"/> class.

@@ -12,6 +12,14 @@ namespace VictorBush.Ego.NefsLib.Header
     {
         private readonly List<NefsHeaderPart2Entry> entriesByIndex;
 
+
+        /// <summary>
+        /// The size of a part 2 entry. This is used to get the offset into part 2 from an index
+        /// into part 2.
+        /// </summary>
+        public const int EntrySize = 0x14;
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart2"/> class.
         /// </summary>
@@ -20,6 +28,8 @@ namespace VictorBush.Ego.NefsLib.Header
         {
             this.entriesByIndex = new List<NefsHeaderPart2Entry>(entries);
         }
+
+        public int Size => this.entriesByIndex.Count * EntrySize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart2"/> class.

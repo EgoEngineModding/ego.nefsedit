@@ -9,13 +9,10 @@ namespace VictorBush.Ego.NefsLib.Header
     /// <summary>
     /// An entry in header part 2 for an item in an archive.
     /// </summary>
-    public class NefsHeaderPart2Entry
+    public class NefsHeaderPart2Entry : INefsHeaderPartEntry
     {
-        /// <summary>
-        /// The size of a part 2 entry. This is used to get the offset into part 2 from an index
-        /// into part 2.
-        /// </summary>
-        public const uint Size = 0x14;
+
+        public int Size => NefsHeaderPart2.EntrySize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart2Entry"/> class.

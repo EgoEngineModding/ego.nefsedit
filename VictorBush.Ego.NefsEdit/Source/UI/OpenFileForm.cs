@@ -14,6 +14,7 @@ namespace VictorBush.Ego.NefsEdit.UI
     using VictorBush.Ego.NefsEdit.Settings;
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
     using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Progress;
 
@@ -29,10 +30,11 @@ namespace VictorBush.Ego.NefsEdit.UI
         private readonly OpenMode openModeGameDatDirt4 = new OpenMode("game*.dat (DiRT 4)");
         private readonly OpenMode openModeGameDatDirtRally2 = new OpenMode("game*.dat (DiRT Rally 2)");
         private readonly OpenMode openModeNefs = new OpenMode("NeFS");
+        private readonly OpenMode openModeNefsInject = new OpenMode("NefsInject");
         private readonly OpenMode openModeRecent = new OpenMode("Recent");
 
-        private string gameDatCustomDirPath = "";
-        private string gameDatCustomExePath = "";
+        //private string gameDatCustomDirPath = "";
+        //private string gameDatCustomExePath = "";
 
         /// <summary>
         /// Initializes a new instance of the <see cref="OpenFileForm"/> class.
@@ -72,42 +74,30 @@ namespace VictorBush.Ego.NefsEdit.UI
 
         private IUiService UiService { get; }
 
-        private void AdvancedCheckBox_CheckedChanged(Object sender, EventArgs e)
-        {
-            this.advancedGroupBox.Enabled = this.advancedCheckBox.Checked;
-        }
-
-        private void DataFileBrowseButton_Click(Object sender, EventArgs e)
-        {
-            (var result, var path) = this.UiService.ShowOpenFileDialog();
-            if (result != DialogResult.OK)
-            {
-                return;
-            }
-
-            this.dataFileTextBox.Text = path;
-            this.dataFileTextBox.ScrollToEnd();
-        }
-
         /// <summary>
         /// Looks through the game executable to find header offsets for game.dat files.
         /// </summary>
         /// <returns>A list of game.dat archive sources.</returns>
-        private async Task<List<NefsArchiveSource>> FindGameDatHeaderOffsetsAsync(
+        private async Task<List<GameDatSource>> FindGameDatHeaderOffsetsAsync(
             string gameDatDir,
             string gameExePath,
             NefsProgress p)
         {
+            // TODO : FIX ME
+            this.UiService.ShowMessageBox("Disabled.");
+            return new List<GameDatSource>();
+
             if (!this.FileSystem.File.Exists(gameExePath))
             {
                 this.UiService.ShowMessageBox($"Cannot find executable file: {gameExePath}.");
-                return new List<NefsArchiveSource>();
+                return new List<GameDatSource>();
             }
 
             // Search for headers in the exe
             using (var t = p.BeginTask(1.0f, "Searching for headers"))
             {
-                return await this.Reader.FindHeadersAsync(gameExePath, gameDatDir, p);
+                // TODO : FIX ME
+                // return await this.Reader.FindHeadersAsync(gameExePath, gameDatDir, p);
             }
         }
 
@@ -169,14 +159,17 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             var modeIdx = this.SettingsService.OpenFileDialogState.LastMode;
             this.modeListBox.SelectedIndex = modeIdx < this.modeListBox.Items.Count ? modeIdx : 0;
-            this.nefsFileTextBox.Text = this.SettingsService.OpenFileDialogState.HeaderPath;
-            this.dataFileTextBox.Text = this.SettingsService.OpenFileDialogState.DataFilePath;
-            this.headerOffsetTextBox.Text = this.SettingsService.OpenFileDialogState.HeaderOffset;
-            this.headerPart6OffsetTextBox.Text = this.SettingsService.OpenFileDialogState.HeaderPart6Offset;
-            this.advancedCheckBox.Checked = this.SettingsService.OpenFileDialogState.IsAdvanced;
-            this.advancedGroupBox.Enabled = this.advancedCheckBox.Checked;
-            this.gameDatCustomExePath = this.SettingsService.OpenFileDialogState.GameDatCustomExePath;
-            this.gameDatCustomDirPath = this.SettingsService.OpenFileDialogState.GameDatCustomDatDirPath;
+            this.nefsFileTextBox.Text = this.SettingsService.OpenFileDialogState.NefsFilePath;
+            this.splitDataFileTextBox.Text = this.SettingsService.OpenFileDialogState.GameDatDataFilePath;
+            this.splitHeaderFileTextBox.Text = this.SettingsService.OpenFileDialogState.GameDatHeaderFilePath;
+            this.splitPrimaryOffsetTextBox.Text = this.SettingsService.OpenFileDialogState.GameDatPrimaryOffset;
+            this.splitPrimarySizeTextBox.Text = this.SettingsService.OpenFileDialogState.GameDatPrimarySize;
+            this.splitSecondaryOffsetTextBox.Text = this.SettingsService.OpenFileDialogState.GameDatSecondaryOffset;
+            this.splitSecondarySizeTextBox.Text = this.SettingsService.OpenFileDialogState.GameDatSecondarySize;
+            this.nefsInjectDataFileTextBox.Text = this.SettingsService.OpenFileDialogState.NefsInjectDataFilePath;
+            this.nefsInjectFileTextBox.Text = this.SettingsService.OpenFileDialogState.NefsInjectFilePath;
+            //this.gameDatCustomExePath = this.SettingsService.OpenFileDialogState.GameDatCustomExePath;
+            //this.gameDatCustomDirPath = this.SettingsService.OpenFileDialogState.GameDatCustomDatDirPath;
         }
 
         private void ModeListBox_SelectedIndexChanged(Object sender, EventArgs e)
@@ -185,6 +178,10 @@ namespace VictorBush.Ego.NefsEdit.UI
             {
                 // Open NeFS archive
                 this.tablessControl1.SelectedTab = this.nefsTabPage;
+            }
+            else if (this.modeListBox.SelectedItem == this.openModeNefsInject)
+            {
+                this.tablessControl1.SelectedTab = this.nefsInjectTabPage;
             }
             else if (this.modeListBox.SelectedItem == this.openModeRecent)
             {
@@ -224,12 +221,14 @@ namespace VictorBush.Ego.NefsEdit.UI
             else if (this.modeListBox.SelectedItem == this.openModeGameDatCustom)
             {
                 // Search an executable for game.bin/game.dat files
-                this.tablessControl1.SelectedTab = this.gameDatTabPage;
-                this.gameExeFileTextBox.Text = this.gameDatCustomExePath;
-                this.gameExeFileTextBox.ScrollToEnd();
-                this.gameDatDirTextBox.Text = this.gameDatCustomDirPath;
-                this.gameDatDirTextBox.ScrollToEnd();
-                this.gameDatFilesListBox.Items.Clear();
+                //this.tablessControl1.SelectedTab = this.gameDatTabPage;
+                //this.gameExeFileTextBox.Text = this.gameDatCustomExePath;
+                //this.gameExeFileTextBox.ScrollToEnd();
+                //this.gameDatDirTextBox.Text = this.gameDatCustomDirPath;
+                //this.gameDatDirTextBox.ScrollToEnd();
+                //this.gameDatFilesListBox.Items.Clear();
+
+                this.tablessControl1.SelectedTab = this.gameDatCustomTabPage;
             }
         }
 
@@ -251,23 +250,27 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             if (this.modeListBox.SelectedItem == this.openModeNefs)
             {
-                source = this.ValidateNefs();
+                source = this.ValidateStandardSource();
+            }
+            else if (this.modeListBox.SelectedItem == this.openModeNefsInject)
+            {
+                source = this.ValidateNefsInjectSource();
             }
             else if (this.modeListBox.SelectedItem == this.openModeGameDatDirtRally2)
             {
-                source = this.ValidateGameDat();
+                source = this.ValidateGameDatSearchSource();
             }
             else if (this.modeListBox.SelectedItem == this.openModeGameDatDirt4)
             {
-                source = this.ValidateGameDat();
+                source = this.ValidateGameDatSearchSource();
             }
             else if (this.modeListBox.SelectedItem == this.openModeGameBinDirtRally1)
             {
-                source = this.ValidateGameDat();
+                source = this.ValidateGameDatSearchSource();
             }
             else if (this.modeListBox.SelectedItem == this.openModeGameDatCustom)
             {
-                source = this.ValidateGameDat();
+                source = this.ValidateGameDatCustomSource();
             }
             else if (this.modeListBox.SelectedItem == this.openModeRecent)
             {
@@ -294,11 +297,12 @@ namespace VictorBush.Ego.NefsEdit.UI
         {
             // Setup combo box
             this.modeListBox.Items.Add(this.openModeNefs);
+            this.modeListBox.Items.Add(this.openModeNefsInject);
+            this.modeListBox.Items.Add(this.openModeGameDatCustom);
             this.modeListBox.Items.Add(this.openModeRecent);
             this.modeListBox.Items.Add(this.openModeGameBinDirtRally1);
             this.modeListBox.Items.Add(this.openModeGameDatDirtRally2);
             this.modeListBox.Items.Add(this.openModeGameDatDirt4);
-            this.modeListBox.Items.Add(this.openModeGameDatCustom);
 
             // Select default open mode
             this.modeListBox.SelectedItem = this.openModeNefs;
@@ -319,52 +323,149 @@ namespace VictorBush.Ego.NefsEdit.UI
             }
 
             this.SettingsService.OpenFileDialogState.LastMode = this.modeListBox.SelectedIndex;
-            this.SettingsService.OpenFileDialogState.DataFilePath = this.dataFileTextBox.Text;
-            this.SettingsService.OpenFileDialogState.HeaderOffset = this.headerOffsetTextBox.Text;
-            this.SettingsService.OpenFileDialogState.HeaderPart6Offset = this.headerPart6OffsetTextBox.Text;
-            this.SettingsService.OpenFileDialogState.HeaderPath = this.nefsFileTextBox.Text;
-            this.SettingsService.OpenFileDialogState.IsAdvanced = this.advancedCheckBox.Checked;
-            this.SettingsService.OpenFileDialogState.GameDatCustomDatDirPath = this.gameDatCustomDirPath;
-            this.SettingsService.OpenFileDialogState.GameDatCustomExePath = this.gameDatCustomExePath;
+            this.SettingsService.OpenFileDialogState.NefsFilePath = this.nefsFileTextBox.Text;
+            this.SettingsService.OpenFileDialogState.GameDatDataFilePath = this.splitDataFileTextBox.Text;
+            this.SettingsService.OpenFileDialogState.GameDatHeaderFilePath = this.splitHeaderFileTextBox.Text;
+            this.SettingsService.OpenFileDialogState.GameDatPrimaryOffset = this.splitPrimaryOffsetTextBox.Text;
+            this.SettingsService.OpenFileDialogState.GameDatPrimarySize = this.splitPrimarySizeTextBox.Text;
+            this.SettingsService.OpenFileDialogState.GameDatSecondaryOffset = this.splitSecondaryOffsetTextBox.Text;
+            this.SettingsService.OpenFileDialogState.GameDatSecondarySize = this.splitSecondarySizeTextBox.Text;
+            this.SettingsService.OpenFileDialogState.NefsInjectDataFilePath = this.nefsInjectDataFileTextBox.Text;
+            this.SettingsService.OpenFileDialogState.NefsInjectFilePath = this.nefsInjectFileTextBox.Text;
+            //this.SettingsService.OpenFileDialogState.GameDatCustomDatDirPath = this.gameDatCustomDirPath;
+            //this.SettingsService.OpenFileDialogState.GameDatCustomExePath = this.gameDatCustomExePath;
 
             this.SettingsService.Save();
         }
 
-        private NefsArchiveSource ValidateGameDat()
+        private NefsArchiveSource ValidateNefsInjectSource()
+        {
+            var dataFilePath = this.nefsInjectDataFileTextBox.Text;
+            var headerFilePath = this.nefsInjectFileTextBox.Text;
+            var source = NefsArchiveSource.NefsInject(dataFilePath, headerFilePath);
+
+            if (!this.ValidateFileExists(source.DataFilePath))
+                return null;
+
+            if (!this.ValidateFileExists(source.NefsInjectFilePath))
+                return null;
+
+            return source;
+        }
+
+        private NefsArchiveSource ValidateGameDatSearchSource()
         {
             var selectedItem = this.gameDatFilesListBox.SelectedItem as GameDatFileItem;
             if (selectedItem == null)
-            {
                 return null;
-            }
 
-            return this.ValidateSource(selectedItem.Source) ? selectedItem.Source : null;
+            var source = selectedItem.Source;
+            if (!this.ValidateFileExists(source.DataFilePath))
+                return null;
+
+            if (!this.ValidateFileExists(source.HeaderFilePath))
+                return null;
+
+            return source;
         }
 
-        private NefsArchiveSource ValidateNefs()
+
+        private NefsArchiveSource ValidateStandardSource()
         {
-            var isAdvanced = this.advancedCheckBox.Checked;
-
-            var offsetString = isAdvanced ? this.headerOffsetTextBox.Text : "0";
-            var offsetNumStyle = NumberStyles.Integer;
-            if (!ulong.TryParse(offsetString, offsetNumStyle, CultureInfo.InvariantCulture, out var offset))
-            {
-                this.UiService.ShowMessageBox($"Invalid header offset {offsetString}.");
-                return null;
-            }
-
-            var offsetPart6String = isAdvanced ? this.headerPart6OffsetTextBox.Text : "0";
-            if (!ulong.TryParse(offsetString, offsetNumStyle, CultureInfo.InvariantCulture, out var offsetPart6))
-            {
-                this.UiService.ShowMessageBox($"Invalid header part 6 offset {offsetPart6String}.");
-                return null;
-            }
-
             var headerFile = this.nefsFileTextBox.Text;
-            var dataFile = isAdvanced ? this.dataFileTextBox.Text : headerFile;
-            var source = new NefsArchiveSource(headerFile, offset, offsetPart6, dataFile);
+            var source = NefsArchiveSource.Standard(headerFile);
 
-            return this.ValidateSource(source) ? source : null;
+            if (!this.FileSystem.File.Exists(source.FilePath))
+            {
+                this.UiService.ShowMessageBox($"Cannot find file: {source.FilePath}.");
+                return null;
+            }
+
+            return source;
+        }
+
+        private NefsArchiveSource ValidateGameDatCustomSource()
+        {
+            // Primary offset
+            var primaryOffsetString = this.splitPrimaryOffsetTextBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(primaryOffsetString))
+            {
+                primaryOffsetString = "0";
+            }
+
+            if (!ParseHexNumberStringToLong(primaryOffsetString, out var primaryOffset))
+            {
+                this.UiService.ShowMessageBox($"Invalid primary offset {primaryOffsetString}.");
+                return null;
+            }
+
+            // Secondary offset
+            var secondaryOffsetString = this.splitSecondaryOffsetTextBox.Text.Trim();
+            if (string.IsNullOrWhiteSpace(secondaryOffsetString))
+            {
+                secondaryOffsetString = "0";
+            }
+
+            if (!ParseHexNumberStringToLong(secondaryOffsetString, out var secondaryOffset))
+            {
+                this.UiService.ShowMessageBox($"Invalid secondary offset {secondaryOffsetString}.");
+                return null;
+            }
+
+            // Primary size
+            int? primarySize = null;
+            var primarySizeString = this.splitPrimarySizeTextBox.Text.Trim();
+            if (!string.IsNullOrWhiteSpace(primarySizeString))
+            {
+                if (!ParseHexNumberStringToInt(primarySizeString, out var size))
+                {
+                    this.UiService.ShowMessageBox($"Invalid primary size {primarySizeString}.");
+                    return null;
+                }
+
+                primarySize = size;
+            }
+
+            // Secondary size
+            int? secondarySize = null;
+            var secondarySizeString = this.splitSecondarySizeTextBox.Text.Trim();
+            if (!string.IsNullOrWhiteSpace(secondarySizeString))
+            {
+                if (!ParseHexNumberStringToInt(secondarySizeString, out var size))
+                {
+                    this.UiService.ShowMessageBox($"Invalid secondary size {secondarySizeString}.");
+                    return null;
+                }
+
+                secondarySize = size;
+            }
+
+            var headerFile = this.splitHeaderFileTextBox.Text.Trim();
+            var dataFile = this.splitDataFileTextBox.Text.Trim();
+            var source = NefsArchiveSource.GameDat(dataFile, headerFile, primaryOffset, primarySize, secondaryOffset, secondarySize);
+
+            if (!this.ValidateFileExists(source.DataFilePath))
+            {
+                return null;
+            }
+
+            if (!this.ValidateFileExists(source.HeaderFilePath))
+            {
+                return null;
+            }
+
+            return source;
+        }
+
+        private static bool ParseHexNumberStringToLong(string input, out long result)
+        {
+            var str = input.Replace("0x", "").Replace("&h", "").Trim();
+            return long.TryParse(str, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
+        }
+        private static bool ParseHexNumberStringToInt(string input, out int result)
+        {
+            var str = input.Replace("0x", "").Replace("&h", "").Trim();
+            return int.TryParse(str, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
         }
 
         private NefsArchiveSource ValidateRecent()
@@ -375,40 +476,74 @@ namespace VictorBush.Ego.NefsEdit.UI
                 return null;
             }
 
-            var source = new NefsArchiveSource(recent.HeaderFilePath, recent.HeaderOffset, recent.HeaderPart6Offset, recent.DataFilePath);
-            return this.ValidateSource(source) ? source : null;
+            var source = recent.ToArchiveSource();
+            switch (source)
+            {
+                case StandardSource standardSource:
+                    if (!this.ValidateFileExists(standardSource.FilePath))
+                        return null;
+                    return standardSource;
+
+                case GameDatSource gameDatSource:
+                    if (!this.ValidateFileExists(gameDatSource.DataFilePath))
+                        return null;
+                    if (!this.ValidateFileExists(gameDatSource.HeaderFilePath))
+                        return null;
+                    return gameDatSource;
+
+                case NefsInjectSource nefsInjectSource:
+                    if (!this.ValidateFileExists(nefsInjectSource.NefsInjectFilePath))
+                        return null;
+                    if (!this.ValidateFileExists(nefsInjectSource.DataFilePath))
+                        return null;
+                    return nefsInjectSource;
+
+                default:
+                    this.UiService.ShowMessageBox($"Unknown archive source type.");
+                    return null;
+            }
         }
 
-        private bool ValidateSource(NefsArchiveSource source)
+        private bool ValidateFileExists(string file)
         {
-            if (!this.FileSystem.File.Exists(source.HeaderFilePath))
+            if (!this.FileSystem.File.Exists(file))
             {
-                this.UiService.ShowMessageBox($"Cannot find file: {source.HeaderFilePath}.");
-                return false;
-            }
-
-            if (!this.FileSystem.File.Exists(source.DataFilePath))
-            {
-                this.UiService.ShowMessageBox($"Cannot find file: {source.DataFilePath}.");
+                this.UiService.ShowMessageBox($"Cannot find file: {file}.");
                 return false;
             }
 
             return true;
         }
 
+        //private bool ValidateSource(NefsArchiveSource source)
+        //{
+        //    if (!this.FileSystem.File.Exists(source.HeaderFilePath))
+        //    {
+        //        this.UiService.ShowMessageBox($"Cannot find file: {source.HeaderFilePath}.");
+        //        return false;
+        //    }
+
+        //    if (!this.FileSystem.File.Exists(source.FilePath))
+        //    {
+        //        this.UiService.ShowMessageBox($"Cannot find file: {source.FilePath}.");
+        //        return false;
+        //    }
+
+        //    return true;
+        //}
+
         private class GameDatFileItem
         {
-            public GameDatFileItem(NefsArchiveSource source)
+            public GameDatFileItem(GameDatSource source)
             {
                 this.Source = source ?? throw new ArgumentNullException(nameof(source));
             }
 
-            public NefsArchiveSource Source { get; }
+            public GameDatSource Source { get; }
 
             public override String ToString()
             {
-                var fileName = Path.GetFileName(this.Source.DataFilePath);
-                return $"{fileName} (header offset: {this.Source.HeaderOffset})";
+                return $"{this.Source.FileName} (header offset: {this.Source.PrimaryOffset})";
             }
         }
 
@@ -425,6 +560,30 @@ namespace VictorBush.Ego.NefsEdit.UI
             {
                 return this.Mode;
             }
+        }
+
+        private void splitDataFileBrowseButton_Click(Object sender, EventArgs e)
+        {
+            (var result, var path) = this.UiService.ShowOpenFileDialog();
+            if (result != DialogResult.OK)
+            {
+                return;
+            }
+
+            this.splitDataFileTextBox.Text = path;
+            this.splitDataFileTextBox.ScrollToEnd();
+        }
+
+        private void splitHeaderFileBrowseButton_Click(Object sender, EventArgs e)
+        {
+            (var result, var path) = this.UiService.ShowOpenFileDialog();
+            if (result != DialogResult.OK)
+            {
+                return;
+            }
+
+            this.splitHeaderFileTextBox.Text = path;
+            this.splitHeaderFileTextBox.ScrollToEnd();
         }
     }
 }

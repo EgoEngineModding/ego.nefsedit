@@ -11,43 +11,47 @@ namespace VictorBush.Ego.NefsEdit.Settings
     public class OpenFileDialogState
     {
         /// <summary>
-        /// The path to the data file.
-        /// </summary>
-        public string DataFilePath { get; set; }
-
-        /// <summary>
-        /// The game*.dat/bin custom mode game.dat path.
-        /// </summary>
-        public string GameDatCustomDatDirPath { get; set; }
-
-        /// <summary>
-        /// The game*.dat/bin custom mode exe path.
-        /// </summary>
-        public string GameDatCustomExePath { get; set; }
-
-        /// <summary>
-        /// The header offset value.
-        /// </summary>
-        public string HeaderOffset { get; set; }
-
-        /// <summary>
-        /// The base offset used for part 6/7 offsets.
-        /// </summary>
-        public string HeaderPart6Offset { get; set; }
-
-        /// <summary>
-        /// Gets or sets the header file path.
-        /// </summary>
-        public string HeaderPath { get; set; }
-
-        /// <summary>
-        /// Whether the Is Advanced check box is checked.
-        /// </summary>
-        public bool IsAdvanced { get; set; }
-
-        /// <summary>
         /// Gets or sets which mode the open file dialog was last in.
         /// </summary>
         public int LastMode { get; set; }
+
+        /// <summary>
+        /// [NeFS] - The path to the data file.
+        /// </summary>
+        public string NefsFilePath { get; set; }
+
+        public string NefsInjectDataFilePath { get; set; }
+
+        public string NefsInjectFilePath { get; set; }
+
+        /// <summary>
+        /// [GameDat] - The path to the data file.
+        /// </summary>
+        public string GameDatDataFilePath { get; set; }
+
+        /// <summary>
+        /// [GameDat] - The path to the header file.
+        /// </summary>
+        public string GameDatHeaderFilePath { get; set; }
+
+        /// <summary>
+        /// [GameDat] - The primary offset value.
+        /// </summary>
+        public string GameDatPrimaryOffset { get; set; }
+
+        /// <summary>
+        /// [GameDat] - The primary size value.
+        /// </summary>
+        public string GameDatPrimarySize { get; set; }
+
+        /// <summary>
+        /// [GameDat] - The secondary offset value.
+        /// </summary>
+        public string GameDatSecondaryOffset { get; set; }
+
+        /// <summary>
+        /// [GameDat] - The secondary size value.
+        /// </summary>
+        public string GameDatSecondarySize { get; set; }
     }
 }

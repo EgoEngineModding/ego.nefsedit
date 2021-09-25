@@ -15,6 +15,9 @@ namespace VictorBush.Ego.NefsLib.Header
         private readonly List<Nefs20HeaderPart4Entry> entriesByIndex;
         private readonly Dictionary<Guid, uint> indexLookup;
 
+        public const int EntrySize = 0x4;
+
+
         /// <summary>
         /// Initializes a new instance of the <see cref="Nefs20HeaderPart4"/> class.
         /// </summary>
@@ -72,7 +75,9 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// Gets the current size of header part 4.
         /// </summary>
-        public UInt32 Size => (uint)(this.entriesByIndex.Count * Nefs20HeaderPart4Entry.Size);
+        public int Size => this.entriesByIndex.Count * EntrySize;
+
+        IReadOnlyList<INefsHeaderPartEntry> INefsHeaderPart4.EntriesByIndex => this.entriesByIndex;
 
         /// <summary>
         /// Creates a list of chunk metadata for an item.

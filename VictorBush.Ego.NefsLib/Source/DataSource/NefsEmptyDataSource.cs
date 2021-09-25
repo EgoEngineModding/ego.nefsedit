@@ -18,7 +18,7 @@ namespace VictorBush.Ego.NefsLib.DataSource
         public Boolean IsTransformed => true;
 
         /// <inheritdoc/>
-        public UInt64 Offset => 0;
+        public long Offset => 0;
 
         /// <inheritdoc/>
         public NefsItemSize Size => new NefsItemSize(0, new List<NefsDataChunk>());

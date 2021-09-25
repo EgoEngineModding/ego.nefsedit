@@ -9,12 +9,11 @@ namespace VictorBush.Ego.NefsLib.Header
     /// <summary>
     /// An entry in header part 1 for an item in an archive.
     /// </summary>
-    public class NefsHeaderPart1Entry
+    public class NefsHeaderPart1Entry : INefsHeaderPartEntry
     {
-        /// <summary>
-        /// The size of a part 1 entry.
-        /// </summary>
-        public const uint Size = 0x14;
+
+
+        public int Size => NefsHeaderPart1.EntrySize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="NefsHeaderPart1Entry"/> class.
@@ -48,22 +47,22 @@ namespace VictorBush.Ego.NefsLib.Header
         /// <summary>
         /// The offset into header part 2.
         /// </summary>
-        public UInt64 OffsetIntoPart2 => this.IndexPart2 * NefsHeaderPart2Entry.Size;
+        public UInt64 OffsetIntoPart2 => this.IndexPart2 * NefsHeaderPart2.EntrySize;
 
         /// <summary>
         /// The offset into header part 4.
         /// </summary>
-        public UInt64 OffsetIntoPart4 => this.IndexPart4 * Nefs20HeaderPart4Entry.Size;
+        public UInt64 OffsetIntoPart4 => this.IndexPart4 * Nefs20HeaderPart4.EntrySize;
 
         /// <summary>
         /// The offset into header part 6.
         /// </summary>
-        public UInt64 OffsetIntoPart6 => this.IndexPart2 * Nefs20HeaderPart6Entry.Size;
+        public UInt64 OffsetIntoPart6 => this.IndexPart2 * Nefs20HeaderPart6.EntrySize;
 
         /// <summary>
         /// The offset into header part 7.
         /// </summary>
-        public UInt64 OffsetIntoPart7 => this.IndexPart2 * NefsHeaderPart7Entry.Size;
+        public UInt64 OffsetIntoPart7 => this.IndexPart2 * NefsHeaderPart7.EntrySize;
 
         /// <summary>
         /// The absolute offset to the file's data in the archive. For directories, this is 0.

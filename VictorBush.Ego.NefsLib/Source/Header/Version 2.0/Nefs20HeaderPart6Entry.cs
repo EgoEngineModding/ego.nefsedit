@@ -9,12 +9,13 @@ namespace VictorBush.Ego.NefsLib.Header
     /// <summary>
     /// An entry in header part 6 for an item in an archive.
     /// </summary>
-    public class Nefs20HeaderPart6Entry
+    public class Nefs20HeaderPart6Entry : INefsHeaderPartEntry
     {
+
         /// <summary>
         /// The size of a part 6 entry.
         /// </summary>
-        public const uint Size = 0x4;
+        public int Size => Nefs20HeaderPart6.EntrySize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Nefs20HeaderPart6Entry"/> class.

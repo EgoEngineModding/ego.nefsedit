@@ -118,7 +118,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             Assert.Equal(9, p4.EntriesByIndex.Count);
 
             // Total size is (total number of chunks * bytes)
-            Assert.Equal(36U, p4.Size);
+            Assert.Equal(36, p4.Size);
 
             // File 1
             Assert.Equal(1U, p4.EntriesByIndex[0].CumulativeChunkSize);
@@ -142,7 +142,7 @@ namespace VictorBush.Ego.NefsLib.Tests.Header
             var items = new NefsItemList(@"C:\archive.nefs");
             var p4 = new Nefs20HeaderPart4(items);
             Assert.Empty(p4.EntriesByIndex);
-            Assert.Equal(0U, p4.Size);
+            Assert.Equal(0, p4.Size);
         }
     }
 }

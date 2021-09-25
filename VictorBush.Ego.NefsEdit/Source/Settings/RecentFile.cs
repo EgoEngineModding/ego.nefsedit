@@ -5,6 +5,7 @@ namespace VictorBush.Ego.NefsEdit.Settings
     using System;
     using System.IO;
     using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
 
     /// <summary>
     /// Recent file info.
@@ -25,55 +26,88 @@ namespace VictorBush.Ego.NefsEdit.Settings
         /// <param name="source">Archive source.</param>
         public RecentFile(NefsArchiveSource source)
         {
-            this.DataFilePath = source.DataFilePath;
-            this.HeaderFilePath = source.HeaderFilePath;
-            this.HeaderOffset = source.HeaderOffset;
-            this.HeaderPart6Offset = source.HeaderPart6Offset;
+            switch (source)
+            {
+                case StandardSource standardSource:
+                    this.StandardFilePath = standardSource.FilePath;
+                    this.Type = nameof(StandardSource);
+                    break;
+
+                case GameDatSource gameDatSource:
+                    this.GameDatDataFilePath = gameDatSource.DataFilePath;
+                    this.GameDatHeaderFilePath = gameDatSource.HeaderFilePath;
+                    this.GameDatPrimaryOffset = gameDatSource.PrimaryOffset;
+                    this.GameDatPrimarySize = gameDatSource.PrimarySize;
+                    this.GameDatSecondaryOffset = gameDatSource.SecondaryOffset;
+                    this.GameDatSecondarySize = gameDatSource.SecondarySize;
+                    this.Type = nameof(GameDatSource);
+                    break;
+
+                case NefsInjectSource nefsInjectSource:
+                    this.NefsInjectDataFilePath = nefsInjectSource.DataFilePath;
+                    this.NefsInjectFilePath = nefsInjectSource.NefsInjectFilePath;
+                    this.Type = nameof(NefsInjectSource);
+                    break;
+
+                default:
+                    throw new ArgumentException("Unknown archive source type.");
+            }
         }
 
-        /// <summary>
-        /// The file that contents the item data.
-        /// </summary>
-        public string DataFilePath { get; set; }
+        public string Type { get; set; }
+        
+        public string StandardFilePath { get; set; }
 
-        /// <summary>
-        /// The file that contains the archive header.
-        /// </summary>
-        public string HeaderFilePath { get; set; }
+        public string NefsInjectDataFilePath { get; set; }
+        public string NefsInjectFilePath { get; set; }
 
-        /// <summary>
-        /// Offset to the header data.
-        /// </summary>
-        public ulong HeaderOffset { get; set; }
+        public string GameDatDataFilePath { get; set; }
 
-        /// <summary>
-        /// Offset to header part 6 data.
-        /// </summary>
-        public ulong HeaderPart6Offset { get; set; }
+        public string GameDatHeaderFilePath { get; set; }
+
+        public long? GameDatPrimaryOffset { get; set; }
+
+        public int? GameDatPrimarySize { get; set; }
+
+        public long? GameDatSecondaryOffset { get; set; }
+
+        public int? GameDatSecondarySize { get; set; }
+
+        public NefsArchiveSource ToArchiveSource()
+        {
+            switch (this.Type)
+            {
+                case nameof(StandardSource):
+                    return NefsArchiveSource.Standard(this.StandardFilePath);
+
+                case nameof(GameDatSource):
+                    return NefsArchiveSource.GameDat(this.GameDatDataFilePath, this.GameDatHeaderFilePath, this.GameDatPrimaryOffset.Value, this.GameDatPrimarySize, this.GameDatSecondaryOffset.Value, this.GameDatSecondarySize);
+
+                case nameof(NefsInjectSource):
+                    return NefsArchiveSource.NefsInject(this.NefsInjectDataFilePath, this.NefsInjectFilePath);
+
+                default:
+                    throw new InvalidOperationException("Unknown source.");
+            }
+        }
 
         /// <inheritdoc/>
         public override String ToString()
         {
-            var headerOffsetStr = this.HeaderOffset != 0 ? this.HeaderOffset.ToString() : "";
-            var headerPart6OffsetStr = this.HeaderPart6Offset != 0 ? this.HeaderPart6Offset.ToString() : "";
-            var headerName = Path.GetFileName(this.HeaderFilePath);
-            var dataName = Path.GetFileName(this.DataFilePath);
-
-            var str = $"{headerName}";
-
-            if (this.DataFilePath != this.HeaderFilePath)
+            switch (this.Type)
             {
-                str += $" + {dataName}";
+                case nameof(StandardSource):
+                    return $"{Path.GetFileName(this.StandardFilePath)}";
+
+                case nameof(GameDatSource):
+                    return $"{Path.GetFileName(this.GameDatDataFilePath)} [{this.GameDatPrimaryOffset}|{this.GameDatSecondaryOffset}]";
+
+                case nameof(NefsInjectSource):
+                    return $"{Path.GetFileName(this.NefsInjectDataFilePath)}";
+
+                default:
+                    return "Unknown source.";
             }
-
-            if (headerOffsetStr != "" || headerPart6OffsetStr != "")
-            {
-                str += $" [{headerOffsetStr}|{headerPart6OffsetStr}]";
-            }
-
-            str += $" [{this.DataFilePath}]";
-
-            return str;
         }
     }
 }

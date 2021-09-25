@@ -8,12 +8,12 @@ namespace VictorBush.Ego.NefsLib.IO
     using System.Collections.Generic;
     using System.IO;
     using System.IO.Abstractions;
-    using System.Linq;
     using System.Numerics;
     using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
     using Microsoft.Extensions.Logging;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
     using VictorBush.Ego.NefsLib.DataTypes;
     using VictorBush.Ego.NefsLib.Header;
     using VictorBush.Ego.NefsLib.Progress;
@@ -84,151 +84,215 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </remarks>
         public async Task<List<NefsArchiveSource>> FindHeadersAsync(string exePath, string dataFileDir, NefsProgress p)
         {
-            var sources = new List<NefsArchiveSource>();
-            var nextPart6Offset = 0U;
+            throw new NotImplementedException("TODO");
+            //var sources = new List<NefsArchiveSource>();
+            //var nextPart6Offset = 0U;
 
-            // Load exe into memory
-            var exeBytes = this.FileSystem.File.ReadAllBytes(exePath);
+            //// Load exe into memory
+            //var exeBytes = this.FileSystem.File.ReadAllBytes(exePath);
 
-            // Search for the part 6 base offset. For NeFS version 1.6 and 2.0 (maybe others?)
-            // header parts 6 and 7 are stored separate from the other header parts. So far all the
-            // part 6/7 data has been in the ".data" section of the exe. So we can get that offset
-            // from the PE header. Some games (e.g. Grid 2) have other data that comes before the
-            // part 6/7 data in the ".data" section. So we have to look for a pattern that looks
-            // like the data we are looking for.
-            try
-            {
-                if (!PeHelper.GetRawOffsetToSection(exeBytes, ".data", out var dataSectionOffset))
-                {
-                    Log.LogError("Failed to find part 6 offset; using 0 as offset.");
-                }
+            //// Search for the part 6 base offset. For NeFS version 1.6 and 2.0 (maybe others?)
+            //// header parts 6 and 7 are stored separate from the other header parts. So far all the
+            //// part 6/7 data has been in the ".data" section of the exe. So we can get that offset
+            //// from the PE header. Some games (e.g. Grid 2) have other data that comes before the
+            //// part 6/7 data in the ".data" section. So we have to look for a pattern that looks
+            //// like the data we are looking for.
+            //try
+            //{
+            //    if (!PeHelper.GetRawOffsetToSection(exeBytes, ".data", out var dataSectionOffset))
+            //    {
+            //        Log.LogError("Failed to find part 6 offset; using 0 as offset.");
+            //    }
 
-                nextPart6Offset = (uint)dataSectionOffset;
-            }
-            catch (Exception ex)
-            {
-                Log.LogError(ex, "Failed to find part 6 offset; using 0 as offset.");
-            }
+            //    nextPart6Offset = (uint)dataSectionOffset;
+            //}
+            //catch (Exception ex)
+            //{
+            //    Log.LogError(ex, "Failed to find part 6 offset; using 0 as offset.");
+            //}
 
-            // Search for headers
-            var i = 0;
-            while (i + 4 <= exeBytes.Length)
-            {
-                var offset = i;
-                i += 4;
+            //// Search for headers
+            //var i = 0;
+            //while (i + 4 <= exeBytes.Length)
+            //{
+            //    var offset = i;
+            //    i += 4;
 
-                // Check for cancel
-                p.CancellationToken.ThrowIfCancellationRequested();
+            //    // Check for cancel
+            //    p.CancellationToken.ThrowIfCancellationRequested();
 
-                // Searching for a NeFS header: Look for 4E 65 46 53 (NeFS). This is the NeFS header
-                // magic number.
-                if (exeBytes[offset] != 0x4E
-                    || exeBytes[offset + 1] != 0x65
-                    || exeBytes[offset + 2] != 0x46
-                    || exeBytes[offset + 3] != 0x53)
-                {
-                    continue;
-                }
+            //    // Searching for a NeFS header: Look for 4E 65 46 53 (NeFS). This is the NeFS header
+            //    // magic number.
+            //    if (exeBytes[offset] != 0x4E
+            //        || exeBytes[offset + 1] != 0x65
+            //        || exeBytes[offset + 2] != 0x46
+            //        || exeBytes[offset + 3] != 0x53)
+            //    {
+            //        continue;
+            //    }
 
-                // Check for a known version number
-                var version = BitConverter.ToUInt32(exeBytes, offset + 0x68);
-                if (version != 0x20000 && version != 0x10600)
-                {
-                    continue;
-                }
+            //    // Check for a known version number
+            //    var version = BitConverter.ToUInt32(exeBytes, offset + 0x68);
+            //    if (version != 0x20000 && version != 0x10600)
+            //    {
+            //        continue;
+            //    }
 
-                // Try to read header intro
-                try
-                {
-                    using (var byteStream = new MemoryStream(exeBytes))
-                    {
-                        var (intro, headerStream) = await this.ReadHeaderIntroAsync(byteStream, (ulong)offset, p);
-                        using (headerStream)
-                        {
-                            INefsHeaderIntroToc toc;
-                            uint p6Size;
-                            uint p7Size;
+            //    // Try to read header intro
+            //    try
+            //    {
+            //        using (var byteStream = new MemoryStream(exeBytes))
+            //        {
+            //            var (intro, headerStream) = await this.ReadHeaderIntroAsync(byteStream, offset, p);
+            //            using (headerStream)
+            //            {
+            //                INefsHeaderIntroToc toc;
+            //                uint p6Size;
+            //                uint p7Size;
 
-                            // Find next part 6 offset - there may be padding or other data before
-                            // the part 6/7 data
-                            nextPart6Offset = this.FindNextPart6Offset(nextPart6Offset, exeBytes);
+            //                // Find next part 6 offset - there may be padding or other data before
+            //                // the part 6/7 data
+            //                nextPart6Offset = this.FindNextPart6Offset(nextPart6Offset, exeBytes);
 
-                            // Read table of contents
-                            if (version == (int)NefsVersion.Version200)
-                            {
-                                toc = await this.Read20HeaderIntroTocAsync(headerStream, Nefs20HeaderIntroToc.Offset, p);
+            //                // Read table of contents
+            //                if (version == (int)NefsVersion.Version200)
+            //                {
+            //                    toc = await this.Read20HeaderIntroTocAsync(headerStream, Nefs20HeaderIntroToc.Offset, p);
 
-                                var numPart1Entries = toc.Part1Size / NefsHeaderPart1Entry.Size;
-                                var numPart2Entries = toc.Part2Size / NefsHeaderPart2Entry.Size;
-                                p6Size = numPart1Entries * Nefs20HeaderPart6Entry.Size;
-                                p7Size = numPart2Entries * NefsHeaderPart7Entry.Size;
-                            }
-                            else
-                            {
-                                toc = await this.Read16HeaderIntroTocAsync(headerStream, Nefs16HeaderIntroToc.Offset, p);
+            //                    var numPart1Entries = toc.Part1Size / NefsHeaderPart1Entry.Size;
+            //                    var numPart2Entries = toc.Part2Size / NefsHeaderPart2Entry.Size;
+            //                    p6Size = numPart1Entries * Nefs20HeaderPart6Entry.Size;
+            //                    p7Size = numPart2Entries * NefsHeaderPart7Entry.Size;
+            //                }
+            //                else
+            //                {
+            //                    toc = await this.Read16HeaderIntroTocAsync(headerStream, Nefs16HeaderIntroToc.Offset, p);
 
-                                var numPart1Entries = toc.Part1Size / NefsHeaderPart1Entry.Size;
-                                var numPart2Entries = toc.Part2Size / NefsHeaderPart2Entry.Size;
-                                p6Size = numPart1Entries * Nefs16HeaderPart6Entry.Size;
-                                p7Size = numPart2Entries * NefsHeaderPart7Entry.Size;
-                            }
+            //                    var numPart1Entries = toc.Part1Size / NefsHeaderPart1Entry.Size;
+            //                    var numPart2Entries = toc.Part2Size / NefsHeaderPart2Entry.Size;
+            //                    p6Size = numPart1Entries * Nefs16HeaderPart6Entry.Size;
+            //                    p7Size = numPart2Entries * NefsHeaderPart7Entry.Size;
+            //                }
 
-                            // Read part 5
-                            var p5 = await this.ReadHeaderPart5Async(headerStream, toc.OffsetToPart5, NefsHeaderPart5.Size, p);
+            //                // Read part 5
+            //                var p5 = await this.ReadHeaderPart5Async(headerStream, toc.OffsetToPart5, NefsHeaderPart5.Size, p);
 
-                            // Find file name
-                            headerStream.Seek(toc.OffsetToPart3, SeekOrigin.Begin);
-                            headerStream.Seek(p5.ArchiveNameStringOffset, SeekOrigin.Current);
+            //                // Find file name
+            //                headerStream.Seek(toc.OffsetToPart3, SeekOrigin.Begin);
+            //                headerStream.Seek(p5.ArchiveNameStringOffset, SeekOrigin.Current);
 
-                            // Read 256 bytes - this is overkill, probably won't have a filename
-                            // that big
-                            var nameBytes = new byte[256];
-                            await headerStream.ReadAsync(nameBytes, 0, 256, p.CancellationToken);
+            //                // Read 256 bytes - this is overkill, probably won't have a filename
+            //                // that big
+            //                var nameBytes = new byte[256];
+            //                await headerStream.ReadAsync(nameBytes, 0, 256, p.CancellationToken);
 
-                            var name = StringHelper.TryReadNullTerminatedAscii(nameBytes, 0, nameBytes.Length);
-                            if (string.IsNullOrWhiteSpace(name))
-                            {
-                                // Failed to get name
-                                Log.LogError($"Thought we found a header at {offset}, but could not read data file name.");
-                                continue;
-                            }
+            //                var name = StringHelper.TryReadNullTerminatedAscii(nameBytes, 0, nameBytes.Length);
+            //                if (string.IsNullOrWhiteSpace(name))
+            //                {
+            //                    // Failed to get name
+            //                    Log.LogError($"Thought we found a header at {offset}, but could not read data file name.");
+            //                    continue;
+            //                }
 
-                            // Create archive source for this header
-                            var dataFilePath = Path.Combine(dataFileDir, name);
-                            var source = new NefsArchiveSource(exePath, (ulong)offset, nextPart6Offset, dataFilePath);
-                            sources.Add(source);
+            //                // Create archive source for this header
+            //                var dataFilePath = Path.Combine(dataFileDir, name);
+            //                var source = new NefsArchiveSource.SplitHeader(exePath, dataFilePath, (ulong)offset, nextPart6Offset, dataFilePath);
+            //                sources.Add(source);
 
-                            // Keep looking
-                            offset += (int)intro.HeaderSize;
+            //                // Keep looking
+            //                offset += (int)intro.HeaderSize;
 
-                            // Update part 6 search offset to skip the one we just used
-                            nextPart6Offset += p6Size + p7Size;
-                        }
-                    }
-                }
-                catch (Exception)
-                {
-                    // Failed to read header, so assume not a header
-                    continue;
-                }
-            }
+            //                // Update part 6 search offset to skip the one we just used
+            //                nextPart6Offset += p6Size + p7Size;
+            //            }
+            //        }
+            //    }
+            //    catch (Exception)
+            //    {
+            //        // Failed to read header, so assume not a header
+            //        continue;
+            //    }
+            //}
 
-            return sources;
+            //return sources;
         }
 
         /// <inheritdoc/>
-        public async Task<NefsArchive> ReadArchiveAsync(string filePath, NefsProgress p)
+        public Task<NefsArchive> ReadArchiveAsync(NefsArchiveSource source, NefsProgress p)
         {
-            return await this.ReadArchiveAsync(filePath, Nefs20Header.IntroOffset, 0, filePath, p);
+            switch (source)
+            {
+                case StandardSource standard:
+                    return this.ReadArchiveAsync(standard.FilePath, 0, p);
+                case GameDatSource gameDat:
+                    return this.ReadGameDatArchiveAsync(gameDat.FilePath, gameDat.HeaderFilePath, gameDat.PrimaryOffset, gameDat.PrimarySize, gameDat.SecondaryOffset, gameDat.SecondarySize, p);
+                case NefsInjectSource nefsInject:
+                    return this.ReadNefsInjectArchiveAsync(nefsInject.FilePath, nefsInject.NefsInjectFilePath, p);
+                default:
+                    throw new ArgumentException("Unknown source type.");
+            }
+        }
+
+        public async Task<NefsArchive> ReadNefsInjectArchiveAsync(string dataFilePath, string nefsInjectFilePath, NefsProgress p)
+        {
+            if (!this.FileSystem.File.Exists(nefsInjectFilePath))
+            {
+                throw new FileNotFoundException($"File not found: {nefsInjectFilePath}.");
+            }
+
+            INefsHeader header = null;
+            using (var stream = this.FileSystem.File.OpenRead(nefsInjectFilePath))
+            {
+                NefsInjectHeader nefsInject;
+                using (p.BeginTask(0.1f, "Reading NefsInject header"))
+                {
+                    nefsInject = await this.ReadNefsInjectHeaderAsync(stream, 0, p);
+                }
+
+                using (p.BeginTask(0.9f, "Reading Nefs header"))
+                {
+                    header = await this.ReadSplitHeaderAsync(stream, nefsInject.PrimaryOffset, nefsInject.PrimarySize, nefsInject.SecondaryOffset, nefsInject.SecondarySize, p);
+                }
+            }
+
+            // Create items from header
+            var items = header.CreateItemList(dataFilePath, p);
+
+            // Create the archive
+            return new NefsArchive(header, items);
+        }
+
+        internal async Task<NefsInjectHeader> ReadNefsInjectHeaderAsync(Stream stream, long offset, NefsProgress p)
+        {
+            var nefsInject = new NefsInjectHeader();
+            await FileData.ReadDataAsync(stream, offset, nefsInject, p);
+            return nefsInject;
         }
 
         /// <inheritdoc/>
-        public async Task<NefsArchive> ReadArchiveAsync(
-            string headerFilePath,
-            ulong headerOffset,
-            ulong headerPart6Offset,
-            string dataFilePath,
-            NefsProgress p)
+        public async Task<NefsArchive> ReadArchiveAsync(string filePath, long headerOffset, NefsProgress p)
+        {
+            if (!this.FileSystem.File.Exists(filePath))
+            {
+                throw new FileNotFoundException($"File not found: {filePath}.");
+            }
+
+            // Read the header
+            INefsHeader header = null;
+            using (var stream = this.FileSystem.File.OpenRead(filePath))
+            {
+                header = await this.ReadHeaderAsync(stream, headerOffset, p);
+            }
+
+            // Create items from header
+            var items = header.CreateItemList(filePath, p);
+
+            // Create the archive
+            return new NefsArchive(header, items);
+        }
+
+        /// <inheritdoc/>
+        public async Task<NefsArchive> ReadGameDatArchiveAsync(string dataFilePath, string headerFilePath, long primaryOffset, int? primarySize, long secondaryOffset, int? secondarySize, NefsProgress p)
         {
             // Validate header path
             if (!this.FileSystem.File.Exists(headerFilePath))
@@ -246,7 +310,7 @@ namespace VictorBush.Ego.NefsLib.IO
             INefsHeader header = null;
             using (var stream = this.FileSystem.File.OpenRead(headerFilePath))
             {
-                header = await this.ReadHeaderAsync(stream, headerOffset, headerPart6Offset, p);
+                header = await this.ReadSplitHeaderAsync(stream, primaryOffset, primarySize, secondaryOffset, secondarySize, p);
             }
 
             // Create items from header
@@ -256,101 +320,168 @@ namespace VictorBush.Ego.NefsLib.IO
             return new NefsArchive(header, items);
         }
 
-        /// <inheritdoc/>
-        public async Task<NefsArchive> ReadArchiveAsync(NefsArchiveSource source, NefsProgress p)
+        /// <summary>
+        /// Decrypts an encrypted Dirt Rally 2 header into a new stream. The caller is responsible
+        /// for disposing the stream.
+        /// </summary>
+        /// <param name="stream">The stream containing the encrypted header.</param>
+        /// <param name="offset">The offset to the header from the beginning of the stream.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>The decrypted stream.</returns>
+        internal async Task<(NefsHeaderIntro Intro, Stream Stream)> DecryptDirtRally2Header(
+            Stream stream,
+            long offset,
+            NefsProgress p)
         {
-            return await this.ReadArchiveAsync(source.HeaderFilePath, source.HeaderOffset, source.HeaderPart6Offset, source.DataFilePath, p);
+            stream.Seek(offset, SeekOrigin.Begin);
+
+            // The decrypted stream will need to be disposed by the caller
+            var decryptedStream = new MemoryStream();
+
+            // Encrypted headers:
+            // - Headers are "encrypted" in a two-step process. RSA-1024. No padding is used.
+            // - First 0x80 bytes are signed with an RSA private key (data -> decrypt -> scrambled data).
+            // - Must use an RSA 1024-bit public key to unscramble the data (scrambled data ->
+            // encrypt -> data).
+            // - For DiRT Rally 2 this public key is stored in the main executable.
+            byte[] encryptedHeader = new byte[NefsHeaderIntro.Size + 1]; // TODO : Why the +1?
+            await stream.ReadAsync(encryptedHeader, 0, (int)NefsHeaderIntro.Size, p.CancellationToken);
+            encryptedHeader[NefsHeaderIntro.Size] = 0;
+
+            // Use big integers instead of RSA since the c# implementation forces the use of padding.
+            var n = new BigInteger(this.RsaPublicKey);
+            var e = new BigInteger(this.RsaExponent);
+            var m = new BigInteger(encryptedHeader);
+
+            // Decrypt the header intro
+            byte[] decrypted = BigInteger.ModPow(m, e, n).ToByteArray();
+            decryptedStream.Write(decrypted, 0, decrypted.Length);
+
+            // Fill any leftover space with zeros
+            if (decrypted.Length != NefsHeaderIntro.Size)
+            {
+                for (int i = 0; i < (NefsHeaderIntro.Size - decrypted.Length); i++)
+                {
+                    decryptedStream.WriteByte(0);
+                }
+            }
+
+            // Read header intro data from decrypted stream
+            var intro = new NefsHeaderIntro(isEncrpyted: true);
+            await FileData.ReadDataAsync(decryptedStream, 0, intro, p);
+
+            // The rest of the header is encrypted using AES-256, decrypt using the key from the
+            // header intro
+            byte[] key = intro.GetAesKey();
+            var headerSize = intro.HeaderSize;
+
+            // Decrypt the rest of the header
+            using (var rijAlg = new RijndaelManaged())
+            {
+                rijAlg.KeySize = 256;
+                rijAlg.Key = key;
+                rijAlg.Mode = CipherMode.ECB;
+                rijAlg.BlockSize = 128;
+                rijAlg.Padding = PaddingMode.Zeros;
+
+                var decryptor = rijAlg.CreateDecryptor();
+                decryptedStream.Seek(0, SeekOrigin.End);
+
+                // Decrypt the data - make sure to leave open the base stream
+                using (var cryptoStream = new CryptoStream(stream, decryptor, CryptoStreamMode.Read, true))
+                {
+                    // Decrypt data from input stream and copy to the decrypted stream
+                    await cryptoStream.CopyPartialAsync(decryptedStream, headerSize, p.CancellationToken);
+                }
+            }
+
+            return (intro, decryptedStream);
+        }
+
+        internal async Task<INefsHeader> ReadEncryptedDirtRally2Header(Stream stream, long offset, NefsProgress p)
+        {
+            var (intro, decryptedStream) = await this.DecryptDirtRally2Header(stream, offset, p);
+            if (intro.MagicNumber != NefsHeaderIntro.NefsMagicNumber)
+            {
+                throw new InvalidOperationException("Failed to decrypt header. Only Dirt Rally 2 encrypted archives are supported.");
+            }
+
+            // Only support encrypted headers with no special offsets (we have no examples of
+            // encrypted game.dat, etc)
+            var header = await this.ReadHeaderVersion20Async(decryptedStream, 0, 0, intro, p);
+            await this.ValidateEncryptedHeaderAsync(decryptedStream, offset, intro);
+            decryptedStream.Dispose();
+            return header;
         }
 
         /// <summary>
-        /// Reads a version 1.6 header from an input stream.
+        /// Reads the header from an input stream.
         /// </summary>
-        /// <param name="stream">The stream to read from.</param>
-        /// <param name="offset">The offset to the header from the beginning of the stream.</param>
-        /// <param name="part6Stream">The stream that contains part 6/7 data.</param>
-        /// <param name="part6Offset">The offset to the start of part 6/7 data.</param>
-        /// <param name="intro">The pre-parsed header intro.</param>
+
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header.</returns>
-        internal async Task<Nefs16Header> Read16HeaderAsync(
+        internal async Task<INefsHeader> ReadHeaderAsync(Stream stream, long offset, NefsProgress p)
+        {
+            //Stream stream;
+            //Stream part6Stream;
+            INefsHeader header = null;
+            NefsHeaderIntro intro = null;
+
+            var validMagicNum = await this.ValidateMagicNumberAsync(stream, offset, p);
+            if (!validMagicNum)
+            {
+                Log.LogInformation("Header magic number mismatch, assuming a Dirt Rally 2 encrypted archive.");
+                header = await this.ReadEncryptedDirtRally2Header(stream, offset, p);
+                return header;
+            }
+
+            using (p.BeginTask(0.2f, "Reading header intro"))
+            {
+                intro = await this.ReadHeaderIntroAsync(stream, offset, p);
+            }
+
+            using (p.BeginTask(0.8f, "Reading header"))
+            {
+                if (intro.NefsVersion == (uint)NefsVersion.Version200)
+                {
+                    // 2.0.0
+                    Log.LogInformation("Detected NeFS version 2.0.");
+                    header = await this.ReadHeaderVersion20Async(stream, offset, offset, intro, p);
+                }
+                else if (intro.NefsVersion == (uint)NefsVersion.Version160)
+                {
+                    // 1.6.0
+                    Log.LogInformation("Detected NeFS version 1.6.");
+                    header = await this.ReadHeaderVersion16Async(stream, offset, offset, intro, p);
+                }
+                else
+                {
+                    Log.LogError($"Detected unkown NeFS version {intro.NefsVersion}. Treating as 2.0.");
+                    header = await this.ReadHeaderVersion20Async(stream, offset, offset, intro, p);
+                }
+            }
+
+            await this.ValidateHeaderHashAsync(stream, offset, intro);
+            return header;
+        }
+
+        /// <summary>
+        /// Reads the header intro from an input stream. This is for non-encrypted headers only.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
+        /// <param name="offset">The offset to the header intro from the beginning of the stream.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>The loaded header intro.</returns>
+        internal async Task<NefsHeaderIntro> ReadHeaderIntroAsync(
             Stream stream,
-            ulong offset,
-            Stream part6Stream,
-            ulong part6Offset,
-            NefsHeaderIntro intro,
+            long offset,
             NefsProgress p)
         {
-            Nefs16HeaderIntroToc toc = null;
-            NefsHeaderPart1 part1 = null;
-            NefsHeaderPart2 part2 = null;
-            NefsHeaderPart3 part3 = null;
-            Nefs16HeaderPart4 part4 = null;
-            NefsHeaderPart5 part5 = null;
-            Nefs16HeaderPart6 part6 = null;
-            NefsHeaderPart7 part7 = null;
-            NefsHeaderPart8 part8 = null;
+            stream.Seek(offset, SeekOrigin.Begin);
 
-            // Calc weight of each task (8 parts + table of contents)
-            var weight = 1.0f / 10.0f;
-
-            using (p.BeginTask(weight, "Reading header intro table of contents"))
-            {
-                toc = await this.Read16HeaderIntroTocAsync(stream, Nefs16HeaderIntroToc.Offset, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 1"))
-            {
-                part1 = await this.ReadHeaderPart1Async(stream, toc.OffsetToPart1, toc.Part1Size, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 2"))
-            {
-                part2 = await this.ReadHeaderPart2Async(stream, toc.OffsetToPart2, toc.Part2Size, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 3"))
-            {
-                part3 = await this.ReadHeaderPart3Async(stream, toc.OffsetToPart3, toc.Part3Size, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 4"))
-            {
-                part4 = await this.Read16HeaderPart4Async(stream, toc.OffsetToPart4, toc.Part4Size, part1, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 5"))
-            {
-                part5 = await this.ReadHeaderPart5Async(stream, toc.OffsetToPart5, NefsHeaderPart5.Size, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 6"))
-            {
-                var numEntries = (uint)part1.EntriesByIndex.Count;
-                part6 = await this.Read16HeaderPart6Async(part6Stream, (uint)part6Offset + toc.OffsetToPart6, numEntries, part1, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 7"))
-            {
-                var numEntries = (uint)part2.EntriesByIndex.Count;
-                part7 = await this.ReadHeaderPart7Async(part6Stream, (uint)part6Offset + toc.OffsetToPart7, numEntries, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 8"))
-            {
-                var part8Size = intro.HeaderSize - toc.OffsetToPart8;
-                part8 = await this.ReadHeaderPart8Async(stream, toc.OffsetToPart8, part8Size, p);
-            }
-
-            // Validate header hash
-            if (!this.ValidateHash(stream, offset, intro))
-            {
-                Log.LogWarning("Header hash does not match expected value.");
-            }
-
-            // The header stream must be disposed
-            stream.Dispose();
-
-            return new Nefs16Header(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
+            var intro = new NefsHeaderIntro();
+            await FileData.ReadDataAsync(stream, offset, intro, p);
+            return intro;
         }
 
         /// <summary>
@@ -362,7 +493,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header intro offets data.</returns>
-        internal async Task<Nefs16HeaderIntroToc> Read16HeaderIntroTocAsync(Stream stream, uint offset, NefsProgress p)
+        internal async Task<Nefs16HeaderIntroToc> ReadHeaderIntroTocVersion16Async(Stream stream, long offset, NefsProgress p)
         {
             var toc = new Nefs16HeaderIntroToc();
             await FileData.ReadDataAsync(stream, offset, toc, p);
@@ -370,190 +501,6 @@ namespace VictorBush.Ego.NefsLib.IO
         }
 
         /// <summary>
-        /// Reads header part 4 from an input stream.
-        /// </summary>
-        /// <param name="stream">The stream to read from.</param>
-        /// <param name="offset">The offset to the header part from the beginning of the stream.</param>
-        /// <param name="size">The size of the header part.</param>
-        /// <param name="part1">Header part 1.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>The loaded header part.</returns>
-        internal async Task<Nefs16HeaderPart4> Read16HeaderPart4Async(Stream stream, uint offset, uint size, NefsHeaderPart1 part1, NefsProgress p)
-        {
-            var entries = new List<Nefs16HeaderPart4Entry>();
-            var indexLookup = new Dictionary<Guid, uint>();
-
-            // Validate inputs
-            if (!this.ValidateHeaderPartStream(stream, offset, size, "4"))
-            {
-                return new Nefs16HeaderPart4(entries, indexLookup);
-            }
-
-            // Get entries in part 4
-            var numEntries = size / Nefs16HeaderPart4Entry.Size;
-            var entryOffset = offset;
-
-            for (var i = 0; i < numEntries; ++i)
-            {
-                using (p.BeginTask(1.0f / numEntries))
-                {
-                    var entry = new Nefs16HeaderPart4Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
-                    entryOffset += Nefs16HeaderPart4Entry.Size;
-
-                    entries.Add(entry);
-                }
-            }
-
-            // Create a table to allow looking up a part 4 index by item Guid
-            foreach (var p1 in part1.EntriesByIndex)
-            {
-                indexLookup.Add(p1.Guid, p1.IndexPart4);
-            }
-
-            return new Nefs16HeaderPart4(entries, indexLookup);
-        }
-
-        /// <summary>
-        /// Reads header part 6 from an input stream.
-        /// </summary>
-        /// <param name="stream">The stream to read from.</param>
-        /// <param name="offset">The offset to the header part from the beginning of the stream.</param>
-        /// <param name="numItems">The number of entries.</param>
-        /// <param name="part1">Header part 1. Used to match part 6 data with an item.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>The loaded header part.</returns>
-        internal async Task<Nefs16HeaderPart6> Read16HeaderPart6Async(Stream stream, uint offset, uint numItems, NefsHeaderPart1 part1, NefsProgress p)
-        {
-            var entries = new List<Nefs16HeaderPart6Entry>();
-            var size = numItems * Nefs16HeaderPart6Entry.Size;
-
-            // Validate inputs
-            if (!this.ValidateHeaderPartStream(stream, offset, size, "6"))
-            {
-                return new Nefs16HeaderPart6(entries);
-            }
-
-            // Get entries in part 6
-            var entryOffset = offset;
-
-            for (var i = 0; i < numItems; ++i)
-            {
-                using (p.BeginTask(1.0f / numItems))
-                {
-                    // Make sure there is a corresponding index in part 1
-                    if (i >= part1.EntriesByIndex.Count)
-                    {
-                        Log.LogError($"Could not find matching item entry for part 6 index {i} in part 1.");
-                        continue;
-                    }
-
-                    // Get Guid from part 1. Part 1 entry order matches part 6 entry order.
-                    var guid = part1.EntriesByIndex[i].Guid;
-
-                    // Read the entry data
-                    var entry = new Nefs16HeaderPart6Entry(guid);
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
-                    entryOffset += Nefs16HeaderPart6Entry.Size;
-
-                    entries.Add(entry);
-                }
-            }
-
-            return new Nefs16HeaderPart6(entries);
-        }
-
-        /// <summary>
-        /// Reads a version 2.0 header from an input stream.
-        /// </summary>
-        /// <param name="stream">The stream to read from.</param>
-        /// <param name="offset">The offset to the header from the beginning of the stream.</param>
-        /// <param name="part6Stream">The stream that contains part 6/7 data.</param>
-        /// <param name="part6Offset">The offset to the start of part 6/7 data.</param>
-        /// <param name="intro">The pre-parsed header intro.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>The loaded header.</returns>
-        internal async Task<Nefs20Header> Read20HeaderAsync(
-            Stream stream,
-            ulong offset,
-            Stream part6Stream,
-            ulong part6Offset,
-            NefsHeaderIntro intro,
-            NefsProgress p)
-        {
-            Nefs20HeaderIntroToc toc = null;
-            NefsHeaderPart1 part1 = null;
-            NefsHeaderPart2 part2 = null;
-            NefsHeaderPart3 part3 = null;
-            Nefs20HeaderPart4 part4 = null;
-            NefsHeaderPart5 part5 = null;
-            Nefs20HeaderPart6 part6 = null;
-            NefsHeaderPart7 part7 = null;
-            NefsHeaderPart8 part8 = null;
-
-            // Calc weight of each task (8 parts + table of contents)
-            var weight = 1.0f / 10.0f;
-
-            using (p.BeginTask(weight, "Reading header intro table of contents"))
-            {
-                toc = await this.Read20HeaderIntroTocAsync(stream, Nefs20HeaderIntroToc.Offset, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 1"))
-            {
-                part1 = await this.ReadHeaderPart1Async(stream, toc.OffsetToPart1, toc.Part1Size, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 2"))
-            {
-                part2 = await this.ReadHeaderPart2Async(stream, toc.OffsetToPart2, toc.Part2Size, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 3"))
-            {
-                part3 = await this.ReadHeaderPart3Async(stream, toc.OffsetToPart3, toc.Part3Size, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 4"))
-            {
-                part4 = await this.Read20HeaderPart4Async(stream, toc.OffsetToPart4, toc.Part4Size, part1, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 5"))
-            {
-                part5 = await this.ReadHeaderPart5Async(stream, toc.OffsetToPart5, NefsHeaderPart5.Size, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 6"))
-            {
-                part6 = await this.Read20HeaderPart6Async(part6Stream, (uint)part6Offset + toc.OffsetToPart6, part1, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 7"))
-            {
-                var numEntries = (uint)part2.EntriesByIndex.Count;
-                part7 = await this.ReadHeaderPart7Async(part6Stream, (uint)part6Offset + toc.OffsetToPart7, numEntries, p);
-            }
-
-            using (p.BeginTask(weight, "Reading header part 8"))
-            {
-                var part8Size = intro.HeaderSize - toc.OffsetToPart8;
-                part8 = await this.ReadHeaderPart8Async(stream, toc.OffsetToPart8, part8Size, p);
-            }
-
-            // Validate header hash
-            if (!this.ValidateHash(stream, offset, intro))
-            {
-                Log.LogWarning("Header hash does not match expected value.");
-            }
-
-            // The header stream must be disposed
-            stream.Dispose();
-
-            return new Nefs20Header(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
-        }
-
-        /// <summary>
         /// Reads the header intro table of contents from an input stream.
         /// </summary>
         /// <param name="stream">The stream to read from.</param>
@@ -562,263 +509,11 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header intro offets data.</returns>
-        internal async Task<Nefs20HeaderIntroToc> Read20HeaderIntroTocAsync(Stream stream, uint offset, NefsProgress p)
+        internal async Task<Nefs20HeaderIntroToc> ReadHeaderIntroTocVersion20Async(Stream stream, long offset, NefsProgress p)
         {
             var toc = new Nefs20HeaderIntroToc();
             await FileData.ReadDataAsync(stream, offset, toc, p);
             return toc;
-        }
-
-        /// <summary>
-        /// Reads header part 4 from an input stream.
-        /// </summary>
-        /// <param name="stream">The stream to read from.</param>
-        /// <param name="offset">The offset to the header part from the beginning of the stream.</param>
-        /// <param name="size">The size of the header part.</param>
-        /// <param name="part1">Header part 1.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>The loaded header part.</returns>
-        internal async Task<Nefs20HeaderPart4> Read20HeaderPart4Async(Stream stream, uint offset, uint size, NefsHeaderPart1 part1, NefsProgress p)
-        {
-            var entries = new List<Nefs20HeaderPart4Entry>();
-            var indexLookup = new Dictionary<Guid, uint>();
-
-            // Validate inputs
-            if (!this.ValidateHeaderPartStream(stream, offset, size, "4"))
-            {
-                return new Nefs20HeaderPart4(entries, indexLookup);
-            }
-
-            // Get entries in part 4
-            var numEntries = size / Nefs20HeaderPart4Entry.Size;
-            var entryOffset = offset;
-
-            for (var i = 0; i < numEntries; ++i)
-            {
-                using (p.BeginTask(1.0f / numEntries))
-                {
-                    var entry = new Nefs20HeaderPart4Entry();
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
-                    entryOffset += Nefs20HeaderPart4Entry.Size;
-
-                    entries.Add(entry);
-                }
-            }
-
-            // Create a table to allow looking up a part 4 index by item Guid
-            foreach (var p1 in part1.EntriesByIndex)
-            {
-                indexLookup.Add(p1.Guid, p1.IndexPart4);
-            }
-
-            return new Nefs20HeaderPart4(entries, indexLookup);
-        }
-
-        /// <summary>
-        /// Reads header part 6 from an input stream.
-        /// </summary>
-        /// <param name="stream">The stream to read from.</param>
-        /// <param name="offset">The offset to the header part from the beginning of the stream.</param>
-        /// <param name="part1">Header part 1. Used to match part 6 data with an item.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>The loaded header part.</returns>
-        internal async Task<Nefs20HeaderPart6> Read20HeaderPart6Async(Stream stream, uint offset, NefsHeaderPart1 part1, NefsProgress p)
-        {
-            var entries = new List<Nefs20HeaderPart6Entry>();
-            var numItems = part1.EntriesByIndex.Count;
-            var size = numItems * Nefs20HeaderPart6Entry.Size;
-
-            // Validate inputs
-            if (!this.ValidateHeaderPartStream(stream, offset, (uint)size, "6"))
-            {
-                return new Nefs20HeaderPart6(entries);
-            }
-
-            // Get entries in part 6
-            var entryOffset = offset;
-
-            for (var i = 0; i < numItems; ++i)
-            {
-                using (p.BeginTask(1.0f / numItems))
-                {
-                    // Make sure there is a corresponding index in part 1
-                    if (i >= part1.EntriesByIndex.Count)
-                    {
-                        Log.LogError($"Could not find matching item entry for part 6 index {i} in part 1.");
-                        continue;
-                    }
-
-                    // Get Guid from part 1. Part 1 entry order matches part 6 entry order.
-                    var guid = part1.EntriesByIndex[i].Guid;
-
-                    // Read the entry data
-                    var entry = new Nefs20HeaderPart6Entry(guid);
-                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
-                    entryOffset += Nefs20HeaderPart6Entry.Size;
-
-                    entries.Add(entry);
-                }
-            }
-
-            return new Nefs20HeaderPart6(entries);
-        }
-
-        /// <summary>
-        /// Reads the header from an input stream.
-        /// </summary>
-        /// <param name="originalStream">The stream to read from.</param>
-        /// <param name="offset">The offset to the header from the beginning of the stream.</param>
-        /// <param name="part6Offset">
-        /// The offset to the start of part 6 data from the beginning of the stream.
-        /// </param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>The loaded header.</returns>
-        internal async Task<INefsHeader> ReadHeaderAsync(Stream originalStream, ulong offset, ulong part6Offset, NefsProgress p)
-        {
-            Stream stream;
-            Stream part6Stream;
-            INefsHeader header = null;
-            NefsHeaderIntro intro = null;
-
-            using (p.BeginTask(0.2f, "Reading header intro"))
-            {
-                // Decrypt header if needed
-                (intro, stream) = await this.ReadHeaderIntroAsync(originalStream, offset, p);
-            }
-
-            // For now, assume that if the header is encrypted, then the part 6 data is not
-            // separated. We've only seen encrypted headers in some nefs 2.0 archives (i.e., DLC content).
-            part6Stream = intro.IsEncrypted ? stream : originalStream;
-
-            using (p.BeginTask(0.8f))
-            {
-                if (intro.NefsVersion == 0x20000)
-                {
-                    // 2.0.0
-                    Log.LogInformation("Detected NeFS version 2.0.");
-                    header = await this.Read20HeaderAsync(stream, 0, part6Stream, part6Offset, intro, p);
-                }
-                else if (intro.NefsVersion == 0x10600)
-                {
-                    // 1.6.0
-                    Log.LogInformation("Detected NeFS version 1.6.");
-                    header = await this.Read16HeaderAsync(stream, 0, part6Stream, part6Offset, intro, p);
-                }
-                else
-                {
-                    Log.LogInformation($"Detected unkown NeFS version {intro.NefsVersion}.");
-                    header = await this.Read20HeaderAsync(stream, 0, part6Stream, part6Offset, intro, p);
-                }
-            }
-
-            // The header stream must be disposed
-            stream.Dispose();
-
-            return header;
-        }
-
-        /// <summary>
-        /// Reads the header intro from an input stream. Returns a new stream that contains the
-        /// header data. This stream must be disposed by the caller. If the header is encrypted, the
-        /// header data is decrypted before being placed in the new stream.
-        /// </summary>
-        /// <param name="stream">The stream to read from.</param>
-        /// <param name="offset">The offset to the header intro from the beginning of the stream.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>The loaded header intro and the stream to use for the rest of the header.</returns>
-        internal async Task<(NefsHeaderIntro Intro, Stream HeaderStream)> ReadHeaderIntroAsync(
-            Stream stream,
-            ulong offset,
-            NefsProgress p)
-        {
-            // The decrypted stream will need to be disposed by the caller
-            var decryptedStream = new MemoryStream();
-            NefsHeaderIntro intro;
-
-            // Read magic number (first four bytes)
-            stream.Seek((long)offset, SeekOrigin.Begin);
-            var magicNum = new UInt32Type(0);
-            await magicNum.ReadAsync(stream, offset, p);
-
-            // Reset stream position
-            stream.Seek((long)offset, SeekOrigin.Begin);
-
-            // Check magic number
-            if (magicNum.Value == NefsHeaderIntro.NefsMagicNumber)
-            {
-                // This is a non-encrypted NeFS header
-                intro = new NefsHeaderIntro();
-                await FileData.ReadDataAsync(stream, offset, intro, p);
-
-                // Copy the entire header to the decrypted stream (nothing to decrypt)
-                stream.Seek((long)offset, SeekOrigin.Begin);
-                await stream.CopyPartialAsync(decryptedStream, intro.HeaderSize, p.CancellationToken);
-            }
-            else
-            {
-                // Magic number is incorrect, assume file is encrpyted
-                Log.LogInformation("Header magic number mismatch, assuming header is encrypted.");
-
-                // Encrypted headers:
-                // - Headers are "encrypted" in a two-step process. RSA-1024. No padding is used.
-                // - First 0x80 bytes are signed with an RSA private key (data -> decrypt ->
-                // scrambled data).
-                // - Must use an RSA 1024-bit public key to unscramble the data (scrambled data ->
-                // encrypt -> data).
-                // - For DiRT Rally 2 this public key is stored in the main executable.
-                byte[] encryptedHeader = new byte[NefsHeaderIntro.Size + 1]; // TODO : Why the +1?
-                await stream.ReadAsync(encryptedHeader, 0, (int)NefsHeaderIntro.Size, p.CancellationToken);
-                encryptedHeader[NefsHeaderIntro.Size] = 0;
-
-                // Use big integers instead of RSA since the c# implementation forces the use of padding.
-                var n = new BigInteger(this.RsaPublicKey);
-                var e = new BigInteger(this.RsaExponent);
-                var m = new BigInteger(encryptedHeader);
-
-                // Decrypt the header intro
-                byte[] decrypted = BigInteger.ModPow(m, e, n).ToByteArray();
-                decryptedStream.Write(decrypted, 0, decrypted.Length);
-
-                // Fill any leftover space with zeros
-                if (decrypted.Length != NefsHeaderIntro.Size)
-                {
-                    for (int i = 0; i < (NefsHeaderIntro.Size - decrypted.Length); i++)
-                    {
-                        decryptedStream.WriteByte(0);
-                    }
-                }
-
-                // Read header intro data from decrypted stream
-                intro = new NefsHeaderIntro(isEncrpyted: true);
-                await FileData.ReadDataAsync(decryptedStream, 0, intro, p);
-
-                // The rest of the header is encrypted using AES-256, decrypt using the key from the
-                // header intro
-                byte[] key = intro.GetAesKey();
-                var headerSize = intro.HeaderSize;
-
-                // Decrypt the rest of the header
-                using (var rijAlg = new RijndaelManaged())
-                {
-                    rijAlg.KeySize = 256;
-                    rijAlg.Key = key;
-                    rijAlg.Mode = CipherMode.ECB;
-                    rijAlg.BlockSize = 128;
-                    rijAlg.Padding = PaddingMode.Zeros;
-
-                    var decryptor = rijAlg.CreateDecryptor();
-                    decryptedStream.Seek(0, SeekOrigin.End);
-
-                    // Decrypt the data - make sure to leave open the base stream
-                    using (var cryptoStream = new CryptoStream(stream, decryptor, CryptoStreamMode.Read, true))
-                    {
-                        // Decrypt data from input stream and copy to the decrypted stream
-                        await cryptoStream.CopyPartialAsync(decryptedStream, headerSize, p.CancellationToken);
-                    }
-                }
-            }
-
-            return (intro, decryptedStream);
         }
 
         /// <summary>
@@ -829,7 +524,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="size">The size of the header part.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header part.</returns>
-        internal async Task<NefsHeaderPart1> ReadHeaderPart1Async(Stream stream, uint offset, uint size, NefsProgress p)
+        internal async Task<NefsHeaderPart1> ReadHeaderPart1Async(Stream stream, long offset, int size, NefsProgress p)
         {
             var entries = new List<NefsHeaderPart1Entry>();
 
@@ -840,7 +535,7 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             // Get entries in part 1
-            var numEntries = size / NefsHeaderPart1Entry.Size;
+            var numEntries = size / NefsHeaderPart1.EntrySize;
             var entryOffset = offset;
 
             for (var i = 0; i < numEntries; ++i)
@@ -850,7 +545,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     var guid = Guid.NewGuid();
                     var entry = new NefsHeaderPart1Entry(guid);
                     await FileData.ReadDataAsync(stream, entryOffset, entry, p);
-                    entryOffset += NefsHeaderPart1Entry.Size;
+                    entryOffset += NefsHeaderPart1.EntrySize;
                     entries.Add(entry);
                 }
             }
@@ -866,7 +561,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="size">The size of the header part.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header part.</returns>
-        internal async Task<NefsHeaderPart2> ReadHeaderPart2Async(Stream stream, uint offset, uint size, NefsProgress p)
+        internal async Task<NefsHeaderPart2> ReadHeaderPart2Async(Stream stream, long offset, int size, NefsProgress p)
         {
             var entries = new List<NefsHeaderPart2Entry>();
 
@@ -877,7 +572,7 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             // Get entries in part 2
-            var numEntries = size / NefsHeaderPart2Entry.Size;
+            var numEntries = size / NefsHeaderPart2.EntrySize;
             var entryOffset = offset;
 
             for (var i = 0; i < numEntries; ++i)
@@ -886,7 +581,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 {
                     var entry = new NefsHeaderPart2Entry();
                     await FileData.ReadDataAsync(stream, entryOffset, entry, p);
-                    entryOffset += NefsHeaderPart2Entry.Size;
+                    entryOffset += NefsHeaderPart2.EntrySize;
 
                     entries.Add(entry);
                 }
@@ -903,7 +598,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="size">The size of the header part.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header part.</returns>
-        internal async Task<NefsHeaderPart3> ReadHeaderPart3Async(Stream stream, uint offset, uint size, NefsProgress p)
+        internal async Task<NefsHeaderPart3> ReadHeaderPart3Async(Stream stream, long offset, int size, NefsProgress p)
         {
             var entries = new List<string>();
 
@@ -957,6 +652,96 @@ namespace VictorBush.Ego.NefsLib.IO
         }
 
         /// <summary>
+        /// Reads header part 4 from an input stream.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
+        /// <param name="offset">The offset to the header part from the beginning of the stream.</param>
+        /// <param name="size">The size of the header part.</param>
+        /// <param name="part1">Header part 1.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>The loaded header part.</returns>
+        internal async Task<Nefs16HeaderPart4> ReadHeaderPart4Version16Async(Stream stream, long offset, int size, NefsHeaderPart1 part1, NefsProgress p)
+        {
+            var entries = new List<Nefs16HeaderPart4Entry>();
+            var indexLookup = new Dictionary<Guid, uint>();
+
+            // Validate inputs
+            if (!this.ValidateHeaderPartStream(stream, offset, size, "4"))
+            {
+                return new Nefs16HeaderPart4(entries, indexLookup);
+            }
+
+            // Get entries in part 4
+            var numEntries = size / Nefs16HeaderPart4.EntrySize;
+            var entryOffset = offset;
+
+            for (var i = 0; i < numEntries; ++i)
+            {
+                using (p.BeginTask(1.0f / numEntries))
+                {
+                    var entry = new Nefs16HeaderPart4Entry();
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    entryOffset += Nefs16HeaderPart4.EntrySize;
+
+                    entries.Add(entry);
+                }
+            }
+
+            // Create a table to allow looking up a part 4 index by item Guid
+            foreach (var p1 in part1.EntriesByIndex)
+            {
+                indexLookup.Add(p1.Guid, p1.IndexPart4);
+            }
+
+            return new Nefs16HeaderPart4(entries, indexLookup);
+        }
+
+        /// <summary>
+        /// Reads header part 4 from an input stream.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
+        /// <param name="offset">The offset to the header part from the beginning of the stream.</param>
+        /// <param name="size">The size of the header part.</param>
+        /// <param name="part1">Header part 1.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>The loaded header part.</returns>
+        internal async Task<Nefs20HeaderPart4> ReadHeaderPart4Version20Async(Stream stream, long offset, int size, NefsHeaderPart1 part1, NefsProgress p)
+        {
+            var entries = new List<Nefs20HeaderPart4Entry>();
+            var indexLookup = new Dictionary<Guid, uint>();
+
+            // Validate inputs
+            if (!this.ValidateHeaderPartStream(stream, offset, size, "4"))
+            {
+                return new Nefs20HeaderPart4(entries, indexLookup);
+            }
+
+            // Get entries in part 4
+            var numEntries = size / Nefs20HeaderPart4.EntrySize;
+            var entryOffset = offset;
+
+            for (var i = 0; i < numEntries; ++i)
+            {
+                using (p.BeginTask(1.0f / numEntries))
+                {
+                    var entry = new Nefs20HeaderPart4Entry();
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    entryOffset += Nefs20HeaderPart4.EntrySize;
+
+                    entries.Add(entry);
+                }
+            }
+
+            // Create a table to allow looking up a part 4 index by item Guid
+            foreach (var p1 in part1.EntriesByIndex)
+            {
+                indexLookup.Add(p1.Guid, p1.IndexPart4);
+            }
+
+            return new Nefs20HeaderPart4(entries, indexLookup);
+        }
+
+        /// <summary>
         /// Reads header part 5 from an input stream.
         /// </summary>
         /// <param name="stream">The stream to read from.</param>
@@ -964,7 +749,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="size">The size of the header part.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header part.</returns>
-        internal async Task<NefsHeaderPart5> ReadHeaderPart5Async(Stream stream, uint offset, uint size, NefsProgress p)
+        internal async Task<NefsHeaderPart5> ReadHeaderPart5Async(Stream stream, long offset, int size, NefsProgress p)
         {
             var part5 = new NefsHeaderPart5();
 
@@ -980,6 +765,104 @@ namespace VictorBush.Ego.NefsLib.IO
         }
 
         /// <summary>
+        /// Reads header part 6 from an input stream.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
+        /// <param name="offset">The offset to the header part from the beginning of the stream.</param>
+        /// <param name="numItems">The number of entries.</param>
+        /// <param name="part1">Header part 1. Used to match part 6 data with an item.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>The loaded header part.</returns>
+        internal async Task<Nefs16HeaderPart6> ReadHeaderPart6Version16Async(Stream stream, long offset, int numItems, NefsHeaderPart1 part1, NefsProgress p)
+        {
+            var entries = new List<Nefs16HeaderPart6Entry>();
+            var size = numItems * Nefs16HeaderPart6.EntrySize;
+
+            // Validate inputs
+            if (!this.ValidateHeaderPartStream(stream, offset, (int)size, "6"))
+            {
+                return new Nefs16HeaderPart6(entries);
+            }
+
+            // Get entries in part 6
+            var entryOffset = offset;
+
+            for (var i = 0; i < numItems; ++i)
+            {
+                using (p.BeginTask(1.0f / numItems))
+                {
+                    // Make sure there is a corresponding index in part 1
+                    if (i >= part1.EntriesByIndex.Count)
+                    {
+                        Log.LogError($"Could not find matching item entry for part 6 index {i} in part 1.");
+                        continue;
+                    }
+
+                    // Get Guid from part 1. Part 1 entry order matches part 6 entry order.
+                    var guid = part1.EntriesByIndex[i].Guid;
+
+                    // Read the entry data
+                    var entry = new Nefs16HeaderPart6Entry(guid);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    entryOffset += Nefs16HeaderPart6.EntrySize;
+
+                    entries.Add(entry);
+                }
+            }
+
+            return new Nefs16HeaderPart6(entries);
+        }
+
+        /// <summary>
+        /// Reads header part 6 from an input stream.
+        /// </summary>
+        /// <param name="stream">The stream to read from.</param>
+        /// <param name="offset">The offset to the header part from the beginning of the stream.</param>
+        /// <param name="part1">Header part 1. Used to match part 6 data with an item.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>The loaded header part.</returns>
+        internal async Task<Nefs20HeaderPart6> ReadHeaderPart6Version20Async(Stream stream, long offset, NefsHeaderPart1 part1, NefsProgress p)
+        {
+            var entries = new List<Nefs20HeaderPart6Entry>();
+            var numItems = part1.EntriesByIndex.Count;
+            var size = numItems * Nefs20HeaderPart6.EntrySize;
+
+            // Validate inputs
+            if (!this.ValidateHeaderPartStream(stream, offset, size, "6"))
+            {
+                return new Nefs20HeaderPart6(entries);
+            }
+
+            // Get entries in part 6
+            var entryOffset = offset;
+
+            for (var i = 0; i < numItems; ++i)
+            {
+                using (p.BeginTask(1.0f / numItems))
+                {
+                    // Make sure there is a corresponding index in part 1
+                    if (i >= part1.EntriesByIndex.Count)
+                    {
+                        Log.LogError($"Could not find matching item entry for part 6 index {i} in part 1.");
+                        continue;
+                    }
+
+                    // Get Guid from part 1. Part 1 entry order matches part 6 entry order.
+                    var guid = part1.EntriesByIndex[i].Guid;
+
+                    // Read the entry data
+                    var entry = new Nefs20HeaderPart6Entry(guid);
+                    await FileData.ReadDataAsync(stream, entryOffset, entry, p);
+                    entryOffset += Nefs20HeaderPart6.EntrySize;
+
+                    entries.Add(entry);
+                }
+            }
+
+            return new Nefs20HeaderPart6(entries);
+        }
+
+        /// <summary>
         /// Reads header part 7 from an input stream.
         /// </summary>
         /// <param name="stream">The stream to read from.</param>
@@ -987,13 +870,13 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="numEntries">Number of entries.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header part.</returns>
-        internal async Task<NefsHeaderPart7> ReadHeaderPart7Async(Stream stream, uint offset, uint numEntries, NefsProgress p)
+        internal async Task<NefsHeaderPart7> ReadHeaderPart7Async(Stream stream, long offset, int numEntries, NefsProgress p)
         {
             var entries = new List<NefsHeaderPart7Entry>();
-            var size = numEntries * NefsHeaderPart7Entry.Size;
+            var size = numEntries * NefsHeaderPart7.EntrySize;
 
             // Validate inputs
-            if (!this.ValidateHeaderPartStream(stream, offset, (uint)size, "7"))
+            if (!this.ValidateHeaderPartStream(stream, offset, size, "7"))
             {
                 return new NefsHeaderPart7(entries);
             }
@@ -1008,7 +891,7 @@ namespace VictorBush.Ego.NefsLib.IO
                     // Read the entry data
                     var entry = new NefsHeaderPart7Entry();
                     await FileData.ReadDataAsync(stream, entryOffset, entry, p);
-                    entryOffset += NefsHeaderPart7Entry.Size;
+                    entryOffset += NefsHeaderPart7.EntrySize;
 
                     entries.Add(entry);
                 }
@@ -1025,18 +908,381 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="size">The size of the header part.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The loaded header part.</returns>
-        internal async Task<NefsHeaderPart8> ReadHeaderPart8Async(Stream stream, uint offset, uint size, NefsProgress p)
+        internal async Task<NefsHeaderPart8> ReadHeaderPart8Async(Stream stream, long offset, int hashBlockSize, NefsHeaderPart5 part5, NefsProgress p)
         {
-            var part8 = new NefsHeaderPart8(size);
+            var totalCompressedDataSize = part5.ArchiveSize - part5.FirstDataOffset;
+            var numHashes = (int)(totalCompressedDataSize / (uint)hashBlockSize);
+            var part8 = new NefsHeaderPart8(numHashes);
 
             // Validate inputs
-            if (!this.ValidateHeaderPartStream(stream, offset, size, "8"))
+            if (!this.ValidateHeaderPartStream(stream, offset, part8.Size, "8"))
             {
                 return part8;
             }
 
-            await stream.ReadAsync(part8.AllTheData.Value, 0, (int)size, p.CancellationToken);
+            await FileData.ReadDataAsync(stream, offset, part8, p);
             return part8;
+        }
+
+        /// <param name="stream">The stream to read from.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>The loaded header.</returns>
+        internal async Task<Nefs16Header> ReadHeaderVersion16Async(
+            Stream stream,
+            long introOffset,
+            long part6Base,
+            NefsHeaderIntro intro,
+            NefsProgress p)
+        {
+            Nefs16HeaderIntroToc toc = null;
+            NefsHeaderPart1 part1 = null;
+            NefsHeaderPart2 part2 = null;
+            NefsHeaderPart3 part3 = null;
+            Nefs16HeaderPart4 part4 = null;
+            NefsHeaderPart5 part5 = null;
+            Nefs16HeaderPart6 part6 = null;
+            NefsHeaderPart7 part7 = null;
+            NefsHeaderPart8 part8 = null;
+
+            // Calc weight of each task (8 parts + table of contents)
+            var weight = 1.0f / 9.0f;
+
+            using (p.BeginTask(weight, "Reading header intro table of contents"))
+            {
+                toc = await this.ReadHeaderIntroTocVersion16Async(stream, introOffset + Nefs16HeaderIntroToc.Offset, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 1"))
+            {
+                part1 = await this.ReadHeaderPart1Async(stream, introOffset + toc.OffsetToPart1, (int)toc.Part1Size, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 2"))
+            {
+                part2 = await this.ReadHeaderPart2Async(stream, introOffset + toc.OffsetToPart2, (int)toc.Part2Size, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 3"))
+            {
+                part3 = await this.ReadHeaderPart3Async(stream, introOffset + toc.OffsetToPart3, (int)toc.Part3Size, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 4"))
+            {
+                part4 = await this.ReadHeaderPart4Version16Async(stream, introOffset + toc.OffsetToPart4, (int)toc.Part4Size, part1, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 5"))
+            {
+                part5 = await this.ReadHeaderPart5Async(stream, introOffset + toc.OffsetToPart5, NefsHeaderPart5.Size, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 6"))
+            {
+                var numEntries = part1.EntriesByIndex.Count;
+                part6 = await this.ReadHeaderPart6Version16Async(stream, part6Base + toc.OffsetToPart6, numEntries, part1, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 7"))
+            {
+                var numEntries = part2.EntriesByIndex.Count;
+                part7 = await this.ReadHeaderPart7Async(stream, part6Base + toc.OffsetToPart7, numEntries, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 8"))
+            {
+                part8 = await this.ReadHeaderPart8Async(stream, introOffset + toc.OffsetToPart8, (int)toc.HashBlockSize, part5, p);
+            }
+
+            return new Nefs16Header(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
+        }
+
+        /// <param name="stream">The stream to read from.</param>
+        /// <param name="p">Progress info.</param>
+        /// <returns>The loaded header.</returns>
+        internal async Task<Nefs20Header> ReadHeaderVersion20Async(
+            Stream stream,
+            long primaryOffset,
+            long secondaryOffset,
+            NefsHeaderIntro intro,
+            NefsProgress p)
+        {
+            Nefs20HeaderIntroToc toc = null;
+            NefsHeaderPart1 part1 = null;
+            NefsHeaderPart2 part2 = null;
+            NefsHeaderPart3 part3 = null;
+            Nefs20HeaderPart4 part4 = null;
+            NefsHeaderPart5 part5 = null;
+            Nefs20HeaderPart6 part6 = null;
+            NefsHeaderPart7 part7 = null;
+            NefsHeaderPart8 part8 = null;
+
+            // Calc weight of each task (8 parts + table of contents)
+            var weight = 1.0f / 9.0f;
+
+            using (p.BeginTask(weight, "Reading header intro table of contents"))
+            {
+                toc = await this.ReadHeaderIntroTocVersion20Async(stream, primaryOffset + Nefs20HeaderIntroToc.Offset, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 1"))
+            {
+                part1 = await this.ReadHeaderPart1Async(stream, primaryOffset + toc.OffsetToPart1, (int)toc.Part1Size, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 2"))
+            {
+                part2 = await this.ReadHeaderPart2Async(stream, primaryOffset + toc.OffsetToPart2, (int)toc.Part2Size, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 3"))
+            {
+                part3 = await this.ReadHeaderPart3Async(stream, primaryOffset + toc.OffsetToPart3, (int)toc.Part3Size, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 4"))
+            {
+                part4 = await this.ReadHeaderPart4Version20Async(stream, primaryOffset + toc.OffsetToPart4, (int)toc.Part4Size, part1, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 5"))
+            {
+                part5 = await this.ReadHeaderPart5Async(stream, primaryOffset + toc.OffsetToPart5, NefsHeaderPart5.Size, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 6"))
+            {
+                part6 = await this.ReadHeaderPart6Version20Async(stream, secondaryOffset + toc.OffsetToPart6, part1, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 7"))
+            {
+                var numEntries = part2.EntriesByIndex.Count;
+                part7 = await this.ReadHeaderPart7Async(stream, secondaryOffset + toc.OffsetToPart7, numEntries, p);
+            }
+
+            using (p.BeginTask(weight, "Reading header part 8"))
+            {
+                var hashBlockSize = NefsWriter.DefaultHashBlockSize;
+                part8 = await this.ReadHeaderPart8Async(stream, primaryOffset + toc.OffsetToPart8, hashBlockSize, part5, p);
+            }
+
+            return new Nefs20Header(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
+        }
+
+        internal async Task<INefsHeader> ReadSplitHeaderAsync(
+            Stream stream, 
+            long primaryOffset, 
+            int? primarySize, 
+            long secondaryOffset, 
+            int? secondarySize, 
+            NefsProgress p)
+        {
+            INefsHeader header = null;
+            NefsHeaderIntro intro = null;
+
+            var validMagicNum = await this.ValidateMagicNumberAsync(stream, primaryOffset, p);
+            if (!validMagicNum)
+            {
+                throw new InvalidOperationException("Header magic number mismatch, aborting.");
+            }
+
+            using (p.BeginTask(0.2f, "Reading header intro"))
+            {
+                intro = await this.ReadHeaderIntroAsync(stream, primaryOffset, p);
+            }
+
+            using (p.BeginTask(0.8f, "Reading header"))
+            {
+                if (intro.NefsVersion == (uint)NefsVersion.Version200)
+                {
+                    // 2.0.0
+                    Log.LogInformation("Detected NeFS version 2.0.");
+                    //header = await this.ReadSplitHeaderVersion20Async(stream, primaryOffset, primarySize, secondaryBase, secondarySize, intro, p);
+                    header = await this.ReadHeaderVersion20Async(stream, primaryOffset, secondaryOffset, intro, p);
+                }
+                else if (intro.NefsVersion == (uint)NefsVersion.Version160)
+                {
+                    // 1.6.0
+                    Log.LogInformation("Detected NeFS version 1.6.");
+                    //header = await this.ReadSplitHeaderVersion16Async(stream, primaryOffset, primarySize, secondaryBase, secondarySize, intro, p);
+                    header = await this.ReadHeaderVersion16Async(stream, primaryOffset, secondaryOffset, intro, p);
+                }
+                else
+                {
+                    Log.LogError($"Detected unkown NeFS version {intro.NefsVersion}. Treating as 2.0.");
+                    //header = await this.ReadSplitHeaderVersion20Async(stream, primaryOffset, primarySize, secondaryBase, secondarySize, intro, p);
+                    header = await this.ReadHeaderVersion20Async(stream, primaryOffset, secondaryOffset, intro, p);
+                }
+            }
+
+            await this.ValidateSplitHeaderHashAsync(stream, primaryOffset, primarySize, secondaryOffset, secondarySize, intro);
+            return header;
+        }
+
+        ///// <summary>
+        ///// Reads a version 1.6 split header from an input stream.
+        ///// </summary>
+        ///// <param name="stream">The stream to read from.</param>
+        ///// <param name="intro">The pre-parsed header intro.</param>
+        ///// <param name="p">Progress info.</param>
+        ///// <returns>The loaded header.</returns>
+        //internal async Task<Nefs16Header> ReadSplitHeaderVersion16Async(
+        //    Stream stream,
+        //    long primaryOffset,
+        //    int primarySize,
+        //    long secondaryBase,
+        //    int secondarySize,
+        //    NefsHeaderIntro intro,
+        //    NefsProgress p)
+        //{
+        //    Nefs16HeaderIntroToc toc = null;
+        //    NefsHeaderPart1 part1 = null;
+        //    NefsHeaderPart2 part2 = null;
+        //    NefsHeaderPart3 part3 = null;
+        //    Nefs16HeaderPart4 part4 = null;
+        //    NefsHeaderPart5 part5 = null;
+        //    Nefs16HeaderPart6 part6 = null;
+        //    NefsHeaderPart7 part7 = null;
+        //    NefsHeaderPart8 part8 = null;
+
+        //    // Calc weight of each task (8 parts + table of contents)
+        //    var weight = 1.0f / 9.0f;
+
+        //    using (p.BeginTask(weight, "Reading header intro table of contents"))
+        //    {
+        //        toc = await this.ReadHeaderIntroTocVersion16Async(stream, primaryOffset + Nefs16HeaderIntroToc.Offset, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 1"))
+        //    {
+        //        part1 = await this.ReadHeaderPart1Async(stream, primaryOffset + toc.OffsetToPart1, (int)toc.Part1Size, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 2"))
+        //    {
+        //        part2 = await this.ReadHeaderPart2Async(stream, primaryOffset + toc.OffsetToPart2, (int)toc.Part2Size, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 3"))
+        //    {
+        //        part3 = await this.ReadHeaderPart3Async(stream, primaryOffset + toc.OffsetToPart3, (int)toc.Part3Size, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 4"))
+        //    {
+        //        part4 = await this.ReadHeaderPart4Version16Async(stream, primaryOffset + toc.OffsetToPart4, (int)toc.Part4Size, part1, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 5"))
+        //    {
+        //        part5 = await this.ReadHeaderPart5Async(stream, primaryOffset + toc.OffsetToPart5, NefsHeaderPart5.Size, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 6"))
+        //    {
+        //        var numEntries = part1.EntriesByIndex.Count;
+        //        part6 = await this.ReadHeaderPart6Version16Async(stream, secondaryBase + toc.OffsetToPart6, numEntries, part1, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 7"))
+        //    {
+        //        var numEntries = part2.EntriesByIndex.Count;
+        //        part7 = await this.ReadHeaderPart7Async(stream, secondaryBase + toc.OffsetToPart7, numEntries, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 8"))
+        //    {
+        //        part8 = await this.ReadHeaderPart8Async(stream, primaryOffset + toc.OffsetToPart8, (int)toc.HashBlockSize, part5, p);
+        //    }
+
+        //    await this.ValidateSplitHeaderHashAsync(stream, primaryOffset, primarySize, secondaryBase + toc.OffsetToPart6, secondarySize, intro);
+        //    return new Nefs16Header(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
+        //}
+
+        ///// <param name="stream">The stream to read from.</param>
+        ///// <param name="p">Progress info.</param>
+        ///// <returns>The loaded header.</returns>
+        //internal async Task<Nefs20Header> ReadSplitHeaderVersion20Async(
+        //    Stream stream,
+        //    long primaryOffset,
+        //    int? primarySize,
+        //    long secondaryBase,
+        //    int? secondarySize,
+        //    NefsHeaderIntro intro,
+        //    NefsProgress p)
+        //{
+        //    Nefs20HeaderIntroToc toc = null;
+        //    NefsHeaderPart1 part1 = null;
+        //    NefsHeaderPart2 part2 = null;
+        //    NefsHeaderPart3 part3 = null;
+        //    Nefs20HeaderPart4 part4 = null;
+        //    NefsHeaderPart5 part5 = null;
+        //    Nefs20HeaderPart6 part6 = null;
+        //    NefsHeaderPart7 part7 = null;
+        //    NefsHeaderPart8 part8 = null;
+
+        //    // Calc weight of each task (9 parts + table of contents)
+        //    var weight = 1.0f / 9.0f;
+
+        //    using (p.BeginTask(weight, "Reading header intro table of contents"))
+        //    {
+        //        toc = await this.ReadHeaderIntroTocVersion20Async(stream, primaryOffset + Nefs20HeaderIntroToc.Offset, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 1"))
+        //    {
+        //        part1 = await this.ReadHeaderPart1Async(stream, primaryOffset + toc.OffsetToPart1, (int)toc.Part1Size, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 2"))
+        //    {
+        //        part2 = await this.ReadHeaderPart2Async(stream, primaryOffset + toc.OffsetToPart2, (int)toc.Part2Size, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 3"))
+        //    {
+        //        part3 = await this.ReadHeaderPart3Async(stream, primaryOffset + toc.OffsetToPart3, (int)toc.Part3Size, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 4"))
+        //    {
+        //        part4 = await this.ReadHeaderPart4Version20Async(stream, primaryOffset + toc.OffsetToPart4, (int)toc.Part4Size, part1, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 5"))
+        //    {
+        //        part5 = await this.ReadHeaderPart5Async(stream, primaryOffset + toc.OffsetToPart5, NefsHeaderPart5.Size, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 6"))
+        //    {
+        //        part6 = await this.ReadHeaderPart6Version20Async(stream, secondaryBase + toc.OffsetToPart6, part1, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 7"))
+        //    {
+        //        var numEntries = part2.EntriesByIndex.Count;
+        //        part7 = await this.ReadHeaderPart7Async(stream, secondaryBase + toc.OffsetToPart7, numEntries, p);
+        //    }
+
+        //    using (p.BeginTask(weight, "Reading header part 8"))
+        //    {
+        //        var hashBlockSize = 0x80000; // TODO : Make const
+        //        part8 = await this.ReadHeaderPart8Async(stream, primaryOffset + toc.OffsetToPart8, hashBlockSize, part5, p);
+        //    }
+
+        //    await this.ValidateSplitHeaderHashAsync(stream, primaryOffset, primarySize, secondaryBase + toc.OffsetToPart6, secondarySize, intro);
+        //    return new Nefs20Header(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
+        //}
+
+        internal async Task<bool> ValidateMagicNumberAsync(Stream stream, long offset, NefsProgress p)
+        {
+            // Read magic number (first four bytes)
+            stream.Seek(offset, SeekOrigin.Begin);
+            var magicNum = new UInt32Type(0);
+            await magicNum.ReadAsync(stream, offset, p);
+            return magicNum.Value == NefsHeaderIntro.NefsMagicNumber;
         }
 
         /// <summary>
@@ -1084,34 +1330,25 @@ namespace VictorBush.Ego.NefsLib.IO
             return nextOffset;
         }
 
-        private bool ValidateHash(Stream stream, ulong offset, NefsHeaderIntro intro)
+        private async Task ValidateEncryptedHeaderAsync(Stream stream, long offset, NefsHeaderIntro intro)
         {
-            var dataToHashSize = intro.IsEncrypted ? intro.HeaderSize - 0x22 : intro.HeaderSize - 0x20;
-            byte[] dataToHash = new byte[dataToHashSize];
-
-            stream.Seek((long)offset, SeekOrigin.Begin);
-            stream.Read(dataToHash, 0, 4);
-
-            stream.Seek(0x24, SeekOrigin.Begin);
-            if (!intro.IsEncrypted)
+            var hash = await HashHelper.HashEncryptedHeaderAsync(stream, offset, (int)intro.HeaderSize);
+            if (hash != intro.ExpectedHash)
             {
-                stream.Read(dataToHash, 4, (int)intro.HeaderSize - 0x24);
-            }
-            else
-            {
-                stream.Read(dataToHash, 4, 0x5A);
-                stream.Seek(0x80, SeekOrigin.Begin);
-                stream.Read(dataToHash, 0x5E, (int)intro.HeaderSize - 0x80);
-            }
-
-            using (var hash = SHA256.Create())
-            {
-                byte[] hashOut = hash.ComputeHash(dataToHash);
-                return hashOut.SequenceEqual(intro.ExpectedHash);
+                Log.LogWarning("Header hash does not match expected value.");
             }
         }
 
-        private bool ValidateHeaderPartStream(Stream stream, uint offset, uint size, string part)
+        private async Task ValidateHeaderHashAsync(Stream stream, long offset, NefsHeaderIntro intro)
+        {
+            var hash = await HashHelper.HashStandardHeaderAsync(stream, offset, (int)intro.HeaderSize);
+            if (hash != intro.ExpectedHash)
+            {
+                Log.LogWarning("Header hash does not match expected value.");
+            }
+        }
+
+        private bool ValidateHeaderPartStream(Stream stream, long offset, int size, string part)
         {
             if (size == 0)
             {
@@ -1133,5 +1370,40 @@ namespace VictorBush.Ego.NefsLib.IO
 
             return true;
         }
+
+        private async Task ValidateSplitHeaderHashAsync(Stream stream, long primaryOffset, int? primarySize, long secondaryOffset, int? secondarySize, NefsHeaderIntro intro)
+        {
+            if (!primarySize.HasValue)
+            {
+                Log.LogWarning("Split-header primary size not specified, cannot validate hash.");
+                return;
+            }
+
+            if (!secondarySize.HasValue)
+            {
+                Log.LogWarning("Split-header secondary size not specified, cannot validate hash.");
+                return;
+            }
+
+            var hash = await HashHelper.HashSplitHeaderAsync(stream, primaryOffset, primarySize.Value, secondaryOffset, secondarySize.Value);
+            if (hash != intro.ExpectedHash)
+            {
+                Log.LogWarning("Header hash does not match expected value.");
+            }
+        }
+
+        //private async Task<bool> ValidateHashAsync(Stream stream, long offset, NefsHeaderIntro intro)
+        //{
+        //    var hashBuilder = new Sha256HashBuilder();
+        //    await hashBuilder.AddDataAsync(stream, (long)offset, 4);
+
+        // if (!intro.IsEncrypted) { await hashBuilder.AddDataAsync(stream, (long)offset + 0x24,
+        // (int)intro.HeaderSize - 0x24); } else { await hashBuilder.AddDataAsync(stream,
+        // (long)offset + 0x24, 0x5A); await hashBuilder.AddDataAsync(stream, (long)offset + 0x80 +
+        // 0x5E, (int)intro.HeaderSize - 0x80); }
+
+        //    var hash = hashBuilder.FinishHash();
+        //    return hash == intro.ExpectedHash;
+        //}
     }
 }

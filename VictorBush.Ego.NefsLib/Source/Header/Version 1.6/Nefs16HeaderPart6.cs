@@ -14,6 +14,8 @@ namespace VictorBush.Ego.NefsLib.Header
     {
         private readonly Dictionary<Guid, Nefs16HeaderPart6Entry> entriesByGuid;
         private readonly List<Nefs16HeaderPart6Entry> entriesByIndex;
+     
+        public const int EntrySize = 0x4;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Nefs16HeaderPart6"/> class.
@@ -24,6 +26,8 @@ namespace VictorBush.Ego.NefsLib.Header
             this.entriesByIndex = new List<Nefs16HeaderPart6Entry>(entries);
             this.entriesByGuid = new Dictionary<Guid, Nefs16HeaderPart6Entry>(entries.ToDictionary(e => e.Guid));
         }
+
+        public int Size => this.entriesByIndex.Count * EntrySize;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Nefs16HeaderPart6"/> class from a list of items.

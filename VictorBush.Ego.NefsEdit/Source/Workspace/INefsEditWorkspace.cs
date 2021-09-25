@@ -8,6 +8,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
     using System.Threading.Tasks;
     using VictorBush.Ego.NefsEdit.Commands;
     using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
     using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Item;
 

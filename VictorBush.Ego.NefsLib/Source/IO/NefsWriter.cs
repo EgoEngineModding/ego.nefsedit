@@ -9,11 +9,13 @@ namespace VictorBush.Ego.NefsLib.IO
     using System.Security.Cryptography;
     using System.Text;
     using System.Threading.Tasks;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.DataTypes;
     using VictorBush.Ego.NefsLib.Header;
     using VictorBush.Ego.NefsLib.Item;
     using VictorBush.Ego.NefsLib.Progress;
+    using VictorBush.Ego.NefsLib.Source.Utility;
     using VictorBush.Ego.NefsLib.Utility;
 
     /// <summary>
@@ -37,6 +39,8 @@ namespace VictorBush.Ego.NefsLib.IO
             this.Transformer = transfomer ?? throw new ArgumentNullException(nameof(transfomer));
         }
 
+        internal const int DefaultHashBlockSize = 0x800000;
+
         /// <summary>
         /// The file system.
         /// </summary>
@@ -53,14 +57,14 @@ namespace VictorBush.Ego.NefsLib.IO
         private INefsTransformer Transformer { get; }
 
         /// <inheritdoc/>
-        public async Task<NefsArchive> WriteArchiveAsync(string destFilePath, NefsArchive nefs, NefsProgress p)
+        public async Task<(NefsArchive Archive, NefsArchiveSource Source)> WriteArchiveAsync(string destFilePath, NefsArchive nefs, NefsProgress p)
         {
             NefsArchive newArchive = null;
 
             // Check header version
             if (!(nefs.Header is Nefs20Header header))
             {
-                throw new NotSupportedException("Can only write v2.0 files right now.");
+                throw new NotSupportedException("Can only write v2.0 NeFS files right now.");
             }
 
             // Setup temp working directory
@@ -70,78 +74,66 @@ namespace VictorBush.Ego.NefsLib.IO
             var tempFilePath = Path.Combine(workDir, "temp.nefs");
             using (var file = this.FileSystem.File.Open(tempFilePath, FileMode.Create))
             {
-                newArchive = await this.WriteArchiveAsync(file, header, nefs.Items, workDir, p);
+                newArchive = await this.WriteArchiveVersion20Async(file, header, nefs.Items, workDir, p);
             }
 
             // Copy to final destination
             this.FileSystem.File.Copy(tempFilePath, destFilePath, true);
 
-            return newArchive;
+            return (newArchive, NefsArchiveSource.Standard(destFilePath));
         }
 
-        /// <summary>
-        /// Writes the header intro to an output stream.
-        /// </summary>
-        /// <param name="stream">The stream to write to.</param>
-        /// <param name="offset">The absolute offset in the stream to write at.</param>
-        /// <param name="intro">The intro to write.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>An async task.</returns>
-        internal async Task WriteHeaderIntroAsync(Stream stream, UInt64 offset, NefsHeaderIntro intro, NefsProgress p)
+        /// <inheritdoc/>
+        public async Task<(NefsArchive Archive, NefsArchiveSource Source)> WriteNefsInjectArchiveAsync(string dataFilePath, string nefsInjectFilePath, NefsArchive nefs, NefsProgress p)
+        {
+            NefsArchive newArchive = null;
+
+            // Setup temp working directory
+            var workDir = this.PrepareWorkingDirectory(dataFilePath);
+
+            // Write to temp file
+            var tempDataFilePath = Path.Combine(workDir, "temp.dat");
+            var tempNefsInjectFilePath = Path.Combine(workDir, "temp.dat.nefsinject");
+            using (var dataFile = this.FileSystem.File.Open(tempDataFilePath, FileMode.Create))
+            using (var nefsInjectFile = this.FileSystem.File.Open(tempNefsInjectFilePath, FileMode.Create))
+            {
+                switch (nefs.Header)
+                {
+                    case Nefs20Header v20Header:
+                        newArchive = await this.WriteNefsInjectArchiveVersion20Async(dataFile, nefsInjectFile, v20Header, nefs.Items, workDir, p);
+                        break;
+
+                    case Nefs16Header v16Header:
+                        newArchive = await this.WriteNefsInjectArchiveVersion16Async(dataFile, nefsInjectFile, v16Header, nefs.Items, workDir, p);
+                        break;
+
+                    default:
+                        throw new NotSupportedException("Unsupported archive version.");
+                }
+            }
+
+            // Copy to final destination
+            this.FileSystem.File.Copy(tempDataFilePath, dataFilePath, true);
+            this.FileSystem.File.Copy(tempNefsInjectFilePath, nefsInjectFilePath, true);
+
+            var source = NefsArchiveSource.NefsInject(dataFilePath, nefsInjectFilePath);
+            return (newArchive, source);
+        }
+
+        internal async Task WriteHeaderPartAsync(Stream stream, long offset, object part, NefsProgress p)
         {
             using (var t = p.BeginTask(1.0f))
             {
-                await FileData.WriteDataAsync(stream, offset, intro, p);
+                await FileData.WriteDataAsync(stream, offset, part, p);
             }
         }
 
-        /// <summary>
-        /// Writes the header intro table of contents to an output stream.
-        /// </summary>
-        /// <param name="stream">The stream to write to.</param>
-        /// <param name="offset">The absolute offset in the stream to write at.</param>
-        /// <param name="toc">The table of contents to write.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>An async task.</returns>
-        internal async Task WriteHeaderIntroTocAsync(Stream stream, UInt64 offset, Nefs20HeaderIntroToc toc, NefsProgress p)
+        internal async Task WriteHeaderPartWithEntriesAsync(Stream stream, long offset, IEnumerable<INefsHeaderPartEntry> entries, NefsProgress p)
         {
-            using (var t = p.BeginTask(1.0f))
-            {
-                await FileData.WriteDataAsync(stream, offset, toc, p);
-            }
-        }
-
-        /// <summary>
-        /// Writes the header part to an output stream.
-        /// </summary>
-        /// <param name="stream">The stream to write to.</param>
-        /// <param name="offset">The absolute offset in the stream to write at.</param>
-        /// <param name="part1">The data to write.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>An async task.</returns>
-        internal async Task WriteHeaderPart1Async(Stream stream, UInt64 offset, NefsHeaderPart1 part1, NefsProgress p)
-        {
-            foreach (var entry in part1.EntriesByIndex)
+            foreach (var entry in entries)
             {
                 await FileData.WriteDataAsync(stream, offset, entry, p);
-                offset += NefsHeaderPart1Entry.Size;
-            }
-        }
-
-        /// <summary>
-        /// Writes the header part to an output stream.
-        /// </summary>
-        /// <param name="stream">The stream to write to.</param>
-        /// <param name="offset">The absolute offset in the stream to write at.</param>
-        /// <param name="part2">The data to write.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>An async task.</returns>
-        internal async Task WriteHeaderPart2Async(Stream stream, UInt64 offset, NefsHeaderPart2 part2, NefsProgress p)
-        {
-            foreach (var entry in part2.EntriesByIndex)
-            {
-                await FileData.WriteDataAsync(stream, offset, entry, p);
-                offset += NefsHeaderPart2Entry.Size;
+                offset += entry.Size;
             }
         }
 
@@ -153,7 +145,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="part3">The data to write.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>An async task.</returns>
-        internal async Task WriteHeaderPart3Async(Stream stream, UInt64 offset, NefsHeaderPart3 part3, NefsProgress p)
+        internal async Task WriteHeaderPart3Async(Stream stream, long offset, NefsHeaderPart3 part3, NefsProgress p)
         {
             stream.Seek((long)offset, SeekOrigin.Begin);
 
@@ -165,83 +157,6 @@ namespace VictorBush.Ego.NefsLib.IO
                 // Write null terminator
                 await stream.WriteAsync(new byte[] { 0 }, 0, 1, p.CancellationToken);
             }
-        }
-
-        /// <summary>
-        /// Writes the header part to an output stream.
-        /// </summary>
-        /// <param name="stream">The stream to write to.</param>
-        /// <param name="offset">The absolute offset in the stream to write at.</param>
-        /// <param name="part4">The data to write.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>An async task.</returns>
-        internal async Task WriteHeaderPart4Async(Stream stream, UInt64 offset, Nefs20HeaderPart4 part4, NefsProgress p)
-        {
-            foreach (var entry in part4.EntriesByIndex)
-            {
-                await FileData.WriteDataAsync(stream, offset, entry, p);
-                offset += Nefs20HeaderPart4Entry.Size;
-            }
-        }
-
-        /// <summary>
-        /// Writes the header part to an output stream.
-        /// </summary>
-        /// <param name="stream">The stream to write to.</param>
-        /// <param name="offset">The absolute offset in the stream to write at.</param>
-        /// <param name="part5">The data to write.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>An async task.</returns>
-        internal async Task WriteHeaderPart5Async(Stream stream, UInt64 offset, NefsHeaderPart5 part5, NefsProgress p)
-        {
-            await FileData.WriteDataAsync(stream, offset, part5, p);
-        }
-
-        /// <summary>
-        /// Writes the header part to an output stream.
-        /// </summary>
-        /// <param name="stream">The stream to write to.</param>
-        /// <param name="offset">The absolute offset in the stream to write at.</param>
-        /// <param name="part6">The data to write.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>An async task.</returns>
-        internal async Task WriteHeaderPart6Async(Stream stream, UInt64 offset, Nefs20HeaderPart6 part6, NefsProgress p)
-        {
-            foreach (var entry in part6.EntriesByIndex)
-            {
-                await FileData.WriteDataAsync(stream, offset, entry, p);
-                offset += Nefs20HeaderPart6Entry.Size;
-            }
-        }
-
-        /// <summary>
-        /// Writes the header part to an output stream.
-        /// </summary>
-        /// <param name="stream">The stream to write to.</param>
-        /// <param name="offset">The absolute offset in the stream to write at.</param>
-        /// <param name="part7">The data to write.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>An async task.</returns>
-        internal async Task WriteHeaderPart7Async(Stream stream, UInt64 offset, NefsHeaderPart7 part7, NefsProgress p)
-        {
-            foreach (var entry in part7.EntriesByIndex)
-            {
-                await FileData.WriteDataAsync(stream, offset, entry, p);
-                offset += NefsHeaderPart7Entry.Size;
-            }
-        }
-
-        /// <summary>
-        /// Writes the header part to an output stream.
-        /// </summary>
-        /// <param name="stream">The stream to write to.</param>
-        /// <param name="offset">The absolute offset in the stream to write at.</param>
-        /// <param name="part8">The data to write.</param>
-        /// <param name="p">Progress info.</param>
-        /// <returns>An async task.</returns>
-        internal async Task WriteHeaderPart8Async(Stream stream, UInt64 offset, NefsHeaderPart8 part8, NefsProgress p)
-        {
-            await FileData.WriteDataAsync(stream, offset, part8, p);
         }
 
         /// <summary>
@@ -383,12 +298,12 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>The async task.</returns>
         private async Task UpdateHashAsync(
             Stream stream,
-            UInt64 headerOffset,
+            long headerOffset,
             Nefs20Header header,
             NefsProgress p)
         {
             // The hash is of the entire header expect for the expected hash
-            var firstOffset = (long)headerOffset;
+            var firstOffset = headerOffset;
             var secondOffset = firstOffset + 0x24;
             var headerSize = (int)header.Intro.HeaderSize;
 
@@ -424,7 +339,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="workDir">Temp working directory path.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>A new NefsArchive object containing the updated header and item metadata.</returns>
-        private async Task<NefsArchive> WriteArchiveAsync(
+        private async Task<NefsArchive> WriteArchiveVersion20Async(
             Stream stream,
             Nefs20Header sourceHeader,
             NefsItemList sourceItems,
@@ -453,13 +368,13 @@ namespace VictorBush.Ego.NefsLib.IO
             // Compute header size
             var introSize = NefsHeaderIntro.Size;
             var tocSize = Nefs20HeaderIntroToc.Size;
-            var p1Size = numItems * NefsHeaderPart1Entry.Size; // TODO : What about duplicates?
-            var p2Size = numItems * NefsHeaderPart2Entry.Size; // TODO : What about duplicates?
+            var p1Size = numItems * NefsHeaderPart1.EntrySize; // TODO : What about duplicates?
+            var p2Size = numItems * NefsHeaderPart2.EntrySize; // TODO : What about duplicates?
             var p3Size = p3.Size;
             var p4Size = p4.Size;
             var p5Size = NefsHeaderPart5.Size;
-            var p6Size = numItems * Nefs20HeaderPart6Entry.Size;
-            var p7Size = numItems * NefsHeaderPart7Entry.Size;
+            var p6Size = numItems * Nefs20HeaderPart6.EntrySize;
+            var p7Size = numItems * NefsHeaderPart7.EntrySize;
             var p8Size = sourceHeader.Intro.HeaderSize - sourceHeader.TableOfContents.OffsetToPart8;
             var headerSize = introSize + tocSize + p1Size + p2Size + p3Size + p4Size + p5Size + p6Size + p7Size + p8Size;
 
@@ -472,7 +387,7 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             // Write item data
-            UInt64 archiveSize;
+            long archiveSize;
             using (var t = p.BeginTask(taskWeightWriteItems, "Writing items"))
             {
                 archiveSize = await this.WriteItemsAsync(stream, items, firstDataOffset, p);
@@ -486,7 +401,7 @@ namespace VictorBush.Ego.NefsLib.IO
 
             // Compute total archive size
             var p5 = new NefsHeaderPart5();
-            p5.Data0x00_ArchiveSize.Value = archiveSize;
+            p5.Data0x00_ArchiveSize.Value = (ulong)archiveSize;
             p5.Data0x08_ArchiveNameStringOffset.Value = p3.OffsetsByFileName[items.DataFileName];
             p5.Data0x0C_FirstDataOffset.Value = sourceHeader.Part5.FirstDataOffset;
 
@@ -503,7 +418,7 @@ namespace VictorBush.Ego.NefsLib.IO
             var toc = new Nefs20HeaderIntroToc();
             toc.Data0x00_NumVolumes.Value = sourceHeader.TableOfContents.NumVolumes;
             toc.Data0x02_HashBlockSize.Value = sourceHeader.TableOfContents.Data0x02_HashBlockSize.Value;
-            toc.Data0x04_OffsetToPart1.Value = introSize + tocSize;
+            toc.Data0x04_OffsetToPart1.Value = (uint)(introSize + tocSize);
             toc.Data0x0c_OffsetToPart2.Value = toc.OffsetToPart1 + (uint)p1Size;
             toc.Data0x14_OffsetToPart3.Value = toc.OffsetToPart2 + (uint)p2Size;
             toc.Data0x18_OffsetToPart4.Value = toc.OffsetToPart3 + (uint)p3Size;
@@ -514,7 +429,16 @@ namespace VictorBush.Ego.NefsLib.IO
             toc.Data0x24_Unknown.Value = sourceHeader.TableOfContents.Unknown0x24;
 
             // Part 8 - not writing anything for now
-            var p8 = new NefsHeaderPart8(p8Size);
+            var totalCompressedDataSize = p5.FirstDataOffset - p5.ArchiveSize;
+            var hashBlockSize = toc.HashBlockSize > 0 ? toc.HashBlockSize : DefaultHashBlockSize;
+            var numHashes = (int)(totalCompressedDataSize / hashBlockSize);
+            var hashes = new List<Sha256Hash>();
+            for (var i = 0; i < numHashes; ++i)
+            {
+                hashes.Add(new Sha256Hash(new byte[20]));
+            }
+
+            var p8 = new NefsHeaderPart8(hashes);
 
             // Create new header object
             var header = new Nefs20Header(intro, toc, p1, p2, p3, p4, p5, p6, p7, p8);
@@ -522,11 +446,230 @@ namespace VictorBush.Ego.NefsLib.IO
             // Write the header
             using (var t = p.BeginTask(taskWeightHeader, "Writing header"))
             {
-                await this.WriteHeaderAsync(stream, 0, header, p);
+                await this.WriteHeaderVersion20Async(stream, 0, header, p);
             }
 
             // Update hash
             await this.UpdateHashAsync(stream, 0, header, p);
+
+            // Create new archive object
+            return new NefsArchive(header, items);
+        }
+
+        private async Task<NefsArchive> WriteNefsInjectArchiveVersion20Async(
+            Stream dataFileStream,
+            Stream nefsInjectFileStream,
+            Nefs20Header sourceHeader,
+            NefsItemList sourceItems,
+            string workDir,
+            NefsProgress p)
+        {
+            // Setup task weights
+            var taskWeightPrepareItems = 0.45f;
+            var taskWeightWriteItems = 0.45f;
+            var taskWeightHeader = 0.1f;
+
+            // Prepare items for writing
+            NefsItemList items;
+            using (var t = p.BeginTask(taskWeightPrepareItems, "Preparing items"))
+            {
+                items = await this.PrepareItemsAsync(sourceItems, workDir, p);
+            }
+
+            // Write item data
+            long dataFileSize;
+            using (var t = p.BeginTask(taskWeightWriteItems, "Writing items"))
+            {
+                dataFileSize = await this.WriteItemsAsync(dataFileStream, items, 0, p);
+            }
+
+            var numItems = items.Count;
+            var p4 = new Nefs20HeaderPart4(items);
+            var p3 = new NefsHeaderPart3(items);
+            var p1 = new NefsHeaderPart1(items, p4);
+            var p2 = new NefsHeaderPart2(items, p3);
+            var p6 = new Nefs20HeaderPart6(items);
+            var p7 = new NefsHeaderPart7(items);
+
+            // TODO - Header part 5 constructor - also change to DataSize or something
+            var p5 = new NefsHeaderPart5();
+            p5.Data0x00_ArchiveSize.Value = (ulong)dataFileSize;
+            p5.Data0x08_ArchiveNameStringOffset.Value = p3.OffsetsByFileName[items.DataFileName];
+            p5.Data0x0C_FirstDataOffset.Value = sourceHeader.Part5.FirstDataOffset;
+
+            // Part 8 - not writing anything for now
+            //var totalCompressedDataSize = p5.FirstDataOffset - p5.ArchiveSize;
+            var hashBlockSize = DefaultHashBlockSize;
+            var numHashes = (int)(dataFileSize / (uint)hashBlockSize);
+            var hashes = new List<Sha256Hash>();
+            for (var i = 0; i < numHashes; ++i)
+            {
+                hashes.Add(new Sha256Hash(new byte[20]));
+            }
+
+            var p8 = new NefsHeaderPart8(hashes);
+
+            var introSize = NefsHeaderIntro.Size;
+            var tocSize = Nefs20HeaderIntroToc.Size;
+            var p1Size = p1.Size; // TODO : What about duplicates?
+            var p2Size = p2.Size; // TODO : What about duplicates?
+            var p3Size = p3.Size;
+            var p4Size = p4.Size;
+            var p5Size = NefsHeaderPart5.Size;
+            var p6Size = p6.Size;
+            var p7Size = p7.Size;
+            var p8Size = p8.Size;
+
+            var primarySize = introSize +
+                tocSize + p1Size + p2Size + p3Size + p4Size + p5Size +
+                p8Size;
+
+            var secondarySize = p6Size + p7Size;
+            var headerSize = primarySize + secondarySize;
+
+            // Update header intro
+            var intro = new NefsHeaderIntro();
+            intro.Data0x00_MagicNumber.Value = sourceHeader.Intro.MagicNumber;
+            intro.Data0x24_AesKeyHexString.Value = sourceHeader.Intro.AesKeyHexString;
+            intro.Data0x64_HeaderSize.Value = (uint)headerSize;
+            intro.Data0x68_NefsVersion.Value = sourceHeader.Intro.NefsVersion;
+            intro.Data0x6c_NumberOfItems.Value = (uint)numItems;
+            intro.Data0x70_UnknownZlib.Value = sourceHeader.Intro.Unknown0x70zlib;
+            intro.Data0x78_Unknown.Value = sourceHeader.Intro.Unknown0x78;
+
+            var toc = new Nefs20HeaderIntroToc();
+            toc.Data0x00_NumVolumes.Value = sourceHeader.TableOfContents.NumVolumes;
+            toc.Data0x02_HashBlockSize.Value = sourceHeader.TableOfContents.Data0x02_HashBlockSize.Value;
+            toc.Data0x04_OffsetToPart1.Value = (uint)(introSize + tocSize);
+            toc.Data0x0c_OffsetToPart2.Value = toc.OffsetToPart1 + (uint)p1Size;
+            toc.Data0x14_OffsetToPart3.Value = toc.OffsetToPart2 + (uint)p2Size;
+            toc.Data0x18_OffsetToPart4.Value = toc.OffsetToPart3 + (uint)p3Size;
+            toc.Data0x1c_OffsetToPart5.Value = toc.OffsetToPart4 + (uint)p4Size;
+            toc.Data0x20_OffsetToPart8.Value = toc.OffsetToPart5 + (uint)p5Size;
+            toc.Data0x08_OffsetToPart6.Value = 0;
+            toc.Data0x10_OffsetToPart7.Value = toc.OffsetToPart6 + (uint)p6Size;
+            toc.Data0x24_Unknown.Value = sourceHeader.TableOfContents.Unknown0x24;
+
+            // Create new header object
+            var header = new Nefs20Header(intro, toc, p1, p2, p3, p4, p5, p6, p7, p8);
+
+            NefsInjectHeader nefsInject;
+            using (var t = p.BeginTask(taskWeightHeader, "Writing header"))
+            {
+                nefsInject = await this.WriteNefsInjectHeaderVersion20Async(nefsInjectFileStream, header, primarySize, secondarySize, p);
+            }
+
+            // Update hash
+            var hash = await HashHelper.HashSplitHeaderAsync(nefsInjectFileStream, nefsInject.PrimaryOffset, nefsInject.PrimarySize, nefsInject.SecondaryOffset, nefsInject.SecondarySize);
+            header.Intro.Data0x04_ExpectedHash.Value = hash.Value;
+            await header.Intro.Data0x04_ExpectedHash.WriteAsync(nefsInjectFileStream, nefsInject.PrimaryOffset, p);
+
+            // Create new archive object
+            return new NefsArchive(header, items);
+        }
+
+        private async Task<NefsArchive> WriteNefsInjectArchiveVersion16Async(
+            Stream dataFileStream,
+            Stream nefsInjectFileStream,
+            Nefs16Header sourceHeader,
+            NefsItemList sourceItems,
+            string workDir,
+            NefsProgress p)
+        {
+            // Setup task weights
+            var taskWeightPrepareItems = 0.45f;
+            var taskWeightWriteItems = 0.45f;
+            var taskWeightHeader = 0.1f;
+
+            // Prepare items for writing
+            NefsItemList items;
+            using (var t = p.BeginTask(taskWeightPrepareItems, "Preparing items"))
+            {
+                items = await this.PrepareItemsAsync(sourceItems, workDir, p);
+            }
+
+            // Write item data
+            long dataFileSize;
+            using (var t = p.BeginTask(taskWeightWriteItems, "Writing items"))
+            {
+                dataFileSize = await this.WriteItemsAsync(dataFileStream, items, 0, p);
+            }
+
+            var numItems = items.Count;
+            var p4 = new Nefs16HeaderPart4(items);
+            var p3 = new NefsHeaderPart3(items);
+            var p1 = new NefsHeaderPart1(items, p4);
+            var p2 = new NefsHeaderPart2(items, p3);
+            var p6 = new Nefs16HeaderPart6(items);
+            var p7 = new NefsHeaderPart7(items);
+
+            // TODO - Header part 5 constructor - also change to DataSize or something
+            var p5 = new NefsHeaderPart5();
+            p5.Data0x00_ArchiveSize.Value = (ulong)dataFileSize;
+            p5.Data0x08_ArchiveNameStringOffset.Value = p3.OffsetsByFileName[items.DataFileName];
+            p5.Data0x0C_FirstDataOffset.Value = sourceHeader.Part5.FirstDataOffset;
+
+            // Part 8 - not writing anything for now
+            var hashBlockSize = (int)sourceHeader.TableOfContents.HashBlockSize;
+            var numHashes = (int)(dataFileSize / (uint)hashBlockSize);
+            var hashes = await HashHelper.HashDataFileBlocksAsync(dataFileStream, p5.FirstDataOffset, hashBlockSize, numHashes, p.CancellationToken);
+
+            var p8 = new NefsHeaderPart8(hashes);
+
+            var introSize = NefsHeaderIntro.Size;
+            var tocSize = Nefs16HeaderIntroToc.Size;
+            var p1Size = p1.Size; // TODO : What about duplicates?
+            var p2Size = p2.Size; // TODO : What about duplicates?
+            var p3Size = p3.Size;
+            var p4Size = p4.Size;
+            var p5Size = NefsHeaderPart5.Size;
+            var p6Size = p6.Size;
+            var p7Size = p7.Size;
+            var p8Size = p8.Size;
+
+            var primarySize = introSize +
+                tocSize + p1Size + p2Size + p3Size + p4Size + p5Size +
+                p8Size;
+
+            var secondarySize = p6Size + p7Size;
+            var headerSize = primarySize + secondarySize;
+
+            // Update header intro
+            var intro = new NefsHeaderIntro();
+            intro.Data0x00_MagicNumber.Value = sourceHeader.Intro.MagicNumber;
+            intro.Data0x24_AesKeyHexString.Value = sourceHeader.Intro.AesKeyHexString;
+            intro.Data0x64_HeaderSize.Value = (uint)headerSize;
+            intro.Data0x68_NefsVersion.Value = sourceHeader.Intro.NefsVersion;
+            intro.Data0x6c_NumberOfItems.Value = (uint)numItems;
+            intro.Data0x70_UnknownZlib.Value = sourceHeader.Intro.Unknown0x70zlib;
+            intro.Data0x78_Unknown.Value = sourceHeader.Intro.Unknown0x78;
+
+            var toc = new Nefs16HeaderIntroToc();
+            toc.Data0x00_NumVolumes.Value = sourceHeader.TableOfContents.NumVolumes;
+            toc.Data0x02_HashBlockSize.Value = sourceHeader.TableOfContents.Data0x02_HashBlockSize.Value;
+            toc.Data0x08_OffsetToPart1.Value = (uint)(introSize + tocSize);
+            toc.Data0x10_OffsetToPart2.Value = toc.OffsetToPart1 + (uint)p1Size;
+            toc.Data0x18_OffsetToPart3.Value = toc.OffsetToPart2 + (uint)p2Size;
+            toc.Data0x1c_OffsetToPart4.Value = toc.OffsetToPart3 + (uint)p3Size;
+            toc.Data0x20_OffsetToPart5.Value = toc.OffsetToPart4 + (uint)p4Size;
+            toc.Data0x24_OffsetToPart8.Value = toc.OffsetToPart5 + (uint)p5Size;
+            toc.Data0x0c_OffsetToPart6.Value = 0;
+            toc.Data0x14_OffsetToPart7.Value = toc.OffsetToPart6 + (uint)p6Size;
+            toc.Data0x28_Unknown.Value = sourceHeader.TableOfContents.Unknown0x28;
+
+            // Create new header object
+            var header = new Nefs16Header(intro, toc, p1, p2, p3, p4, p5, p6, p7, p8);
+
+            NefsInjectHeader nefsInject;
+            using (var t = p.BeginTask(taskWeightHeader, "Writing header"))
+            {
+                nefsInject = await this.WriteNefsInjectHeaderVersion16Async(nefsInjectFileStream, header, primarySize, secondarySize, p);
+            }
+
+            // Update hash
+            var hash = await HashHelper.HashSplitHeaderAsync(nefsInjectFileStream, nefsInject.PrimaryOffset, nefsInject.PrimarySize, nefsInject.SecondaryOffset, nefsInject.SecondarySize);
+            header.Intro.Data0x04_ExpectedHash.Value = hash.Value;
+            await header.Intro.Data0x04_ExpectedHash.WriteAsync(nefsInjectFileStream, nefsInject.PrimaryOffset, p);
 
             // Create new archive object
             return new NefsArchive(header, items);
@@ -540,7 +683,7 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="header">The header to write.</param>
         /// <param name="p">Progress info.</param>
         /// <returns>The async task.</returns>
-        private async Task WriteHeaderAsync(Stream stream, UInt64 headerOffset, Nefs20Header header, NefsProgress p)
+        private async Task WriteHeaderVersion20Async(Stream stream, long headerOffset, Nefs20Header header, NefsProgress p)
         {
             // Calc weight of each task (8 parts + intro + table of contents)
             var weight = 1.0f / 10.0f;
@@ -551,25 +694,25 @@ namespace VictorBush.Ego.NefsLib.IO
             using (var t = p.BeginTask(weight, "Writing header intro"))
             {
                 var offset = headerOffset + Nefs20Header.IntroOffset;
-                await this.WriteHeaderIntroAsync(stream, offset, header.Intro, p);
+                await this.WriteHeaderPartAsync(stream, offset, header.Intro, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header intro table of contents"))
             {
                 var offset = headerOffset + Nefs20HeaderIntroToc.Offset;
-                await this.WriteHeaderIntroTocAsync(stream, offset, header.TableOfContents, p);
+                await this.WriteHeaderPartAsync(stream, offset, header.TableOfContents, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 1"))
             {
                 var offset = headerOffset + toc.OffsetToPart1;
-                await this.WriteHeaderPart1Async(stream, offset, header.Part1, p);
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part1.EntriesByIndex, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 2"))
             {
                 var offset = headerOffset + toc.OffsetToPart2;
-                await this.WriteHeaderPart2Async(stream, offset, header.Part2, p);
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part2.EntriesByIndex, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 3"))
@@ -581,32 +724,194 @@ namespace VictorBush.Ego.NefsLib.IO
             using (var t = p.BeginTask(weight, "Writing header part 4"))
             {
                 var offset = headerOffset + toc.OffsetToPart4;
-                await this.WriteHeaderPart4Async(stream, offset, header.Part4, p);
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part4.EntriesByIndex, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 5"))
             {
                 var offset = headerOffset + toc.OffsetToPart5;
-                await this.WriteHeaderPart5Async(stream, offset, header.Part5, p);
+                await this.WriteHeaderPartAsync(stream, offset, header.Part5, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 6"))
             {
                 var offset = headerOffset + toc.OffsetToPart6;
-                await this.WriteHeaderPart6Async(stream, offset, header.Part6, p);
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part6.EntriesByIndex, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 7"))
             {
                 var offset = headerOffset + toc.OffsetToPart7;
-                await this.WriteHeaderPart7Async(stream, offset, header.Part7, p);
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part7.EntriesByIndex, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 8"))
             {
                 var offset = headerOffset + toc.OffsetToPart8;
-                await this.WriteHeaderPart8Async(stream, offset, header.Part8, p);
+                await this.WriteHeaderPartAsync(stream, offset, header.Part8, p);
             }
+        }
+
+        private async Task<NefsInjectHeader> WriteNefsInjectHeaderVersion20Async(Stream stream, Nefs20Header header, int primarySize, int secondarySize, NefsProgress p)
+        {
+            NefsInjectHeader nefsInject;
+
+            // Calc weight of each task (nefsinject + 8 parts + intro + table of contents)
+            var weight = 1.0f / 10.0f;
+
+            // Get table of contents
+            var toc = header.TableOfContents;
+            var primaryOffset = NefsInjectHeader.Size;
+            var secondaryOffset = primaryOffset + primarySize;
+
+            using (p.BeginTask(weight, "Writing NesfInject header"))
+            {
+                nefsInject = new NefsInjectHeader(primaryOffset, primarySize, secondaryOffset, secondarySize);
+                await FileData.WriteDataAsync(stream, 0, nefsInject, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header intro"))
+            {
+                var offset = primaryOffset + Nefs20Header.IntroOffset;
+                await this.WriteHeaderPartAsync(stream, offset, header.Intro, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header intro table of contents"))
+            {
+                var offset = primaryOffset + Nefs20HeaderIntroToc.Offset;
+                await this.WriteHeaderPartAsync(stream, offset, header.TableOfContents, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 1"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart1;
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part1.EntriesByIndex, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 2"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart2;
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part2.EntriesByIndex, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 3"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart3;
+                await this.WriteHeaderPart3Async(stream, offset, header.Part3, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 4"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart4;
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part4.EntriesByIndex, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 5"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart5;
+                await this.WriteHeaderPartAsync(stream, offset, header.Part5, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 8"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart8;
+                await this.WriteHeaderPartAsync(stream, offset, header.Part8, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 6"))
+            {
+                var offset = secondaryOffset + toc.OffsetToPart6;
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part6.EntriesByIndex, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 7"))
+            {
+                var offset = secondaryOffset + toc.OffsetToPart7;
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part7.EntriesByIndex, p);
+            }
+
+            return nefsInject;
+        }
+
+        private async Task<NefsInjectHeader> WriteNefsInjectHeaderVersion16Async(Stream stream, Nefs16Header header, int primarySize, int secondarySize, NefsProgress p)
+        {
+            NefsInjectHeader nefsInject;
+
+            // Calc weight of each task (nefsinject + 8 parts + intro + table of contents)
+            var weight = 1.0f / 10.0f;
+
+            // Get table of contents
+            var toc = header.TableOfContents;
+            var primaryOffset = NefsInjectHeader.Size;
+            var secondaryOffset = primaryOffset + primarySize;
+
+            using (p.BeginTask(weight, "Writing NesfInject header"))
+            {
+                nefsInject = new NefsInjectHeader(primaryOffset, primarySize, secondaryOffset, secondarySize);
+                await FileData.WriteDataAsync(stream, 0, nefsInject, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header intro"))
+            {
+                var offset = primaryOffset + Nefs20Header.IntroOffset;
+                await this.WriteHeaderPartAsync(stream, offset, header.Intro, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header intro table of contents"))
+            {
+                var offset = primaryOffset + Nefs20HeaderIntroToc.Offset;
+                await this.WriteHeaderPartAsync(stream, offset, header.TableOfContents, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 1"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart1;
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part1.EntriesByIndex, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 2"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart2;
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part2.EntriesByIndex, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 3"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart3;
+                await this.WriteHeaderPart3Async(stream, offset, header.Part3, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 4"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart4;
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part4.EntriesByIndex, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 5"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart5;
+                await this.WriteHeaderPartAsync(stream, offset, header.Part5, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 8"))
+            {
+                var offset = primaryOffset + toc.OffsetToPart8;
+                await this.WriteHeaderPartAsync(stream, offset, header.Part8, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 6"))
+            {
+                var offset = secondaryOffset + toc.OffsetToPart6;
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part6.EntriesByIndex, p);
+            }
+
+            using (var t = p.BeginTask(weight, "Writing header part 7"))
+            {
+                var offset = secondaryOffset + toc.OffsetToPart7;
+                await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part7.EntriesByIndex, p);
+            }
+
+            return nefsInject;
         }
 
         /// <summary>
@@ -617,9 +922,9 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <param name="item">The item whose file data to write.</param>
         /// <param name="p">Progress information.</param>
         /// <returns>The data offset for the next item.</returns>
-        private async Task<UInt64> WriteItemAsync(
+        private async Task<long> WriteItemAsync(
             Stream stream,
-            UInt64 dataOffset,
+            long dataOffset,
             NefsItem item,
             NefsProgress p)
         {
@@ -691,16 +996,16 @@ namespace VictorBush.Ego.NefsLib.IO
         /// </param>
         /// <param name="p">Progress info.</param>
         /// <returns>The offset to the end of the last data written.</returns>
-        private async Task<UInt64> WriteItemsAsync(
+        private async Task<long> WriteItemsAsync(
             Stream stream,
             NefsItemList items,
-            UInt64 firstDataOffset,
+            long firstDataOffset,
             NefsProgress p)
         {
             var nextDataOffset = firstDataOffset;
 
             // Prepare stream
-            stream.Seek((long)firstDataOffset, SeekOrigin.Begin);
+            stream.Seek(firstDataOffset, SeekOrigin.Begin);
 
             // Update item info and write out item data
             var i = 1;

@@ -141,7 +141,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             this.directoryTreeView.Nodes.Clear();
 
-            var fileName = Path.GetFileName(this.Workspace.ArchiveSource.DataFilePath);
+            var fileName = Path.GetFileName(this.Workspace.ArchiveSource.FilePath);
             var root = this.directoryTreeView.Nodes.Add(fileName);
 
             foreach (var item in archive.Items.EnumerateDepthFirstByName())

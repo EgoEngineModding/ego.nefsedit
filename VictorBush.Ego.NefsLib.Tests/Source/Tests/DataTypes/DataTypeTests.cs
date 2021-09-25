@@ -175,15 +175,15 @@ namespace VictorBush.Ego.NefsLib.Tests.DataTypes
             {
             }
 
-            public override UInt32 Size => 0x04;
+            public override int Size => 0x04;
 
             public byte[] Value { get; set; }
 
             public override byte[] GetBytes() => this.Value;
 
-            public override async Task ReadAsync(Stream file, UInt64 baseOffset, NefsProgress p)
+            public override async Task ReadAsync(Stream file, long baseOffset, NefsProgress p)
             {
-                this.Value = await this.ReadFileAsync(file, baseOffset, p);
+                this.Value = await this.DoReadAsync(file, baseOffset, p);
             }
         }
     }

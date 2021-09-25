@@ -14,6 +14,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
     using VictorBush.Ego.NefsEdit.Services;
     using VictorBush.Ego.NefsEdit.Utility;
     using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
     using VictorBush.Ego.NefsLib.DataSource;
     using VictorBush.Ego.NefsLib.IO;
     using VictorBush.Ego.NefsLib.Item;
@@ -129,7 +130,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             // Check if there are pending changes
             if (this.ArchiveIsModified)
             {
-                var fileName = this.FileSystem.Path.GetFileName(this.ArchiveSource.DataFilePath);
+                var fileName = this.ArchiveSource.FileName;
                 var result = this.UiService.ShowMessageBox($"Save changes to {fileName}?", null, MessageBoxButtons.YesNoCancel);
                 if (result == DialogResult.Cancel)
                 {
@@ -148,7 +149,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             }
 
             Log.LogInformation("----------------------------");
-            Log.LogInformation($"Closing archive: {this.ArchiveSource.DataFilePath}.");
+            Log.LogInformation($"Closing archive: {this.ArchiveSource.FilePath}.");
 
             // Close archive
             this.Archive = null;
@@ -257,8 +258,6 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// <inheritdoc/>
         public async Task<bool> OpenArchiveAsync(NefsArchiveSource source)
         {
-            var result = false;
-
             // Close existing archive if needed
             if (this.Archive != null)
             {
@@ -269,65 +268,23 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 }
             }
 
-            // Open archive
-            await this.ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
+            switch (source)
             {
-                using (var tt = p.BeginTask(1.0f))
-                {
-                    Log.LogInformation("----------------------------");
-
-                    // Check if header/data files are split
-                    if (source.IsHeaderSeparate)
-                    {
-                        Log.LogInformation($"Opening archive:");
-                        Log.LogInformation($"Header file: {source.HeaderFilePath}");
-                        Log.LogInformation($"Header offset: {source.HeaderOffset}");
-                        Log.LogInformation($"Header part 6 offset: {source.HeaderPart6Offset}");
-                        Log.LogInformation($"Data file: {source.DataFilePath}");
-                    }
-                    else
-                    {
-                        Log.LogInformation($"Opening archive: {source.DataFilePath}");
-                    }
-
-                    // Verify file exists
-                    if (!this.FileSystem.File.Exists(source.HeaderFilePath))
-                    {
-                        Log.LogError($"File not found: {source.HeaderFilePath}.");
-                        return;
-                    }
-
-                    if (!this.FileSystem.File.Exists(source.DataFilePath))
-                    {
-                        Log.LogError($"File not found: {source.DataFilePath}.");
-                        return;
-                    }
-
-                    // Open archive
-                    try
-                    {
-                        this.Archive = await this.NefsReader.ReadArchiveAsync(source, p);
-                        this.ArchiveSource = source;
-
-                        this.ArchiveOpened?.Invoke(this, EventArgs.Empty);
-                        result = true;
-
-                        Log.LogInformation($"Archive opened.");
-                    }
-                    catch (Exception ex)
-                    {
-                        Log.LogError($"Failed to open archive {source.DataFilePath}.\r\n{ex.Message}");
-                    }
-                }
-            }));
-
-            return result;
+                case StandardSource standard:
+                    return await this.OpenStandardArchiveAsync(standard);
+                case GameDatSource gameDatSource:
+                    return await this.OpenGameDatArchiveAsync(gameDatSource);
+                case NefsInjectSource nefsInjectSource:
+                    return await this.OpenNefsInjectArchiveAsync(nefsInjectSource);
+                default:
+                    throw new ArgumentException("Unknown archive source type.");
+            }
         }
 
         /// <inheritdoc/>
         public async Task<bool> OpenArchiveAsync(string filePath)
         {
-            var source = new NefsArchiveSource(filePath);
+            var source = NefsArchiveSource.Standard(filePath);
             return await this.OpenArchiveAsync(source);
         }
 
@@ -410,14 +367,14 @@ namespace VictorBush.Ego.NefsEdit.Workspace
         /// <inheritdoc/>
         public async Task<bool> SaveArchiveAsync()
         {
-            return await this.DoSaveArchiveAsync(this.ArchiveSource);
+            // TODO : Forcing save-as for now.
+            return await this.SaveArchiveByDialogAsync();
         }
 
         /// <inheritdoc/>
         public async Task<bool> SaveArchiveAsync(string destFilePath)
         {
-            var source = new NefsArchiveSource(destFilePath);
-            return await this.DoSaveArchiveAsync(source);
+            return await this.DoSaveStandardArchiveAsync(destFilePath);
         }
 
         /// <inheritdoc/>
@@ -430,15 +387,28 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             }
 
             var fileName = Path.GetFileName(this.Archive.Items.DataFilePath);
+            var fileExt = Path.GetExtension(fileName);
+            var filter = $"*{fileExt}|*{fileExt}";
 
-            var (result, path) = this.UiService.ShowSaveFileDialog(fileName);
+            var (result, path) = this.UiService.ShowSaveFileDialog(fileName, filter);
             if (result != DialogResult.OK)
             {
                 return false;
             }
 
-            var source = new NefsArchiveSource(path);
-            return await this.DoSaveArchiveAsync(source);
+            switch (this.ArchiveSource)
+            {
+                case StandardSource _:
+                    return await this.DoSaveStandardArchiveAsync(path);
+
+                case NefsInjectSource _:
+                case GameDatSource _:
+                    var nefsInjectFilePath = path + ".nefsheader";
+                    return await this.DoSaveNefsInjectArchiveAsync(path, nefsInjectFilePath);
+
+                default:
+                    throw new ArgumentException("Unknown archive source type.");
+            }
         }
 
         /// <inheritdoc/>
@@ -463,29 +433,101 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             }
         }
 
-        private async Task<bool> DoSaveArchiveAsync(NefsArchiveSource source)
+        private async Task<bool> OpenGameDatArchiveAsync(GameDatSource source)
+        {
+            Log.LogInformation("----------------------------");
+            Log.LogInformation($"Opening archive:");
+            Log.LogInformation($"Data file: {source.FilePath}");
+            Log.LogInformation($"Header file: {source.HeaderFilePath}");
+            Log.LogInformation($"Primary offset: {source.PrimaryOffset:X}");
+            Log.LogInformation($"Primary size: {source.PrimarySize:X}");
+            Log.LogInformation($"Secondary offset: {source.SecondaryOffset:X}");
+            Log.LogInformation($"Secondary size: {source.SecondarySize:X}");
+
+            if (!this.FileSystem.File.Exists(source.FilePath))
+            {
+                Log.LogError($"Data file not found: {source.FilePath}.");
+                return false;
+            }
+
+            if (!this.FileSystem.File.Exists(source.HeaderFilePath))
+            {
+                Log.LogError($"Header file not found: {source.HeaderFilePath}.");
+                return false;
+            }
+
+            return await DoOpenArchiveAsync(source);
+        }
+
+        private async Task<bool> OpenStandardArchiveAsync(StandardSource source)
+        {
+            Log.LogInformation("----------------------------");
+            Log.LogInformation($"Opening archive: {source.FilePath}");
+
+            if (!this.FileSystem.File.Exists(source.FilePath))
+            {
+                Log.LogError($"File not found: {source.FilePath}.");
+                return false;
+            }
+
+            return await DoOpenArchiveAsync(source);
+        }
+
+        private async Task<bool> OpenNefsInjectArchiveAsync(NefsInjectSource source)
+        {
+            Log.LogInformation("----------------------------");
+            Log.LogInformation($"Opening archive: {source.DataFilePath}");
+            Log.LogInformation($"NefsInject file: {source.NefsInjectFilePath}");
+
+            if (!this.FileSystem.File.Exists(source.DataFilePath))
+            {
+                Log.LogError($"File not found: {source.DataFilePath}.");
+                return false;
+            }
+
+            if (!this.FileSystem.File.Exists(source.NefsInjectFilePath))
+            {
+                Log.LogError($"File not found: {source.NefsInjectFilePath}.");
+                return false;
+            }
+
+            return await DoOpenArchiveAsync(source);
+        }
+
+        private async Task<bool> DoOpenArchiveAsync(NefsArchiveSource source)
+        {
+            var result = false;
+
+            // Open archive
+            await this.ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
+            {
+                using (var tt = p.BeginTask(1.0f))
+                {
+                    try
+                    {
+                        this.Archive = await this.NefsReader.ReadArchiveAsync(source, p);
+                        this.ArchiveSource = source;
+
+                        this.ArchiveOpened?.Invoke(this, EventArgs.Empty);
+                        result = true;
+
+                        Log.LogInformation($"Archive opened.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.LogError($"Failed to open archive {source.FilePath}.\r\n{ex.Message}");
+                    }
+                }
+            }));
+
+            return result;
+        }
+
+        private async Task<bool> DoSaveStandardArchiveAsync(string filePath)
         {
             if (this.Archive == null)
             {
                 Log.LogError("Failed to save archive: no archive open.");
-                return false;
-            }
-
-            // Currently don't support saving separated header/data archives (i.e., game.dat)
-            if (source.IsHeaderSeparate)
-            {
-                var msg = "Saving archive with a separated header is not supported.";
-                this.UiService.ShowMessageBox(msg);
-                Log.LogError(msg);
-                return false;
-            }
-
-            // Currently don't support offset headers
-            if (source.HeaderOffset != 0)
-            {
-                var msg = "Saving archive with an offset header is not supported.";
-                this.UiService.ShowMessageBox(msg);
-                Log.LogError(msg);
                 return false;
             }
 
@@ -496,9 +538,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 return false;
             }
 
-            var destFilePath = source.DataFilePath;
             Log.LogInformation("----------------------------");
-            Log.LogInformation($"Writing archive: {destFilePath}.");
+            Log.LogInformation($"Writing archive: {filePath}.");
             var result = false;
 
             // Save archive
@@ -509,7 +550,8 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                     // Save archive
                     try
                     {
-                        this.Archive = await this.NefsWriter.WriteArchiveAsync(destFilePath, this.Archive, p);
+                        var (archive, source) = await this.NefsWriter.WriteArchiveAsync(filePath, this.Archive, p);
+                        this.Archive = archive;
                         this.ArchiveSource = source;
                         this.UndoBuffer.MarkAsSaved();
 
@@ -520,7 +562,56 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                     }
                     catch (Exception ex)
                     {
-                        Log.LogError($"Failed to saved archive {destFilePath}.\r\n{ex.Message}");
+                        Log.LogError($"Failed to saved archive {filePath}.\r\n{ex.Message}");
+                    }
+                }
+            }));
+
+            return result;
+        }
+
+        private async Task<bool> DoSaveNefsInjectArchiveAsync(string dataFilePath, string nefsInjectFilePath)
+        {
+            if (this.Archive == null)
+            {
+                Log.LogError("Failed to save archive: no archive open.");
+                return false;
+            }
+
+            // Currently don't support saving encrypted archives
+            if (this.Archive.Header.IsEncrypted)
+            {
+                this.UiService.ShowMessageBox("Saving encrypted archives is not supported.", icon: MessageBoxIcon.Error);
+                return false;
+            }
+
+            Log.LogInformation("----------------------------");
+            Log.LogInformation($"Writing NefsInject archive.");
+            Log.LogInformation($"Data file: {dataFilePath}.");
+            Log.LogInformation($"NefsInject file: {nefsInjectFilePath}.");
+            var result = false;
+
+            // Save archive
+            await this.ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
+            {
+                using (var tt = p.BeginTask(1.0f))
+                {
+                    // Save archive
+                    try
+                    {
+                        var (archive, source) = await this.NefsWriter.WriteNefsInjectArchiveAsync(dataFilePath, nefsInjectFilePath, this.Archive, p);
+                        this.Archive = archive;
+                        this.ArchiveSource = source;
+                        this.UndoBuffer.MarkAsSaved();
+
+                        this.ArchiveSaved?.Invoke(this, EventArgs.Empty);
+                        result = true;
+
+                        Log.LogInformation($"Archive saved.");
+                    }
+                    catch (Exception ex)
+                    {
+                        Log.LogError($"Failed to saved archive {dataFilePath}.\r\n{ex.Message}");
                     }
                 }
             }));
@@ -542,7 +633,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
                 // Extract the file
                 await this.NefsTransformer.DetransformFileAsync(
                     item.DataSource.FilePath,
-                    (Int64)item.DataSource.Offset,
+                    item.DataSource.Offset,
                     outputFilePath,
                     0,
                     item.ExtractedSize,

@@ -4,7 +4,7 @@ namespace VictorBush.Ego.NefsEdit.Services
 {
     using System.Windows.Forms;
     using System.Windows.Threading;
-    using VictorBush.Ego.NefsLib;
+    using VictorBush.Ego.NefsLib.ArchiveSource;
     using VictorBush.Ego.NefsLib.IO;
 
     /// <summary>
@@ -61,8 +61,9 @@ namespace VictorBush.Ego.NefsEdit.Services
         /// Shows a save file dialog.
         /// </summary>
         /// <param name="defaultName">The default file name.</param>
+        /// <param name="filter">Filter for dialog.</param>
         /// <returns>The dialog result and the file name (if applicable).</returns>
-        (DialogResult Result, string FileName) ShowSaveFileDialog(string defaultName);
+        (DialogResult Result, string FileName) ShowSaveFileDialog(string defaultName, string filter = null);
 
         /// <summary>
         /// Shows the settings dialog.
