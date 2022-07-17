@@ -60,7 +60,7 @@
             this.optionsMainMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpMainMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutMainMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.vS2005Theme1 = new WeifenLuo.WinFormsUI.Docking.VS2005Theme();
+            this.vS2005Theme1 = new WeifenLuo.WinFormsUI.Docking.VS2015BlueTheme();
             this.browserDockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
             this.itemContextMenuStrip = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.quickExtractContextMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -390,7 +390,7 @@
         #endregion
         private System.Windows.Forms.MenuStrip mainMenuStrip;
         private System.Windows.Forms.ToolStripMenuItem fileMainMenuItem;
-        private WeifenLuo.WinFormsUI.Docking.VS2005Theme vS2005Theme1;
+        private WeifenLuo.WinFormsUI.Docking.VS2015BlueTheme vS2005Theme1;
         private WeifenLuo.WinFormsUI.Docking.DockPanel browserDockPanel;
         private System.Windows.Forms.ToolStripMenuItem itemMainMenuItem;
         private System.Windows.Forms.ToolStripMenuItem viewMainMenuItem;

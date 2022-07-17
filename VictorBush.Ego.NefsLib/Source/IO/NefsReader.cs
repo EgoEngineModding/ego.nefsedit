@@ -388,7 +388,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 decryptedStream.Seek(0, SeekOrigin.End);
 
                 // Decrypt the data - make sure to leave open the base stream
-                using (var cryptoStream = new CryptoStream(stream, decryptor, CryptoStreamMode.Read, true))
+                using (var cryptoStream = new CryptoStream(stream, decryptor, CryptoStreamMode.Read))
                 {
                     // Decrypt data from input stream and copy to the decrypted stream
                     await cryptoStream.CopyPartialAsync(decryptedStream, headerSize, p.CancellationToken);

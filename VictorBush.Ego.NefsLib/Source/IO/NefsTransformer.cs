@@ -84,7 +84,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 if (chunk.Transform.IsAesEncrypted)
                 {
                     using (var aesManager = this.CreateAesManager(chunk.Transform.Aes256Key))
-                    using (var cryptoStream = new CryptoStream(detransformedStream, aesManager.CreateDecryptor(), CryptoStreamMode.Read, leaveOpen: true))
+                    using (var cryptoStream = new CryptoStream(detransformedStream, aesManager.CreateDecryptor(), CryptoStreamMode.Read))
                     using (var tempStream = new MemoryStream())
                     {
                         await cryptoStream.CopyToAsync(tempStream, p.CancellationToken);
@@ -222,7 +222,7 @@ namespace VictorBush.Ego.NefsLib.IO
                 if (transform.IsAesEncrypted)
                 {
                     using (var aesManager = this.CreateAesManager(transform.Aes256Key))
-                    using (var cryptoStream = new CryptoStream(transformedStream, aesManager.CreateEncryptor(), CryptoStreamMode.Read, leaveOpen: true))
+                    using (var cryptoStream = new CryptoStream(transformedStream, aesManager.CreateEncryptor(), CryptoStreamMode.Read))
                     using (var tempStream = new MemoryStream())
                     {
                         await cryptoStream.CopyToAsync(tempStream, p.CancellationToken);
