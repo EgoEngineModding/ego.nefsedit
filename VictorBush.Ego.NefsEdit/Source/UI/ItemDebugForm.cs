@@ -74,7 +74,7 @@ Id:                         {p2.Id.Value.ToString("X")}
 
 Part 4
 -----------------------------------------------------------
-Chunks                      {this.PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, chunkSize, h.Intro.GetAesKey()))}
+{this.PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, chunkSize, h.Intro.GetAesKey()))}
 
 Part 6
 -----------------------------------------------------------
@@ -185,7 +185,7 @@ Item id:                    {p7.Id.Value.ToString("X")}
             var sb = new StringBuilder();
             foreach (var s in sizes)
             {
-                sb.Append("0x" + s.CumulativeSize.ToString("X") + ", ");
+                sb.Append("0x" + s.CumulativeSize.ToString("X") + $" [{s.Checksum.ToString("X")}] \n");
             }
 
             return sb.ToString();

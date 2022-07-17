@@ -385,5 +385,10 @@ namespace VictorBush.Ego.NefsEdit.UI
 
             this.Text = $"{archivePath}{modifiedStar}{separator}NeFS Edit";
         }
+
+        private void extractRawToToolStripMenuItem_Click(Object sender, EventArgs e)
+        {
+
+        }
     }
 }

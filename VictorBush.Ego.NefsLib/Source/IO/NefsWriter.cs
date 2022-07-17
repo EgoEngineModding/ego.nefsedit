@@ -596,7 +596,7 @@ namespace VictorBush.Ego.NefsLib.IO
             }
 
             var numItems = items.Count;
-            var p4 = new Nefs16HeaderPart4(items);
+            var p4 = new Nefs16HeaderPart4(items, sourceHeader.Part4.UnkownEndValue);
             var p3 = new NefsHeaderPart3(items);
             var p1 = new NefsHeaderPart1(items, p4);
             var p2 = new NefsHeaderPart2(items, p3);
@@ -647,6 +647,8 @@ namespace VictorBush.Ego.NefsLib.IO
             var toc = new Nefs16HeaderIntroToc();
             toc.Data0x00_NumVolumes.Value = sourceHeader.TableOfContents.NumVolumes;
             toc.Data0x02_HashBlockSize.Value = sourceHeader.TableOfContents.Data0x02_HashBlockSize.Value;
+            toc.Data0x04_BlockSize.Value = sourceHeader.TableOfContents.Data0x04_BlockSize.Value;
+            toc.Data0x06_SplitSize.Value = sourceHeader.TableOfContents.Data0x06_SplitSize.Value;
             toc.Data0x08_OffsetToPart1.Value = (uint)(introSize + tocSize);
             toc.Data0x10_OffsetToPart2.Value = toc.OffsetToPart1 + (uint)p1Size;
             toc.Data0x18_OffsetToPart3.Value = toc.OffsetToPart2 + (uint)p2Size;
@@ -885,6 +887,11 @@ namespace VictorBush.Ego.NefsLib.IO
             {
                 var offset = primaryOffset + toc.OffsetToPart4;
                 await this.WriteHeaderPartWithEntriesAsync(stream, offset, header.Part4.EntriesByIndex, p);
+
+                // TODO : ???
+                var endValue = new UInt32Type(0);
+                endValue.Value = header.Part4.UnkownEndValue;
+                await endValue.WriteAsync(stream, stream.Position, p);
             }
 
             using (var t = p.BeginTask(weight, "Writing header part 5"))
@@ -964,13 +971,16 @@ namespace VictorBush.Ego.NefsLib.IO
             // - Not compressed
             // - Not the 1 byte item at the end of car archives
             // - Not in an encrypted archive
-            if (item.CompressedSize == item.ExtractedSize
-                && item.ExtractedSize != 1
-                && item.Part6Unknown0x02 != 3)
-            {
-                // Add 8 bytes to the size for some reason
-                srcSize += 0x8;
-            }
+
+            // TODO - This must be for v2 nefs only
+            //if (item.CompressedSize == item.ExtractedSize
+            //    && item.ExtractedSize != 1
+            //    && item.Part6Unknown0x02 != 3)
+            //{
+            //    // Add 8 bytes to the size for some reason
+            //    srcSize += 0x8;
+            //}
+
 
             // Copy data from data source to the destination stream
             using (var inputFile = this.FileSystem.File.OpenRead(srcFile))

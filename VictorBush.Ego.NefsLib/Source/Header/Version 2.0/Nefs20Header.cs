@@ -158,7 +158,7 @@ namespace VictorBush.Ego.NefsLib.Header
             else if (p1.IndexPart4 == 0xFFFFFFFFU)
             {
                 // Item is not compressed
-                var size = new NefsItemSize(extractedSize);
+                var size = new NefsItemSize(extractedSize, 0);
                 dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
             }
             else

@@ -176,7 +176,10 @@ namespace VictorBush.Ego.NefsLib.IO
                         cumulativeChunkSize += chunkSize;
 
                         // Record chunk info
-                        var chunk = new NefsDataChunk(chunkSize, cumulativeChunkSize, transform);
+
+
+
+                        var chunk = new NefsDataChunk(chunkSize, cumulativeChunkSize, transform, 0); // TODO : Checksum
                         chunks.Add(chunk);
                     }
                 }

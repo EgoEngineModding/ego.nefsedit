@@ -180,6 +180,7 @@ Header Part 3
 Header Part 4
 -----------------------------------------------------------
 Number of entries:          {h.Part4.EntriesByIndex.Count.ToString("X")}
+Unknown last value:         {h.Part4.UnkownEndValue.ToString("X")}
 
 Header Part 5
 -----------------------------------------------------------

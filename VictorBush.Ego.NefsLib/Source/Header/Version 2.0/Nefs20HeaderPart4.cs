@@ -100,7 +100,7 @@ namespace VictorBush.Ego.NefsLib.Header
                     size -= this.entriesByIndex[(int)i - 1].CumulativeChunkSize;
                 }
 
-                var chunk = new NefsDataChunk(size, cumulativeSize, transform);
+                var chunk = new NefsDataChunk(size, cumulativeSize, transform, 0);
                 chunks.Add(chunk);
             }
 

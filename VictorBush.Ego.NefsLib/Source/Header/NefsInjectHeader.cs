@@ -10,35 +10,48 @@ namespace VictorBush.Ego.NefsLib.Header
     {
         public const int Size = 0x20;
 
+        public const int ExpectedMagicNumber = 4484;
+
         public NefsInjectHeader()
         {
         }
 
         public NefsInjectHeader(long primaryOffset, int primarySize, long secondaryOffset, int secondarySize)
         {
-            this.Data0x00_PrimaryOffset.Value = (ulong)primaryOffset;
-            this.Data0x08_PrimarySize.Value = (uint)primarySize;
-            this.Data0x0C_SecondaryOffset.Value = (ulong)secondaryOffset;
-            this.Data0x14_SecondarySize.Value = (uint)secondarySize;
+            this.Data0x00_MagicNum.Value = ExpectedMagicNumber;
+            this.Data0x04_Version.Value = 1;
+            this.Data0x08_PrimaryOffset.Value = (ulong)primaryOffset;
+            this.Data0x10_PrimarySize.Value = (uint)primarySize;
+            this.Data0x14_SecondaryOffset.Value = (ulong)secondaryOffset;
+            this.Data0x1C_SecondarySize.Value = (uint)secondarySize;
         }
 
-        public long PrimaryOffset => (long) this.Data0x00_PrimaryOffset.Value;
+        public int MagicNumber => (int)this.Data0x00_MagicNum.Value;
+        public int Version => (int)this.Data0x04_Version.Value;
 
-        public int PrimarySize => (int)this.Data0x08_PrimarySize.Value;
-        public long SecondaryOffset => (long)this.Data0x0C_SecondaryOffset.Value;
-        public int SecondarySize => (int)this.Data0x14_SecondarySize.Value;
+        public long PrimaryOffset => (long) this.Data0x08_PrimaryOffset.Value;
 
-        [FileData]
-        private UInt64Type Data0x00_PrimaryOffset { get; } = new UInt64Type(0x00);
-
-        [FileData]
-        private UInt32Type Data0x08_PrimarySize { get; } = new UInt32Type(0x08);
+        public int PrimarySize => (int)this.Data0x10_PrimarySize.Value;
+        public long SecondaryOffset => (long)this.Data0x14_SecondaryOffset.Value;
+        public int SecondarySize => (int)this.Data0x1C_SecondarySize.Value;
 
         [FileData]
-        private UInt64Type Data0x0C_SecondaryOffset { get; } = new UInt64Type(0x0C);
+        private UInt32Type Data0x00_MagicNum { get; } = new UInt32Type(0x00);
 
         [FileData]
-        private UInt32Type Data0x14_SecondarySize { get; } = new UInt32Type(0x14);
+        private UInt32Type Data0x04_Version { get; } = new UInt32Type(0x04);
+
+        [FileData]
+        private UInt64Type Data0x08_PrimaryOffset { get; } = new UInt64Type(0x08);
+
+        [FileData]
+        private UInt32Type Data0x10_PrimarySize { get; } = new UInt32Type(0x10);
+
+        [FileData]
+        private UInt64Type Data0x14_SecondaryOffset { get; } = new UInt64Type(0x14);
+
+        [FileData]
+        private UInt32Type Data0x1C_SecondarySize { get; } = new UInt32Type(0x1C);
 
     }
 }

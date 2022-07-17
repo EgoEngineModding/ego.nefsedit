@@ -16,11 +16,12 @@ namespace VictorBush.Ego.NefsLib.DataSource
         /// <param name="size">The size of the data chunk.</param>
         /// <param name="cumulativeSize">The cumulative size of the data chunk.</param>
         /// <param name="transform">The transform that has been applied to this chunk.</param>
-        public NefsDataChunk(UInt32 size, UInt32 cumulativeSize, NefsDataTransform transform)
+        public NefsDataChunk(UInt32 size, UInt32 cumulativeSize, NefsDataTransform transform, ushort checksum)
         {
             this.Size = size;
             this.CumulativeSize = cumulativeSize;
             this.Transform = transform ?? throw new ArgumentNullException(nameof(transform));
+            this.Checksum = checksum;
         }
 
         /// <summary>
@@ -38,6 +39,7 @@ namespace VictorBush.Ego.NefsLib.DataSource
         /// The transform that has been applied to this chunk.
         /// </summary>
         public NefsDataTransform Transform { get; }
+        public UInt16 Checksum { get; }
 
         /// <summary>
         /// Creats a list of chunks given a list of cumulative chunk sizes.
@@ -61,7 +63,8 @@ namespace VictorBush.Ego.NefsLib.DataSource
                     size -= cumulativeSizes[i - 1];
                 }
 
-                var chunk = new NefsDataChunk(size, cumulativeSizes[i], transform);
+                // TODO - checksum???
+                var chunk = new NefsDataChunk(size, cumulativeSizes[i], transform, 0);
                 chunks.Add(chunk);
             }
 

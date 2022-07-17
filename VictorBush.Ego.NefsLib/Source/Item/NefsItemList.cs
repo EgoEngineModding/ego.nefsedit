@@ -188,11 +188,21 @@ namespace VictorBush.Ego.NefsLib.Item
         /// <summary>
         /// Gets the item with the specified Guid. Throws an exception if not found.
         /// </summary>
-        /// <param name="guid">The guid to get the item for.</param>
+        /// <param name="guid">The guid of the item to get.</param>
         /// <returns>The item.</returns>
         public NefsItem GetItem(Guid guid)
         {
             return this.itemsByGuid[guid];
+        }
+
+        /// <summary>
+        /// Gets the item with the specified Guid. Throws an exception if not found.
+        /// </summary>
+        /// <param name="id">The id of item to get.</param>
+        /// <returns>The item.</returns>
+        public IReadOnlyList<NefsItem> GetItemsById(NefsItemId id)
+        {
+            return this.itemsById[id].Items;
         }
 
         /// <summary>

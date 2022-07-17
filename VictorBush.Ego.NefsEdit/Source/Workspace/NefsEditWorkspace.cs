@@ -333,7 +333,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
             }
 
             var fileSize = this.FileSystem.FileInfo.FromFileName(fileName).Length;
-            var itemSize = new NefsItemSize((uint)fileSize);
+            var itemSize = new NefsItemSize((uint)fileSize, 0);
             var newDataSource = new NefsFileDataSource(fileName, 0, itemSize, false);
             var cmd = new ReplaceFileCommand(item, item.DataSource, item.State, newDataSource);
             this.UndoBuffer.Execute(cmd);
@@ -403,7 +403,7 @@ namespace VictorBush.Ego.NefsEdit.Workspace
 
                 case NefsInjectSource _:
                 case GameDatSource _:
-                    var nefsInjectFilePath = path + ".nefsheader";
+                    var nefsInjectFilePath = path + ".nefsinject";
                     return await this.DoSaveNefsInjectArchiveAsync(path, nefsInjectFilePath);
 
                 default:

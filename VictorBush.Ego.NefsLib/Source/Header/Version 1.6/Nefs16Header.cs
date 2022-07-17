@@ -145,7 +145,8 @@ namespace VictorBush.Ego.NefsLib.Header
             var extractedSize = p2.Data0x0c_ExtractedSize.Value;
 
             // Transform
-            var transform = new NefsDataTransform(this.TableOfContents.BlockSize, true, this.Intro.IsEncrypted ? this.Intro.GetAesKey() : null);
+            // TODO - what about AES here for 1.6? There is an aes attribute for chunks.
+            var transform = new NefsDataTransform(this.TableOfContents.BlockSize, attributes.V20IsZlib, this.Intro.IsEncrypted ? this.Intro.GetAesKey() : null);
 
             // Data source
             INefsDataSource dataSource;
@@ -155,15 +156,16 @@ namespace VictorBush.Ego.NefsLib.Header
                 dataSource = new NefsEmptyDataSource();
                 transform = null;
             }
-            else if (p1.IndexPart4 == 0xFFFFFFFFU)
-            {
-                // Item is not compressed
-                var size = new NefsItemSize(extractedSize);
-                dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
-            }
+            //else if (p1.IndexPart4 == 0xFFFFFFFFU)
+            //{
+            //    // TODO --- Does this still hold for nefs 1.6?
+
+            //    // Item is not compressed
+            //    var size = new NefsItemSize(extractedSize, 0);
+            //    dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
+            //}
             else
             {
-                // Item is compressed
                 var numChunks = this.TableOfContents.ComputeNumChunks(p2.ExtractedSize);
                 var chunkSize = this.TableOfContents.BlockSize;
                 var chunks = this.Part4.CreateChunksList(p1.IndexPart4, numChunks, chunkSize, this.Intro.GetAesKey());

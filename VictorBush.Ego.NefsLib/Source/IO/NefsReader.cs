@@ -668,7 +668,7 @@ namespace VictorBush.Ego.NefsLib.IO
             // Validate inputs
             if (!this.ValidateHeaderPartStream(stream, offset, size, "4"))
             {
-                return new Nefs16HeaderPart4(entries, indexLookup);
+                return new Nefs16HeaderPart4(entries, indexLookup, 0);
             }
 
             // Get entries in part 4
@@ -693,7 +693,11 @@ namespace VictorBush.Ego.NefsLib.IO
                 indexLookup.Add(p1.Guid, p1.IndexPart4);
             }
 
-            return new Nefs16HeaderPart4(entries, indexLookup);
+            // Get the unkown last value at the end of part 4
+            var endValue = new UInt32Type(0);
+            await endValue.ReadAsync(stream, stream.Position, p);
+
+            return new Nefs16HeaderPart4(entries, indexLookup, endValue.Value);
         }
 
         /// <summary>

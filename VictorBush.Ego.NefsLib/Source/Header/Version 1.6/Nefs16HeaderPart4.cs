@@ -25,20 +25,22 @@ namespace VictorBush.Ego.NefsLib.Header
         /// A dictionary that matches an item Guid to a part 4 index. This is used to find the
         /// correct index part 4 value for an item.
         /// </param>
-        internal Nefs16HeaderPart4(IEnumerable<Nefs16HeaderPart4Entry> entries, Dictionary<Guid, uint> indexLookup)
+        internal Nefs16HeaderPart4(IEnumerable<Nefs16HeaderPart4Entry> entries, Dictionary<Guid, uint> indexLookup, uint unkownEndValue)
         {
             this.entriesByIndex = new List<Nefs16HeaderPart4Entry>(entries);
             this.indexLookup = new Dictionary<Guid, uint>(indexLookup);
+            this.UnkownEndValue = unkownEndValue;
         }
 
         /// <summary>
         /// Initializes a new instance of the <see cref="Nefs16HeaderPart4"/> class from a list of items.
         /// </summary>
         /// <param name="items">The items to initialize from.</param>
-        internal Nefs16HeaderPart4(NefsItemList items)
+        internal Nefs16HeaderPart4(NefsItemList items, uint unkownEndValue)
         {
             this.entriesByIndex = new List<Nefs16HeaderPart4Entry>();
             this.indexLookup = new Dictionary<Guid, uint>();
+            this.UnkownEndValue = unkownEndValue;
 
             var nextStartIdx = 0U;
 
@@ -60,7 +62,7 @@ namespace VictorBush.Ego.NefsLib.Header
                     var entry = new Nefs16HeaderPart4Entry();
                     entry.Data0x00_CumulativeBlockSize.Value = chunk.CumulativeSize;
                     entry.Data0x04_TransformType.Value = (ushort)this.GetTransformType(chunk.Transform);
-                    entry.Data0x06_Checksum.Value = 0; // TODO
+                    entry.Data0x06_Checksum.Value = 0x848; // TODO
                     this.entriesByIndex.Add(entry);
 
                     nextStartIdx++;
@@ -75,13 +77,19 @@ namespace VictorBush.Ego.NefsLib.Header
 
         public const int EntrySize = 0x8;
 
+        public const int LastValueSize = 0x4;
 
         /// <summary>
         /// Gets the current size of header part 4.
         /// </summary>
-        public int Size => this.entriesByIndex.Count * EntrySize;
+        public int Size => (this.entriesByIndex.Count * EntrySize) + LastValueSize;
 
         IReadOnlyList<INefsHeaderPartEntry> INefsHeaderPart4.EntriesByIndex => this.entriesByIndex;
+
+        /// <summary>
+        /// There is a 4-byte value at the end of header part 4. Purpose unknown.
+        /// </summary>
+        public uint UnkownEndValue { get; }
 
         /// <summary>
         /// Creates a list of chunk metadata for an item.
@@ -130,7 +138,7 @@ namespace VictorBush.Ego.NefsLib.Header
                 }
 
                 // Create data chunk info
-                var chunk = new NefsDataChunk(size, cumulativeSize, transform);
+                var chunk = new NefsDataChunk(size, cumulativeSize, transform, entry.Checksum);
                 chunks.Add(chunk);
             }
 

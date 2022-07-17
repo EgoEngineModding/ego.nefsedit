@@ -38,7 +38,7 @@ namespace VictorBush.Ego.NefsLib.Utility
             while (bytesRemaining > 0)
             {
                 // Read from input stream
-                var bytesToRead = Math.Min(length, CopyBufferSize);
+                var bytesToRead = Math.Min(bytesRemaining, CopyBufferSize);
                 var bytesRead = await stream.ReadAsync(buffer, 0, (int)bytesToRead, cancelToken);
 
                 // Copy to destination
