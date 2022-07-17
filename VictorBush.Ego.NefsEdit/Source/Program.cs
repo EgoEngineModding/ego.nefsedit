@@ -4,7 +4,6 @@ using System;
 using System.IO;
 using System.IO.Abstractions;
 using System.Windows.Forms;
-using System.Windows.Threading;
 using Microsoft.Extensions.Logging;
 using Serilog;
 using VictorBush.Ego.NefsEdit.Services;
@@ -53,7 +52,7 @@ namespace VictorBush.Ego.NefsEdit
 
             // Setup workspace and services
             var fileSystem = new FileSystem();
-            var uiService = new UiService(Dispatcher.CurrentDispatcher, fileSystem);
+            var uiService = new UiService(System.Windows.Threading.Dispatcher.CurrentDispatcher, fileSystem);
             var settingsService = new SettingsService(fileSystem, uiService);
             var progressService = new ProgressService(uiService);
             var nefsTransformer = new NefsTransformer(fileSystem);

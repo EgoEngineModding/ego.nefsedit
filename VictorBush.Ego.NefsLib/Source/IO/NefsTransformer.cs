@@ -74,49 +74,56 @@ namespace VictorBush.Ego.NefsLib.IO
              uint maxOutputSize,
              NefsProgress p)
         {
-            using (var detransformedStream = new MemoryStream())
-            {
-                // Copy chunk to temp stream
-                await input.CopyPartialAsync(detransformedStream, chunk.Size, p.CancellationToken);
-                detransformedStream.Seek(0, SeekOrigin.Begin);
+            using var detransformedStream = new MemoryStream();
+            CryptoStream cryptoStream = null;
 
+            // Copy chunk to temp stream
+            await input.CopyPartialAsync(detransformedStream, chunk.Size, p.CancellationToken);
+            detransformedStream.Seek(0, SeekOrigin.Begin);
+
+            try
+            {
                 // Decrypt
                 if (chunk.Transform.IsAesEncrypted)
                 {
-                    using (var aesManager = this.CreateAesManager(chunk.Transform.Aes256Key))
-                    using (var cryptoStream = new CryptoStream(detransformedStream, aesManager.CreateDecryptor(), CryptoStreamMode.Read))
-                    using (var tempStream = new MemoryStream())
-                    {
-                        await cryptoStream.CopyToAsync(tempStream, p.CancellationToken);
-                        tempStream.Seek(0, SeekOrigin.Begin);
+                    using var aesManager = this.CreateAesManager(chunk.Transform.Aes256Key);
+                    using var tempStream = new MemoryStream();
 
-                        detransformedStream.Seek(0, SeekOrigin.Begin);
-                        await tempStream.CopyToAsync(detransformedStream, p.CancellationToken);
-                        detransformedStream.Seek(0, SeekOrigin.Begin);
-                        detransformedStream.SetLength(tempStream.Length);
-                    }
+                    cryptoStream = new CryptoStream(detransformedStream, aesManager.CreateDecryptor(), CryptoStreamMode.Read);
+                    await cryptoStream.CopyToAsync(tempStream, p.CancellationToken);
+                    tempStream.Seek(0, SeekOrigin.Begin);
+
+                    detransformedStream.Seek(0, SeekOrigin.Begin);
+                    await tempStream.CopyToAsync(detransformedStream, p.CancellationToken);
+                    detransformedStream.Seek(0, SeekOrigin.Begin);
+                    detransformedStream.SetLength(tempStream.Length);
                 }
 
                 // Decompress
                 if (chunk.Transform.IsZlibCompressed)
                 {
-                    using (var inflater = new DeflateStream(detransformedStream, CompressionMode.Decompress, leaveOpen: true))
-                    using (var tempStream = new MemoryStream())
-                    {
-                        await inflater.CopyToAsync(tempStream, p.CancellationToken);
-                        tempStream.Seek(0, SeekOrigin.Begin);
+                    using var inflater = new DeflateStream(detransformedStream, CompressionMode.Decompress, leaveOpen: true);
+                    using var tempStream = new MemoryStream();
 
-                        detransformedStream.Seek(0, SeekOrigin.Begin);
-                        await tempStream.CopyToAsync(detransformedStream, p.CancellationToken);
-                        detransformedStream.Seek(0, SeekOrigin.Begin);
-                        detransformedStream.SetLength(tempStream.Length);
-                    }
+                    await inflater.CopyToAsync(tempStream, p.CancellationToken);
+                    tempStream.Seek(0, SeekOrigin.Begin);
+
+                    detransformedStream.Seek(0, SeekOrigin.Begin);
+                    await tempStream.CopyToAsync(detransformedStream, p.CancellationToken);
+                    detransformedStream.Seek(0, SeekOrigin.Begin);
+                    detransformedStream.SetLength(tempStream.Length);
                 }
 
                 // Copy detransformed chunk to output stream
                 var chunkSize = Math.Min(detransformedStream.Length, maxOutputSize);
                 await detransformedStream.CopyPartialAsync(output, chunkSize, p.CancellationToken);
                 return (uint)chunkSize;
+            }
+            finally
+            {
+                // Manually cleanup crypto stream. The .NET standard version does not have the ability to leave the underlying stream open.
+                if (cryptoStream is not null)
+                    cryptoStream.Dispose();
             }
         }
 
