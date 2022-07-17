@@ -70,6 +70,7 @@ namespace VictorBush.Ego.NefsEdit
 
             // Run application
             Application.EnableVisualStyles();
+            Application.SetHighDpiMode(HighDpiMode.SystemAware);
             Application.SetCompatibleTextRenderingDefault(false);
             Application.Run(new EditorForm(workspace, uiService, settingsService));
         }
