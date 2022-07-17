@@ -31,11 +31,11 @@ namespace VictorBush.Ego.NefsLib.Item
         /// be used if the item is not compressed (i.e., extracted size == compressed size).
         /// </summary>
         /// <param name="extractedSize">The size of the item's data when extracted from the archive.</param>
-        public NefsItemSize(UInt32 extractedSize, ushort checksum)
+        public NefsItemSize(UInt32 extractedSize, ushort checksum = 0)
         {
             this.ExtractedSize = extractedSize;
             var transform = new NefsDataTransform(extractedSize);
-            var chunk = new NefsDataChunk(extractedSize, extractedSize, transform, checksum);
+            var chunk = new NefsDataChunk(extractedSize, extractedSize, transform, 0);
             this.Chunks = new List<NefsDataChunk> { chunk };
         }
 

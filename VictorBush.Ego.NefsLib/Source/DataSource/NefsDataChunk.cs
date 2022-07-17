@@ -16,7 +16,7 @@ namespace VictorBush.Ego.NefsLib.DataSource
         /// <param name="size">The size of the data chunk.</param>
         /// <param name="cumulativeSize">The cumulative size of the data chunk.</param>
         /// <param name="transform">The transform that has been applied to this chunk.</param>
-        public NefsDataChunk(UInt32 size, UInt32 cumulativeSize, NefsDataTransform transform, ushort checksum)
+        public NefsDataChunk(UInt32 size, UInt32 cumulativeSize, NefsDataTransform transform, ushort checksum = 0)
         {
             this.Size = size;
             this.CumulativeSize = cumulativeSize;
