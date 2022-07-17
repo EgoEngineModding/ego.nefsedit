@@ -914,6 +914,10 @@ namespace VictorBush.Ego.NefsLib.IO
         /// <returns>The loaded header part.</returns>
         internal async Task<NefsHeaderPart8> ReadHeaderPart8Async(Stream stream, long offset, int hashBlockSize, NefsHeaderPart5 part5, NefsProgress p)
         {
+            // TODO - what if hash block size is 0?
+            if (hashBlockSize == 0)
+                hashBlockSize = NefsWriter.DefaultHashBlockSize;
+
             var totalCompressedDataSize = part5.ArchiveSize - part5.FirstDataOffset;
             var numHashes = (int)(totalCompressedDataSize / (uint)hashBlockSize);
             var part8 = new NefsHeaderPart8(numHashes);
