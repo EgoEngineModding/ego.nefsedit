@@ -1,13 +1,8 @@
-﻿// See LICENSE.txt for license information.
+// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsLib.Header
+namespace VictorBush.Ego.NefsLib.Header;
+
+public interface INefsHeaderPartEntry
 {
-    using System;
-    using VictorBush.Ego.NefsLib.Item;
-    using VictorBush.Ego.NefsLib.Progress;
-
-    public interface INefsHeaderPartEntry
-    {
-        int Size { get; }
-    }
+	int Size { get; }
 }

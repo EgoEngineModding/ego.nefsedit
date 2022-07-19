@@ -1,0 +1,11 @@
+<Project>
+	<ItemGroup>
+		<PackageReference Update="Microsoft.Extensions.Logging" Version="6.0.0" />
+		<PackageReference Update="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" Version="0.3.242703" PrivateAssets="all" />
+		<PackageReference Update="Microsoft.NET.Test.Sdk" Version="16.11.0" />
+		<PackageReference Update="System.IO.Abstractions" Version="9.0.4" />
+		<PackageReference Update="System.IO.Abstractions.TestingHelpers" Version="9.0.4" />
+		<PackageReference Update="xunit" Version="2.4.1" />
+		<PackageReference Update="xunit.runner.visualstudio" Version="2.4.5" />
+	</ItemGroup>
+</Project>

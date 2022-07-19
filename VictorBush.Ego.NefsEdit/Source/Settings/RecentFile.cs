@@ -1,4 +1,4 @@
-﻿// See LICENSE.txt for license information.
+// See LICENSE.txt for license information.
 
 namespace VictorBush.Ego.NefsEdit.Settings
 {
@@ -33,15 +33,16 @@ namespace VictorBush.Ego.NefsEdit.Settings
                     this.Type = nameof(StandardSource);
                     break;
 
-                case GameDatSource gameDatSource:
+                case HeadlessSource gameDatSource:
                     this.GameDatDataFilePath = gameDatSource.DataFilePath;
                     this.GameDatHeaderFilePath = gameDatSource.HeaderFilePath;
                     this.GameDatPrimaryOffset = gameDatSource.PrimaryOffset;
                     this.GameDatPrimarySize = gameDatSource.PrimarySize;
                     this.GameDatSecondaryOffset = gameDatSource.SecondaryOffset;
                     this.GameDatSecondarySize = gameDatSource.SecondarySize;
-                    this.Type = nameof(GameDatSource);
-                    break;
+                    this.Type = "GameDatSource";
+
+					break;
 
                 case NefsInjectSource nefsInjectSource:
                     this.NefsInjectDataFilePath = nefsInjectSource.DataFilePath;
@@ -80,8 +81,8 @@ namespace VictorBush.Ego.NefsEdit.Settings
                 case nameof(StandardSource):
                     return NefsArchiveSource.Standard(this.StandardFilePath);
 
-                case nameof(GameDatSource):
-                    return NefsArchiveSource.GameDat(this.GameDatDataFilePath, this.GameDatHeaderFilePath, this.GameDatPrimaryOffset.Value, this.GameDatPrimarySize, this.GameDatSecondaryOffset.Value, this.GameDatSecondarySize);
+                case "GameDatSource":
+                    return NefsArchiveSource.Headless(this.GameDatDataFilePath, this.GameDatHeaderFilePath, this.GameDatPrimaryOffset.Value, this.GameDatPrimarySize, this.GameDatSecondaryOffset.Value, this.GameDatSecondarySize);
 
                 case nameof(NefsInjectSource):
                     return NefsArchiveSource.NefsInject(this.NefsInjectDataFilePath, this.NefsInjectFilePath);
@@ -99,7 +100,7 @@ namespace VictorBush.Ego.NefsEdit.Settings
                 case nameof(StandardSource):
                     return $"{Path.GetFileName(this.StandardFilePath)}";
 
-                case nameof(GameDatSource):
+                case "GameDatSource":
                     return $"{Path.GetFileName(this.GameDatDataFilePath)} [{this.GameDatPrimaryOffset}|{this.GameDatSecondaryOffset}]";
 
                 case nameof(NefsInjectSource):

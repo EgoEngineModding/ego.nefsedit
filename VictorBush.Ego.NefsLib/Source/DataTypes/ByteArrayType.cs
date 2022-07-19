@@ -1,83 +1,84 @@
 ﻿// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsLib.DataTypes
+using VictorBush.Ego.NefsLib.Progress;
+using VictorBush.Ego.NefsLib.Utility;
+
+namespace VictorBush.Ego.NefsLib.DataTypes;
+
+/// <summary>
+/// An array of bytes.
+/// </summary>
+public sealed class ByteArrayType : DataType
 {
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
-    using VictorBush.Ego.NefsLib.Progress;
-    using VictorBush.Ego.NefsLib.Utility;
+	private byte[] value;
 
-    /// <summary>
-    /// An array of bytes.
-    /// </summary>
-    public class ByteArrayType : DataType
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="ByteArrayType"/> class.
-        /// </summary>
-        /// <param name="offset">See <see cref="DataType.Offset"/>.</param>
-        /// <param name="size">The size of the array in bytes.</param>
-        public ByteArrayType(int offset, int size)
-            : base(offset)
-        {
-            if (size == 0)
-            {
-                throw new ArgumentOutOfRangeException("ByteArrayType must have size greater than 0 bytes.");
-            }
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ByteArrayType"/> class.
+	/// </summary>
+	/// <param name="offset">See <see cref="DataType.Offset"/>.</param>
+	/// <param name="size">The size of the array in bytes.</param>
+	public ByteArrayType(int offset, int size)
+		: base(offset)
+	{
+		if (size == 0)
+		{
+			throw new ArgumentOutOfRangeException("ByteArrayType must have size greater than 0 bytes.");
+		}
 
-            this.Size = size;
-            this.Value = new byte[size];
-        }
+		Size = size;
+		this.value = new byte[size];
+	}
 
-        /// <summary>
-        /// The size of the array in bytes.
-        /// </summary>
-        public override int Size { get; }
+	/// <summary>
+	/// The size of the array in bytes.
+	/// </summary>
+	public override int Size { get; }
 
-        /// <summary>
-        /// The current data value.
-        /// </summary>
-        public byte[] Value { get; set; } // TODO : Setting this should be fixed. Need to validate size.
+	/// <summary>
+	/// The current data value.
+	/// </summary>
+	public byte[] Value
+	{
+		get => this.value;
+		set
+		{
+			if (value.Length != Size)
+			{
+				throw new ArgumentException($"Byte array had length of {value.Length}, but expected {Size}. Value of {nameof(ByteArrayType)} must not change length.");
+			}
 
-        /// <inheritdoc/>
-        public override byte[] GetBytes()
-        {
-            return this.Value;
-        }
+			this.value = value;
+		}
+	}
 
-        /// <summary>
-        /// Gets a 32-bit unsigned integer from the array.
-        /// </summary>
-        /// <param name="offset">
-        /// The offset from the beginning of the array to get the integer from.
-        /// </param>
-        /// <returns>A <see cref="UInt32"/>.</returns>
-        public UInt32 GetUInt32(long offset)
-        {
-            if (offset >= this.Size)
-            {
-                throw new ArgumentOutOfRangeException("Offset outside of byte array.");
-            }
+	/// <inheritdoc/>
+	public override byte[] GetBytes() => Value;
 
-            if (this.Value.Length - (int)offset < 4)
-            {
-                throw new ArgumentOutOfRangeException("Offset must be at least 4 bytes from the end of the array.");
-            }
+	/// <summary>
+	/// Gets a 32-bit unsigned integer from the array.
+	/// </summary>
+	/// <param name="offset">The offset from the beginning of the array to get the integer from.</param>
+	public uint GetUInt32(long offset)
+	{
+		if (offset >= Size)
+		{
+			throw new ArgumentOutOfRangeException("Offset outside of byte array.");
+		}
 
-            return BitConverter.ToUInt32(this.Value, (int)offset);
-        }
+		if (Value.Length - (int)offset < 4)
+		{
+			throw new ArgumentOutOfRangeException("Offset must be at least 4 bytes from the end of the array.");
+		}
 
-        /// <inheritdoc/>
-        public override async Task ReadAsync(Stream file, long baseOffset, NefsProgress p)
-        {
-            this.Value = await this.DoReadAsync(file, baseOffset, p);
-        }
+		return BitConverter.ToUInt32(Value, (int)offset);
+	}
 
-        /// <inheritdoc/>
-        public override String ToString()
-        {
-            return StringHelper.ByteArrayToString(this.Value);
-        }
-    }
+	/// <inheritdoc/>
+	public override async Task ReadAsync(Stream file, long baseOffset, NefsProgress p)
+	{
+		Value = await DoReadAsync(file, baseOffset, p);
+	}
+
+	/// <inheritdoc/>
+	public override string ToString() => StringHelper.ByteArrayToString(Value);
 }

@@ -1,54 +1,47 @@
 ﻿// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsLib.DataTypes
+using VictorBush.Ego.NefsLib.Progress;
+
+namespace VictorBush.Ego.NefsLib.DataTypes;
+
+/// <summary>
+/// 16-bit unsigned integer.
+/// </summary>
+public class UInt16Type : DataType
 {
-    using System;
-    using System.IO;
-    using System.Threading.Tasks;
-    using VictorBush.Ego.NefsLib.Progress;
+	private const int UInt16TypeSize = 2;
 
-    /// <summary>
-    /// 16-bit unsigned integer.
-    /// </summary>
-    public class UInt16Type : DataType
-    {
-        private const int UInt16TypeSize = 2;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="UInt16Type"/> class.
+	/// </summary>
+	/// <param name="offset">See <see cref="DataType.Offset"/>.</param>
+	public UInt16Type(int offset)
+		: base(offset)
+	{
+	}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="UInt16Type"/> class.
-        /// </summary>
-        /// <param name="offset">See <see cref="DataType.Offset"/>.</param>
-        public UInt16Type(int offset)
-            : base(offset)
-        {
-        }
+	/// <inheritdoc/>
+	public override int Size => UInt16TypeSize;
 
-        /// <inheritdoc/>
-        public override int Size => UInt16TypeSize;
+	/// <summary>
+	/// The current data value.
+	/// </summary>
+	public ushort Value { get; set; }
 
-        /// <summary>
-        /// The current data value.
-        /// </summary>
-        public UInt16 Value { get; set; }
+	/// <inheritdoc/>
+	public override byte[] GetBytes() => BitConverter.GetBytes(Value);
 
-        /// <inheritdoc/>
-        public override byte[] GetBytes()
-        {
-            return BitConverter.GetBytes(this.Value);
-        }
+	/// <inheritdoc/>
+	public override async Task ReadAsync(Stream file, long baseOffset, NefsProgress p)
+	{
+		var temp = await DoReadAsync(file, baseOffset, p);
+		Value = BitConverter.ToUInt16(temp, 0);
+	}
 
-        /// <inheritdoc/>
-        public override async Task ReadAsync(Stream file, long baseOffset, NefsProgress p)
-        {
-            var temp = await this.DoReadAsync(file, baseOffset, p);
-            this.Value = BitConverter.ToUInt16(temp, 0);
-        }
-
-        /// <inheritdoc/>
-        public override string ToString()
-        {
-            /* Return value in hex */
-            return "0x" + this.Value.ToString("X");
-        }
-    }
+	/// <inheritdoc/>
+	public override string ToString()
+	{
+		/* Return value in hex */
+		return "0x" + Value.ToString("X");
+	}
 }

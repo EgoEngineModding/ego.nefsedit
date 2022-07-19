@@ -1,47 +1,46 @@
-﻿// See LICENSE.txt for license information.
+// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsLib.Header
+using VictorBush.Ego.NefsLib.DataTypes;
+using VictorBush.Ego.NefsLib.Item;
+
+namespace VictorBush.Ego.NefsLib.Header;
+
+/// <summary>
+/// An entry in header part 7 for an item in an archive.
+/// </summary>
+public class NefsHeaderPart7Entry : INefsHeaderPartEntry
 {
-    using VictorBush.Ego.NefsLib.DataTypes;
-    using VictorBush.Ego.NefsLib.Item;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="NefsHeaderPart7Entry"/> class.
+	/// </summary>
+	internal NefsHeaderPart7Entry()
+	{
+	}
 
-    /// <summary>
-    /// An entry in header part 7 for an item in an archive.
-    /// </summary>
-    public class NefsHeaderPart7Entry : INefsHeaderPartEntry
-    {
+	/// <summary>
+	/// Gets the id of the item this entry is for.
+	/// </summary>
+	public NefsItemId Id
+	{
+		get => new NefsItemId(Data0x04_Id.Value);
+		init => Data0x04_Id.Value = value.Value;
+	}
 
+	/// <summary>
+	/// Gets the id of the next item in the same directory as this item. If this item is the last item in the directory,
+	/// the sibling id will equal the item id.
+	/// </summary>
+	public NefsItemId SiblingId
+	{
+		get => new NefsItemId(Data0x00_SiblingId.Value);
+		init => Data0x00_SiblingId.Value = value.Value;
+	}
 
-        public int Size => NefsHeaderPart7.EntrySize;
+	public int Size => NefsHeaderPart7.EntrySize;
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="NefsHeaderPart7Entry"/> class.
-        /// </summary>
-        internal NefsHeaderPart7Entry()
-        {
-        }
+	[FileData]
+	private UInt32Type Data0x00_SiblingId { get; } = new UInt32Type(0x00);
 
-        /// <summary>
-        /// Gets the id of the item this entry is for.
-        /// </summary>
-        public NefsItemId Id => new NefsItemId(this.Data0x04_Id.Value);
-
-        /// <summary>
-        /// Gets the id of the next item in the same directory as this item. If this item is the
-        /// last item in the directory, the sibling id will equal the item id.
-        /// </summary>
-        public NefsItemId SiblingId => new NefsItemId(this.Data0x00_SiblingId.Value);
-
-        /// <summary>
-        /// Data at offset 0x00.
-        /// </summary>
-        [FileData]
-        internal UInt32Type Data0x00_SiblingId { get; } = new UInt32Type(0x00);
-
-        /// <summary>
-        /// Data at offset 0x04.
-        /// </summary>
-        [FileData]
-        internal UInt32Type Data0x04_Id { get; } = new UInt32Type(0x04);
-    }
+	[FileData]
+	private UInt32Type Data0x04_Id { get; } = new UInt32Type(0x04);
 }

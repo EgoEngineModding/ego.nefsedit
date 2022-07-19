@@ -1,59 +1,56 @@
-﻿// See LICENSE.txt for license information.
+// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsLib.Header
+using VictorBush.Ego.NefsLib.DataTypes;
+
+namespace VictorBush.Ego.NefsLib.Header;
+
+/// <summary>
+/// An entry in header part 4 for an item in an archive.
+/// </summary>
+public sealed class Nefs16HeaderPart4Entry : INefsHeaderPartEntry
 {
-    using System;
-    using VictorBush.Ego.NefsLib.DataTypes;
+	internal Nefs16HeaderPart4Entry()
+	{
+	}
 
-    /// <summary>
-    /// An entry in header part 4 for an item in an archive.
-    /// </summary>
-    public class Nefs16HeaderPart4Entry : INefsHeaderPartEntry
-    {
-        /// <summary>
-        /// The size of a part 4 entry. This is used to get the offset into part 4 from an index
-        /// into part 4.
-        /// </summary>
-        public int Size => Nefs16HeaderPart4.EntrySize;
+	/// <summary>
+	/// Checksum of the chunk.
+	/// </summary>
+	public ushort Checksum
+	{
+		get => Data0x06_Checksum.Value;
+		init => Data0x06_Checksum.Value = value;
+	}
 
-        /// <summary>
-        /// Initializes a new instance of the <see cref="Nefs16HeaderPart4Entry"/> class.
-        /// </summary>
-        internal Nefs16HeaderPart4Entry()
-        {
-        }
+	/// <summary>
+	/// Cumulative block size of this chunk.
+	/// </summary>
+	public uint CumulativeBlockSize
+	{
+		get => Data0x00_CumulativeBlockSize.Value;
+		init => Data0x00_CumulativeBlockSize.Value = value;
+	}
 
-        /// <summary>
-        /// Checksum of the chunk.
-        /// </summary>
-        public UInt16 Checksum => this.Data0x06_Checksum.Value;
+	/// <summary>
+	/// The size of a part 4 entry. This is used to get the offset into part 4 from an index into part 4.
+	/// </summary>
+	public int Size => Nefs16HeaderPart4.EntrySize;
 
-        /// <summary>
-        /// Cumulative block size of this chunk.
-        /// </summary>
-        public UInt32 CumulativeBlockSize => this.Data0x00_CumulativeBlockSize.Value;
+	/// <summary>
+	/// Transformation applied to this chunk.
+	/// </summary>
+	public Nefs16HeaderPart4TransformType TransformType
+	{
+		get => (Nefs16HeaderPart4TransformType)Data0x04_TransformType.Value;
+		init => Data0x04_TransformType.Value = (ushort)value;
+	}
 
-        /// <summary>
-        /// Transformation applied to this chunk.
-        /// </summary>
-        public Nefs16HeaderPart4TransformType TransformType => (Nefs16HeaderPart4TransformType)this.Data0x04_TransformType.Value;
+	[FileData]
+	private UInt32Type Data0x00_CumulativeBlockSize { get; } = new UInt32Type(0x00);
 
-        /// <summary>
-        /// Data at offset 0x00.
-        /// </summary>
-        [FileData]
-        internal UInt32Type Data0x00_CumulativeBlockSize { get; } = new UInt32Type(0x00);
+	[FileData]
+	private UInt16Type Data0x04_TransformType { get; } = new UInt16Type(0x04);
 
-        /// <summary>
-        /// Data at offset 0x04.
-        /// </summary>
-        [FileData]
-        internal UInt16Type Data0x04_TransformType { get; } = new UInt16Type(0x04);
-
-        /// <summary>
-        /// Data at offset 0x06.
-        /// </summary>
-        [FileData]
-        internal UInt16Type Data0x06_Checksum { get; } = new UInt16Type(0x06);
-    }
+	[FileData]
+	private UInt16Type Data0x06_Checksum { get; } = new UInt16Type(0x06);
 }
