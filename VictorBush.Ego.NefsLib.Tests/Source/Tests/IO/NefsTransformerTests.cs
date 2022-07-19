@@ -97,14 +97,14 @@ public class NefsTransformerTests
 	public static IEnumerable<object[]> CompressAsyncTests =>
 		new List<object[]>
 		{
-				   new object[] { CompressAsyncTest1 },
-				   new object[] { CompressAsyncTest2 },
-				   new object[] { CompressAsyncTest3 },
-				   new object[] { CompressAsyncTest4 },
-				   new object[] { CompressAsyncTest5 },
-				   new object[] { CompressAsyncTest6 },
-				   new object[] { CompressAsyncTest7 },
-				   new object[] { CompressAsyncTest8 },
+			new object[] { CompressAsyncTest1 },
+			new object[] { CompressAsyncTest2 },
+			new object[] { CompressAsyncTest3 },
+			new object[] { CompressAsyncTest4 },
+			new object[] { CompressAsyncTest5 },
+			new object[] { CompressAsyncTest6 },
+			new object[] { CompressAsyncTest7 },
+			new object[] { CompressAsyncTest8 },
 		};
 
 	[Fact]
@@ -112,36 +112,35 @@ public class NefsTransformerTests
 	{
 		byte[] input =
 		{
-				0xB3, 0xB1, 0xAF, 0xC8, 0xCD, 0x51, 0x28, 0x4B, 0x2D, 0x2A, 0xCE, 0xCC,
-				0xCF, 0xB3, 0x55, 0x32, 0xD4, 0x33, 0x50, 0x52, 0x48, 0xCD, 0x4B, 0xCE,
-				0x4F, 0xC9, 0xCC, 0x4B, 0xB7, 0x55, 0x0A, 0x0D, 0x71, 0xD3, 0xB5, 0x50,
-				0x52, 0xB0, 0xB7, 0xE3, 0xE5, 0xB2, 0x49, 0x2F, 0xCA, 0x2C, 0x88, 0x2F,
-				0xC9, 0xCC, 0x05, 0x4A, 0x14, 0x2B, 0x80, 0x38, 0xC1, 0x25, 0xA9, 0xA9,
-				0x45, 0x40, 0x9E, 0x4B, 0x69, 0x51, 0x62, 0x09, 0x58, 0xB7, 0x81, 0x9E,
-				0xA1, 0xA9, 0x01, 0x10, 0x28, 0x29, 0x14, 0xA5, 0xE6, 0xA4, 0x26, 0x16,
-				0xA7, 0xE2, 0x53, 0x02, 0x32, 0xC2, 0x3D, 0x35, 0xB1, 0x08, 0x45, 0xCE,
-				0x00, 0x45, 0x3B, 0x86, 0xB4, 0x11, 0x42, 0xAB, 0x47, 0x62, 0x5E, 0x4A,
-				0x52, 0x51, 0x62, 0x76, 0x2A, 0x1E, 0xFD, 0xD8, 0xD5, 0xC0, 0x0C, 0x01,
-				0x1A, 0x1E, 0x92, 0x99, 0x9B, 0x0A, 0x12, 0x33, 0x36, 0x40, 0x88, 0x85,
-				0x16, 0x60, 0x13, 0x75, 0xC9, 0x2F, 0xCF, 0x43, 0x17, 0xCF, 0x80, 0x19,
-				0x8F, 0x53, 0x22, 0xA0, 0x34, 0x27, 0x07, 0x26, 0x69, 0x86, 0x64, 0x5A,
-				0x48, 0xBE, 0x13, 0xB2, 0x3E, 0x23, 0x68, 0x90, 0xE8, 0xDB, 0x01, 0x00,
-			};
+			0xB3, 0xB1, 0xAF, 0xC8, 0xCD, 0x51, 0x28, 0x4B, 0x2D, 0x2A, 0xCE, 0xCC,
+			0xCF, 0xB3, 0x55, 0x32, 0xD4, 0x33, 0x50, 0x52, 0x48, 0xCD, 0x4B, 0xCE,
+			0x4F, 0xC9, 0xCC, 0x4B, 0xB7, 0x55, 0x0A, 0x0D, 0x71, 0xD3, 0xB5, 0x50,
+			0x52, 0xB0, 0xB7, 0xE3, 0xE5, 0xB2, 0x49, 0x2F, 0xCA, 0x2C, 0x88, 0x2F,
+			0xC9, 0xCC, 0x05, 0x4A, 0x14, 0x2B, 0x80, 0x38, 0xC1, 0x25, 0xA9, 0xA9,
+			0x45, 0x40, 0x9E, 0x4B, 0x69, 0x51, 0x62, 0x09, 0x58, 0xB7, 0x81, 0x9E,
+			0xA1, 0xA9, 0x01, 0x10, 0x28, 0x29, 0x14, 0xA5, 0xE6, 0xA4, 0x26, 0x16,
+			0xA7, 0xE2, 0x53, 0x02, 0x32, 0xC2, 0x3D, 0x35, 0xB1, 0x08, 0x45, 0xCE,
+			0x00, 0x45, 0x3B, 0x86, 0xB4, 0x11, 0x42, 0xAB, 0x47, 0x62, 0x5E, 0x4A,
+			0x52, 0x51, 0x62, 0x76, 0x2A, 0x1E, 0xFD, 0xD8, 0xD5, 0xC0, 0x0C, 0x01,
+			0x1A, 0x1E, 0x92, 0x99, 0x9B, 0x0A, 0x12, 0x33, 0x36, 0x40, 0x88, 0x85,
+			0x16, 0x60, 0x13, 0x75, 0xC9, 0x2F, 0xCF, 0x43, 0x17, 0xCF, 0x80, 0x19,
+			0x8F, 0x53, 0x22, 0xA0, 0x34, 0x27, 0x07, 0x26, 0x69, 0x86, 0x64, 0x5A,
+			0x48, 0xBE, 0x13, 0xB2, 0x3E, 0x23, 0x68, 0x90, 0xE8, 0xDB, 0x01, 0x00,
+		};
 
-		var expectedOutput = @"<?xml version=""1.0"" encoding=""UTF-8"" ?>
-<grip_timings gripSteeringDuration=""0.150000"" releaseSteeringDuration=""0.150000"" gripGearDuration=""0.100000"" releaseGearDuration=""0.120000"" gripHandbrakeDuration=""0.100000"" releaseHandbrakeDuration=""0.120000"" gearTime=""0.300000"" gearUpTime=""0.300000"" gearDownTime=""0.300000"" handbrakeTime=""0.300000"" handbrakePullTime=""0.600000"" gearToBrakeTime=""0.250000"" />";
+		var expectedOutput = "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>\r\n<grip_timings gripSteeringDuration=\"0.150000\" releaseSteeringDuration=\"0.150000\" gripGearDuration=\"0.100000\" releaseGearDuration=\"0.120000\" gripHandbrakeDuration=\"0.100000\" releaseHandbrakeDuration=\"0.120000\" gearTime=\"0.300000\" gearUpTime=\"0.300000\" gearDownTime=\"0.300000\" handbrakeTime=\"0.300000\" handbrakePullTime=\"0.600000\" gearToBrakeTime=\"0.250000\" />";
 
 		const int chunkSize = 0x10000;
 		const int transformedSize = 0xA8;
 		const int extractedSize = 0x18F;
 
+		var transformer = new NefsTransformer(this.fileSystem);
+		var transform = new NefsDataTransform(chunkSize, true);
+
 		// Detransform
 		using (var inputStream = new MemoryStream(input))
 		using (var outputStream = new MemoryStream())
 		{
-			var transformer = new NefsTransformer(this.fileSystem);
-			var transform = new NefsDataTransform(chunkSize, true);
-
 			var chunk = new NefsDataChunk(transformedSize, transformedSize, transform);
 			var size = await transformer.DetransformChunkAsync(inputStream, outputStream, chunk, extractedSize, new NefsProgress());
 
@@ -158,23 +157,38 @@ public class NefsTransformerTests
 		}
 
 		// Transform
+		byte[] transformedData;
 		using (var inputStream = new MemoryStream(Encoding.ASCII.GetBytes(expectedOutput)))
 		using (var outputStream = new MemoryStream())
 		{
-			var transformer = new NefsTransformer(this.fileSystem);
-			var transform = new NefsDataTransform(chunkSize, true);
-
-			var chunk = new NefsDataChunk(transformedSize, transformedSize, transform);
 			var size = await transformer.TransformChunkAsync(inputStream, extractedSize, outputStream, transform, new NefsProgress());
 
 			// Read data from output stream
-			var resultData = new byte[outputStream.Length];
+			transformedData = new byte[outputStream.Length];
 			outputStream.Seek(0, SeekOrigin.Begin);
-			await outputStream.ReadAsync(resultData, 0, (int)outputStream.Length);
+			await outputStream.ReadAsync(transformedData, 0, (int)outputStream.Length);
+
+			// Binary equivalence is not required. Instead, detransform again and verify we arrive back with the
+			// expected output.
+		}
+
+		// Detransform
+		using (var inputStream = new MemoryStream(transformedData))
+		using (var outputStream = new MemoryStream())
+		{
+			var chunk = new NefsDataChunk((uint)transformedData.Length, (uint)transformedData.Length, transform);
+			await transformer.DetransformAsync(inputStream, 0, outputStream, 0, extractedSize, new[] { chunk }, new NefsProgress());
+
+			// Read data from output stream
+			var detransformedData = new byte[outputStream.Length];
+			outputStream.Seek(0, SeekOrigin.Begin);
+			await outputStream.ReadAsync(detransformedData, 0, (int)outputStream.Length);
+
+			var xmlString = Encoding.ASCII.GetString(detransformedData);
 
 			// Verify
-			Assert.True(input.SequenceEqual(resultData));
-			Assert.Equal(transformedSize, resultData.Length);
+			Assert.Equal(expectedOutput, xmlString);
+			Assert.Equal(extractedSize, detransformedData.Length);
 		}
 	}
 
@@ -298,18 +312,6 @@ Hello. This is the input data. It is not encrypted.";
 			Assert.Equal(test.ExpectedData.Length, resultData.Length);
 			Assert.True(test.ExpectedData.SequenceEqual(resultData));
 		}
-	}
-
-	private string PrintByteArray(byte[] bytes)
-	{
-		var sb = new StringBuilder("new byte[] { ");
-		foreach (var b in bytes)
-		{
-			sb.Append(b + ", ");
-		}
-
-		sb.Append("}");
-		return sb.ToString();
 	}
 
 	public class CompressAsyncTestData
