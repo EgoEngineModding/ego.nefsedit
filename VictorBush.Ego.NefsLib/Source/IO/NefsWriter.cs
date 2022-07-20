@@ -404,9 +404,9 @@ public class NefsWriter : INefsWriter
 		// Compute total archive size
 		var p5 = new NefsHeaderPart5
 		{
-			DataFileNameStringOffset = sourceHeader.Part5.FirstDataOffset,
+			DataFileNameStringOffset = p3.OffsetsByFileName[items.DataFileName],
 			DataSize = (ulong)dataSize,
-			FirstDataOffset = p3.OffsetsByFileName[items.DataFileName],
+			FirstDataOffset = sourceHeader.Part5.FirstDataOffset,
 		};
 
 		// Update header intro
