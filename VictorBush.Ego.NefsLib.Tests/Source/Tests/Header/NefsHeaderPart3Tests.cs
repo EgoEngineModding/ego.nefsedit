@@ -54,6 +54,38 @@ public class NefsHeaderPart3Tests
 	}
 
 	[Fact]
+	public void NefsHeaderPart3_VerifySortedWithOrdinalComparison()
+	{
+		var items = new NefsItemList(@"C:\archive.nefs");
+
+		var file1Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 11, 12, 13 }, TestHelpers.TestTransform);
+		var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, file1Chunks));
+		var file1 = TestHelpers.CreateFile(0, 0, "foo_bar.dat", file1DataSource);
+		items.Add(file1);
+
+		var file2Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 14, 15, 16 }, TestHelpers.TestTransform);
+		var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, file2Chunks));
+		var file2 = TestHelpers.CreateFile(1, 1, "foo.dat", file2DataSource);
+		items.Add(file2);
+
+		var p3 = new NefsHeaderPart3(items);
+
+		Assert.Equal(3, p3.OffsetsByFileName.Count);
+		Assert.Equal(3, p3.FileNamesByOffset.Count);
+
+		// Four file names plus a null terminal for each.
+		Assert.Equal(33, p3.Size);
+
+		// foo.dat should come before foo_bar.dat
+		Assert.Equal("archive.nefs", p3.FileNamesByOffset[0]);
+		Assert.Equal("foo.dat", p3.FileNamesByOffset[13]);
+		Assert.Equal("foo_bar.dat", p3.FileNamesByOffset[21]);
+
+		Assert.Equal(21, (int)p3.OffsetsByFileName[file1.FileName]);
+		Assert.Equal(13, (int)p3.OffsetsByFileName[file2.FileName]);
+	}
+
+	[Fact]
 	public void NefsHeaderPart3_NoItems_EntriesEmpty()
 	{
 		var items = new NefsItemList(@"C:\archive.nefs");

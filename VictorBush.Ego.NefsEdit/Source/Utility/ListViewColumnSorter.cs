@@ -1,4 +1,4 @@
-﻿// See LICENSE.txt for license information.
+// See LICENSE.txt for license information.
 
 namespace VictorBush.Ego.NefsEdit.Utility
 {
@@ -75,9 +75,9 @@ namespace VictorBush.Ego.NefsEdit.Utility
             }
             else
             {
-                compareResult = this.objectCompare.Compare(
-                    listviewX.SubItems[this.SortColumn].Text,
-                    listviewY.SubItems[this.SortColumn].Text);
+				compareResult = string.CompareOrdinal(
+					listviewX.SubItems[SortColumn].Text,
+					listviewY.SubItems[SortColumn].Text);
             }
 
             // Calculate correct return value based on object comparison

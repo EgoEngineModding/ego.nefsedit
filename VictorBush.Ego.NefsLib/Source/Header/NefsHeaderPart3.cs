@@ -32,7 +32,7 @@ public sealed class NefsHeaderPart3
 		var strings = items.EnumerateById().Select(i => i.FileName)
 			.Append(items.DataFileName)
 			.Distinct()
-			.OrderBy(i => i);
+			.OrderBy(i => i, StringComparer.OrdinalIgnoreCase);
 
 		Init(strings);
 	}
