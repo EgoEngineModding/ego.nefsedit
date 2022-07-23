@@ -1,20 +1,19 @@
-﻿// See LICENSE.txt for license information.
+// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsEdit.Commands
+namespace VictorBush.Ego.NefsEdit.Commands;
+
+/// <summary>
+/// A command that can be performed by the application.
+/// </summary>
+internal interface INefsEditCommand
 {
-    /// <summary>
-    /// A command that can be performed by the application.
-    /// </summary>
-    internal interface INefsEditCommand
-    {
-        /// <summary>
-        /// Executes the command.
-        /// </summary>
-        void Do();
+	/// <summary>
+	/// Executes the command.
+	/// </summary>
+	void Do();
 
-        /// <summary>
-        /// Reverts the command.
-        /// </summary>
-        void Undo();
-    }
+	/// <summary>
+	/// Reverts the command.
+	/// </summary>
+	void Undo();
 }

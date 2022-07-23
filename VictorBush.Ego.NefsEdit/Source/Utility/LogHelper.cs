@@ -1,47 +1,46 @@
-﻿// See LICENSE.txt for license information.
+// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsEdit.Utility
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using System.Runtime.CompilerServices;
+
+namespace VictorBush.Ego.NefsEdit.Utility;
+
+/// <summary>
+/// Log utilities.
+/// </summary>
+public class LogHelper
 {
-    using System.Runtime.CompilerServices;
-    using Microsoft.Extensions.Logging;
-    using Microsoft.Extensions.Logging.Abstractions;
+	private static ILoggerFactory loggerFactory;
 
-    /// <summary>
-    /// Log utilities.
-    /// </summary>
-    public class LogHelper
-    {
-        private static ILoggerFactory loggerFactory;
+	/// <summary>
+	/// The logger factory to use.
+	/// </summary>
+	public static ILoggerFactory LoggerFactory
+	{
+		get
+		{
+			if (loggerFactory == null)
+			{
+				return new NullLoggerFactory();
+			}
 
-        /// <summary>
-        /// The logger factory to use.
-        /// </summary>
-        public static ILoggerFactory LoggerFactory
-        {
-            get
-            {
-                if (loggerFactory == null)
-                {
-                    return new NullLoggerFactory();
-                }
+			return loggerFactory;
+		}
 
-                return loggerFactory;
-            }
+		set
+		{
+			loggerFactory = value;
+		}
+	}
 
-            set
-            {
-                loggerFactory = value;
-            }
-        }
-
-        /// <summary>
-        /// Gets a logger.
-        /// </summary>
-        /// <param name="filename">Name of file the logger is for.</param>
-        /// <returns>The log instance.</returns>
-        public static ILogger GetLogger([CallerFilePath]string filename = "")
-        {
-            return LoggerFactory.CreateLogger(filename);
-        }
-    }
+	/// <summary>
+	/// Gets a logger.
+	/// </summary>
+	/// <param name="filename">Name of file the logger is for.</param>
+	/// <returns>The log instance.</returns>
+	public static ILogger GetLogger([CallerFilePath] string filename = "")
+	{
+		return LoggerFactory.CreateLogger(filename);
+	}
 }

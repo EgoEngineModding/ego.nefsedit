@@ -1,61 +1,60 @@
 // See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsEdit.UI
+using System.Text;
+using VictorBush.Ego.NefsEdit.Services;
+using VictorBush.Ego.NefsEdit.Workspace;
+using VictorBush.Ego.NefsLib;
+using VictorBush.Ego.NefsLib.ArchiveSource;
+using VictorBush.Ego.NefsLib.Header;
+using VictorBush.Ego.NefsLib.Utility;
+using WeifenLuo.WinFormsUI.Docking;
+
+namespace VictorBush.Ego.NefsEdit.UI;
+
+/// <summary>
+/// Form used for displaying debug information about an archive.
+/// </summary>
+internal partial class ArchiveDebugForm : DockContent
 {
-	using System;
-	using System.Text;
-	using VictorBush.Ego.NefsEdit.Services;
-	using VictorBush.Ego.NefsEdit.Workspace;
-	using VictorBush.Ego.NefsLib;
-	using VictorBush.Ego.NefsLib.ArchiveSource;
-	using VictorBush.Ego.NefsLib.Header;
-	using VictorBush.Ego.NefsLib.Utility;
-	using WeifenLuo.WinFormsUI.Docking;
-
 	/// <summary>
-	/// Form used for displaying debug information about an archive.
+	/// Initializes a new instance of the <see cref="ArchiveDebugForm"/> class.
 	/// </summary>
-	internal partial class ArchiveDebugForm : DockContent
+	/// <param name="workspace">The workspace.</param>
+	/// <param name="uiService">The UI service.</param>
+	public ArchiveDebugForm(INefsEditWorkspace workspace, IUiService uiService)
 	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ArchiveDebugForm"/> class.
-		/// </summary>
-		/// <param name="workspace">The workspace.</param>
-		/// <param name="uiService">The UI service.</param>
-		public ArchiveDebugForm(INefsEditWorkspace workspace, IUiService uiService)
+		InitializeComponent();
+		Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+		UiService = uiService;
+		Workspace.ArchiveOpened += OnWorkspaceArchiveOpened;
+		Workspace.ArchiveClosed += OnWorkspaceArchiveClosed;
+		Workspace.ArchiveSaved += OnWorkspaceArchiveSaved;
+	}
+
+	private IUiService UiService { get; }
+
+	private INefsEditWorkspace Workspace { get; }
+
+	private void ArchiveDebugForm_Load(Object sender, EventArgs e)
+	{
+	}
+
+	private string GetArchiveSourceInfo(NefsArchiveSource source)
+	{
+		switch (source)
 		{
-			this.InitializeComponent();
-			this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
-			this.UiService = uiService;
-			this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
-			this.Workspace.ArchiveClosed += this.OnWorkspaceArchiveClosed;
-			this.Workspace.ArchiveSaved += this.OnWorkspaceArchiveSaved;
-		}
-
-		private IUiService UiService { get; }
-
-		private INefsEditWorkspace Workspace { get; }
-
-		private void ArchiveDebugForm_Load(Object sender, EventArgs e)
-		{
-		}
-
-		private string GetArchiveSourceInfo(NefsArchiveSource source)
-		{
-			switch (source)
-			{
-				case StandardSource standardSource:
-					return $@"Standard NeFS archive.
+			case StandardSource standardSource:
+				return $@"Standard NeFS archive.
 Archive file:               {standardSource.FilePath}
 Header offset:              0";
 
-				case NefsInjectSource nefsInjectSource:
-					return $@"NefsInject archive.
+			case NefsInjectSource nefsInjectSource:
+				return $@"NefsInject archive.
 Data file:                  {nefsInjectSource.DataFilePath}
 NefsInject file:            {nefsInjectSource.NefsInjectFilePath}";
 
-				case HeadlessSource gameDatSource:
-					return $@"GameDat archive.
+			case HeadlessSource gameDatSource:
+				return $@"GameDat archive.
 Data file:                  {gameDatSource.DataFilePath}
 Header file:                {gameDatSource.HeaderFilePath}
 Primary offset:             {gameDatSource.PrimaryOffset}
@@ -63,67 +62,67 @@ Primary size:               {gameDatSource.PrimarySize}
 Secondary offset:           {gameDatSource.SecondaryOffset}
 Secondary size:             {gameDatSource.SecondarySize}";
 
-				default:
-					return "Unknown archive source.";
-			}
+			default:
+				return "Unknown archive source.";
+		}
+	}
+
+	private string GetDebugInfoVersion16(Nefs16Header h, NefsArchiveSource source)
+	{
+		var headerPart1String = new StringBuilder();
+		foreach (var entry in h.Part1.EntriesByIndex)
+		{
+			headerPart1String.Append($"0x{entry.OffsetToData.ToString("X")}".PadRight(20));
+			headerPart1String.Append($"0x{entry.IndexPart2.ToString("X")}".PadRight(20));
+			headerPart1String.Append($"0x{entry.IndexPart4.ToString("X")}".PadRight(20));
+			headerPart1String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+			headerPart1String.Append("\n");
 		}
 
-		private string GetDebugInfoVersion16(Nefs16Header h, NefsArchiveSource source)
+		var headerPart2String = new StringBuilder();
+		foreach (var entry in h.Part2.EntriesByIndex)
 		{
-			var headerPart1String = new StringBuilder();
-			foreach (var entry in h.Part1.EntriesByIndex)
-			{
-				headerPart1String.Append($"0x{entry.OffsetToData.ToString("X")}".PadRight(20));
-				headerPart1String.Append($"0x{entry.IndexPart2.ToString("X")}".PadRight(20));
-				headerPart1String.Append($"0x{entry.IndexPart4.ToString("X")}".PadRight(20));
-				headerPart1String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
-				headerPart1String.Append("\n");
-			}
+			headerPart2String.Append($"0x{entry.DirectoryId.Value.ToString("X")}".PadRight(20));
+			headerPart2String.Append($"0x{entry.FirstChildId.Value.ToString("X")}".PadRight(20));
+			headerPart2String.Append($"0x{entry.OffsetIntoPart3.ToString("X")}".PadRight(20));
+			headerPart2String.Append($"0x{entry.ExtractedSize.ToString("X")}".PadRight(20));
+			headerPart2String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+			headerPart2String.Append("\n");
+		}
 
-			var headerPart2String = new StringBuilder();
-			foreach (var entry in h.Part2.EntriesByIndex)
-			{
-				headerPart2String.Append($"0x{entry.DirectoryId.Value.ToString("X")}".PadRight(20));
-				headerPart2String.Append($"0x{entry.FirstChildId.Value.ToString("X")}".PadRight(20));
-				headerPart2String.Append($"0x{entry.OffsetIntoPart3.ToString("X")}".PadRight(20));
-				headerPart2String.Append($"0x{entry.ExtractedSize.ToString("X")}".PadRight(20));
-				headerPart2String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
-				headerPart2String.Append("\n");
-			}
+		var headerPart3String = new StringBuilder();
+		foreach (var s in h.Part3.FileNames)
+		{
+			headerPart3String.AppendLine(s);
+		}
 
-			var headerPart3String = new StringBuilder();
-			foreach (var s in h.Part3.FileNames)
-			{
-				headerPart3String.AppendLine(s);
-			}
+		var headerPart6String = new StringBuilder();
+		foreach (var entry in h.Part6.EntriesByIndex)
+		{
+			headerPart6String.Append($"0x{entry.Volume.ToString("X")}".PadRight(20));
+			headerPart6String.Append($"0x{((byte)entry.Flags).ToString("X")}".PadRight(20));
+			headerPart6String.Append($"0x{entry.Unknown0x3.ToString("X")}".PadRight(20));
+			headerPart6String.Append("\n");
+		}
 
-			var headerPart6String = new StringBuilder();
-			foreach (var entry in h.Part6.EntriesByIndex)
-			{
-				headerPart6String.Append($"0x{entry.Volume.ToString("X")}".PadRight(20));
-				headerPart6String.Append($"0x{((byte)entry.Flags).ToString("X")}".PadRight(20));
-				headerPart6String.Append($"0x{entry.Unknown0x3.ToString("X")}".PadRight(20));
-				headerPart6String.Append("\n");
-			}
+		var headerPart7String = new StringBuilder();
+		foreach (var entry in h.Part7.EntriesByIndex)
+		{
+			headerPart7String.Append($"0x{entry.SiblingId.Value.ToString("X")}".PadRight(20));
+			headerPart7String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+			headerPart7String.Append("\n");
+		}
 
-			var headerPart7String = new StringBuilder();
-			foreach (var entry in h.Part7.EntriesByIndex)
-			{
-				headerPart7String.Append($"0x{entry.SiblingId.Value.ToString("X")}".PadRight(20));
-				headerPart7String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
-				headerPart7String.Append("\n");
-			}
+		var headerPart8String = new StringBuilder();
+		foreach (var hash in h.Part8.FileDataHashes)
+		{
+			headerPart8String.Append(hash);
+			headerPart8String.Append("\n");
+		}
 
-			var headerPart8String = new StringBuilder();
-			foreach (var hash in h.Part8.FileDataHashes)
-			{
-				headerPart8String.Append(hash);
-				headerPart8String.Append("\n");
-			}
-
-			return $@"Archive Source
+		return $@"Archive Source
 -----------------------------------------------------------
-{this.GetArchiveSourceInfo(source)}
+{GetArchiveSourceInfo(source)}
 
 General Info
 -----------------------------------------------------------
@@ -198,64 +197,64 @@ Header Part 8 (Count: {h.Part8.FileDataHashes.Count})
 -----------------------------------------------------------
 {headerPart8String}
 ";
+	}
+
+	private string GetDebugInfoVersion20(Nefs20Header h, NefsArchiveSource source)
+	{
+		var headerPart1String = new StringBuilder();
+		foreach (var entry in h.Part1.EntriesByIndex)
+		{
+			headerPart1String.Append($"0x{entry.OffsetToData.ToString("X")}".PadRight(20));
+			headerPart1String.Append($"0x{entry.IndexPart2.ToString("X")}".PadRight(20));
+			headerPart1String.Append($"0x{entry.IndexPart4.ToString("X")}".PadRight(20));
+			headerPart1String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+			headerPart1String.Append("\n");
 		}
 
-		private string GetDebugInfoVersion20(Nefs20Header h, NefsArchiveSource source)
+		var headerPart2String = new StringBuilder();
+		foreach (var entry in h.Part2.EntriesByIndex)
 		{
-			var headerPart1String = new StringBuilder();
-			foreach (var entry in h.Part1.EntriesByIndex)
-			{
-				headerPart1String.Append($"0x{entry.OffsetToData.ToString("X")}".PadRight(20));
-				headerPart1String.Append($"0x{entry.IndexPart2.ToString("X")}".PadRight(20));
-				headerPart1String.Append($"0x{entry.IndexPart4.ToString("X")}".PadRight(20));
-				headerPart1String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
-				headerPart1String.Append("\n");
-			}
+			headerPart2String.Append($"0x{entry.DirectoryId.Value.ToString("X")}".PadRight(20));
+			headerPart2String.Append($"0x{entry.FirstChildId.Value.ToString("X")}".PadRight(20));
+			headerPart2String.Append($"0x{entry.OffsetIntoPart3.ToString("X")}".PadRight(20));
+			headerPart2String.Append($"0x{entry.ExtractedSize.ToString("X")}".PadRight(20));
+			headerPart2String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+			headerPart2String.Append("\n");
+		}
 
-			var headerPart2String = new StringBuilder();
-			foreach (var entry in h.Part2.EntriesByIndex)
-			{
-				headerPart2String.Append($"0x{entry.DirectoryId.Value.ToString("X")}".PadRight(20));
-				headerPart2String.Append($"0x{entry.FirstChildId.Value.ToString("X")}".PadRight(20));
-				headerPart2String.Append($"0x{entry.OffsetIntoPart3.ToString("X")}".PadRight(20));
-				headerPart2String.Append($"0x{entry.ExtractedSize.ToString("X")}".PadRight(20));
-				headerPart2String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
-				headerPart2String.Append("\n");
-			}
+		var headerPart3String = new StringBuilder();
+		foreach (var s in h.Part3.FileNames)
+		{
+			headerPart3String.AppendLine(s);
+		}
 
-			var headerPart3String = new StringBuilder();
-			foreach (var s in h.Part3.FileNames)
-			{
-				headerPart3String.AppendLine(s);
-			}
+		var headerPart6String = new StringBuilder();
+		foreach (var entry in h.Part6.EntriesByIndex)
+		{
+			headerPart6String.Append($"0x{entry.Volume.ToString("X")}".PadRight(20));
+			headerPart6String.Append($"0x{((byte)entry.Flags).ToString("X")}".PadRight(20));
+			headerPart6String.Append($"0x{entry.Unknown0x3.ToString("X")}".PadRight(20));
+			headerPart6String.Append("\n");
+		}
 
-			var headerPart6String = new StringBuilder();
-			foreach (var entry in h.Part6.EntriesByIndex)
-			{
-				headerPart6String.Append($"0x{entry.Volume.ToString("X")}".PadRight(20));
-				headerPart6String.Append($"0x{((byte)entry.Flags).ToString("X")}".PadRight(20));
-				headerPart6String.Append($"0x{entry.Unknown0x3.ToString("X")}".PadRight(20));
-				headerPart6String.Append("\n");
-			}
+		var headerPart7String = new StringBuilder();
+		foreach (var entry in h.Part7.EntriesByIndex)
+		{
+			headerPart7String.Append($"0x{entry.SiblingId.Value.ToString("X")}".PadRight(20));
+			headerPart7String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
+			headerPart7String.Append("\n");
+		}
 
-			var headerPart7String = new StringBuilder();
-			foreach (var entry in h.Part7.EntriesByIndex)
-			{
-				headerPart7String.Append($"0x{entry.SiblingId.Value.ToString("X")}".PadRight(20));
-				headerPart7String.Append($"0x{entry.Id.Value.ToString("X")}".PadRight(20));
-				headerPart7String.Append("\n");
-			}
+		var headerPart8String = new StringBuilder();
+		foreach (var hash in h.Part8.FileDataHashes)
+		{
+			headerPart8String.Append(hash);
+			headerPart8String.Append("\n");
+		}
 
-			var headerPart8String = new StringBuilder();
-			foreach (var hash in h.Part8.FileDataHashes)
-			{
-				headerPart8String.Append(hash);
-				headerPart8String.Append("\n");
-			}
-
-			return $@"Archive Source
+		return $@"Archive Source
 -----------------------------------------------------------
-{this.GetArchiveSourceInfo(source)}
+{GetArchiveSourceInfo(source)}
 
 General Info
 -----------------------------------------------------------
@@ -327,56 +326,55 @@ Header Part 8 (Count: {h.Part8.FileDataHashes.Count})
 -----------------------------------------------------------
 {headerPart8String}
 ";
+	}
+
+	private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+	{
+		// Update on UI thread
+		UiService.Dispatcher.Invoke(() =>
+		{
+			PrintDebugInfo(null, null);
+		});
+	}
+
+	private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+	{
+		// Update on UI thread
+		UiService.Dispatcher.Invoke(() =>
+		{
+			PrintDebugInfo(Workspace.Archive, Workspace.ArchiveSource);
+		});
+	}
+
+	private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
+	{
+		// Update on UI thread
+		UiService.Dispatcher.Invoke(() =>
+		{
+			PrintDebugInfo(Workspace.Archive, Workspace.ArchiveSource);
+		});
+	}
+
+	private void PrintDebugInfo(NefsArchive archive, NefsArchiveSource source)
+	{
+		this.richTextBox.Text = "";
+
+		if (archive == null)
+		{
+			return;
 		}
 
-		private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+		if (archive.Header is Nefs20Header h20)
 		{
-			// Update on UI thread
-			this.UiService.Dispatcher.Invoke(() =>
-			{
-				this.PrintDebugInfo(null, null);
-			});
+			this.richTextBox.Text = GetDebugInfoVersion20(h20, source);
 		}
-
-		private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+		else if (archive.Header is Nefs16Header h16)
 		{
-			// Update on UI thread
-			this.UiService.Dispatcher.Invoke(() =>
-			{
-				this.PrintDebugInfo(this.Workspace.Archive, this.Workspace.ArchiveSource);
-			});
+			this.richTextBox.Text = GetDebugInfoVersion16(h16, source);
 		}
-
-		private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
+		else
 		{
-			// Update on UI thread
-			this.UiService.Dispatcher.Invoke(() =>
-			{
-				this.PrintDebugInfo(this.Workspace.Archive, this.Workspace.ArchiveSource);
-			});
-		}
-
-		private void PrintDebugInfo(NefsArchive archive, NefsArchiveSource source)
-		{
-			this.richTextBox.Text = "";
-
-			if (archive == null)
-			{
-				return;
-			}
-
-			if (archive.Header is Nefs20Header h20)
-			{
-				this.richTextBox.Text = this.GetDebugInfoVersion20(h20, source);
-			}
-			else if (archive.Header is Nefs16Header h16)
-			{
-				this.richTextBox.Text = this.GetDebugInfoVersion16(h16, source);
-			}
-			else
-			{
-				this.richTextBox.Text = "Unknown header version.";
-			}
+			this.richTextBox.Text = "Unknown header version.";
 		}
 	}
 }

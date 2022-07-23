@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<OutputType>Library</OutputType>
@@ -6,7 +6,7 @@
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-		<CodeAnalysisRuleSet>VictorBush.Ego.NefsLib.ruleset</CodeAnalysisRuleSet>
+		<CodeAnalysisRuleSet></CodeAnalysisRuleSet>
 		<DocumentationFile>bin\Debug\VictorBush.Ego.NefsLib.xml</DocumentationFile>
 	</PropertyGroup>
 	<ItemGroup>

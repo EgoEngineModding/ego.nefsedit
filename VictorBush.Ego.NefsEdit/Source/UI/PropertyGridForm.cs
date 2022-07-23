@@ -1,38 +1,36 @@
-﻿// See LICENSE.txt for license information.
+// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsEdit.UI
+using WeifenLuo.WinFormsUI.Docking;
+
+namespace VictorBush.Ego.NefsEdit.UI;
+
+/// <summary>
+/// Form that contains the property grid.
+/// </summary>
+public partial class PropertyGridForm : DockContent
 {
-    using System;
-    using WeifenLuo.WinFormsUI.Docking;
+	/// <summary>
+	/// Initializes a new instance of the <see cref="PropertyGridForm"/> class.
+	/// </summary>
+	public PropertyGridForm()
+	{
+		InitializeComponent();
+	}
 
-    /// <summary>
-    /// Form that contains the property grid.
-    /// </summary>
-    public partial class PropertyGridForm : DockContent
-    {
-        /// <summary>
-        /// Initializes a new instance of the <see cref="PropertyGridForm"/> class.
-        /// </summary>
-        public PropertyGridForm()
-        {
-            this.InitializeComponent();
-        }
+	/// <summary>
+	/// Refreshes the properties list.
+	/// </summary>
+	public void RefreshGrid()
+	{
+		this.propertyGrid.Refresh();
+	}
 
-        /// <summary>
-        /// Refreshes the properties list.
-        /// </summary>
-        public void RefreshGrid()
-        {
-            this.propertyGrid.Refresh();
-        }
-
-        /// <summary>
-        /// Sets the selected object in the property grid.
-        /// </summary>
-        /// <param name="obj">The object to display in the property grid.</param>
-        public void SetSelectedObject(Object obj)
-        {
-            this.propertyGrid.SelectedObject = obj;
-        }
-    }
+	/// <summary>
+	/// Sets the selected object in the property grid.
+	/// </summary>
+	/// <param name="obj">The object to display in the property grid.</param>
+	public void SetSelectedObject(Object obj)
+	{
+		this.propertyGrid.SelectedObject = obj;
+	}
 }

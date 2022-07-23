@@ -1,58 +1,55 @@
 // See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsEdit.UI
+using System.Text;
+using VictorBush.Ego.NefsEdit.Services;
+using VictorBush.Ego.NefsEdit.Workspace;
+using VictorBush.Ego.NefsLib;
+using VictorBush.Ego.NefsLib.DataSource;
+using VictorBush.Ego.NefsLib.Header;
+using VictorBush.Ego.NefsLib.Item;
+using WeifenLuo.WinFormsUI.Docking;
+
+namespace VictorBush.Ego.NefsEdit.UI;
+
+/// <summary>
+/// Form used for displaying debug information about an archive.
+/// </summary>
+internal partial class ItemDebugForm : DockContent
 {
-	using System;
-	using System.Collections.Generic;
-	using System.Linq;
-	using System.Text;
-	using VictorBush.Ego.NefsEdit.Services;
-	using VictorBush.Ego.NefsEdit.Workspace;
-	using VictorBush.Ego.NefsLib;
-	using VictorBush.Ego.NefsLib.DataSource;
-	using VictorBush.Ego.NefsLib.Header;
-	using VictorBush.Ego.NefsLib.Item;
-	using WeifenLuo.WinFormsUI.Docking;
-
 	/// <summary>
-	/// Form used for displaying debug information about an archive.
+	/// Initializes a new instance of the <see cref="ItemDebugForm"/> class.
 	/// </summary>
-	internal partial class ItemDebugForm : DockContent
+	/// <param name="workspace">The workspace.</param>
+	/// <param name="uiService">The UI service.</param>
+	public ItemDebugForm(INefsEditWorkspace workspace, IUiService uiService)
 	{
-		/// <summary>
-		/// Initializes a new instance of the <see cref="ItemDebugForm"/> class.
-		/// </summary>
-		/// <param name="workspace">The workspace.</param>
-		/// <param name="uiService">The UI service.</param>
-		public ItemDebugForm(INefsEditWorkspace workspace, IUiService uiService)
-		{
-			this.InitializeComponent();
-			this.Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
-			this.UiService = uiService;
-			this.Workspace.ArchiveOpened += this.OnWorkspaceArchiveOpened;
-			this.Workspace.ArchiveClosed += this.OnWorkspaceArchiveClosed;
-			this.Workspace.SelectedItemsChanged += this.OnWorkspaceSelectedItemsChanged;
-		}
+		InitializeComponent();
+		Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
+		UiService = uiService;
+		Workspace.ArchiveOpened += OnWorkspaceArchiveOpened;
+		Workspace.ArchiveClosed += OnWorkspaceArchiveClosed;
+		Workspace.SelectedItemsChanged += OnWorkspaceSelectedItemsChanged;
+	}
 
-		private IUiService UiService { get; }
+	private IUiService UiService { get; }
 
-		private INefsEditWorkspace Workspace { get; }
+	private INefsEditWorkspace Workspace { get; }
 
-		private void ArchiveDebugForm_Load(Object sender, EventArgs e)
-		{
-		}
+	private void ArchiveDebugForm_Load(Object sender, EventArgs e)
+	{
+	}
 
-		private string GetDebugInfoVersion16(NefsItem item, Nefs16Header h, NefsItemList items)
-		{
-			var p1 = h.Part1.EntriesByGuid[item.Guid];
-			var p2 = h.Part2.EntriesByIndex[(int)p1.IndexPart2];
-			var p6 = h.Part6.EntriesByGuid[item.Guid];
-			var p7 = h.Part7.EntriesByIndex[(int)p1.IndexPart2];
-			var numChunks = h.TableOfContents.ComputeNumChunks(p2.ExtractedSize);
-			var chunkSize = h.TableOfContents.BlockSize;
-			var attributes = p6.CreateAttributes();
+	private string GetDebugInfoVersion16(NefsItem item, Nefs16Header h, NefsItemList items)
+	{
+		var p1 = h.Part1.EntriesByGuid[item.Guid];
+		var p2 = h.Part2.EntriesByIndex[(int)p1.IndexPart2];
+		var p6 = h.Part6.EntriesByGuid[item.Guid];
+		var p7 = h.Part7.EntriesByIndex[(int)p1.IndexPart2];
+		var numChunks = h.TableOfContents.ComputeNumChunks(p2.ExtractedSize);
+		var chunkSize = h.TableOfContents.BlockSize;
+		var attributes = p6.CreateAttributes();
 
-			return $@"Item Info
+		return $@"Item Info
 -----------------------------------------------------------
 Item name:                  {item.FileName}
 Item path:                  {items.GetItemFilePath(item.Id)}
@@ -74,7 +71,7 @@ Id:                         {p2.Id.Value.ToString("X")}
 
 Part 4
 -----------------------------------------------------------
-{this.PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, chunkSize, h.Intro.GetAesKey()))}
+{PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, chunkSize, h.Intro.GetAesKey()))}
 
 Part 6
 -----------------------------------------------------------
@@ -96,18 +93,18 @@ Part 7
 Sibling id:                 {p7.SiblingId.Value.ToString("X")}
 Item id:                    {p7.Id.Value.ToString("X")}
 ";
-		}
+	}
 
-		private string GetDebugInfoVersion20(NefsItem item, Nefs20Header h, NefsItemList items)
-		{
-			var p1 = h.Part1.EntriesByGuid[item.Guid];
-			var p2 = h.Part2.EntriesByIndex[(int)p1.IndexPart2];
-			var p6 = h.Part6.EntriesByGuid[item.Guid];
-			var p7 = h.Part7.EntriesByIndex[(int)p1.IndexPart2];
-			var numChunks = h.TableOfContents.ComputeNumChunks(p2.ExtractedSize);
-			var attributes = p6.CreateAttributes();
+	private string GetDebugInfoVersion20(NefsItem item, Nefs20Header h, NefsItemList items)
+	{
+		var p1 = h.Part1.EntriesByGuid[item.Guid];
+		var p2 = h.Part2.EntriesByIndex[(int)p1.IndexPart2];
+		var p6 = h.Part6.EntriesByGuid[item.Guid];
+		var p7 = h.Part7.EntriesByIndex[(int)p1.IndexPart2];
+		var numChunks = h.TableOfContents.ComputeNumChunks(p2.ExtractedSize);
+		var attributes = p6.CreateAttributes();
 
-			return $@"Item Info
+		return $@"Item Info
 -----------------------------------------------------------
 Item name:                  {item.FileName}
 Item path:                  {items.GetItemFilePath(item.Id)}
@@ -129,7 +126,7 @@ Id:                         {p2.Id.Value.ToString("X")}
 
 Part 4
 -----------------------------------------------------------
-Chunks                      {this.PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, item.Transform))}
+Chunks                      {PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, item.Transform))}
 
 Part 6
 -----------------------------------------------------------
@@ -151,67 +148,66 @@ Part 7
 Sibling id:                 {p7.SiblingId.Value.ToString("X")}
 Item id:                    {p7.Id.Value.ToString("X")}
 ";
+	}
+
+	private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+	{
+		// Update on UI thread
+		UiService.Dispatcher.Invoke(() =>
+		{
+			PrintDebugInfo(null, null);
+		});
+	}
+
+	private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+	{
+		// Update on UI thread
+		UiService.Dispatcher.Invoke(() =>
+		{
+			PrintDebugInfo(Workspace.SelectedItems.FirstOrDefault(), Workspace.Archive);
+		});
+	}
+
+	private void OnWorkspaceSelectedItemsChanged(Object sender, EventArgs e)
+	{
+		// Update on UI thread
+		UiService.Dispatcher.Invoke(() =>
+		{
+			PrintDebugInfo(Workspace.SelectedItems.FirstOrDefault(), Workspace.Archive);
+		});
+	}
+
+	private string PrintChunkSizesToString(IList<NefsDataChunk> sizes)
+	{
+		var sb = new StringBuilder();
+		foreach (var s in sizes)
+		{
+			sb.Append("0x" + s.CumulativeSize.ToString("X") /*+ $" [{s.Checksum.ToString("X")}] */ + "\n");
 		}
 
-		private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+		return sb.ToString();
+	}
+
+	private void PrintDebugInfo(NefsItem item, NefsArchive archive)
+	{
+		this.richTextBox.Text = "";
+
+		if (item == null || archive == null)
 		{
-			// Update on UI thread
-			this.UiService.Dispatcher.Invoke(() =>
-			{
-				this.PrintDebugInfo(null, null);
-			});
+			return;
 		}
 
-		private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+		if (archive.Header is Nefs20Header h20)
 		{
-			// Update on UI thread
-			this.UiService.Dispatcher.Invoke(() =>
-			{
-				this.PrintDebugInfo(this.Workspace.SelectedItems.FirstOrDefault(), this.Workspace.Archive);
-			});
+			this.richTextBox.Text = GetDebugInfoVersion20(item, h20, archive.Items);
 		}
-
-		private void OnWorkspaceSelectedItemsChanged(Object sender, EventArgs e)
+		else if (archive.Header is Nefs16Header h16)
 		{
-			// Update on UI thread
-			this.UiService.Dispatcher.Invoke(() =>
-			{
-				this.PrintDebugInfo(this.Workspace.SelectedItems.FirstOrDefault(), this.Workspace.Archive);
-			});
+			this.richTextBox.Text = GetDebugInfoVersion16(item, h16, archive.Items);
 		}
-
-		private string PrintChunkSizesToString(IList<NefsDataChunk> sizes)
+		else
 		{
-			var sb = new StringBuilder();
-			foreach (var s in sizes)
-			{
-				sb.Append("0x" + s.CumulativeSize.ToString("X") /*+ $" [{s.Checksum.ToString("X")}] */ + "\n");
-			}
-
-			return sb.ToString();
-		}
-
-		private void PrintDebugInfo(NefsItem item, NefsArchive archive)
-		{
-			this.richTextBox.Text = "";
-
-			if (item == null || archive == null)
-			{
-				return;
-			}
-
-			if (archive.Header is Nefs20Header h20)
-			{
-				this.richTextBox.Text = this.GetDebugInfoVersion20(item, h20, archive.Items);
-			}
-			else if (archive.Header is Nefs16Header h16)
-			{
-				this.richTextBox.Text = this.GetDebugInfoVersion16(item, h16, archive.Items);
-			}
-			else
-			{
-				this.richTextBox.Text = "Unknown header version.";
-			}
+			this.richTextBox.Text = "Unknown header version.";
 		}
 	}
 }
