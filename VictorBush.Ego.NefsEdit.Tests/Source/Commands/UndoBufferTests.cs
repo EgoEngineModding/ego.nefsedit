@@ -1,328 +1,327 @@
-﻿// See LICENSE.txt for license information.
+// See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsEdit.Tests.Commands
+using System.Text;
+using VictorBush.Ego.NefsEdit.Commands;
+using Xunit;
+
+namespace VictorBush.Ego.NefsEdit.Tests.Commands;
+
+public class UndoBufferTests
 {
-    using System.Text;
-    using VictorBush.Ego.NefsEdit.Commands;
-    using Xunit;
+	[Fact]
+	public void Execute_BufferEmpty_CommandExecuted()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd = new TestCommand(str, "", "new");
 
-    public class UndoBufferTests
-    {
-        [Fact]
-        public void Execute_BufferEmpty_CommandExecuted()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd = new TestCommand(str, "", "new");
+		buffer.Execute(cmd);
+		Assert.Equal("new", str.ToString());
+		Assert.Equal(1, buffer.NextCommandIndex);
+		Assert.Equal(0, buffer.PreviousCommandIndex);
+		Assert.True(buffer.IsModified);
+	}
 
-            buffer.Execute(cmd);
-            Assert.Equal("new", str.ToString());
-            Assert.Equal(1, buffer.NextCommandIndex);
-            Assert.Equal(0, buffer.PreviousCommandIndex);
-            Assert.True(buffer.IsModified);
-        }
+	[Fact]
+	public void Execute_BufferNotEmpty_CommandExecuted()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
+		var cmd2 = new TestCommand(str, "A", "B");
 
-        [Fact]
-        public void Execute_BufferNotEmpty_CommandExecuted()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
-            var cmd2 = new TestCommand(str, "A", "B");
+		buffer.Execute(cmd1);
+		buffer.Execute(cmd2);
+		Assert.Equal("B", str.ToString());
+		Assert.Equal(2, buffer.NextCommandIndex);
+		Assert.Equal(1, buffer.PreviousCommandIndex);
+		Assert.True(buffer.IsModified);
+	}
 
-            buffer.Execute(cmd1);
-            buffer.Execute(cmd2);
-            Assert.Equal("B", str.ToString());
-            Assert.Equal(2, buffer.NextCommandIndex);
-            Assert.Equal(1, buffer.PreviousCommandIndex);
-            Assert.True(buffer.IsModified);
-        }
+	[Fact]
+	public void Execute_NextCommandAtBeginning_CommandExecuted()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
+		var cmd2 = new TestCommand(str, "A", "B");
+		var cmd3 = new TestCommand(str, "B", "C");
 
-        [Fact]
-        public void Execute_NextCommandAtBeginning_CommandExecuted()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
-            var cmd2 = new TestCommand(str, "A", "B");
-            var cmd3 = new TestCommand(str, "B", "C");
+		buffer.Execute(cmd1);
+		buffer.Execute(cmd2);
+		Assert.Equal("B", str.ToString());
+		Assert.Equal(2, buffer.NextCommandIndex);
+		Assert.Equal(1, buffer.PreviousCommandIndex);
 
-            buffer.Execute(cmd1);
-            buffer.Execute(cmd2);
-            Assert.Equal("B", str.ToString());
-            Assert.Equal(2, buffer.NextCommandIndex);
-            Assert.Equal(1, buffer.PreviousCommandIndex);
+		buffer.Undo();
+		Assert.Equal("A", str.ToString());
+		Assert.Equal(1, buffer.NextCommandIndex);
+		Assert.Equal(0, buffer.PreviousCommandIndex);
 
-            buffer.Undo();
-            Assert.Equal("A", str.ToString());
-            Assert.Equal(1, buffer.NextCommandIndex);
-            Assert.Equal(0, buffer.PreviousCommandIndex);
+		buffer.Undo();
+		Assert.Equal("", str.ToString());
+		Assert.Equal(0, buffer.NextCommandIndex);
+		Assert.Equal(-1, buffer.PreviousCommandIndex);
 
-            buffer.Undo();
-            Assert.Equal("", str.ToString());
-            Assert.Equal(0, buffer.NextCommandIndex);
-            Assert.Equal(-1, buffer.PreviousCommandIndex);
+		buffer.Execute(cmd3);
+		Assert.Equal("C", str.ToString());
+		Assert.Equal(1, buffer.NextCommandIndex);
+		Assert.Equal(0, buffer.PreviousCommandIndex);
+		Assert.True(buffer.IsModified);
+	}
 
-            buffer.Execute(cmd3);
-            Assert.Equal("C", str.ToString());
-            Assert.Equal(1, buffer.NextCommandIndex);
-            Assert.Equal(0, buffer.PreviousCommandIndex);
-            Assert.True(buffer.IsModified);
-        }
+	[Fact]
+	public void Execute_NextCommandInMiddle_CommandExecuted()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
+		var cmd2 = new TestCommand(str, "A", "B");
+		var cmd3 = new TestCommand(str, "B", "C");
+		var cmd4 = new TestCommand(str, "C", "D");
 
-        [Fact]
-        public void Execute_NextCommandInMiddle_CommandExecuted()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
-            var cmd2 = new TestCommand(str, "A", "B");
-            var cmd3 = new TestCommand(str, "B", "C");
-            var cmd4 = new TestCommand(str, "C", "D");
+		buffer.Execute(cmd1);
+		buffer.Execute(cmd2);
+		buffer.Execute(cmd3);
 
-            buffer.Execute(cmd1);
-            buffer.Execute(cmd2);
-            buffer.Execute(cmd3);
+		buffer.Undo();
+		Assert.Equal("B", str.ToString());
+		Assert.Equal(2, buffer.NextCommandIndex);
+		Assert.Equal(1, buffer.PreviousCommandIndex);
+		Assert.True(buffer.IsModified);
 
-            buffer.Undo();
-            Assert.Equal("B", str.ToString());
-            Assert.Equal(2, buffer.NextCommandIndex);
-            Assert.Equal(1, buffer.PreviousCommandIndex);
-            Assert.True(buffer.IsModified);
+		buffer.Execute(cmd4);
+		Assert.Equal("D", str.ToString());
+		Assert.Equal(3, buffer.NextCommandIndex);
+		Assert.Equal(2, buffer.PreviousCommandIndex);
+		Assert.True(buffer.IsModified);
+	}
 
-            buffer.Execute(cmd4);
-            Assert.Equal("D", str.ToString());
-            Assert.Equal(3, buffer.NextCommandIndex);
-            Assert.Equal(2, buffer.PreviousCommandIndex);
-            Assert.True(buffer.IsModified);
-        }
+	[Fact]
+	public void Execute_ValidCommand_CommandExecutedEventRaised()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
 
-        [Fact]
-        public void Execute_ValidCommand_CommandExecutedEventRaised()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
+		NefsEditCommandEventArgs eventArgs = null;
+		buffer.CommandExecuted += (o, e) => eventArgs = e;
+		buffer.Execute(cmd1);
 
-            NefsEditCommandEventArgs eventArgs = null;
-            buffer.CommandExecuted += (o, e) => eventArgs = e;
-            buffer.Execute(cmd1);
+		Assert.Same(cmd1, eventArgs.Command);
+		Assert.Equal(NefsEditCommandEventKind.New, eventArgs.Kind);
+	}
 
-            Assert.Same(cmd1, eventArgs.Command);
-            Assert.Equal(NefsEditCommandEventKind.New, eventArgs.Kind);
-        }
+	[Fact]
+	public void Redo_BufferEmpty_NoChange()
+	{
+		var buffer = new UndoBuffer();
+		buffer.Redo();
+		Assert.Equal(0, buffer.NextCommandIndex);
+		Assert.Equal(-1, buffer.PreviousCommandIndex);
+		Assert.False(buffer.IsModified);
+	}
 
-        [Fact]
-        public void Redo_BufferEmpty_NoChange()
-        {
-            var buffer = new UndoBuffer();
-            buffer.Redo();
-            Assert.Equal(0, buffer.NextCommandIndex);
-            Assert.Equal(-1, buffer.PreviousCommandIndex);
-            Assert.False(buffer.IsModified);
-        }
+	[Fact]
+	public void Redo_CanNotRedo_CommandExecutedEventNotRaised()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
 
-        [Fact]
-        public void Redo_CanNotRedo_CommandExecutedEventNotRaised()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
+		NefsEditCommandEventArgs eventArgs = null;
+		buffer.CommandExecuted += (o, e) => eventArgs = e;
+		buffer.Redo();
 
-            NefsEditCommandEventArgs eventArgs = null;
-            buffer.CommandExecuted += (o, e) => eventArgs = e;
-            buffer.Redo();
+		Assert.Null(eventArgs);
+	}
 
-            Assert.Null(eventArgs);
-        }
+	[Fact]
+	public void Redo_CanRedo_CommandExecutedEventRaised()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
 
-        [Fact]
-        public void Redo_CanRedo_CommandExecutedEventRaised()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
+		NefsEditCommandEventArgs eventArgs = null;
+		buffer.Execute(cmd1);
+		buffer.Undo();
+		buffer.CommandExecuted += (o, e) => eventArgs = e;
+		buffer.Redo();
 
-            NefsEditCommandEventArgs eventArgs = null;
-            buffer.Execute(cmd1);
-            buffer.Undo();
-            buffer.CommandExecuted += (o, e) => eventArgs = e;
-            buffer.Redo();
+		Assert.Same(cmd1, eventArgs.Command);
+		Assert.Equal(NefsEditCommandEventKind.Redo, eventArgs.Kind);
+	}
 
-            Assert.Same(cmd1, eventArgs.Command);
-            Assert.Equal(NefsEditCommandEventKind.Redo, eventArgs.Kind);
-        }
+	[Fact]
+	public void Redo_NextCommandAtBeginning_Redo()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
+		var cmd2 = new TestCommand(str, "A", "B");
 
-        [Fact]
-        public void Redo_NextCommandAtBeginning_Redo()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
-            var cmd2 = new TestCommand(str, "A", "B");
+		buffer.Execute(cmd1);
+		buffer.Execute(cmd2);
+		buffer.Undo();
+		buffer.Undo();
+		buffer.Redo();
 
-            buffer.Execute(cmd1);
-            buffer.Execute(cmd2);
-            buffer.Undo();
-            buffer.Undo();
-            buffer.Redo();
+		Assert.Equal("A", str.ToString());
+		Assert.Equal(1, buffer.NextCommandIndex);
+		Assert.Equal(0, buffer.PreviousCommandIndex);
+		Assert.True(buffer.IsModified);
+	}
 
-            Assert.Equal("A", str.ToString());
-            Assert.Equal(1, buffer.NextCommandIndex);
-            Assert.Equal(0, buffer.PreviousCommandIndex);
-            Assert.True(buffer.IsModified);
-        }
+	[Fact]
+	public void Redo_NextCommandAtEnd_NoChange()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
+		var cmd2 = new TestCommand(str, "A", "B");
 
-        [Fact]
-        public void Redo_NextCommandAtEnd_NoChange()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
-            var cmd2 = new TestCommand(str, "A", "B");
+		buffer.Execute(cmd1);
+		buffer.Execute(cmd2);
+		buffer.Redo();
 
-            buffer.Execute(cmd1);
-            buffer.Execute(cmd2);
-            buffer.Redo();
+		Assert.Equal("B", str.ToString());
+		Assert.Equal(2, buffer.NextCommandIndex);
+		Assert.Equal(1, buffer.PreviousCommandIndex);
+		Assert.True(buffer.IsModified);
+	}
 
-            Assert.Equal("B", str.ToString());
-            Assert.Equal(2, buffer.NextCommandIndex);
-            Assert.Equal(1, buffer.PreviousCommandIndex);
-            Assert.True(buffer.IsModified);
-        }
+	[Fact]
+	public void Redo_NextCommandInMiddle_Redo()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
+		var cmd2 = new TestCommand(str, "A", "B");
 
-        [Fact]
-        public void Redo_NextCommandInMiddle_Redo()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
-            var cmd2 = new TestCommand(str, "A", "B");
+		buffer.Execute(cmd1);
+		buffer.Execute(cmd2);
+		buffer.Execute(cmd1);
+		buffer.Undo();
+		buffer.Undo();
+		buffer.Redo();
 
-            buffer.Execute(cmd1);
-            buffer.Execute(cmd2);
-            buffer.Execute(cmd1);
-            buffer.Undo();
-            buffer.Undo();
-            buffer.Redo();
+		Assert.Equal("B", str.ToString());
+		Assert.Equal(2, buffer.NextCommandIndex);
+		Assert.Equal(1, buffer.PreviousCommandIndex);
+		Assert.True(buffer.IsModified);
+	}
 
-            Assert.Equal("B", str.ToString());
-            Assert.Equal(2, buffer.NextCommandIndex);
-            Assert.Equal(1, buffer.PreviousCommandIndex);
-            Assert.True(buffer.IsModified);
-        }
+	[Fact]
+	public void Undo_BufferEmpty_NoChange()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		buffer.Undo();
+		Assert.Equal("", str.ToString());
+		Assert.Equal(0, buffer.NextCommandIndex);
+		Assert.Equal(-1, buffer.PreviousCommandIndex);
+		Assert.False(buffer.IsModified);
+	}
 
-        [Fact]
-        public void Undo_BufferEmpty_NoChange()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            buffer.Undo();
-            Assert.Equal("", str.ToString());
-            Assert.Equal(0, buffer.NextCommandIndex);
-            Assert.Equal(-1, buffer.PreviousCommandIndex);
-            Assert.False(buffer.IsModified);
-        }
+	[Fact]
+	public void Undo_CanNotUndo_CommandExecutedEventNotRaised()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
 
-        [Fact]
-        public void Undo_CanNotUndo_CommandExecutedEventNotRaised()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
+		NefsEditCommandEventArgs eventArgs = null;
+		buffer.CommandExecuted += (o, e) => eventArgs = e;
+		buffer.Undo();
 
-            NefsEditCommandEventArgs eventArgs = null;
-            buffer.CommandExecuted += (o, e) => eventArgs = e;
-            buffer.Undo();
+		Assert.Null(eventArgs);
+	}
 
-            Assert.Null(eventArgs);
-        }
+	[Fact]
+	public void Undo_CanUndo_CommandExecutedEventRaised()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
 
-        [Fact]
-        public void Undo_CanUndo_CommandExecutedEventRaised()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
+		NefsEditCommandEventArgs eventArgs = null;
+		buffer.Execute(cmd1);
+		buffer.CommandExecuted += (o, e) => eventArgs = e;
+		buffer.Undo();
 
-            NefsEditCommandEventArgs eventArgs = null;
-            buffer.Execute(cmd1);
-            buffer.CommandExecuted += (o, e) => eventArgs = e;
-            buffer.Undo();
+		Assert.Same(cmd1, eventArgs.Command);
+		Assert.Equal(NefsEditCommandEventKind.Undo, eventArgs.Kind);
+	}
 
-            Assert.Same(cmd1, eventArgs.Command);
-            Assert.Equal(NefsEditCommandEventKind.Undo, eventArgs.Kind);
-        }
+	[Fact]
+	public void Undo_NextCommandAtBeginning_NoChange()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
 
-        [Fact]
-        public void Undo_NextCommandAtBeginning_NoChange()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
+		buffer.Execute(cmd1);
+		buffer.Undo();
+		Assert.Equal("", str.ToString());
+		Assert.Equal(0, buffer.NextCommandIndex);
+		Assert.Equal(-1, buffer.PreviousCommandIndex);
+		Assert.False(buffer.IsModified);
 
-            buffer.Execute(cmd1);
-            buffer.Undo();
-            Assert.Equal("", str.ToString());
-            Assert.Equal(0, buffer.NextCommandIndex);
-            Assert.Equal(-1, buffer.PreviousCommandIndex);
-            Assert.False(buffer.IsModified);
+		// Try to undo again - should be no change since nothing to undo
+		buffer.Undo();
+		Assert.Equal("", str.ToString());
+		Assert.Equal(0, buffer.NextCommandIndex);
+		Assert.Equal(-1, buffer.PreviousCommandIndex);
+		Assert.False(buffer.IsModified);
+	}
 
-            // Try to undo again - should be no change since nothing to undo
-            buffer.Undo();
-            Assert.Equal("", str.ToString());
-            Assert.Equal(0, buffer.NextCommandIndex);
-            Assert.Equal(-1, buffer.PreviousCommandIndex);
-            Assert.False(buffer.IsModified);
-        }
+	[Fact]
+	public void Undo_NextCommandAtEnd_Undo()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
 
-        [Fact]
-        public void Undo_NextCommandAtEnd_Undo()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
+		buffer.Execute(cmd1);
+		Assert.Equal("A", str.ToString());
+		Assert.Equal(1, buffer.NextCommandIndex);
+		Assert.Equal(0, buffer.PreviousCommandIndex);
+		Assert.True(buffer.IsModified);
 
-            buffer.Execute(cmd1);
-            Assert.Equal("A", str.ToString());
-            Assert.Equal(1, buffer.NextCommandIndex);
-            Assert.Equal(0, buffer.PreviousCommandIndex);
-            Assert.True(buffer.IsModified);
+		buffer.Undo();
+		Assert.Equal("", str.ToString());
+		Assert.Equal(0, buffer.NextCommandIndex);
+		Assert.Equal(-1, buffer.PreviousCommandIndex);
+		Assert.False(buffer.IsModified);
+	}
 
-            buffer.Undo();
-            Assert.Equal("", str.ToString());
-            Assert.Equal(0, buffer.NextCommandIndex);
-            Assert.Equal(-1, buffer.PreviousCommandIndex);
-            Assert.False(buffer.IsModified);
-        }
+	[Fact]
+	public void Undo_NextCommandInMiddle_Undo()
+	{
+		var str = new StringBuilder();
+		var buffer = new UndoBuffer();
+		var cmd1 = new TestCommand(str, "", "A");
+		var cmd2 = new TestCommand(str, "A", "B");
+		var cmd3 = new TestCommand(str, "B", "C");
 
-        [Fact]
-        public void Undo_NextCommandInMiddle_Undo()
-        {
-            var str = new StringBuilder();
-            var buffer = new UndoBuffer();
-            var cmd1 = new TestCommand(str, "", "A");
-            var cmd2 = new TestCommand(str, "A", "B");
-            var cmd3 = new TestCommand(str, "B", "C");
+		buffer.Execute(cmd1);
+		buffer.Execute(cmd2);
+		buffer.Execute(cmd3);
 
-            buffer.Execute(cmd1);
-            buffer.Execute(cmd2);
-            buffer.Execute(cmd3);
+		buffer.Undo();
+		buffer.Undo();
 
-            buffer.Undo();
-            buffer.Undo();
+		Assert.Equal("A", str.ToString());
+		Assert.Equal(1, buffer.NextCommandIndex);
+		Assert.Equal(0, buffer.PreviousCommandIndex);
+		Assert.True(buffer.IsModified);
+	}
 
-            Assert.Equal("A", str.ToString());
-            Assert.Equal(1, buffer.NextCommandIndex);
-            Assert.Equal(0, buffer.PreviousCommandIndex);
-            Assert.True(buffer.IsModified);
-        }
-
-        [Fact]
-        public void UndoBuffer_DefaultState()
-        {
-            var buffer = new UndoBuffer();
-            Assert.Equal(0, buffer.NextCommandIndex);
-            Assert.Equal(-1, buffer.PreviousCommandIndex);
-            Assert.False(buffer.IsModified);
-        }
-    }
+	[Fact]
+	public void UndoBuffer_DefaultState()
+	{
+		var buffer = new UndoBuffer();
+		Assert.Equal(0, buffer.NextCommandIndex);
+		Assert.Equal(-1, buffer.PreviousCommandIndex);
+		Assert.False(buffer.IsModified);
+	}
 }
