@@ -134,7 +134,7 @@ internal partial class OpenFileForm : Form
 			{
 				foreach (var file in files)
 				{
-					var item = new GameDatFileItem(file);
+					var item = new HeadlessFileItem(file);
 					this.gameDatFilesListBox.Items.Add(item);
 				}
 			});
@@ -305,9 +305,9 @@ internal partial class OpenFileForm : Form
 		this.modeListBox.Items.Add(this.openModeNefsInject);
 		this.modeListBox.Items.Add(this.openModeGameDatCustom);
 		this.modeListBox.Items.Add(this.openModeRecent);
-		this.modeListBox.Items.Add(this.openModeGameBinDirtRally1);
-		this.modeListBox.Items.Add(this.openModeGameDatDirtRally2);
-		this.modeListBox.Items.Add(this.openModeGameDatDirt4);
+		//this.modeListBox.Items.Add(this.openModeGameBinDirtRally1);
+		//this.modeListBox.Items.Add(this.openModeGameDatDirtRally2);
+		//this.modeListBox.Items.Add(this.openModeGameDatDirt4);
 
 		// Select default open mode
 		this.modeListBox.SelectedItem = this.openModeNefs;
@@ -453,7 +453,7 @@ internal partial class OpenFileForm : Form
 
 	private NefsArchiveSource ValidateGameDatSearchSource()
 	{
-		var selectedItem = this.gameDatFilesListBox.SelectedItem as GameDatFileItem;
+		var selectedItem = this.gameDatFilesListBox.SelectedItem as HeadlessFileItem;
 		if (selectedItem == null)
 			return null;
 
@@ -546,9 +546,9 @@ internal partial class OpenFileForm : Form
 	//    return true;
 	//}
 
-	private class GameDatFileItem
+	private class HeadlessFileItem
 	{
-		public GameDatFileItem(HeadlessSource source)
+		public HeadlessFileItem(HeadlessSource source)
 		{
 			Source = source ?? throw new ArgumentNullException(nameof(source));
 		}

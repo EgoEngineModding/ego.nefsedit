@@ -91,10 +91,10 @@ public class RecentFile
 				return $"{Path.GetFileName(StandardFilePath)}";
 
 			case "GameDatSource":
-				return $"{Path.GetFileName(GameDatDataFilePath)} [{GameDatPrimaryOffset}|{GameDatSecondaryOffset}]";
+				return $"[Headless] {Path.GetFileName(GameDatDataFilePath)} [{GameDatPrimaryOffset}|{GameDatSecondaryOffset}]";
 
 			case nameof(NefsInjectSource):
-				return $"{Path.GetFileName(NefsInjectDataFilePath)}";
+				return $"[NefsInject] {Path.GetFileName(NefsInjectDataFilePath)}";
 
 			default:
 				return "Unknown source.";

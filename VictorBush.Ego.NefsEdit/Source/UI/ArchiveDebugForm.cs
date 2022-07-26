@@ -57,10 +57,10 @@ NefsInject file:            {nefsInjectSource.NefsInjectFilePath}";
 				return $@"GameDat archive.
 Data file:                  {gameDatSource.DataFilePath}
 Header file:                {gameDatSource.HeaderFilePath}
-Primary offset:             {gameDatSource.PrimaryOffset}
-Primary size:               {gameDatSource.PrimarySize}
-Secondary offset:           {gameDatSource.SecondaryOffset}
-Secondary size:             {gameDatSource.SecondarySize}";
+Primary offset:             {gameDatSource.PrimaryOffset.ToString("X")}
+Primary size:               {gameDatSource.PrimarySize?.ToString("X")}
+Secondary offset:           {gameDatSource.SecondaryOffset.ToString("X")}
+Secondary size:             {gameDatSource.SecondarySize?.ToString("X")}";
 
 			default:
 				return "Unknown archive source.";
