@@ -9,6 +9,8 @@ namespace VictorBush.Ego.NefsEdit.Services;
 /// </summary>
 internal interface ISettingsService
 {
+	bool CheckForDatabaseUpdatesOnStartup { get; set; }
+
 	/// <summary>
 	/// Gets or sets the DiRT 4 directory.
 	/// </summary>

@@ -21,6 +21,8 @@ public class Settings
 		QuickExtractDir = "";
 	}
 
+	public bool CheckForDatabaseUpdatesOnStartup { get; set; } = true;
+
 	/// <summary>
 	/// The directory for DiRT 4.
 	/// </summary>

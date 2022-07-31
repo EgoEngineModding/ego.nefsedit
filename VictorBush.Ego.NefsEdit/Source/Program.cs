@@ -2,8 +2,11 @@
 
 using System.IO;
 using System.IO.Abstractions;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
+using VictorBush.Ego.NefsCommon.InjectionDatabase;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.UI;
 using VictorBush.Ego.NefsEdit.Utility;
@@ -49,26 +52,28 @@ internal static class Program
 		NefsLog.LoggerFactory = LogHelper.LoggerFactory;
 
 		// Setup workspace and services
-		var fileSystem = new FileSystem();
-		var uiService = new UiService(System.Windows.Threading.Dispatcher.CurrentDispatcher, fileSystem);
-		var settingsService = new SettingsService(fileSystem, uiService);
-		var progressService = new ProgressService(uiService);
-		var nefsTransformer = new NefsTransformer(fileSystem);
-		var nefsReader = new NefsReader(fileSystem);
-		var nefsWriter = new NefsWriter(TempDirectory, fileSystem, nefsTransformer);
-		var workspace = new NefsEditWorkspace(
-			fileSystem,
-			progressService,
-			uiService,
-			settingsService,
-			nefsReader,
-			nefsWriter,
-			nefsTransformer);
+		var host = new HostBuilder()
+			.ConfigureLogging(x => x.AddSerilog(logConfig))
+			.ConfigureServices(x =>
+			{
+				x.AddSingleton<EditorForm>();
+				x.AddSingleton<IFileSystem, FileSystem>();
+				x.AddSingleton(_ => System.Windows.Threading.Dispatcher.CurrentDispatcher);
+				x.AddSingleton<IUiService, UiService>();
+				x.AddSingleton<ISettingsService, SettingsService>();
+				x.AddSingleton<IProgressService, ProgressService>();
+				x.AddSingleton<INefsTransformer, NefsTransformer>();
+				x.AddSingleton<INefsReader, NefsReader>();
+				x.AddSingleton<INefsWriter>(x => new NefsWriter(TempDirectory, x.GetRequiredService<IFileSystem>(), x.GetRequiredService<INefsTransformer>()));
+				x.AddSingleton<INefsEditWorkspace, NefsEditWorkspace>();
+				x.AddSingleton<IFileDownloader, FileDownloader>();
+				x.AddSingleton<IInjectionDatabaseService, InjectionDatabaseService>();
+			}).Build();
 
 		// Run application
 		Application.EnableVisualStyles();
 		Application.SetHighDpiMode(HighDpiMode.SystemAware);
 		Application.SetCompatibleTextRenderingDefault(false);
-		Application.Run(new EditorForm(workspace, uiService, settingsService));
+		Application.Run(host.Services.GetRequiredService<EditorForm>());
 	}
 }

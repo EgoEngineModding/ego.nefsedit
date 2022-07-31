@@ -32,6 +32,13 @@ internal class SettingsService : ISettingsService
 	}
 
 	/// <inheritdoc/>
+	public bool CheckForDatabaseUpdatesOnStartup
+	{
+		get => Settings.CheckForDatabaseUpdatesOnStartup;
+		set => Settings.CheckForDatabaseUpdatesOnStartup = value;
+	}
+
+	/// <inheritdoc/>
 	public String Dirt4Dir
 	{
 		get => Settings.Dirt4Dir;
