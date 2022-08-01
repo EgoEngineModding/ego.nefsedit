@@ -35,7 +35,21 @@
             this.fileLabel = new System.Windows.Forms.Label();
             this.nefsFileButton = new System.Windows.Forms.Button();
             this.nefsFileTextBox = new System.Windows.Forms.TextBox();
-            this.gameDatCustomTabPage = new System.Windows.Forms.TabPage();
+            this.nefsInjectTabPage = new System.Windows.Forms.TabPage();
+            this.label1 = new System.Windows.Forms.Label();
+            this.nefsInjectHeaderFileButton = new System.Windows.Forms.Button();
+            this.nefsInjectFileTextBox = new System.Windows.Forms.TextBox();
+            this.label2 = new System.Windows.Forms.Label();
+            this.nefsInjectDataFileButton = new System.Windows.Forms.Button();
+            this.nefsInjectDataFileTextBox = new System.Windows.Forms.TextBox();
+            this.headlessTabPage = new System.Windows.Forms.TabPage();
+            this.gameDatRefreshButton = new System.Windows.Forms.Button();
+            this.gameDatFilesLabel = new System.Windows.Forms.Label();
+            this.gameDatFilesListBox = new System.Windows.Forms.ListBox();
+            this.gameExeFileButton = new System.Windows.Forms.Button();
+            this.headlessGameExeFileTextBox = new System.Windows.Forms.TextBox();
+            this.gameExeFileLabel = new System.Windows.Forms.Label();
+            this.headlessCustomTabPage = new System.Windows.Forms.TabPage();
             this.label6 = new System.Windows.Forms.Label();
             this.splitSecondarySizeTextBox = new System.Windows.Forms.TextBox();
             this.label7 = new System.Windows.Forms.Label();
@@ -50,32 +64,15 @@
             this.label3 = new System.Windows.Forms.Label();
             this.splitDataFileBrowseButton = new System.Windows.Forms.Button();
             this.splitDataFileTextBox = new System.Windows.Forms.TextBox();
-            this.nefsInjectTabPage = new System.Windows.Forms.TabPage();
-            this.label1 = new System.Windows.Forms.Label();
-            this.nefsInjectHeaderFileButton = new System.Windows.Forms.Button();
-            this.nefsInjectFileTextBox = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.nefsInjectDataFileButton = new System.Windows.Forms.Button();
-            this.nefsInjectDataFileTextBox = new System.Windows.Forms.TextBox();
             this.recentTabPage = new System.Windows.Forms.TabPage();
             this.recentListBox = new System.Windows.Forms.ListBox();
-            this.gameDatTabPage = new System.Windows.Forms.TabPage();
-            this.gameDatDirButton = new System.Windows.Forms.Button();
-            this.gameDatDirTextBox = new System.Windows.Forms.TextBox();
-            this.gameDatDirLabel = new System.Windows.Forms.Label();
-            this.gameDatRefreshButton = new System.Windows.Forms.Button();
-            this.gameDatFilesLabel = new System.Windows.Forms.Label();
-            this.gameDatFilesListBox = new System.Windows.Forms.ListBox();
-            this.gameExeFileButton = new System.Windows.Forms.Button();
-            this.gameExeFileTextBox = new System.Windows.Forms.TextBox();
-            this.gameExeFileLabel = new System.Windows.Forms.Label();
             this.modeListBox = new System.Windows.Forms.ListBox();
             this.tablessControl1.SuspendLayout();
             this.nefsTabPage.SuspendLayout();
-            this.gameDatCustomTabPage.SuspendLayout();
             this.nefsInjectTabPage.SuspendLayout();
+            this.headlessTabPage.SuspendLayout();
+            this.headlessCustomTabPage.SuspendLayout();
             this.recentTabPage.SuspendLayout();
-            this.gameDatTabPage.SuspendLayout();
             this.SuspendLayout();
             // 
             // cancelButton
@@ -109,10 +106,10 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tablessControl1.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
             this.tablessControl1.Controls.Add(this.nefsTabPage);
-            this.tablessControl1.Controls.Add(this.gameDatCustomTabPage);
             this.tablessControl1.Controls.Add(this.nefsInjectTabPage);
+            this.tablessControl1.Controls.Add(this.headlessTabPage);
+            this.tablessControl1.Controls.Add(this.headlessCustomTabPage);
             this.tablessControl1.Controls.Add(this.recentTabPage);
-            this.tablessControl1.Controls.Add(this.gameDatTabPage);
             this.tablessControl1.Location = new System.Drawing.Point(187, 14);
             this.tablessControl1.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.tablessControl1.Name = "tablessControl1";
@@ -166,30 +163,192 @@
             this.nefsFileTextBox.Size = new System.Drawing.Size(349, 27);
             this.nefsFileTextBox.TabIndex = 0;
             // 
-            // gameDatCustomTabPage
+            // nefsInjectTabPage
             // 
-            this.gameDatCustomTabPage.Controls.Add(this.label6);
-            this.gameDatCustomTabPage.Controls.Add(this.splitSecondarySizeTextBox);
-            this.gameDatCustomTabPage.Controls.Add(this.label7);
-            this.gameDatCustomTabPage.Controls.Add(this.splitSecondaryOffsetTextBox);
-            this.gameDatCustomTabPage.Controls.Add(this.label5);
-            this.gameDatCustomTabPage.Controls.Add(this.splitPrimarySizeTextBox);
-            this.gameDatCustomTabPage.Controls.Add(this.primaryOffsetLabel);
-            this.gameDatCustomTabPage.Controls.Add(this.splitPrimaryOffsetTextBox);
-            this.gameDatCustomTabPage.Controls.Add(this.label4);
-            this.gameDatCustomTabPage.Controls.Add(this.splitHeaderFileBrowseButton);
-            this.gameDatCustomTabPage.Controls.Add(this.splitHeaderFileTextBox);
-            this.gameDatCustomTabPage.Controls.Add(this.label3);
-            this.gameDatCustomTabPage.Controls.Add(this.splitDataFileBrowseButton);
-            this.gameDatCustomTabPage.Controls.Add(this.splitDataFileTextBox);
-            this.gameDatCustomTabPage.Location = new System.Drawing.Point(4, 32);
-            this.gameDatCustomTabPage.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.gameDatCustomTabPage.Name = "gameDatCustomTabPage";
-            this.gameDatCustomTabPage.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.gameDatCustomTabPage.Size = new System.Drawing.Size(420, 352);
-            this.gameDatCustomTabPage.TabIndex = 4;
-            this.gameDatCustomTabPage.Text = "GameDat";
-            this.gameDatCustomTabPage.UseVisualStyleBackColor = true;
+            this.nefsInjectTabPage.Controls.Add(this.label1);
+            this.nefsInjectTabPage.Controls.Add(this.nefsInjectHeaderFileButton);
+            this.nefsInjectTabPage.Controls.Add(this.nefsInjectFileTextBox);
+            this.nefsInjectTabPage.Controls.Add(this.label2);
+            this.nefsInjectTabPage.Controls.Add(this.nefsInjectDataFileButton);
+            this.nefsInjectTabPage.Controls.Add(this.nefsInjectDataFileTextBox);
+            this.nefsInjectTabPage.Location = new System.Drawing.Point(4, 32);
+            this.nefsInjectTabPage.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.nefsInjectTabPage.Name = "nefsInjectTabPage";
+            this.nefsInjectTabPage.Size = new System.Drawing.Size(420, 352);
+            this.nefsInjectTabPage.TabIndex = 5;
+            this.nefsInjectTabPage.Text = "NefsInject";
+            this.nefsInjectTabPage.UseVisualStyleBackColor = true;
+            // 
+            // label1
+            // 
+            this.label1.AutoSize = true;
+            this.label1.Location = new System.Drawing.Point(9, 82);
+            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label1.Name = "label1";
+            this.label1.Size = new System.Drawing.Size(100, 20);
+            this.label1.TabIndex = 11;
+            this.label1.Text = "NefsInject file";
+            // 
+            // nefsInjectHeaderFileButton
+            // 
+            this.nefsInjectHeaderFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nefsInjectHeaderFileButton.Location = new System.Drawing.Point(372, 104);
+            this.nefsInjectHeaderFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.nefsInjectHeaderFileButton.Name = "nefsInjectHeaderFileButton";
+            this.nefsInjectHeaderFileButton.Size = new System.Drawing.Size(35, 35);
+            this.nefsInjectHeaderFileButton.TabIndex = 13;
+            this.nefsInjectHeaderFileButton.Text = "...";
+            this.nefsInjectHeaderFileButton.UseVisualStyleBackColor = true;
+            // 
+            // nefsInjectFileTextBox
+            // 
+            this.nefsInjectFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nefsInjectFileTextBox.Location = new System.Drawing.Point(13, 108);
+            this.nefsInjectFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.nefsInjectFileTextBox.Name = "nefsInjectFileTextBox";
+            this.nefsInjectFileTextBox.Size = new System.Drawing.Size(349, 27);
+            this.nefsInjectFileTextBox.TabIndex = 12;
+            // 
+            // label2
+            // 
+            this.label2.AutoSize = true;
+            this.label2.Location = new System.Drawing.Point(8, 12);
+            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.label2.Name = "label2";
+            this.label2.Size = new System.Drawing.Size(269, 20);
+            this.label2.TabIndex = 8;
+            this.label2.Text = "Data File (i.e., game.dat, game.bin, etc.)";
+            // 
+            // nefsInjectDataFileButton
+            // 
+            this.nefsInjectDataFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.nefsInjectDataFileButton.Location = new System.Drawing.Point(371, 34);
+            this.nefsInjectDataFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.nefsInjectDataFileButton.Name = "nefsInjectDataFileButton";
+            this.nefsInjectDataFileButton.Size = new System.Drawing.Size(35, 35);
+            this.nefsInjectDataFileButton.TabIndex = 10;
+            this.nefsInjectDataFileButton.Text = "...";
+            this.nefsInjectDataFileButton.UseVisualStyleBackColor = true;
+            // 
+            // nefsInjectDataFileTextBox
+            // 
+            this.nefsInjectDataFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.nefsInjectDataFileTextBox.Location = new System.Drawing.Point(12, 38);
+            this.nefsInjectDataFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.nefsInjectDataFileTextBox.Name = "nefsInjectDataFileTextBox";
+            this.nefsInjectDataFileTextBox.Size = new System.Drawing.Size(349, 27);
+            this.nefsInjectDataFileTextBox.TabIndex = 9;
+            // 
+            // headlessTabPage
+            // 
+            this.headlessTabPage.Controls.Add(this.gameDatRefreshButton);
+            this.headlessTabPage.Controls.Add(this.gameDatFilesLabel);
+            this.headlessTabPage.Controls.Add(this.gameDatFilesListBox);
+            this.headlessTabPage.Controls.Add(this.gameExeFileButton);
+            this.headlessTabPage.Controls.Add(this.headlessGameExeFileTextBox);
+            this.headlessTabPage.Controls.Add(this.gameExeFileLabel);
+            this.headlessTabPage.Location = new System.Drawing.Point(4, 32);
+            this.headlessTabPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.headlessTabPage.Name = "headlessTabPage";
+            this.headlessTabPage.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.headlessTabPage.Size = new System.Drawing.Size(420, 352);
+            this.headlessTabPage.TabIndex = 1;
+            this.headlessTabPage.Text = "Headless";
+            this.headlessTabPage.UseVisualStyleBackColor = true;
+            // 
+            // gameDatRefreshButton
+            // 
+            this.gameDatRefreshButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.gameDatRefreshButton.Location = new System.Drawing.Point(13, 305);
+            this.gameDatRefreshButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.gameDatRefreshButton.Name = "gameDatRefreshButton";
+            this.gameDatRefreshButton.Size = new System.Drawing.Size(100, 35);
+            this.gameDatRefreshButton.TabIndex = 25;
+            this.gameDatRefreshButton.Text = "Search";
+            this.gameDatRefreshButton.UseVisualStyleBackColor = true;
+            this.gameDatRefreshButton.Click += new System.EventHandler(this.GameDatRefreshButton_Click);
+            // 
+            // gameDatFilesLabel
+            // 
+            this.gameDatFilesLabel.AutoSize = true;
+            this.gameDatFilesLabel.Location = new System.Drawing.Point(13, 80);
+            this.gameDatFilesLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.gameDatFilesLabel.Name = "gameDatFilesLabel";
+            this.gameDatFilesLabel.Size = new System.Drawing.Size(119, 20);
+            this.gameDatFilesLabel.TabIndex = 15;
+            this.gameDatFilesLabel.Text = "Injection Profiles";
+            // 
+            // gameDatFilesListBox
+            // 
+            this.gameDatFilesListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.gameDatFilesListBox.FormattingEnabled = true;
+            this.gameDatFilesListBox.ItemHeight = 20;
+            this.gameDatFilesListBox.Location = new System.Drawing.Point(13, 108);
+            this.gameDatFilesListBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.gameDatFilesListBox.Name = "gameDatFilesListBox";
+            this.gameDatFilesListBox.Size = new System.Drawing.Size(391, 184);
+            this.gameDatFilesListBox.TabIndex = 14;
+            // 
+            // gameExeFileButton
+            // 
+            this.gameExeFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.gameExeFileButton.Location = new System.Drawing.Point(372, 34);
+            this.gameExeFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.gameExeFileButton.Name = "gameExeFileButton";
+            this.gameExeFileButton.Size = new System.Drawing.Size(35, 35);
+            this.gameExeFileButton.TabIndex = 13;
+            this.gameExeFileButton.Text = "...";
+            this.gameExeFileButton.UseVisualStyleBackColor = true;
+            this.gameExeFileButton.Click += new System.EventHandler(this.GameExeFileButton_Click);
+            // 
+            // headlessGameExeFileTextBox
+            // 
+            this.headlessGameExeFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.headlessGameExeFileTextBox.Location = new System.Drawing.Point(13, 38);
+            this.headlessGameExeFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.headlessGameExeFileTextBox.Name = "headlessGameExeFileTextBox";
+            this.headlessGameExeFileTextBox.Size = new System.Drawing.Size(349, 27);
+            this.headlessGameExeFileTextBox.TabIndex = 12;
+            // 
+            // gameExeFileLabel
+            // 
+            this.gameExeFileLabel.AutoSize = true;
+            this.gameExeFileLabel.Location = new System.Drawing.Point(9, 12);
+            this.gameExeFileLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.gameExeFileLabel.Name = "gameExeFileLabel";
+            this.gameExeFileLabel.Size = new System.Drawing.Size(124, 20);
+            this.gameExeFileLabel.TabIndex = 12;
+            this.gameExeFileLabel.Text = "Game Executable";
+            // 
+            // headlessCustomTabPage
+            // 
+            this.headlessCustomTabPage.Controls.Add(this.label6);
+            this.headlessCustomTabPage.Controls.Add(this.splitSecondarySizeTextBox);
+            this.headlessCustomTabPage.Controls.Add(this.label7);
+            this.headlessCustomTabPage.Controls.Add(this.splitSecondaryOffsetTextBox);
+            this.headlessCustomTabPage.Controls.Add(this.label5);
+            this.headlessCustomTabPage.Controls.Add(this.splitPrimarySizeTextBox);
+            this.headlessCustomTabPage.Controls.Add(this.primaryOffsetLabel);
+            this.headlessCustomTabPage.Controls.Add(this.splitPrimaryOffsetTextBox);
+            this.headlessCustomTabPage.Controls.Add(this.label4);
+            this.headlessCustomTabPage.Controls.Add(this.splitHeaderFileBrowseButton);
+            this.headlessCustomTabPage.Controls.Add(this.splitHeaderFileTextBox);
+            this.headlessCustomTabPage.Controls.Add(this.label3);
+            this.headlessCustomTabPage.Controls.Add(this.splitDataFileBrowseButton);
+            this.headlessCustomTabPage.Controls.Add(this.splitDataFileTextBox);
+            this.headlessCustomTabPage.Location = new System.Drawing.Point(4, 32);
+            this.headlessCustomTabPage.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.headlessCustomTabPage.Name = "headlessCustomTabPage";
+            this.headlessCustomTabPage.Padding = new System.Windows.Forms.Padding(3, 4, 3, 4);
+            this.headlessCustomTabPage.Size = new System.Drawing.Size(420, 352);
+            this.headlessCustomTabPage.TabIndex = 4;
+            this.headlessCustomTabPage.Text = "Headless (Custom)";
+            this.headlessCustomTabPage.UseVisualStyleBackColor = true;
             // 
             // label6
             // 
@@ -327,84 +486,6 @@
             this.splitDataFileTextBox.Size = new System.Drawing.Size(349, 27);
             this.splitDataFileTextBox.TabIndex = 3;
             // 
-            // nefsInjectTabPage
-            // 
-            this.nefsInjectTabPage.Controls.Add(this.label1);
-            this.nefsInjectTabPage.Controls.Add(this.nefsInjectHeaderFileButton);
-            this.nefsInjectTabPage.Controls.Add(this.nefsInjectFileTextBox);
-            this.nefsInjectTabPage.Controls.Add(this.label2);
-            this.nefsInjectTabPage.Controls.Add(this.nefsInjectDataFileButton);
-            this.nefsInjectTabPage.Controls.Add(this.nefsInjectDataFileTextBox);
-            this.nefsInjectTabPage.Location = new System.Drawing.Point(4, 32);
-            this.nefsInjectTabPage.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.nefsInjectTabPage.Name = "nefsInjectTabPage";
-            this.nefsInjectTabPage.Size = new System.Drawing.Size(420, 352);
-            this.nefsInjectTabPage.TabIndex = 5;
-            this.nefsInjectTabPage.Text = "NefsInject";
-            this.nefsInjectTabPage.UseVisualStyleBackColor = true;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 82);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(100, 20);
-            this.label1.TabIndex = 11;
-            this.label1.Text = "NefsInject file";
-            // 
-            // nefsInjectHeaderFileButton
-            // 
-            this.nefsInjectHeaderFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.nefsInjectHeaderFileButton.Location = new System.Drawing.Point(372, 104);
-            this.nefsInjectHeaderFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nefsInjectHeaderFileButton.Name = "nefsInjectHeaderFileButton";
-            this.nefsInjectHeaderFileButton.Size = new System.Drawing.Size(35, 35);
-            this.nefsInjectHeaderFileButton.TabIndex = 13;
-            this.nefsInjectHeaderFileButton.Text = "...";
-            this.nefsInjectHeaderFileButton.UseVisualStyleBackColor = true;
-            // 
-            // nefsInjectFileTextBox
-            // 
-            this.nefsInjectFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.nefsInjectFileTextBox.Location = new System.Drawing.Point(13, 108);
-            this.nefsInjectFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nefsInjectFileTextBox.Name = "nefsInjectFileTextBox";
-            this.nefsInjectFileTextBox.Size = new System.Drawing.Size(349, 27);
-            this.nefsInjectFileTextBox.TabIndex = 12;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(8, 12);
-            this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(269, 20);
-            this.label2.TabIndex = 8;
-            this.label2.Text = "Data File (i.e., game.dat, game.bin, etc.)";
-            // 
-            // nefsInjectDataFileButton
-            // 
-            this.nefsInjectDataFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.nefsInjectDataFileButton.Location = new System.Drawing.Point(371, 34);
-            this.nefsInjectDataFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nefsInjectDataFileButton.Name = "nefsInjectDataFileButton";
-            this.nefsInjectDataFileButton.Size = new System.Drawing.Size(35, 35);
-            this.nefsInjectDataFileButton.TabIndex = 10;
-            this.nefsInjectDataFileButton.Text = "...";
-            this.nefsInjectDataFileButton.UseVisualStyleBackColor = true;
-            // 
-            // nefsInjectDataFileTextBox
-            // 
-            this.nefsInjectDataFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.nefsInjectDataFileTextBox.Location = new System.Drawing.Point(12, 38);
-            this.nefsInjectDataFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nefsInjectDataFileTextBox.Name = "nefsInjectDataFileTextBox";
-            this.nefsInjectDataFileTextBox.Size = new System.Drawing.Size(349, 27);
-            this.nefsInjectDataFileTextBox.TabIndex = 9;
-            // 
             // recentTabPage
             // 
             this.recentTabPage.Controls.Add(this.recentListBox);
@@ -429,125 +510,6 @@
             this.recentListBox.Name = "recentListBox";
             this.recentListBox.Size = new System.Drawing.Size(411, 324);
             this.recentListBox.TabIndex = 26;
-            // 
-            // gameDatTabPage
-            // 
-            this.gameDatTabPage.Controls.Add(this.gameDatDirButton);
-            this.gameDatTabPage.Controls.Add(this.gameDatDirTextBox);
-            this.gameDatTabPage.Controls.Add(this.gameDatDirLabel);
-            this.gameDatTabPage.Controls.Add(this.gameDatRefreshButton);
-            this.gameDatTabPage.Controls.Add(this.gameDatFilesLabel);
-            this.gameDatTabPage.Controls.Add(this.gameDatFilesListBox);
-            this.gameDatTabPage.Controls.Add(this.gameExeFileButton);
-            this.gameDatTabPage.Controls.Add(this.gameExeFileTextBox);
-            this.gameDatTabPage.Controls.Add(this.gameExeFileLabel);
-            this.gameDatTabPage.Location = new System.Drawing.Point(4, 32);
-            this.gameDatTabPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.gameDatTabPage.Name = "gameDatTabPage";
-            this.gameDatTabPage.Padding = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.gameDatTabPage.Size = new System.Drawing.Size(420, 352);
-            this.gameDatTabPage.TabIndex = 1;
-            this.gameDatTabPage.Text = "game*.dat";
-            this.gameDatTabPage.UseVisualStyleBackColor = true;
-            // 
-            // gameDatDirButton
-            // 
-            this.gameDatDirButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.gameDatDirButton.Location = new System.Drawing.Point(375, 101);
-            this.gameDatDirButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.gameDatDirButton.Name = "gameDatDirButton";
-            this.gameDatDirButton.Size = new System.Drawing.Size(35, 35);
-            this.gameDatDirButton.TabIndex = 28;
-            this.gameDatDirButton.Text = "...";
-            this.gameDatDirButton.UseVisualStyleBackColor = true;
-            this.gameDatDirButton.Click += new System.EventHandler(this.GameDatDirButton_Click);
-            // 
-            // gameDatDirTextBox
-            // 
-            this.gameDatDirTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.gameDatDirTextBox.Location = new System.Drawing.Point(15, 105);
-            this.gameDatDirTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.gameDatDirTextBox.Name = "gameDatDirTextBox";
-            this.gameDatDirTextBox.Size = new System.Drawing.Size(349, 27);
-            this.gameDatDirTextBox.TabIndex = 26;
-            // 
-            // gameDatDirLabel
-            // 
-            this.gameDatDirLabel.AutoSize = true;
-            this.gameDatDirLabel.Location = new System.Drawing.Point(11, 80);
-            this.gameDatDirLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.gameDatDirLabel.Name = "gameDatDirLabel";
-            this.gameDatDirLabel.Size = new System.Drawing.Size(143, 20);
-            this.gameDatDirLabel.TabIndex = 27;
-            this.gameDatDirLabel.Text = "game*.dat Directory";
-            // 
-            // gameDatRefreshButton
-            // 
-            this.gameDatRefreshButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
-            this.gameDatRefreshButton.Location = new System.Drawing.Point(13, 308);
-            this.gameDatRefreshButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.gameDatRefreshButton.Name = "gameDatRefreshButton";
-            this.gameDatRefreshButton.Size = new System.Drawing.Size(100, 35);
-            this.gameDatRefreshButton.TabIndex = 25;
-            this.gameDatRefreshButton.Text = "Search";
-            this.gameDatRefreshButton.UseVisualStyleBackColor = true;
-            this.gameDatRefreshButton.Click += new System.EventHandler(this.GameDatRefreshButton_Click);
-            // 
-            // gameDatFilesLabel
-            // 
-            this.gameDatFilesLabel.AutoSize = true;
-            this.gameDatFilesLabel.Location = new System.Drawing.Point(11, 148);
-            this.gameDatFilesLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.gameDatFilesLabel.Name = "gameDatFilesLabel";
-            this.gameDatFilesLabel.Size = new System.Drawing.Size(109, 20);
-            this.gameDatFilesLabel.TabIndex = 15;
-            this.gameDatFilesLabel.Text = "Game Dat Files";
-            // 
-            // gameDatFilesListBox
-            // 
-            this.gameDatFilesListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.gameDatFilesListBox.FormattingEnabled = true;
-            this.gameDatFilesListBox.ItemHeight = 20;
-            this.gameDatFilesListBox.Location = new System.Drawing.Point(13, 172);
-            this.gameDatFilesListBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.gameDatFilesListBox.Name = "gameDatFilesListBox";
-            this.gameDatFilesListBox.Size = new System.Drawing.Size(391, 124);
-            this.gameDatFilesListBox.TabIndex = 14;
-            // 
-            // gameExeFileButton
-            // 
-            this.gameExeFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.gameExeFileButton.Location = new System.Drawing.Point(372, 34);
-            this.gameExeFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.gameExeFileButton.Name = "gameExeFileButton";
-            this.gameExeFileButton.Size = new System.Drawing.Size(35, 35);
-            this.gameExeFileButton.TabIndex = 13;
-            this.gameExeFileButton.Text = "...";
-            this.gameExeFileButton.UseVisualStyleBackColor = true;
-            this.gameExeFileButton.Click += new System.EventHandler(this.GameExeFileButton_Click);
-            // 
-            // gameExeFileTextBox
-            // 
-            this.gameExeFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.gameExeFileTextBox.Location = new System.Drawing.Point(13, 38);
-            this.gameExeFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.gameExeFileTextBox.Name = "gameExeFileTextBox";
-            this.gameExeFileTextBox.Size = new System.Drawing.Size(349, 27);
-            this.gameExeFileTextBox.TabIndex = 12;
-            // 
-            // gameExeFileLabel
-            // 
-            this.gameExeFileLabel.AutoSize = true;
-            this.gameExeFileLabel.Location = new System.Drawing.Point(9, 12);
-            this.gameExeFileLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.gameExeFileLabel.Name = "gameExeFileLabel";
-            this.gameExeFileLabel.Size = new System.Drawing.Size(124, 20);
-            this.gameExeFileLabel.TabIndex = 12;
-            this.gameExeFileLabel.Text = "Game Executable";
             // 
             // modeListBox
             // 
@@ -586,13 +548,13 @@
             this.tablessControl1.ResumeLayout(false);
             this.nefsTabPage.ResumeLayout(false);
             this.nefsTabPage.PerformLayout();
-            this.gameDatCustomTabPage.ResumeLayout(false);
-            this.gameDatCustomTabPage.PerformLayout();
             this.nefsInjectTabPage.ResumeLayout(false);
             this.nefsInjectTabPage.PerformLayout();
+            this.headlessTabPage.ResumeLayout(false);
+            this.headlessTabPage.PerformLayout();
+            this.headlessCustomTabPage.ResumeLayout(false);
+            this.headlessCustomTabPage.PerformLayout();
             this.recentTabPage.ResumeLayout(false);
-            this.gameDatTabPage.ResumeLayout(false);
-            this.gameDatTabPage.PerformLayout();
             this.ResumeLayout(false);
 
         }
@@ -606,20 +568,17 @@
         private System.Windows.Forms.Button openButton;
         private TablessControl tablessControl1;
         private System.Windows.Forms.TabPage nefsTabPage;
-        private System.Windows.Forms.TabPage gameDatTabPage;
+        private System.Windows.Forms.TabPage headlessTabPage;
         private System.Windows.Forms.Button gameExeFileButton;
-        private System.Windows.Forms.TextBox gameExeFileTextBox;
+        private System.Windows.Forms.TextBox headlessGameExeFileTextBox;
         private System.Windows.Forms.Label gameExeFileLabel;
         private System.Windows.Forms.Label gameDatFilesLabel;
         private System.Windows.Forms.ListBox gameDatFilesListBox;
         private System.Windows.Forms.Button gameDatRefreshButton;
-        private System.Windows.Forms.Button gameDatDirButton;
-        private System.Windows.Forms.TextBox gameDatDirTextBox;
-        private System.Windows.Forms.Label gameDatDirLabel;
         private System.Windows.Forms.ListBox modeListBox;
         private System.Windows.Forms.TabPage recentTabPage;
         private System.Windows.Forms.ListBox recentListBox;
-        private System.Windows.Forms.TabPage gameDatCustomTabPage;
+        private System.Windows.Forms.TabPage headlessCustomTabPage;
         private System.Windows.Forms.Label label6;
         private System.Windows.Forms.TextBox splitSecondarySizeTextBox;
         private System.Windows.Forms.Label label7;

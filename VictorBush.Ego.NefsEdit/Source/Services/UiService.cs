@@ -2,6 +2,7 @@
 
 using System.IO.Abstractions;
 using System.Windows.Threading;
+using VictorBush.Ego.NefsCommon.InjectionDatabase;
 using VictorBush.Ego.NefsEdit.UI;
 using VictorBush.Ego.NefsLib.ArchiveSource;
 using VictorBush.Ego.NefsLib.IO;
@@ -13,15 +14,18 @@ namespace VictorBush.Ego.NefsEdit.Services;
 /// </summary>
 internal class UiService : IUiService
 {
+	private readonly IInjectionDatabaseService injectionDatabaseService;
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UiService"/> class.
 	/// </summary>
 	/// <param name="dispatcher">The dispatcher for the UI thread.</param>
 	/// <param name="fileSystem">The file system.</param>
-	public UiService(Dispatcher dispatcher, IFileSystem fileSystem)
+	public UiService(Dispatcher dispatcher, IFileSystem fileSystem, IInjectionDatabaseService injectionDatabaseService)
 	{
 		Dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
 		FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+		this.injectionDatabaseService = injectionDatabaseService ?? throw new ArgumentNullException(nameof(injectionDatabaseService));
 	}
 
 	/// <inheritdoc/>
@@ -53,7 +57,7 @@ internal class UiService : IUiService
 		IProgressService progressService,
 		INefsReader reader)
 	{
-		using (var dialog = new OpenFileForm(settingsService, this, progressService, reader, FileSystem))
+		using (var dialog = new OpenFileForm(settingsService, this, progressService, reader, FileSystem, this.injectionDatabaseService))
 		{
 			var result = dialog.ShowDialog();
 			var source = dialog.ArchiveSource;

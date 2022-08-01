@@ -51,4 +51,6 @@ public class OpenFileDialogState
 	public string NefsInjectDataFilePath { get; set; }
 
 	public string NefsInjectFilePath { get; set; }
+
+	public string HeadlessExePath { get; set; }
 }

@@ -2,7 +2,9 @@
 
 using Microsoft.Extensions.Logging;
 using System.Globalization;
+using System.IO;
 using System.IO.Abstractions;
+using VictorBush.Ego.NefsCommon.InjectionDatabase;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.Settings;
 using VictorBush.Ego.NefsEdit.Utility;
@@ -19,16 +21,12 @@ internal partial class OpenFileForm : Form
 {
 	private static readonly ILogger Log = LogHelper.GetLogger();
 
-	private readonly OpenMode openModeGameBinDirtRally1 = new OpenMode("game*.bin (DiRT Rally)");
-	private readonly OpenMode openModeGameDatCustom = new OpenMode("game*.dat/bin (Custom)");
-	private readonly OpenMode openModeGameDatDirt4 = new OpenMode("game*.dat (DiRT 4)");
-	private readonly OpenMode openModeGameDatDirtRally2 = new OpenMode("game*.dat (DiRT Rally 2)");
+	private readonly OpenMode openModeHeadless = new OpenMode("Headless");
+	private readonly OpenMode openModeHeadlessCustom = new OpenMode("Headless (Custom)");
 	private readonly OpenMode openModeNefs = new OpenMode("NeFS");
 	private readonly OpenMode openModeNefsInject = new OpenMode("NefsInject");
 	private readonly OpenMode openModeRecent = new OpenMode("Recent");
-
-	//private string gameDatCustomDirPath = "";
-	//private string gameDatCustomExePath = "";
+	private readonly IInjectionDatabaseService injectionDatabaseService;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="OpenFileForm"/> class.
@@ -38,12 +36,14 @@ internal partial class OpenFileForm : Form
 	/// <param name="progressService">Progress service.</param>
 	/// <param name="reader">Nefs reader.</param>
 	/// <param name="fileSystem">The file system.</param>
+	/// <param name="injectionDatabaseService"></param>
 	public OpenFileForm(
 		ISettingsService settingsService,
 		IUiService uiService,
 		IProgressService progressService,
 		INefsReader reader,
-		IFileSystem fileSystem)
+		IFileSystem fileSystem,
+		IInjectionDatabaseService injectionDatabaseService)
 	{
 		InitializeComponent();
 		SettingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
@@ -51,6 +51,7 @@ internal partial class OpenFileForm : Form
 		ProgressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
 		Reader = reader ?? throw new ArgumentNullException(nameof(reader));
 		FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+		this.injectionDatabaseService = injectionDatabaseService;
 	}
 
 	/// <summary>
@@ -80,42 +81,39 @@ internal partial class OpenFileForm : Form
 		return long.TryParse(str, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
 	}
 
-	/// <summary>
-	/// Looks through the game executable to find header offsets for game.dat files.
-	/// </summary>
-	/// <returns>A list of game.dat archive sources.</returns>
-	private async Task<List<HeadlessSource>> FindGameDatHeaderOffsetsAsync(
-		string gameDatDir,
-		string gameExePath,
-		NefsProgress p)
+	private async Task<List<HeadlessSource>> FindInjectionProfiles(string gameExePath)
 	{
-		// TODO : FIX ME
-		UiService.ShowMessageBox("Disabled.");
-		return new List<HeadlessSource>();
-
 		if (!FileSystem.File.Exists(gameExePath))
 		{
 			UiService.ShowMessageBox($"Cannot find executable file: {gameExePath}.");
 			return new List<HeadlessSource>();
 		}
 
-		// Search for headers in the exe
-		using (var t = p.BeginTask(1.0f, "Searching for headers"))
+		var md5 = Md5Utility.Compute(gameExePath);
+		var gameExeFileName = Path.GetFileName(gameExePath);
+		var profile = await this.injectionDatabaseService.FindExeProfileAsync(gameExeFileName, md5);
+		if (profile == null)
 		{
-			// TODO : FIX ME return await this.Reader.FindHeadersAsync(gameExePath, gameDatDir, p);
-		}
-	}
-
-	private void GameDatDirButton_Click(Object sender, EventArgs e)
-	{
-		(var result, var path) = UiService.ShowFolderBrowserDialog("Choose directory where game.dat files are stored.");
-		if (result != DialogResult.OK)
-		{
-			return;
+			Log.LogError($"No executable profile found for {gameExePath} with MD5 {md5}.");
+			UiService.ShowMessageBox($"No executable profile found for {gameExeFileName}.");
+			return new List<HeadlessSource>();
 		}
 
-		this.gameDatDirTextBox.Text = path;
-		this.gameDatDirTextBox.ScrollToEnd();
+		if (profile.InjectionProfiles is null || profile.InjectionProfiles.Count == 0)
+		{
+			Log.LogError($"Executable profile for {gameExePath} with MD5 {md5} has no injection profiles.");
+			UiService.ShowMessageBox($"Executable profile for {gameExeFileName} has no injection profiles.");
+			return new List<HeadlessSource>();
+		}
+
+		return profile.InjectionProfiles.Select(x => NefsArchiveSource.Headless(
+			Path.Combine(Path.GetDirectoryName(gameExePath)!, x.DataFile!),
+			gameExePath,
+			(long)x.PrimaryOffset!.Value,
+			(int)x.PrimarySize!.Value,
+			(long)x.SecondaryOffset!.Value,
+			(int)x.SecondarySize!.Value))
+			.ToList();
 	}
 
 	private async void GameDatRefreshButton_Click(Object sender, EventArgs e)
@@ -124,10 +122,7 @@ internal partial class OpenFileForm : Form
 
 		await ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
 		{
-			var files = await FindGameDatHeaderOffsetsAsync(
-				this.gameDatDirTextBox.Text,
-				this.gameExeFileTextBox.Text,
-				p);
+			var files = await FindInjectionProfiles(this.headlessGameExeFileTextBox.Text);
 
 			// Update on UI thread
 			UiService.Dispatcher.Invoke(() =>
@@ -149,8 +144,8 @@ internal partial class OpenFileForm : Form
 			return;
 		}
 
-		this.gameExeFileTextBox.Text = path;
-		this.gameExeFileTextBox.ScrollToEnd();
+		this.headlessGameExeFileTextBox.Text = path;
+		this.headlessGameExeFileTextBox.ScrollToEnd();
 	}
 
 	private void LoadSettings()
@@ -173,8 +168,7 @@ internal partial class OpenFileForm : Form
 		this.splitSecondarySizeTextBox.Text = SettingsService.OpenFileDialogState.GameDatSecondarySize;
 		this.nefsInjectDataFileTextBox.Text = SettingsService.OpenFileDialogState.NefsInjectDataFilePath;
 		this.nefsInjectFileTextBox.Text = SettingsService.OpenFileDialogState.NefsInjectFilePath;
-		//this.gameDatCustomExePath = this.SettingsService.OpenFileDialogState.GameDatCustomExePath;
-		//this.gameDatCustomDirPath = this.SettingsService.OpenFileDialogState.GameDatCustomDatDirPath;
+		this.headlessGameExeFileTextBox.Text = SettingsService.OpenFileDialogState.HeadlessExePath;
 	}
 
 	private void ModeListBox_SelectedIndexChanged(Object sender, EventArgs e)
@@ -193,47 +187,13 @@ internal partial class OpenFileForm : Form
 			// Open recent
 			this.tablessControl1.SelectedTab = this.recentTabPage;
 		}
-		else if (this.modeListBox.SelectedItem == this.openModeGameBinDirtRally1)
+		else if (this.modeListBox.SelectedItem == this.openModeHeadless)
 		{
-			// Open a game*.bin file (DiRT Rally 1)
-			this.tablessControl1.SelectedTab = this.gameDatTabPage;
-			this.gameExeFileTextBox.Text = SettingsService.DirtRally1Exe;
-			this.gameExeFileTextBox.ScrollToEnd();
-			this.gameDatDirTextBox.Text = SettingsService.DirtRally1GameBinDir;
-			this.gameDatDirTextBox.ScrollToEnd();
-			this.gameDatFilesListBox.Items.Clear();
+			this.tablessControl1.SelectedTab = this.headlessTabPage;
 		}
-		else if (this.modeListBox.SelectedItem == this.openModeGameDatDirtRally2)
+		else if (this.modeListBox.SelectedItem == this.openModeHeadlessCustom)
 		{
-			// Open a game*.dat file (DiRT Rally 2)
-			this.tablessControl1.SelectedTab = this.gameDatTabPage;
-			this.gameExeFileTextBox.Text = SettingsService.DirtRally2Exe;
-			this.gameExeFileTextBox.ScrollToEnd();
-			this.gameDatDirTextBox.Text = SettingsService.DirtRally2GameDatDir;
-			this.gameDatDirTextBox.ScrollToEnd();
-			this.gameDatFilesListBox.Items.Clear();
-		}
-		else if (this.modeListBox.SelectedItem == this.openModeGameDatDirt4)
-		{
-			// Open a game*.dat file (DiRT 4)
-			this.tablessControl1.SelectedTab = this.gameDatTabPage;
-			this.gameExeFileTextBox.Text = SettingsService.Dirt4Exe;
-			this.gameExeFileTextBox.ScrollToEnd();
-			this.gameDatDirTextBox.Text = SettingsService.Dirt4GameDatDir;
-			this.gameDatDirTextBox.ScrollToEnd();
-			this.gameDatFilesListBox.Items.Clear();
-		}
-		else if (this.modeListBox.SelectedItem == this.openModeGameDatCustom)
-		{
-			// Search an executable for game.bin/game.dat files
-			//this.tablessControl1.SelectedTab = this.gameDatTabPage;
-			//this.gameExeFileTextBox.Text = this.gameDatCustomExePath;
-			//this.gameExeFileTextBox.ScrollToEnd();
-			//this.gameDatDirTextBox.Text = this.gameDatCustomDirPath;
-			//this.gameDatDirTextBox.ScrollToEnd();
-			//this.gameDatFilesListBox.Items.Clear();
-
-			this.tablessControl1.SelectedTab = this.gameDatCustomTabPage;
+			this.tablessControl1.SelectedTab = this.headlessCustomTabPage;
 		}
 	}
 
@@ -261,21 +221,13 @@ internal partial class OpenFileForm : Form
 		{
 			source = ValidateNefsInjectSource();
 		}
-		else if (this.modeListBox.SelectedItem == this.openModeGameDatDirtRally2)
+		else if (this.modeListBox.SelectedItem == this.openModeHeadless)
 		{
-			source = ValidateGameDatSearchSource();
+			source = ValidateHeadlessSource();
 		}
-		else if (this.modeListBox.SelectedItem == this.openModeGameDatDirt4)
+		else if (this.modeListBox.SelectedItem == this.openModeHeadlessCustom)
 		{
-			source = ValidateGameDatSearchSource();
-		}
-		else if (this.modeListBox.SelectedItem == this.openModeGameBinDirtRally1)
-		{
-			source = ValidateGameDatSearchSource();
-		}
-		else if (this.modeListBox.SelectedItem == this.openModeGameDatCustom)
-		{
-			source = ValidateGameDatCustomSource();
+			source = ValidateHeadlessCustomSource();
 		}
 		else if (this.modeListBox.SelectedItem == this.openModeRecent)
 		{
@@ -303,11 +255,9 @@ internal partial class OpenFileForm : Form
 		// Setup combo box
 		this.modeListBox.Items.Add(this.openModeNefs);
 		this.modeListBox.Items.Add(this.openModeNefsInject);
-		this.modeListBox.Items.Add(this.openModeGameDatCustom);
+		this.modeListBox.Items.Add(this.openModeHeadless);
+		this.modeListBox.Items.Add(this.openModeHeadlessCustom);
 		this.modeListBox.Items.Add(this.openModeRecent);
-		//this.modeListBox.Items.Add(this.openModeGameBinDirtRally1);
-		//this.modeListBox.Items.Add(this.openModeGameDatDirtRally2);
-		//this.modeListBox.Items.Add(this.openModeGameDatDirt4);
 
 		// Select default open mode
 		this.modeListBox.SelectedItem = this.openModeNefs;
@@ -337,8 +287,7 @@ internal partial class OpenFileForm : Form
 		SettingsService.OpenFileDialogState.GameDatSecondarySize = this.splitSecondarySizeTextBox.Text;
 		SettingsService.OpenFileDialogState.NefsInjectDataFilePath = this.nefsInjectDataFileTextBox.Text;
 		SettingsService.OpenFileDialogState.NefsInjectFilePath = this.nefsInjectFileTextBox.Text;
-		//this.SettingsService.OpenFileDialogState.GameDatCustomDatDirPath = this.gameDatCustomDirPath;
-		//this.SettingsService.OpenFileDialogState.GameDatCustomExePath = this.gameDatCustomExePath;
+		SettingsService.OpenFileDialogState.HeadlessExePath = this.headlessGameExeFileTextBox.Text;
 
 		SettingsService.Save();
 	}
@@ -378,7 +327,23 @@ internal partial class OpenFileForm : Form
 		return true;
 	}
 
-	private NefsArchiveSource ValidateGameDatCustomSource()
+	private NefsArchiveSource? ValidateHeadlessSource()
+	{
+		var selectedItem = this.gameDatFilesListBox.SelectedItem as HeadlessFileItem;
+		if (selectedItem == null)
+			return null;
+
+		var source = selectedItem.Source;
+		if (!ValidateFileExists(source.DataFilePath))
+			return null;
+
+		if (!ValidateFileExists(source.HeaderFilePath))
+			return null;
+
+		return source;
+	}
+
+	private NefsArchiveSource? ValidateHeadlessCustomSource()
 	{
 		// Primary offset
 		var primaryOffsetString = this.splitPrimaryOffsetTextBox.Text.Trim();
@@ -451,23 +416,7 @@ internal partial class OpenFileForm : Form
 		return source;
 	}
 
-	private NefsArchiveSource ValidateGameDatSearchSource()
-	{
-		var selectedItem = this.gameDatFilesListBox.SelectedItem as HeadlessFileItem;
-		if (selectedItem == null)
-			return null;
-
-		var source = selectedItem.Source;
-		if (!ValidateFileExists(source.DataFilePath))
-			return null;
-
-		if (!ValidateFileExists(source.HeaderFilePath))
-			return null;
-
-		return source;
-	}
-
-	private NefsArchiveSource ValidateNefsInjectSource()
+	private NefsArchiveSource? ValidateNefsInjectSource()
 	{
 		var dataFilePath = this.nefsInjectDataFileTextBox.Text;
 		var headerFilePath = this.nefsInjectFileTextBox.Text;
@@ -482,7 +431,7 @@ internal partial class OpenFileForm : Form
 		return source;
 	}
 
-	private NefsArchiveSource ValidateRecent()
+	private NefsArchiveSource? ValidateRecent()
 	{
 		var recent = this.recentListBox.SelectedItem as RecentFile;
 		if (recent == null)
@@ -518,7 +467,7 @@ internal partial class OpenFileForm : Form
 		}
 	}
 
-	private NefsArchiveSource ValidateStandardSource()
+	private NefsArchiveSource? ValidateStandardSource()
 	{
 		var headerFile = this.nefsFileTextBox.Text;
 		var source = NefsArchiveSource.Standard(headerFile);
@@ -531,20 +480,6 @@ internal partial class OpenFileForm : Form
 
 		return source;
 	}
-
-	//private bool ValidateSource(NefsArchiveSource source)
-	//{
-	//    if (!this.FileSystem.File.Exists(source.HeaderFilePath))
-	//    {
-	//        this.UiService.ShowMessageBox($"Cannot find file: {source.HeaderFilePath}.");
-	//        return false;
-	//    }
-
-	// if (!this.FileSystem.File.Exists(source.FilePath)) { this.UiService.ShowMessageBox($"Cannot find file:
-	// {source.FilePath}."); return false; }
-
-	//    return true;
-	//}
 
 	private class HeadlessFileItem
 	{
