@@ -3,6 +3,7 @@
 using Microsoft.Extensions.Logging;
 using System.IO.Abstractions;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using VictorBush.Ego.NefsLib.ArchiveSource;
@@ -186,6 +187,49 @@ public partial class NefsReader : INefsReader
 	}
 
 	/// <summary>
+	/// Decodes the intro header for file versions 1.5.1.
+	/// </summary>
+	/// <param name="stream">The stream containing the encrypted header.</param>
+	/// <param name="offset">The offset to the header from the beginning of the stream.</param>
+	/// <returns>The decoded header data.</returns>
+	internal byte[] DecodeXorIntro(Stream stream, long offset)
+	{
+		stream.Seek(offset, SeekOrigin.Begin);
+
+		using var br = new BinaryReader(stream, Encoding.UTF8, true);
+		var buf = br.ReadBytes(NefsHeaderIntro.Size);
+		var uintBuf = MemoryMarshal.Cast<byte, uint>(buf.AsSpan());
+
+		uintBuf[14] ^= uintBuf[5];
+		uintBuf[5] ^= uintBuf[2];
+		uintBuf[14] ^= uintBuf[5];
+		uintBuf[5] ^= uintBuf[2];
+		uintBuf[2] ^= uintBuf[4];
+		uintBuf[4] ^= uintBuf[7];
+		uintBuf[7] ^= uintBuf[3];
+		uintBuf[3] ^= uintBuf[9];
+		uintBuf[9] ^= uintBuf[10];
+		uintBuf[10] ^= uintBuf[1];
+		uintBuf[1] ^= uintBuf[13];
+		uintBuf[13] ^= uintBuf[11];
+		uintBuf[11] ^= uintBuf[0];
+		uintBuf[0] ^= uintBuf[12];
+		uintBuf[12] ^= uintBuf[6];
+		uintBuf[8] ^= uintBuf[14];
+		uintBuf[6] ^= uintBuf[8];
+
+		var mod = uintBuf[14];
+		for (var i = 15; i < 31; ++i)
+		{
+			uintBuf[i] ^= mod;
+		}
+
+		var tmp = Convert.ToHexString(buf);
+
+		return buf;
+	}
+
+	/// <summary>
 	/// Decrypts an encrypted Dirt Rally 2 header into a new stream. The caller is responsible for disposing the stream.
 	/// </summary>
 	/// <param name="stream">The stream containing the encrypted header.</param>
@@ -280,17 +324,37 @@ public partial class NefsReader : INefsReader
 		INefsHeader header;
 		NefsHeaderIntro intro;
 
+		var isXored = false;
+		var introStream = stream;
 		var validMagicNum = await ValidateMagicNumberAsync(stream, offset, p);
 		if (!validMagicNum)
 		{
-			Log.LogInformation("Header magic number mismatch, assuming a Dirt Rally 2 encrypted archive.");
-			header = await ReadEncryptedDirtRally2Header(stream, offset, p);
-			return header;
+			// Check for v1.5.1 xor encoding
+			validMagicNum = await ValidateXorMagicNumberAsync(stream, offset, p);
+			if (validMagicNum)
+			{
+				isXored = true;
+				introStream = new MemoryStream(DecodeXorIntro(stream, offset));
+			}
+			else
+			{
+				Log.LogInformation("Header magic number mismatch, assuming a Dirt Rally 2 encrypted archive.");
+				header = await ReadEncryptedDirtRally2Header(stream, offset, p);
+				return header;
+			}
 		}
 
 		using (p.BeginTask(0.2f, "Reading header intro"))
 		{
-			intro = await ReadHeaderIntroAsync(stream, offset, p);
+			if (isXored)
+			{
+				// this must be version < 1.6.0 (so far known to be 1.5.1)
+				throw new NotImplementedException("Reading intro for NeFS version 1.5.1 not implemented.");
+			}
+			else
+			{
+				intro = await ReadHeaderIntroAsync(introStream, offset, p);
+			}
 		}
 
 		using (p.BeginTask(0.8f, "Reading header"))
@@ -990,6 +1054,18 @@ public partial class NefsReader : INefsReader
 		var magicNum = new UInt32Type(0);
 		await magicNum.ReadAsync(stream, offset, p);
 		return magicNum.Value == NefsHeaderIntro.NefsMagicNumber;
+	}
+
+	internal async Task<bool> ValidateXorMagicNumberAsync(Stream stream, long offset, NefsProgress p)
+	{
+		// Read magic number (first four bytes)
+		stream.Seek(offset, SeekOrigin.Begin);
+		var magicNum = new UInt32Type(0);
+		await magicNum.ReadAsync(stream, offset, p);
+		var modNum = new UInt32Type(48);
+		await modNum.ReadAsync(stream, offset, p);
+		var magic = magicNum.Value ^ modNum.Value;
+		return magic == NefsHeaderIntro.NefsMagicNumber;
 	}
 
 	private async Task ValidateEncryptedHeaderAsync(Stream stream, long offset, NefsHeaderIntro intro)

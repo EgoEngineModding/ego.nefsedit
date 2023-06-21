@@ -1,3 +1,3 @@
 [submodule "VictorBush.Ego.NefsCommon"]
 	path = VictorBush.Ego.NefsCommon
-	url = git@github.com:victorbush/ego.nefscommon.git
+	url = https://github.com/victorbush/ego.nefscommon.git

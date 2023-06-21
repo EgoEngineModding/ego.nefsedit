@@ -8,6 +8,11 @@ namespace VictorBush.Ego.NefsLib;
 public enum NefsVersion
 {
 	/// <summary>
+	/// Version 1.5.1.
+	/// </summary>
+	Version151 = 0x10501,
+
+	/// <summary>
 	/// Version 1.6.0.
 	/// </summary>
 	Version160 = 0x10600,
