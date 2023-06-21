@@ -202,8 +202,6 @@ public partial class NefsReader : INefsReader
 
 		uintBuf[14] ^= uintBuf[5];
 		uintBuf[5] ^= uintBuf[2];
-		uintBuf[14] ^= uintBuf[5];
-		uintBuf[5] ^= uintBuf[2];
 		uintBuf[2] ^= uintBuf[4];
 		uintBuf[4] ^= uintBuf[7];
 		uintBuf[7] ^= uintBuf[3];
@@ -215,8 +213,8 @@ public partial class NefsReader : INefsReader
 		uintBuf[11] ^= uintBuf[0];
 		uintBuf[0] ^= uintBuf[12];
 		uintBuf[12] ^= uintBuf[6];
-		uintBuf[8] ^= uintBuf[14];
 		uintBuf[6] ^= uintBuf[8];
+		uintBuf[8] ^= uintBuf[14];
 
 		var mod = uintBuf[14];
 		for (var i = 15; i < 31; ++i)
