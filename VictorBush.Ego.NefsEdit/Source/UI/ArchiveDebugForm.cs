@@ -136,7 +136,10 @@ Part 1 size:                {h.TableOfContents.Part1Size.ToString("X")}
 Part 2 size:                {h.TableOfContents.Part2Size.ToString("X")}
 Part 3 size:                {h.TableOfContents.Part3Size.ToString("X")}
 Part 4 size:                {h.TableOfContents.Part4Size.ToString("X")}
-Part 8 size:                {(h.Intro.HeaderSize - h.TableOfContents.OffsetToPart8).ToString("X")}
+Part 5 size:                {NefsHeaderPart5.Size.ToString("X")}
+Part 6 size:                {h.Part6.Size.ToString("X")}
+Part 7 size:                {h.Part7.Size.ToString("X")}
+Part 8 size:                {h.Part8.Size.ToString("X")}
 
 Header Intro
 -----------------------------------------------------------
@@ -268,7 +271,10 @@ Part 1 size:                {h.TableOfContents.Part1Size.ToString("X")}
 Part 2 size:                {h.TableOfContents.Part2Size.ToString("X")}
 Part 3 size:                {h.TableOfContents.Part3Size.ToString("X")}
 Part 4 size:                {h.TableOfContents.Part4Size.ToString("X")}
-Part 8 size:                {(h.Intro.HeaderSize - h.TableOfContents.OffsetToPart8).ToString("X")}
+Part 5 size:                {NefsHeaderPart5.Size.ToString("X")}
+Part 6 size:                {h.Part6.Size.ToString("X")}
+Part 7 size:                {h.Part7.Size.ToString("X")}
+Part 8 size:                {h.Part8.Size.ToString("X")}
 
 Header Intro
 -----------------------------------------------------------

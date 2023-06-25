@@ -851,9 +851,12 @@ public partial class NefsReader : INefsReader
 
 		using (p.BeginTask(weight, "Reading header part 8"))
 		{
+			var endOfP7Offset = secondaryOffset + toc.OffsetToPart7 + part7.Size;
+			var p8Offset = toc.OffsetToPart8 == 0 ? endOfP7Offset : primaryOffset + toc.OffsetToPart8;
+
 			// Part 8 must use primary offset because, for split headers, it is contained in the primary header section
 			// (after part 5)
-			part8 = await ReadHeaderPart8Async(stream, primaryOffset + toc.OffsetToPart8, (int)toc.HashBlockSize, part5, p);
+			part8 = await ReadHeaderPart8Async(stream, p8Offset, (int)toc.HashBlockSize, part5, p);
 		}
 
 		return new Nefs16Header(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
