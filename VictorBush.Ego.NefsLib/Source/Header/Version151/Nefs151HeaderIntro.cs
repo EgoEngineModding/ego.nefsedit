@@ -2,7 +2,6 @@
 
 using System.Text;
 using VictorBush.Ego.NefsLib.DataTypes;
-using VictorBush.Ego.NefsLib.Source.Utility;
 using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header.Version151;
@@ -15,16 +14,16 @@ public record Nefs151HeaderIntro : INefsHeaderIntro, INefsHeaderIntroToc
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Nefs151HeaderIntro"/> class.
 	/// </summary>
-	public Nefs151HeaderIntro(bool isEncrypted = false)
+	public Nefs151HeaderIntro()
 	{
 		Data_MagicNumber.Value = NefsHeaderIntro.NefsMagicNumber;
-		IsEncrypted = isEncrypted;
 	}
 
-	/// <summary>
-	/// Whether the header is encrypted.
-	/// </summary>
+	/// <inheritdoc />
 	public bool IsEncrypted { get; init; }
+
+	/// <inheritdoc />
+	public bool IsXorEncoded { get; init; }
 
 	/// <inheritdoc />
 	public uint MagicNumber
@@ -240,5 +239,5 @@ public record Nefs151HeaderIntro : INefsHeaderIntro, INefsHeaderIntroToc
 
 	/// <inheritdoc/>
 	public uint ComputeNumChunks(uint extractedSize) =>
-		(uint)Math.Ceiling(extractedSize / (double)BlockSize);
+		(extractedSize + (BlockSize - 1)) / BlockSize;
 }

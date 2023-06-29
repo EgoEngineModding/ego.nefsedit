@@ -173,5 +173,5 @@ public sealed class Nefs16HeaderIntroToc : INefsHeaderIntroToc
 
 	/// <inheritdoc/>
 	public uint ComputeNumChunks(uint extractedSize) =>
-		(uint)Math.Ceiling(extractedSize / (double)BlockSize);
+		(extractedSize + (BlockSize - 1)) / BlockSize;
 }

@@ -23,10 +23,9 @@ public record NefsHeaderIntro : INefsHeaderIntro
 	/// <summary>
 	/// Initializes a new instance of the <see cref="NefsHeaderIntro"/> class.
 	/// </summary>
-	public NefsHeaderIntro(bool isEncrypted = false)
+	public NefsHeaderIntro()
 	{
 		Data0x00_MagicNumber.Value = NefsMagicNumber;
-		IsEncrypted = isEncrypted;
 	}
 
 	/// <inheritdoc />
@@ -52,10 +51,11 @@ public record NefsHeaderIntro : INefsHeaderIntro
 		init => Data0x64_HeaderSize.Value = value;
 	}
 
-	/// <summary>
-	/// Whether the header is encrypted.
-	/// </summary>
-	public bool IsEncrypted { get; init; } = false;
+	/// <inheritdoc />
+	public bool IsEncrypted { get; init; }
+
+	/// <inheritdoc />
+	public bool IsXorEncoded { get; init; }
 
 	/// <inheritdoc />
 	public uint MagicNumber

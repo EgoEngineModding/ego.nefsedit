@@ -8,29 +8,39 @@ namespace VictorBush.Ego.NefsLib.Header;
 public interface INefsHeaderIntro
 {
 	/// <summary>
+	/// Whether the header is encrypted.
+	/// </summary>
+	bool IsEncrypted { get; }
+
+	/// <summary>
+	/// Whether the header is xor encoded.
+	/// </summary>
+	bool IsXorEncoded { get; }
+
+	/// <summary>
 	/// File magic number; "NeFS" or 0x5346654E.
 	/// </summary>
-	uint MagicNumber { get; init; }
+	uint MagicNumber { get; }
 
 	/// <summary>
 	/// Size of header in bytes.
 	/// </summary>
-	uint HeaderSize { get; init; }
+	uint HeaderSize { get; }
 
 	/// <summary>
 	/// The NeFS format version.
 	/// </summary>
-	uint NefsVersion { get; init; }
+	uint NefsVersion { get; }
 
 	/// <summary>
 	/// The number of items in the archive.
 	/// </summary>
-	uint NumberOfItems { get; init; }
+	uint NumberOfItems { get; }
 
 	/// <summary>
 	/// 256-bit AES key stored as a hex string.
 	/// </summary>
-	byte[] AesKeyHexString { get; init; }
+	byte[] AesKeyHexString { get; }
 
 	/// <summary>
 	/// Gets the AES-256 key for this header.

@@ -12,6 +12,7 @@ using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Version151;
 using VictorBush.Ego.NefsLib.Progress;
 using VictorBush.Ego.NefsLib.Utility;
+using static VictorBush.Ego.NefsLib.IO.NefsRsaKeys;
 
 [assembly: System.Runtime.CompilerServices.InternalsVisibleTo("VictorBush.Ego.NefsLib.Tests")]
 
@@ -20,73 +21,34 @@ namespace VictorBush.Ego.NefsLib.IO;
 /// <summary>
 /// Reads NeFS archives.
 /// </summary>
-public partial class NefsReader : INefsReader
+public class NefsReader : INefsReader
 {
 	/// <summary>
 	/// The default RSA exponent for encrypted headers.
 	/// </summary>
 	public static readonly byte[] DefaultRsaExponent = { 01, 00, 01, 00 };
 
-	/// <summary>
-	/// The default RSA public key for encrypted headers. From DiRT Rally 2.
-	/// </summary>
-	public static readonly byte[] DefaultRsaPublicKey =
-	{
-		0xCF, 0x19, 0x63, 0x94, 0x1E, 0x0F, 0x42, 0x16, 0x35, 0xDE, 0x51, 0xD0, 0xB3, 0x3A, 0xB7, 0x67,
-		0xC7, 0x1C, 0x8D, 0x3B, 0x27, 0x49, 0x40, 0x9E, 0x58, 0x43, 0xDD, 0x6D, 0xD9, 0xAA, 0xF5, 0x1B,
-		0x94, 0x94, 0xC4, 0x30, 0x49, 0xBA, 0xE7, 0x72, 0x3D, 0xFA, 0xDF, 0x80, 0x17, 0x55, 0xF3, 0xAB,
-		0xF8, 0x97, 0x42, 0xE6, 0xB2, 0xDF, 0x11, 0xE4, 0x93, 0x0E, 0x92, 0x1D, 0xC5, 0x4E, 0x0F, 0x87,
-		0xCD, 0x46, 0x83, 0x06, 0x6B, 0x97, 0xA7, 0x00, 0x42, 0x35, 0xB0, 0x33, 0xEA, 0xEF, 0x68, 0x54,
-		0xA0, 0xF9, 0x03, 0x41, 0xF7, 0x5C, 0xFF, 0xC3, 0x75, 0xE1, 0x1B, 0x00, 0x73, 0x5A, 0x7A, 0x81,
-		0x68, 0xAF, 0xB4, 0x9F, 0x86, 0x3C, 0xD6, 0x09, 0x3A, 0xC0, 0x94, 0x6F, 0x18, 0xE2, 0x03, 0x38,
-		0x14, 0xF7, 0xC5, 0x13, 0x91, 0x4E, 0xD0, 0x4F, 0xAC, 0x46, 0x6C, 0x70, 0x27, 0xED, 0x69, 0x99,
-		00,
-	};
-
-	public static readonly byte[] GridAutosportRsaPublicKey = {
-		0x0F, 0x00, 0x75, 0x6D, 0x8D, 0xB8, 0xFB, 0xE3, 0x85, 0xB4, 0xA1, 0x15,
-		0x71, 0x5D, 0x57, 0xFC, 0xA7, 0x92, 0x95, 0x34, 0xBD, 0xAA, 0x2C, 0x81,
-		0x63, 0x5B, 0x64, 0xA5, 0xF0, 0xD0, 0x18, 0x58, 0xCE, 0x07, 0x19, 0x64,
-		0x0C, 0x52, 0xE0, 0x60, 0xC0, 0xE5, 0x9B, 0x31, 0x4C, 0xFB, 0xE3, 0xCB,
-		0x61, 0xEB, 0x7C, 0x45, 0xC4, 0x0D, 0x57, 0xB4, 0xE3, 0x91, 0xA1, 0xF7,
-		0x21, 0x17, 0xC6, 0x9C, 0x70, 0x12, 0xDC, 0x18, 0xF3, 0x04, 0xC2, 0x1A,
-		0x2B, 0xB7, 0xC2, 0x66, 0xED, 0x96, 0x74, 0xA0, 0x0A, 0xF1, 0xEE, 0xEF,
-		0x61, 0xBA, 0xD0, 0x4A, 0xD3, 0xF8, 0x68, 0xE0, 0x9D, 0x47, 0xDF, 0x16,
-		0x41, 0x08, 0xFC, 0x8C, 0xD9, 0xD1, 0x53, 0xB4, 0x7A, 0x52, 0xC1, 0x71,
-		0xB6, 0xDA, 0xAF, 0x43, 0x48, 0x42, 0x36, 0x87, 0x8D, 0xCB, 0x1E, 0x67,
-		0x24, 0x00, 0x9C, 0x6A, 0x11, 0x47, 0x7F, 0x87, 0x00
-	};
-
 	private static readonly ILogger Log = NefsLog.GetLogger();
+
+	private readonly IReadOnlyList<byte[]> rsaKeys;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="NefsReader"/> class.
 	/// </summary>
 	/// <param name="fileSystem">The file system used by the factory.</param>
 	public NefsReader(IFileSystem fileSystem)
-		: this(fileSystem, null, null)
 	{
 		FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-	}
-
-	/// <summary>
-	/// Initializes a new instance of the <see cref="NefsReader"/> class.
-	/// </summary>
-	/// <param name="fileSystem">The file system used by the factory.</param>
-	/// <param name="rsaPublicKey">Specifies a different RSA public key to use for encrypted headers.</param>
-	/// <param name="rsaExponent">Specifies a different RSA exponent to use for encrypted headers.</param>
-	public NefsReader(IFileSystem fileSystem, byte[]? rsaPublicKey, byte[]? rsaExponent)
-	{
-		FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-		RsaPublicKey = rsaPublicKey ?? DefaultRsaPublicKey;
-		RsaExponent = rsaExponent ?? DefaultRsaExponent;
+		RsaExponent = DefaultRsaExponent;
+		this.rsaKeys = new[]
+		{
+			DefaultRsaPublicKey, F12010RsaPublicKey, F12011RsaPublicKey, Dirt3RsaPublicKey, GridAutosportRsaPublicKey
+		};
 	}
 
 	private IFileSystem FileSystem { get; }
 
 	private byte[] RsaExponent { get; }
-
-	private byte[] RsaPublicKey { get; }
 
 	/// <inheritdoc/>
 	public async Task<NefsArchive> ReadArchiveAsync(string filePath, NefsProgress p)
@@ -223,108 +185,68 @@ public partial class NefsReader : INefsReader
 			uintBuf[i] ^= mod;
 		}
 
-		var tmp = Convert.ToHexString(buf);
+		// Debug: for copying to hex editor
+		//var tmp = Convert.ToHexString(buf);
 
 		return buf;
 	}
 
 	/// <summary>
-	/// Decrypts an encrypted Dirt Rally 2 header into a new stream. The caller is responsible for disposing the stream.
+	/// Decrypts an encrypted header into the given stream.
 	/// </summary>
 	/// <param name="stream">The stream containing the encrypted header.</param>
 	/// <param name="offset">The offset to the header from the beginning of the stream.</param>
+	/// <param name="outStream">The decrypted output stream.</param>
+	/// <param name="rsaPublicKey">The RSA public key to use for decryption</param>
 	/// <param name="p">Progress info.</param>
-	/// <returns>The decrypted stream.</returns>
-	internal async Task<(NefsHeaderIntro Intro, Stream Stream)> DecryptDirtRally2Header(
+	internal async Task DecryptHeaderIntroAsync(
 		Stream stream,
 		long offset,
+		Stream outStream,
+		byte[] rsaPublicKey,
 		NefsProgress p)
 	{
 		stream.Seek(offset, SeekOrigin.Begin);
-
-		// The decrypted stream will need to be disposed by the caller
-		var decryptedStream = new MemoryStream();
 
 		// Encrypted headers:
 		// - Headers are "encrypted" in a two-step process. RSA-1024. No padding is used.
 		// - First 0x80 bytes are signed with an RSA private key (data -> decrypt -> scrambled data).
 		// - Must use an RSA 1024-bit public key to unscramble the data (scrambled data -> encrypt -> data).
 		// - For DiRT Rally 2 this public key is stored in the main executable.
-		byte[] encryptedHeader = new byte[NefsHeaderIntro.Size + 1]; // TODO : Why the +1?
-		await stream.ReadAsync(encryptedHeader, 0, (int)NefsHeaderIntro.Size, p.CancellationToken);
-		encryptedHeader[NefsHeaderIntro.Size] = 0;
+		// Add extra 0 byte at the end of encrypted header for the sake of making the MSB 0 and therefore non-negative
+		// when converting to BigInteger
+		var encryptedHeader = new byte[NefsHeaderIntro.Size + 1];
+		await stream.ReadExactlyAsync(encryptedHeader.AsMemory(0, NefsHeaderIntro.Size), p.CancellationToken);
 
 		// Use big integers instead of RSA since the c# implementation forces the use of padding.
-		var n = new BigInteger(RsaPublicKey);
+		var n = new BigInteger(rsaPublicKey);
 		var e = new BigInteger(RsaExponent);
 		var m = new BigInteger(encryptedHeader);
 
 		// Decrypt the header intro
-		byte[] decrypted = BigInteger.ModPow(m, e, n).ToByteArray();
-		decryptedStream.Write(decrypted, 0, decrypted.Length);
+		var decrypted = BigInteger.ModPow(m, e, n).ToByteArray();
+		outStream.Write(decrypted, 0, decrypted.Length);
 
 		// Fill any leftover space with zeros
 		if (decrypted.Length != NefsHeaderIntro.Size)
 		{
-			for (int i = 0; i < (NefsHeaderIntro.Size - decrypted.Length); i++)
+			for (var i = 0; i < (NefsHeaderIntro.Size - decrypted.Length); i++)
 			{
-				decryptedStream.WriteByte(0);
+				outStream.WriteByte(0);
 			}
 		}
-
-		// Read header intro data from decrypted stream
-		var intro = new NefsHeaderIntro(isEncrypted: true);
-		await FileData.ReadDataAsync(decryptedStream, 0, intro, p);
-
-		// The rest of the header is encrypted using AES-256, decrypt using the key from the header intro
-		byte[] key = intro.GetAesKey();
-		var headerSize = intro.HeaderSize;
-
-		// Decrypt the rest of the header
-		using (var rijAlg = new RijndaelManaged())
-		{
-			rijAlg.KeySize = 256;
-			rijAlg.Key = key;
-			rijAlg.Mode = CipherMode.ECB;
-			rijAlg.BlockSize = 128;
-			rijAlg.Padding = PaddingMode.Zeros;
-
-			var decryptor = rijAlg.CreateDecryptor();
-			decryptedStream.Seek(0, SeekOrigin.End);
-
-			// Decrypt the data - make sure to leave open the base stream
-			using (var cryptoStream = new CryptoStream(stream, decryptor, CryptoStreamMode.Read))
-			{
-				// Decrypt data from input stream and copy to the decrypted stream
-				await cryptoStream.CopyPartialAsync(decryptedStream, headerSize, p.CancellationToken);
-			}
-		}
-
-		return (intro, decryptedStream);
 	}
 
-	internal async Task<INefsHeader> ReadEncryptedDirtRally2Header(Stream stream, long offset, NefsProgress p)
+	internal readonly record struct DecryptHeaderIntroResult(bool Succeeded, bool IsEncrypted = false,
+		bool IsXorEncoded = false);
+
+	internal async Task<DecryptHeaderIntroResult> ReadHeaderIntroAsync(Stream stream, long offset,
+		Stream outDecryptStream,
+		bool encrypted, NefsProgress p)
 	{
-		var (intro, decryptedStream) = await DecryptDirtRally2Header(stream, offset, p);
-		if (intro.MagicNumber != NefsHeaderIntro.NefsMagicNumber)
-		{
-			throw new InvalidOperationException("Failed to decrypt header. Only Dirt Rally 2 encrypted archives are supported.");
-		}
+		var isXorEncoded = false;
+		byte[]? decodedData = null;
 
-		// Only support encrypted headers with no special offsets (we have no examples of encrypted game.dat, etc)
-		var header = await ReadHeaderVersion20Async(decryptedStream, 0, 0, intro, p);
-		await ValidateEncryptedHeaderAsync(decryptedStream, offset, intro);
-		decryptedStream.Dispose();
-		return header;
-	}
-
-	internal async Task<INefsHeader> ReadHeaderAsync(Stream stream, long offset, NefsProgress p)
-	{
-		INefsHeader header;
-		INefsHeaderIntro intro;
-
-		var isXored = false;
-		var introStream = stream;
 		var validMagicNum = await ValidateMagicNumberAsync(stream, offset, p);
 		if (!validMagicNum)
 		{
@@ -332,57 +254,184 @@ public partial class NefsReader : INefsReader
 			validMagicNum = await ValidateXorMagicNumberAsync(stream, offset, p);
 			if (validMagicNum)
 			{
-				isXored = true;
-				introStream = new MemoryStream(DecodeXorIntro(stream, offset));
+				isXorEncoded = true;
+				decodedData = DecodeXorIntro(stream, offset);
+			}
+			else if (!encrypted)
+			{
+				Log.LogInformation("Header magic number mismatch, assuming it's an encrypted archive.");
+				using var decryptStream = new MemoryStream();
+				for (var i = 0; i < this.rsaKeys.Count; ++i)
+				{
+					decryptStream.SetLength(0);
+					var key = this.rsaKeys[i];
+					await DecryptHeaderIntroAsync(stream, offset, decryptStream, key, p);
+
+					var result = await ReadHeaderIntroAsync(decryptStream, 0, outDecryptStream, true, p);
+					if (!result.Succeeded)
+					{
+						continue;
+					}
+
+					return result;
+				}
+
+				Log.LogError("Failed to decrypt header.");
+				return new DecryptHeaderIntroResult(false, encrypted);
 			}
 			else
 			{
-				Log.LogInformation("Header magic number mismatch, assuming a Dirt Rally 2 encrypted archive.");
-				header = await ReadEncryptedDirtRally2Header(stream, offset, p);
-				return header;
+				return new DecryptHeaderIntroResult(false, encrypted);
 			}
 		}
 
+		if (isXorEncoded)
+		{
+			await outDecryptStream.WriteAsync(decodedData, p.CancellationToken);
+		}
+		else if (encrypted)
+		{
+			stream.Seek(offset, SeekOrigin.Begin);
+			await stream.CopyToAsync(outDecryptStream, p.CancellationToken);
+		}
+
+		return new DecryptHeaderIntroResult(true, encrypted, isXorEncoded);
+	}
+
+	internal async Task<INefsHeaderIntro> ReadHeaderIntroAsync(Stream stream, long offset, Stream outDecryptStream,
+		NefsProgress p)
+	{
+		var outStreamOffset = outDecryptStream.Position;
+		var readResult = await ReadHeaderIntroAsync(stream, offset, outDecryptStream, false, p);
+		if (!readResult.Succeeded)
+		{
+			throw new InvalidDataException("Header magic number mismatch.");
+		}
+
+		INefsHeaderIntro intro;
+		var introStream = readResult.IsEncrypted || readResult.IsXorEncoded ? outDecryptStream : stream;
+		var introOffset = readResult.IsEncrypted || readResult.IsXorEncoded ? outStreamOffset : offset;
 		using (p.BeginTask(0.2f, "Reading header intro"))
 		{
-			if (isXored)
+			var oldVersion = await ReadVersionV151Async(introStream, introOffset, p);
+			if (oldVersion is (uint)NefsVersion.Version140)
+			{
+				throw new NotImplementedException("Support for version 1.4.0 is not implemented.");
+			}
+
+			if (oldVersion is (uint)NefsVersion.Version151)
 			{
 				// this must be version < 1.6.0 (so far known to be 1.5.1)
-				intro = await Read151HeaderIntroAsync(introStream, 0, p);
+				intro = await ReadHeaderIntroV151Async(introStream, introOffset, readResult, p);
 			}
 			else
 			{
-				intro = await ReadHeaderIntroAsync(introStream, offset, p);
+				intro = await ReadHeaderIntroV16Async(introStream, introOffset, readResult, p);
 			}
 		}
 
+		if (readResult.IsEncrypted)
+		{
+			// The rest of the header is encrypted using AES-256, decrypt using the key from the header intro
+			var key = intro.GetAesKey();
+
+			// Decrypt the rest of the header
+			using (var aes = Aes.Create())
+			{
+				aes.KeySize = 256;
+				aes.Key = key;
+				aes.Mode = CipherMode.ECB;
+				aes.BlockSize = 128;
+				aes.Padding = PaddingMode.Zeros;
+
+				if (intro.NefsVersion == (uint)NefsVersion.Version151)
+				{
+					// This version may have a header of 126 bytes, and 2 were added for the sake of RSA encryption
+					// we'll back up here to overwrite those last 2 bytes with the bytes contained in next AES section
+					// Side-note: last two bytes could be padding and not real data
+					introStream.Seek(-2, SeekOrigin.End);
+				}
+				else
+				{
+					introStream.Seek(0, SeekOrigin.End);
+				}
+
+				// Decrypt the data - make sure to leave open the base stream
+				var decryptor = aes.CreateDecryptor();
+				using (var cryptoStream = new CryptoStream(stream, decryptor, CryptoStreamMode.Read, true))
+				{
+					// Decrypt data from input stream and copy to the decrypted stream
+					var headerLeftoverSize = intro.HeaderSize - NefsHeaderIntro.Size;
+					await cryptoStream.CopyPartialAsync(introStream, headerLeftoverSize, p.CancellationToken);
+				}
+
+				if (intro.NefsVersion is (uint)NefsVersion.Version151)
+				{
+					// Fix last two bytes being part of AES data
+					var hiPart = new UInt16Type(NefsHeaderIntro.Size - 2);
+					await hiPart.ReadAsync(introStream, introOffset, p);
+					var intro151 = (Nefs151HeaderIntro)intro;
+					intro = intro151 with { Unknown0x7C = intro151.Unknown0x7C | ((uint)hiPart.Value << 16) };
+				}
+			}
+
+			// Debug: for copying to hex editor
+			var tmp = Convert.ToHexString(((MemoryStream)introStream).ToArray());
+		}
+
+		return intro;
+	}
+
+	internal async Task<INefsHeader> ReadHeaderAsync(Stream stream, long offset, NefsProgress p)
+	{
+		INefsHeader header;
+		using var decryptStream = new MemoryStream();
+		var intro = await ReadHeaderIntroAsync(stream, offset, decryptStream, p);
+
+		var headerStream = intro.IsEncrypted ? decryptStream : stream;
+		offset = intro.IsEncrypted ? 0 : offset;
 		using (p.BeginTask(0.8f, "Reading header"))
 		{
 			if (intro.NefsVersion == (uint)NefsVersion.Version200)
 			{
 				// 2.0.0
 				Log.LogInformation("Detected NeFS version 2.0.");
-				header = await ReadHeaderVersion20Async(stream, offset, offset, (NefsHeaderIntro)intro, p);
-				await ValidateHeaderHashAsync(stream, offset, (NefsHeaderIntro)intro);
+				header = await ReadHeaderV20Async(headerStream, offset, offset, (NefsHeaderIntro)intro, p);
+				if (intro.IsEncrypted)
+				{
+					await ValidateEncryptedHeaderAsync(headerStream, offset, (NefsHeaderIntro)intro);
+				}
+				else
+				{
+					await ValidateHeaderHashAsync(headerStream, offset, (NefsHeaderIntro)intro);
+				}
 			}
 			else if (intro.NefsVersion == (uint)NefsVersion.Version160)
 			{
 				// 1.6.0
 				Log.LogInformation("Detected NeFS version 1.6.");
-				header = await ReadHeaderVersion16Async(stream, offset, offset, (NefsHeaderIntro)intro, p);
-				await ValidateHeaderHashAsync(stream, offset, (NefsHeaderIntro)intro);
+				header = await ReadHeaderV16Async(headerStream, offset, offset, (NefsHeaderIntro)intro, p);
+				await ValidateHeaderHashAsync(headerStream, offset, (NefsHeaderIntro)intro);
+				// TODO: determine how to compute hash for encrypted files
 			}
-			else if (intro.NefsVersion == (uint)NefsVersion.Version151)
+			else if (intro.NefsVersion is (uint)NefsVersion.Version151)
 			{
 				// 1.5.1
 				Log.LogInformation("Detected NeFS version 1.5.1.");
-				header = await Read151HeaderAsync(stream, offset, (Nefs151HeaderIntro)intro, p);
+				header = await ReadHeaderV151Async(headerStream, offset, (Nefs151HeaderIntro)intro, p);
 			}
 			else
 			{
-				Log.LogError($"Detected unkown NeFS version {intro.NefsVersion}. Treating as 2.0.");
-				header = await ReadHeaderVersion20Async(stream, offset, offset, (NefsHeaderIntro)intro, p);
-				await ValidateHeaderHashAsync(stream, offset, (NefsHeaderIntro)intro);
+				Log.LogError($"Detected unknown NeFS version {intro.NefsVersion}. Treating as 2.0.");
+				header = await ReadHeaderV20Async(headerStream, offset, offset, (NefsHeaderIntro)intro, p);
+				if (intro.IsEncrypted)
+				{
+					await ValidateEncryptedHeaderAsync(headerStream, offset, (NefsHeaderIntro)intro);
+				}
+				else
+				{
+					await ValidateHeaderHashAsync(headerStream, offset, (NefsHeaderIntro)intro);
+				}
 			}
 		}
 
@@ -397,16 +446,19 @@ public partial class NefsReader : INefsReader
 	/// </summary>
 	/// <param name="stream">The stream to read from.</param>
 	/// <param name="offset">The offset to the header intro from the beginning of the stream.</param>
+	/// <param name="decryptResult">Decryption state.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>The loaded header intro.</returns>
-	internal async Task<Nefs151HeaderIntro> Read151HeaderIntroAsync(
+	internal static async Task<Nefs151HeaderIntro> ReadHeaderIntroV151Async(
 		Stream stream,
 		long offset,
+		DecryptHeaderIntroResult decryptResult,
 		NefsProgress p)
 	{
 		stream.Seek(offset, SeekOrigin.Begin);
 
-		var intro = new Nefs151HeaderIntro();
+		var intro = new Nefs151HeaderIntro
+			{ IsEncrypted = decryptResult.IsEncrypted, IsXorEncoded = decryptResult.IsXorEncoded };
 		await FileData.ReadDataAsync(stream, offset, intro, p);
 		return intro;
 	}
@@ -419,16 +471,19 @@ public partial class NefsReader : INefsReader
 	/// </summary>
 	/// <param name="stream">The stream to read from.</param>
 	/// <param name="offset">The offset to the header intro from the beginning of the stream.</param>
+	/// <param name="decryptResult">Decryption state.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>The loaded header intro.</returns>
-	internal async Task<NefsHeaderIntro> ReadHeaderIntroAsync(
+	internal static async Task<NefsHeaderIntro> ReadHeaderIntroV16Async(
 		Stream stream,
 		long offset,
+		DecryptHeaderIntroResult decryptResult,
 		NefsProgress p)
 	{
 		stream.Seek(offset, SeekOrigin.Begin);
 
-		var intro = new NefsHeaderIntro();
+		var intro = new NefsHeaderIntro
+			{ IsEncrypted = decryptResult.IsEncrypted, IsXorEncoded = decryptResult.IsXorEncoded };
 		await FileData.ReadDataAsync(stream, offset, intro, p);
 		return intro;
 	}
@@ -439,7 +494,7 @@ public partial class NefsReader : INefsReader
 	/// <param name="stream">The stream to read from.</param>
 	/// <param name="offset">The offset to the header intro table of contents from the beginning of the stream.</param>
 	/// <param name="p">Progress info.</param>
-	/// <returns>The loaded header intro offets data.</returns>
+	/// <returns>The loaded header intro offsets data.</returns>
 	internal async Task<Nefs16HeaderIntroToc> ReadHeaderIntroTocVersion16Async(Stream stream, long offset, NefsProgress p)
 	{
 		var toc = new Nefs16HeaderIntroToc();
@@ -453,7 +508,7 @@ public partial class NefsReader : INefsReader
 	/// <param name="stream">The stream to read from.</param>
 	/// <param name="offset">The offset to the header intro table of contents from the beginning of the stream.</param>
 	/// <param name="p">Progress info.</param>
-	/// <returns>The loaded header intro offets data.</returns>
+	/// <returns>The loaded header intro offsets data.</returns>
 	internal async Task<Nefs20HeaderIntroToc> ReadHeaderIntroTocVersion20Async(Stream stream, long offset, NefsProgress p)
 	{
 		var toc = new Nefs20HeaderIntroToc();
@@ -569,7 +624,7 @@ public partial class NefsReader : INefsReader
 
 				entries.Add(entry);
 
-				// todo: figure out id vs id2, for now throw
+				// TODO: figure out id vs id2, for now throw
 				if (entry.Id != entry.Id2)
 				{
 					throw new NotImplementedException("Proper understanding of part 2 ids not implemented.");
@@ -638,13 +693,13 @@ public partial class NefsReader : INefsReader
 		// Read in header part 3
 		var bytes = new byte[size];
 		stream.Seek(offset, SeekOrigin.Begin);
-		await stream.ReadAsync(bytes, 0, (int)size);
+		await stream.ReadExactlyAsync(bytes, p.CancellationToken);
 
 		// Process all strings in the strings table
 		var nextOffset = 0;
 		while (nextOffset < size)
 		{
-			using (p.BeginTask(nextOffset / size))
+			using (p.BeginTask((float)nextOffset / size))
 			{
 				// Find the next null terminator
 				var nullOffset = size;
@@ -862,7 +917,7 @@ public partial class NefsReader : INefsReader
 		var size = numItems * Nefs16HeaderPart6.EntrySize;
 
 		// Validate inputs
-		if (!ValidateHeaderPartStream(stream, offset, (int)size, "6"))
+		if (!ValidateHeaderPartStream(stream, offset, size, "6"))
 		{
 			return new Nefs16HeaderPart6(entries);
 		}
@@ -1014,7 +1069,7 @@ public partial class NefsReader : INefsReader
 		return part8;
 	}
 
-	internal async Task<Nefs151Header> Read151HeaderAsync(
+	internal async Task<Nefs151Header> ReadHeaderV151Async(
 		Stream stream,
 		long primaryOffset,
 		Nefs151HeaderIntro intro,
@@ -1058,7 +1113,7 @@ public partial class NefsReader : INefsReader
 		return new Nefs151Header(intro, part1, part2, part3, part4, part5);
 	}
 
-	internal async Task<Nefs16Header> ReadHeaderVersion16Async(
+	internal async Task<Nefs16Header> ReadHeaderV16Async(
 		Stream stream,
 		long primaryOffset,
 		long secondaryOffset,
@@ -1130,7 +1185,7 @@ public partial class NefsReader : INefsReader
 		return new Nefs16Header(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
 	}
 
-	internal async Task<Nefs20Header> ReadHeaderVersion20Async(
+	internal async Task<Nefs20Header> ReadHeaderV20Async(
 		Stream stream,
 		long primaryOffset,
 		long secondaryOffset,
@@ -1226,7 +1281,7 @@ public partial class NefsReader : INefsReader
 
 		using (p.BeginTask(0.2f, "Reading header intro"))
 		{
-			intro = await ReadHeaderIntroAsync(stream, primaryOffset, p);
+			intro = await ReadHeaderIntroV16Async(stream, primaryOffset, new DecryptHeaderIntroResult(), p);
 		}
 
 		using (p.BeginTask(0.8f, "Reading header"))
@@ -1235,23 +1290,31 @@ public partial class NefsReader : INefsReader
 			{
 				// 2.0.0
 				Log.LogInformation("Detected NeFS version 2.0.");
-				header = await ReadHeaderVersion20Async(stream, primaryOffset, secondaryOffset, intro, p);
+				header = await ReadHeaderV20Async(stream, primaryOffset, secondaryOffset, intro, p);
 			}
 			else if (intro.NefsVersion == (uint)NefsVersion.Version160)
 			{
 				// 1.6.0
 				Log.LogInformation("Detected NeFS version 1.6.");
-				header = await ReadHeaderVersion16Async(stream, primaryOffset, secondaryOffset, intro, p);
+				header = await ReadHeaderV16Async(stream, primaryOffset, secondaryOffset, intro, p);
 			}
 			else
 			{
 				Log.LogError($"Detected unkown NeFS version {intro.NefsVersion}. Treating as 2.0.");
-				header = await ReadHeaderVersion20Async(stream, primaryOffset, secondaryOffset, intro, p);
+				header = await ReadHeaderV20Async(stream, primaryOffset, secondaryOffset, intro, p);
 			}
 		}
 
 		await ValidateSplitHeaderHashAsync(stream, primaryOffset, primarySize, secondaryOffset, secondarySize, intro);
 		return header;
+	}
+
+	internal async Task<uint> ReadVersionV151Async(Stream stream, long offset, NefsProgress p)
+	{
+		stream.Seek(offset, SeekOrigin.Begin);
+		var verNum = new UInt32Type(8);
+		await verNum.ReadAsync(stream, offset, p);
+		return verNum.Value;
 	}
 
 	internal async Task<bool> ValidateMagicNumberAsync(Stream stream, long offset, NefsProgress p)
