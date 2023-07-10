@@ -42,7 +42,8 @@ public class NefsReader : INefsReader
 		RsaExponent = DefaultRsaExponent;
 		this.rsaKeys = new[]
 		{
-			DefaultRsaPublicKey, F12010RsaPublicKey, F12011RsaPublicKey, Dirt3RsaPublicKey, GridAutosportRsaPublicKey
+			DefaultPublicKey, Dirt2PublicKey, F12011PublicKey, Dirt3PublicKey, GridAutosportPublicKey, Grid2PublicKey,
+			DirtShowdownPublicKey, DirtPublicKey
 		};
 	}
 
@@ -152,42 +153,48 @@ public class NefsReader : INefsReader
 	/// <summary>
 	/// Decodes the intro header for file versions 1.5.1.
 	/// </summary>
-	/// <param name="stream">The stream containing the encrypted header.</param>
+	/// <param name="stream">The stream containing the header.</param>
 	/// <param name="offset">The offset to the header from the beginning of the stream.</param>
+	/// <param name="cancellationToken">The cancellation token.</param>
 	/// <returns>The decoded header data.</returns>
-	internal byte[] DecodeXorIntro(Stream stream, long offset)
+	internal static async Task<byte[]> DecodeXorIntroAsync(Stream stream, long offset,
+		CancellationToken cancellationToken)
 	{
 		stream.Seek(offset, SeekOrigin.Begin);
 
-		using var br = new BinaryReader(stream, Encoding.UTF8, true);
-		var buf = br.ReadBytes(NefsHeaderIntro.Size);
-		var uintBuf = MemoryMarshal.Cast<byte, uint>(buf.AsSpan());
-
-		uintBuf[14] ^= uintBuf[5];
-		uintBuf[5] ^= uintBuf[2];
-		uintBuf[2] ^= uintBuf[4];
-		uintBuf[4] ^= uintBuf[7];
-		uintBuf[7] ^= uintBuf[3];
-		uintBuf[3] ^= uintBuf[9];
-		uintBuf[9] ^= uintBuf[10];
-		uintBuf[10] ^= uintBuf[1];
-		uintBuf[1] ^= uintBuf[13];
-		uintBuf[13] ^= uintBuf[11];
-		uintBuf[11] ^= uintBuf[0];
-		uintBuf[0] ^= uintBuf[12];
-		uintBuf[12] ^= uintBuf[6];
-		uintBuf[6] ^= uintBuf[8];
-		uintBuf[8] ^= uintBuf[14];
-
-		var mod = uintBuf[14];
-		for (var i = 15; i < 31; ++i)
+		var buf = new byte[NefsHeaderIntro.Size];
+		await stream.ReadExactlyAsync(buf, cancellationToken).ConfigureAwait(false);
+		static void Decode(byte[] buffer)
 		{
-			uintBuf[i] ^= mod;
+			var uintBuf = MemoryMarshal.Cast<byte, uint>(buffer.AsSpan());
+
+			uintBuf[14] ^= uintBuf[5];
+			uintBuf[5] ^= uintBuf[2];
+			uintBuf[2] ^= uintBuf[4];
+			uintBuf[4] ^= uintBuf[7];
+			uintBuf[7] ^= uintBuf[3];
+			uintBuf[3] ^= uintBuf[9];
+			uintBuf[9] ^= uintBuf[10];
+			uintBuf[10] ^= uintBuf[1];
+			uintBuf[1] ^= uintBuf[13];
+			uintBuf[13] ^= uintBuf[11];
+			uintBuf[11] ^= uintBuf[0];
+			uintBuf[0] ^= uintBuf[12];
+			uintBuf[12] ^= uintBuf[6];
+			uintBuf[6] ^= uintBuf[8];
+			uintBuf[8] ^= uintBuf[14];
+
+			var mod = uintBuf[14];
+			for (var i = 15; i < 31; ++i)
+			{
+				uintBuf[i] ^= mod;
+			}
+
+			// Debug: for copying to hex editor
+			//var tmp = Convert.ToHexString(buffer);
 		}
 
-		// Debug: for copying to hex editor
-		//var tmp = Convert.ToHexString(buf);
-
+		Decode(buf);
 		return buf;
 	}
 
@@ -255,7 +262,7 @@ public class NefsReader : INefsReader
 			if (validMagicNum)
 			{
 				isXorEncoded = true;
-				decodedData = DecodeXorIntro(stream, offset);
+				decodedData = await DecodeXorIntroAsync(stream, offset, p.CancellationToken).ConfigureAwait(false);
 			}
 			else if (!encrypted)
 			{
@@ -411,8 +418,14 @@ public class NefsReader : INefsReader
 				// 1.6.0
 				Log.LogInformation("Detected NeFS version 1.6.");
 				header = await ReadHeaderV16Async(headerStream, offset, offset, (NefsHeaderIntro)intro, p);
-				await ValidateHeaderHashAsync(headerStream, offset, (NefsHeaderIntro)intro);
-				// TODO: determine how to compute hash for encrypted files
+				if (intro.IsEncrypted)
+				{
+					await ValidateEncryptedHeaderAsync(headerStream, offset, (NefsHeaderIntro)intro);
+				}
+				else
+				{
+					await ValidateHeaderHashAsync(headerStream, offset, (NefsHeaderIntro)intro);
+				}
 			}
 			else if (intro.NefsVersion is (uint)NefsVersion.Version151)
 			{

@@ -1,6 +1,7 @@
 // See LICENSE.txt for license information.
 
 using System.IO.Abstractions;
+using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using VictorBush.Ego.NefsLib.ArchiveSource;
@@ -1070,5 +1071,50 @@ public class NefsWriter : INefsWriter
 		}
 
 		return nefsInject;
+	}
+
+	/// <summary>
+	/// Encodes the intro header for file versions 1.5.1.
+	/// </summary>
+	/// <param name="stream">The stream containing the header.</param>
+	/// <param name="offset">The offset to the header from the beginning of the stream.</param>
+	/// <param name="cancellationToken">The cancellation token.</param>
+	/// <returns>The encoded header data.</returns>
+	internal static async Task EncodeXorIntroAsync(Stream stream, long offset, CancellationToken cancellationToken)
+	{
+		stream.Seek(offset, SeekOrigin.Begin);
+
+		var buf = new byte[NefsHeaderIntro.Size];
+		await stream.ReadExactlyAsync(buf, cancellationToken).ConfigureAwait(false);
+		static void Encode(byte[] buffer)
+		{
+			var uintBuf = MemoryMarshal.Cast<byte, uint>(buffer.AsSpan());
+
+			var mod = uintBuf[14];
+			for (var i = 15; i < 31; ++i)
+			{
+				uintBuf[i] ^= mod;
+			}
+
+			uintBuf[8] ^= uintBuf[14];
+			uintBuf[6] ^= uintBuf[8];
+			uintBuf[12] ^= uintBuf[6];
+			uintBuf[0] ^= uintBuf[12];
+			uintBuf[11] ^= uintBuf[0];
+			uintBuf[13] ^= uintBuf[11];
+			uintBuf[1] ^= uintBuf[13];
+			uintBuf[10] ^= uintBuf[1];
+			uintBuf[9] ^= uintBuf[10];
+			uintBuf[3] ^= uintBuf[9];
+			uintBuf[7] ^= uintBuf[3];
+			uintBuf[4] ^= uintBuf[7];
+			uintBuf[2] ^= uintBuf[4];
+			uintBuf[5] ^= uintBuf[2];
+			uintBuf[14] ^= uintBuf[5];
+		}
+
+		Encode(buf);
+		stream.Seek(offset, SeekOrigin.Begin);
+		await stream.WriteAsync(buf, cancellationToken).ConfigureAwait(false);
 	}
 }

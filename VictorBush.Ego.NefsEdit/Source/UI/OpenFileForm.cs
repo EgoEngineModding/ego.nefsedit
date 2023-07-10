@@ -199,7 +199,7 @@ internal partial class OpenFileForm : Form
 
 	private void NefsFileButton_Click(Object sender, EventArgs e)
 	{
-		(var result, var path) = UiService.ShowOpenFileDialog("NeFS Archive (*.nefs)|*.nefs");
+		(var result, var path) = UiService.ShowOpenFileDialog("NeFS Archive|*.nefs;*.nfs");
 		if (result != DialogResult.OK)
 		{
 			return;
