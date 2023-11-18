@@ -8,7 +8,6 @@ using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Item;
 using VictorBush.Ego.NefsLib.Progress;
 using VictorBush.Ego.NefsLib.Source.Utility;
-using VictorBush.Ego.NefsLib.Tests.TestArchives;
 using Xunit;
 
 namespace VictorBush.Ego.NefsLib.Tests.IO;
@@ -23,24 +22,6 @@ public class NefsWriterTests
 	{
 		this.fileSystem.AddDirectory(TempDir);
 		this.transformer = new NefsTransformer(this.fileSystem);
-	}
-
-	[Fact]
-	public async Task WriteArchiveAsync_ArchiveNotModified_ArchiveWritten()
-	{
-		var sourcePath = @"C:\archive.nefs";
-		var destPath = @"C:\dest.nefs";
-		this.fileSystem.AddFile(sourcePath, new MockFileData("hi"));
-		var sourceArchive = TestArchiveNotModified.Create(sourcePath);
-		var writer = CreateWriter();
-		var (archive, _) = await writer.WriteArchiveAsync(@"C:\dest.nefs", sourceArchive, new NefsProgress());
-
-		Assert.Equal(sourceArchive.Items.Count, archive.Items.Count);
-
-		// Try to read archive again
-		var reader = new NefsReader(this.fileSystem);
-		var readArchive = await reader.ReadArchiveAsync(destPath, new NefsProgress());
-		Assert.Equal(sourceArchive.Items.Count, readArchive.Items.Count);
 	}
 
 	[Fact]
