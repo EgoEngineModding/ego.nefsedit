@@ -65,7 +65,7 @@ public class NefsTransformerTests
 	private static readonly CompressAsyncTestData CompressAsyncTest6 = new CompressAsyncTestData
 	{
 		Offset = 50,
-		Length = 100,
+		Length = 50,
 		ChunkSize = 100,
 		ExpectedData = new byte[] { 21, 202, 193, 13, 0, 32, 8, 4, 176, 85, 206, 56, 144, 83, 156, 202, 7, 19, 64, 116, 124, 99, 223, 109, 74, 196, 89, 136, 105, 36, 250, 218, 134, 46, 73, 184, 92, 56, 147, 10, 202, 152, 1, 149, 31, 169, 165, 62, },
 		ExpectedChunks = new List<uint> { 48 },
