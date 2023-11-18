@@ -7,10 +7,8 @@ using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header;
 
-/// <summary>
-/// Header introduction. Contains size, encryption, and verification info.
-/// </summary>
-public record NefsHeaderIntro
+/// <inheritdoc cref="INefsHeaderIntro" />
+public record NefsHeaderIntro : INefsHeaderIntro
 {
 	/// <summary>
 	/// Expected first four bytes of a NeFS archive.
@@ -25,15 +23,12 @@ public record NefsHeaderIntro
 	/// <summary>
 	/// Initializes a new instance of the <see cref="NefsHeaderIntro"/> class.
 	/// </summary>
-	public NefsHeaderIntro(bool isEncrypted = false)
+	public NefsHeaderIntro()
 	{
 		Data0x00_MagicNumber.Value = NefsMagicNumber;
-		IsEncrypted = isEncrypted;
 	}
 
-	/// <summary>
-	/// 256-bit AES key stored as a hex string.
-	/// </summary>
+	/// <inheritdoc />
 	public byte[] AesKeyHexString
 	{
 		get => Data0x24_AesKeyHexString.Value;
@@ -49,41 +44,34 @@ public record NefsHeaderIntro
 		init => Data0x04_ExpectedHash.Value = value.Value;
 	}
 
-	/// <summary>
-	/// Size of header in bytes.
-	/// </summary>
+	/// <inheritdoc />
 	public uint HeaderSize
 	{
 		get => Data0x64_HeaderSize.Value;
 		init => Data0x64_HeaderSize.Value = value;
 	}
 
-	/// <summary>
-	/// Whether the header is encrypted.
-	/// </summary>
-	public bool IsEncrypted { get; init; } = false;
+	/// <inheritdoc />
+	public bool IsEncrypted { get; init; }
 
-	/// <summary>
-	/// File magic number; "NeFS" or 0x5346654E.
-	/// </summary>
+	/// <inheritdoc />
+	public bool IsXorEncoded { get; init; }
+
+	/// <inheritdoc />
 	public uint MagicNumber
 	{
 		get => Data0x00_MagicNumber.Value;
 		init => Data0x00_MagicNumber.Value = value;
 	}
 
-	/// <summary>
-	/// The NeFS format version.
-	/// </summary>
+	/// <inheritdoc />
 	public uint NefsVersion
 	{
 		get => Data0x68_NefsVersion.Value;
 		init => Data0x68_NefsVersion.Value = value;
 	}
 
-	/// <summary>
-	/// The number of items in the archive.
-	/// </summary>
+	/// <inheritdoc />
 	public uint NumberOfItems
 	{
 		get => Data0x6c_NumberOfItems.Value;
@@ -132,10 +120,7 @@ public record NefsHeaderIntro
 	[FileData]
 	private UInt64Type Data0x78_Unknown { get; } = new UInt64Type(0x0078);
 
-	/// <summary>
-	/// Gets the AES-256 key for this header.
-	/// </summary>
-	/// <returns>A byte array with the AES key.</returns>
+	/// <inheritdoc />
 	public byte[] GetAesKey()
 	{
 		var asciiKey = Encoding.ASCII.GetString(AesKeyHexString);

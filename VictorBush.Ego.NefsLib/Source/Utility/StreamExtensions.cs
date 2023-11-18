@@ -1,5 +1,7 @@
 // See LICENSE.txt for license information.
 
+using System.Buffers;
+
 namespace VictorBush.Ego.NefsLib.Utility;
 
 /// <summary>
@@ -27,19 +29,30 @@ public static class StreamExtensions
 		CancellationToken cancelToken)
 	{
 		// Use a temporary buffer to transfer chunks of data at a time
-		var buffer = new byte[CopyBufferSize];
+		var buffer = ArrayPool<byte>.Shared.Rent(CopyBufferSize);
 		var bytesRemaining = length;
 
-		while (bytesRemaining > 0)
+		try
 		{
-			// Read from input stream
-			var bytesToRead = Math.Min(bytesRemaining, CopyBufferSize);
-			var bytesRead = await stream.ReadAsync(buffer, 0, (int)bytesToRead, cancelToken);
+			while (bytesRemaining > 0)
+			{
+				// Read from input stream
+				var bytesToRead = Math.Min(bytesRemaining, CopyBufferSize);
+				var bytesRead = await stream.ReadAsync(buffer.AsMemory(0, (int)bytesToRead), cancelToken);
+				if (bytesRead == 0)
+				{
+					throw new EndOfStreamException();
+				}
 
-			// Copy to destination
-			await destination.WriteAsync(buffer, 0, bytesRead, cancelToken);
+				// Copy to destination
+				await destination.WriteAsync(buffer.AsMemory(0, bytesRead), cancelToken);
 
-			bytesRemaining -= bytesToRead;
+				bytesRemaining -= bytesRead;
+			}
+		}
+		finally
+		{
+			ArrayPool<byte>.Shared.Return(buffer);
 		}
 	}
 
@@ -56,5 +69,29 @@ public static class StreamExtensions
 		CancellationToken cancelToken)
 	{
 		await stream.CopyToAsync(destination, CopyBufferSize, cancelToken);
+	}
+
+	/// <summary>
+	/// Asynchronously reads bytes from the current stream, advances the position within the stream until the <paramref name="buffer"/> is filled,
+	/// and monitors cancellation requests.
+	/// </summary>
+	/// <param name="stream">The input stream to copy from.</param>
+	/// <param name="buffer">The buffer to write the data into.</param>
+	/// <param name="cancellationToken">The token to monitor for cancellation requests.</param>
+	/// <returns>A task that represents the asynchronous read operation.</returns>
+	public static async ValueTask ReadExactlyAsync(this Stream stream, Memory<byte> buffer,
+		CancellationToken cancellationToken = default)
+	{
+		var totalRead = 0;
+		while (totalRead < buffer.Length)
+		{
+			var read = await stream.ReadAsync(buffer[totalRead..], cancellationToken).ConfigureAwait(false);
+			if (read == 0)
+			{
+				throw new EndOfStreamException();
+			}
+
+			totalRead += read;
+		}
 	}
 }

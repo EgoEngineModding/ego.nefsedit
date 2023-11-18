@@ -154,5 +154,5 @@ public sealed class Nefs20HeaderIntroToc : INefsHeaderIntroToc
 
 	/// <inheritdoc/>
 	public uint ComputeNumChunks(uint extractedSize) =>
-		(uint)Math.Ceiling(extractedSize / (double)ChunkSize);
+		(extractedSize + (ChunkSize - 1)) / ChunkSize;
 }
