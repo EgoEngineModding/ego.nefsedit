@@ -8,8 +8,12 @@ namespace VictorBush.Ego.NefsEdit.Settings;
 /// <summary>
 /// Recent file info.
 /// </summary>
+/// <remarks>
+/// Keep this as a record type and not a class. This allows simple comparisons between
+/// other recent files in the recent files list.
+/// </remarks>
 [Serializable]
-public class RecentFile
+public sealed record RecentFile
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="RecentFile"/> class.

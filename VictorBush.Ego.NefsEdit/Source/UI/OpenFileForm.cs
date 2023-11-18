@@ -57,7 +57,7 @@ internal partial class OpenFileForm : Form
 	/// <summary>
 	/// Source of the archive to open.
 	/// </summary>
-	public NefsArchiveSource ArchiveSource { get; private set; }
+	public NefsArchiveSource? ArchiveSource { get; private set; }
 
 	private IFileSystem FileSystem { get; }
 
@@ -211,7 +211,7 @@ internal partial class OpenFileForm : Form
 
 	private void OpenButton_Click(Object sender, EventArgs e)
 	{
-		NefsArchiveSource source = null;
+		NefsArchiveSource? source = null;
 
 		if (this.modeListBox.SelectedItem == this.openModeNefs)
 		{
@@ -240,7 +240,11 @@ internal partial class OpenFileForm : Form
 			ArchiveSource = source;
 
 			var recentFile = new RecentFile(source);
+
+			// Remove recent file from the list if it exists, then add to the top of the list
+			SettingsService.RecentFiles.Remove(recentFile);
 			SettingsService.RecentFiles.Insert(0, recentFile);
+
 			Close();
 		}
 	}
