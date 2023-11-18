@@ -308,17 +308,23 @@ public class NefsReader : INefsReader
 	internal async Task<INefsHeaderIntro> ReadHeaderIntroAsync(Stream stream, long offset, Stream outDecryptStream,
 		NefsProgress p)
 	{
+		DecryptHeaderIntroResult readResult;
 		var outStreamOffset = outDecryptStream.Position;
-		var readResult = await ReadHeaderIntroAsync(stream, offset, outDecryptStream, false, p);
-		if (!readResult.Succeeded)
+
+		using (p.BeginTask(0.2f, "Reading header intro"))
 		{
-			throw new InvalidDataException("Header magic number mismatch.");
+			readResult = await ReadHeaderIntroAsync(stream, offset, outDecryptStream, false, p);
+			if (!readResult.Succeeded)
+			{
+				throw new InvalidDataException("Header magic number mismatch.");
+			}
 		}
 
 		INefsHeaderIntro intro;
 		var introStream = readResult.IsEncrypted || readResult.IsXorEncoded ? outDecryptStream : stream;
 		var introOffset = readResult.IsEncrypted || readResult.IsXorEncoded ? outStreamOffset : offset;
-		using (p.BeginTask(0.2f, "Reading header intro"))
+
+		using (p.BeginTask(0.8f, "Reading header intro"))
 		{
 			var oldVersion = await ReadVersionV151Async(introStream, introOffset, p);
 			if (oldVersion is (uint)NefsVersion.Version140)
@@ -343,43 +349,42 @@ public class NefsReader : INefsReader
 			var key = intro.GetAesKey();
 
 			// Decrypt the rest of the header
-			using (var aes = Aes.Create())
+			using var aes = Aes.Create();
+
+			aes.KeySize = 256;
+			aes.Key = key;
+			aes.Mode = CipherMode.ECB;
+			aes.BlockSize = 128;
+			aes.Padding = PaddingMode.Zeros;
+
+			if (intro.NefsVersion == (uint)NefsVersion.Version151)
 			{
-				aes.KeySize = 256;
-				aes.Key = key;
-				aes.Mode = CipherMode.ECB;
-				aes.BlockSize = 128;
-				aes.Padding = PaddingMode.Zeros;
+				// This version may have a header of 126 bytes, and 2 were added for the sake of RSA encryption
+				// we'll back up here to overwrite those last 2 bytes with the bytes contained in next AES section
+				// Side-note: last two bytes could be padding and not real data
+				introStream.Seek(-2, SeekOrigin.End);
+			}
+			else
+			{
+				introStream.Seek(0, SeekOrigin.End);
+			}
 
-				if (intro.NefsVersion == (uint)NefsVersion.Version151)
-				{
-					// This version may have a header of 126 bytes, and 2 were added for the sake of RSA encryption
-					// we'll back up here to overwrite those last 2 bytes with the bytes contained in next AES section
-					// Side-note: last two bytes could be padding and not real data
-					introStream.Seek(-2, SeekOrigin.End);
-				}
-				else
-				{
-					introStream.Seek(0, SeekOrigin.End);
-				}
+			// Decrypt the data - make sure to leave open the base stream
+			var decryptor = aes.CreateDecryptor();
+			using (var cryptoStream = new CryptoStream(stream, decryptor, CryptoStreamMode.Read, true))
+			{
+				// Decrypt data from input stream and copy to the decrypted stream
+				var headerLeftoverSize = intro.HeaderSize - NefsHeaderIntro.Size;
+				await cryptoStream.CopyPartialAsync(introStream, headerLeftoverSize, p.CancellationToken);
+			}
 
-				// Decrypt the data - make sure to leave open the base stream
-				var decryptor = aes.CreateDecryptor();
-				using (var cryptoStream = new CryptoStream(stream, decryptor, CryptoStreamMode.Read, true))
-				{
-					// Decrypt data from input stream and copy to the decrypted stream
-					var headerLeftoverSize = intro.HeaderSize - NefsHeaderIntro.Size;
-					await cryptoStream.CopyPartialAsync(introStream, headerLeftoverSize, p.CancellationToken);
-				}
-
-				if (intro.NefsVersion is (uint)NefsVersion.Version151)
-				{
-					// Fix last two bytes being part of AES data
-					var hiPart = new UInt16Type(NefsHeaderIntro.Size - 2);
-					await hiPart.ReadAsync(introStream, introOffset, p);
-					var intro151 = (Nefs151HeaderIntro)intro;
-					intro = intro151 with { Unknown0x7C = intro151.Unknown0x7C | ((uint)hiPart.Value << 16) };
-				}
+			if (intro.NefsVersion is (uint)NefsVersion.Version151)
+			{
+				// Fix last two bytes being part of AES data
+				var hiPart = new UInt16Type(NefsHeaderIntro.Size - 2);
+				await hiPart.ReadAsync(introStream, introOffset, p);
+				var intro151 = (Nefs151HeaderIntro)intro;
+				intro = intro151 with { Unknown0x7C = intro151.Unknown0x7C | ((uint)hiPart.Value << 16) };
 			}
 
 			// Debug: for copying to hex editor
@@ -392,8 +397,13 @@ public class NefsReader : INefsReader
 	internal async Task<INefsHeader> ReadHeaderAsync(Stream stream, long offset, NefsProgress p)
 	{
 		INefsHeader header;
+		INefsHeaderIntro intro;
 		using var decryptStream = new MemoryStream();
-		var intro = await ReadHeaderIntroAsync(stream, offset, decryptStream, p);
+
+		using (p.BeginTask(0.2f, "Reading header intro"))
+		{
+			intro = await ReadHeaderIntroAsync(stream, offset, decryptStream, p);
+		}
 
 		var headerStream = intro.IsEncrypted ? decryptStream : stream;
 		offset = intro.IsEncrypted ? 0 : offset;
@@ -712,35 +722,38 @@ public class NefsReader : INefsReader
 		var nextOffset = 0;
 		while (nextOffset < size)
 		{
-			using (p.BeginTask((float)nextOffset / size))
-			{
-				// Find the next null terminator
-				var nullOffset = size;
-				for (var i = nextOffset; i < size; ++i)
-				{
-					if (bytes[i] == 0)
-					{
-						nullOffset = i;
-						break;
-					}
-				}
+			var currentOffset = nextOffset;
 
-				if (nullOffset == size)
+			// Find the next null terminator
+			var nullOffset = size;
+			for (var i = nextOffset; i < size; ++i)
+			{
+				if (bytes[i] == 0)
 				{
-					// No null terminator found, assume end of part 3. There can be a few garbage bytes at the end of
-					// this part.
+					nullOffset = i;
 					break;
 				}
-
-				// Get the string
-				var str = Encoding.ASCII.GetString(bytes, nextOffset, nullOffset - nextOffset);
-
-				// Record entry
-				entries.Add(str);
-
-				// Find next string
-				nextOffset = nullOffset + 1;
 			}
+
+			// Task weight is the size of the string being processed / size of part 3
+			var strSize = nextOffset - currentOffset;
+			using var _ = p.BeginTask((float)strSize / size);
+
+			if (nullOffset == size)
+			{
+				// No null terminator found, assume end of part 3. There can be a few garbage bytes at the end of
+				// this part.
+				break;
+			}
+
+			// Get the string
+			var str = Encoding.ASCII.GetString(bytes, nextOffset, nullOffset - nextOffset);
+
+			// Record entry
+			entries.Add(str);
+
+			// Find next string
+			nextOffset = nullOffset + 1;
 		}
 
 		return new NefsHeaderPart3(entries);
