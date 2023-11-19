@@ -328,7 +328,7 @@ Header Part 8 (Count: {h.Part8.FileDataHashes.Count})
 ";
 	}
 
-	private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveClosed(object? sender, EventArgs e)
 	{
 		// Update on UI thread
 		UiService.Dispatcher.Invoke(() =>
@@ -337,7 +337,7 @@ Header Part 8 (Count: {h.Part8.FileDataHashes.Count})
 		});
 	}
 
-	private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveOpened(object? sender, EventArgs e)
 	{
 		// Update on UI thread
 		UiService.Dispatcher.Invoke(() =>
@@ -346,7 +346,7 @@ Header Part 8 (Count: {h.Part8.FileDataHashes.Count})
 		});
 	}
 
-	private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveSaved(object? sender, EventArgs e)
 	{
 		// Update on UI thread
 		UiService.Dispatcher.Invoke(() =>
@@ -355,11 +355,11 @@ Header Part 8 (Count: {h.Part8.FileDataHashes.Count})
 		});
 	}
 
-	private void PrintDebugInfo(NefsArchive archive, NefsArchiveSource source)
+	private void PrintDebugInfo(NefsArchive? archive, NefsArchiveSource? source)
 	{
 		this.richTextBox.Text = "";
 
-		if (archive == null)
+		if (archive == null || source is null)
 		{
 			return;
 		}

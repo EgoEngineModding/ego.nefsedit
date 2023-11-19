@@ -196,7 +196,7 @@ public class NefsWriter : INefsWriter
 		}
 
 		// Compress to temp location if needed
-		if (!item.DataSource.IsTransformed)
+		if (!item.DataSource.IsTransformed && item.Transform is not null)
 		{
 			// Prepare the working directory
 			var filePathInArchive = items.GetItemFilePath(item.Id);

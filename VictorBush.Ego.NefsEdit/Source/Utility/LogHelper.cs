@@ -11,7 +11,7 @@ namespace VictorBush.Ego.NefsEdit.Utility;
 /// </summary>
 public class LogHelper
 {
-	private static ILoggerFactory loggerFactory;
+	private static ILoggerFactory? loggerFactory;
 
 	/// <summary>
 	/// The logger factory to use.

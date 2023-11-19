@@ -52,17 +52,17 @@ public class ListViewColumnSorter : IComparer
 	/// <returns>
 	/// The result of the comparison. "0" if equal, negative if 'x' is less than 'y' and positive if 'x' is greater than 'y'.
 	/// </returns>
-	public int Compare(object x, object y)
+	public int Compare(object? x, object? y)
 	{
 		int compareResult;
-		ListViewItem listviewX, listviewY;
+		ListViewItem? listviewX, listviewY;
 
 		// Cast the objects to be compared to ListViewItem objects
-		listviewX = (ListViewItem)x;
-		listviewY = (ListViewItem)y;
+		listviewX = x as ListViewItem;
+		listviewY = y as ListViewItem;
 
-		var xText = listviewX.SubItems[SortColumn].Text;
-		var yText = listviewY.SubItems[SortColumn].Text;
+		var xText = listviewX?.SubItems[SortColumn].Text;
+		var yText = listviewY?.SubItems[SortColumn].Text;
 
 		// Compare as uint if possible, otherwise sort by text
 		if (uint.TryParse(xText, NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var xInt)
@@ -73,8 +73,8 @@ public class ListViewColumnSorter : IComparer
 		else
 		{
 			compareResult = string.CompareOrdinal(
-				listviewX.SubItems[SortColumn].Text,
-				listviewY.SubItems[SortColumn].Text);
+				listviewX?.SubItems[SortColumn].Text,
+				listviewY?.SubItems[SortColumn].Text);
 		}
 
 		// Calculate correct return value based on object comparison

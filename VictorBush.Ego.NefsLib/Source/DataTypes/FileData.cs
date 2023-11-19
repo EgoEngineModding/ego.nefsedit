@@ -1,4 +1,4 @@
-﻿// See LICENSE.txt for license information.
+// See LICENSE.txt for license information.
 
 using System.Reflection;
 using VictorBush.Ego.NefsLib.Progress;
@@ -24,14 +24,18 @@ public sealed class FileData : Attribute
 	public static IEnumerable<DataType> GetDataList(object obj)
 	{
 		var props = obj.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-			.Where(f => f.IsDefined(typeof(FileData), false)
-					&& f.PropertyType.BaseType == typeof(DataType))
-			.Select(f => (DataType)f.GetValue(obj));
+			.Where(x => x.IsDefined(typeof(FileData), false)
+					&& x.PropertyType.BaseType == typeof(DataType))
+			.Select(x => (DataType?)x.GetValue(obj))
+			.Where(x => x is not null)
+			.Select(x => x!);
 
 		var fields = obj.GetType().GetFields(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
-			.Where(f => f.IsDefined(typeof(FileData), false)
-					&& f.FieldType.BaseType == typeof(DataType))
-			.Select(f => (DataType)f.GetValue(obj));
+			.Where(x => x.IsDefined(typeof(FileData), false)
+					&& x.FieldType.BaseType == typeof(DataType))
+			.Select(x => (DataType?)x.GetValue(obj))
+			.Where(x => x is not null)
+			.Select(x => x!);
 
 		return props.Concat(fields);
 	}

@@ -95,7 +95,7 @@ internal partial class BrowseAllForm : DockContent
 		});
 	}
 
-	private void ItemsListView_ColumnClick(object sender, ColumnClickEventArgs e)
+	private void ItemsListView_ColumnClick(object? sender, ColumnClickEventArgs e)
 	{
 		// Determine if clicked column is already the column that is being sorted.
 		if (e.Column == this.listViewItemSorter.SortColumn)
@@ -143,14 +143,14 @@ internal partial class BrowseAllForm : DockContent
 
 		foreach (ListViewItem item in this.itemsListView.SelectedItems)
 		{
-			selectedNefsItems.Add(item.Tag as NefsItem);
+			selectedNefsItems.Add((NefsItem)item.Tag);
 		}
 
 		// Tell the editor what items are selected
 		Workspace.SelectItems(selectedNefsItems);
 	}
 
-	private void LoadArchive(NefsArchive archive)
+	private void LoadArchive(NefsArchive? archive)
 	{
 		// Clear current list
 		this.itemsListView.Items.Clear();
@@ -241,7 +241,7 @@ internal partial class BrowseAllForm : DockContent
 		}
 	}
 
-	private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveClosed(object? sender, EventArgs e)
 	{
 		// Clear items list - must do on UI thread
 		UiService.Dispatcher.Invoke(() =>
@@ -250,7 +250,7 @@ internal partial class BrowseAllForm : DockContent
 		});
 	}
 
-	private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveOpened(object? sender, EventArgs e)
 	{
 		// Update items list - must do on UI thread
 		UiService.Dispatcher.Invoke(() =>
@@ -259,7 +259,7 @@ internal partial class BrowseAllForm : DockContent
 		});
 	}
 
-	private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveSaved(object? sender, EventArgs e)
 	{
 		UiService.Dispatcher.Invoke(() =>
 		{
@@ -267,7 +267,7 @@ internal partial class BrowseAllForm : DockContent
 		});
 	}
 
-	private void OnWorkspaceCommandExecuted(Object sender, NefsEditCommandEventArgs e)
+	private void OnWorkspaceCommandExecuted(object? sender, NefsEditCommandEventArgs e)
 	{
 		if (e.Command is ReplaceFileCommand replaceCommand)
 		{

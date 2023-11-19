@@ -58,7 +58,7 @@ internal partial class BrowseTreeForm : DockContent
 	/// <summary>
 	/// Gets the current directory. Will be null if the root directory.
 	/// </summary>
-	private NefsItem Directory { get; set; }
+	private NefsItem? Directory { get; set; }
 
 	private EditorForm EditorForm { get; }
 
@@ -87,7 +87,7 @@ internal partial class BrowseTreeForm : DockContent
 	{
 		if (this.filesListView.SelectedItems.Count > 0)
 		{
-			var item = this.filesListView.SelectedItems[0].Tag as NefsItem;
+			var item = (NefsItem)this.filesListView.SelectedItems[0].Tag;
 			if (item.Type == NefsItemType.Directory)
 			{
 				OpenDirectory(item);
@@ -117,16 +117,17 @@ internal partial class BrowseTreeForm : DockContent
 
 		foreach (ListViewItem item in this.filesListView.SelectedItems)
 		{
-			selectedNefsItems.Add(item.Tag as NefsItem);
+			selectedNefsItems.Add((NefsItem)item.Tag);
 		}
 
 		// Tell the editor what items are selected
 		Workspace.SelectItems(selectedNefsItems);
 	}
 
-	private void LoadArchive(NefsArchive archive)
+	private void LoadArchive()
 	{
-		if (archive == null)
+		var archive = Workspace.Archive;
+		if (archive is null)
 		{
 			this.filesListView.Items.Clear();
 			this.filesListItems.Clear();
@@ -136,7 +137,7 @@ internal partial class BrowseTreeForm : DockContent
 
 		this.directoryTreeView.Nodes.Clear();
 
-		var fileName = Path.GetFileName(Workspace.ArchiveSource.FilePath);
+		var fileName = Path.GetFileName(Workspace.ArchiveSource!.FilePath);
 		var root = this.directoryTreeView.Nodes.Add(fileName);
 
 		foreach (var item in archive.Items.EnumerateDepthFirstByName())
@@ -174,33 +175,33 @@ internal partial class BrowseTreeForm : DockContent
 		OpenDirectory(null);
 	}
 
-	private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveClosed(object? sender, EventArgs e)
 	{
 		// Clear items list - must do on UI thread
 		UiService.Dispatcher.Invoke(() =>
 		{
-			LoadArchive(null);
+			LoadArchive();
 		});
 	}
 
-	private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveOpened(object? sender, EventArgs e)
 	{
 		// Update items list - must do on UI thread
 		UiService.Dispatcher.Invoke(() =>
 		{
-			LoadArchive(Workspace.Archive);
+			LoadArchive();
 		});
 	}
 
-	private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveSaved(object? sender, EventArgs e)
 	{
 		UiService.Dispatcher.Invoke(() =>
 		{
-			LoadArchive(Workspace.Archive);
+			LoadArchive();
 		});
 	}
 
-	private void OnWorkspaceCommandExecuted(Object sender, Commands.NefsEditCommandEventArgs e)
+	private void OnWorkspaceCommandExecuted(object? sender, Commands.NefsEditCommandEventArgs e)
 	{
 		if (e.Command is ReplaceFileCommand replaceCommand)
 		{
@@ -230,8 +231,13 @@ internal partial class BrowseTreeForm : DockContent
 	/// Opens a directory in the archive for viewing.
 	/// </summary>
 	/// <param name="dir">The directory to view. Use null for root directory.</param>
-	private void OpenDirectory(NefsItem dir)
+	private void OpenDirectory(NefsItem? dir)
 	{
+		if (Workspace.Archive is null)
+		{
+			return;
+		}
+
 		IEnumerable<NefsItem> itemsInDir;
 		var items = Workspace.Archive.Items;
 
@@ -292,7 +298,7 @@ internal partial class BrowseTreeForm : DockContent
 
 	private void UpButton_Click(object sender, EventArgs e)
 	{
-		if (Directory == null)
+		if (Directory == null || Workspace.Archive is null)
 		{
 			// Can't go up a directory
 			return;

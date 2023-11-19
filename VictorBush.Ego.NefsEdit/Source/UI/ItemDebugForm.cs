@@ -126,7 +126,7 @@ Id:                         {p2.Id.Value.ToString("X")}
 
 Part 4
 -----------------------------------------------------------
-Chunks                      {PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, item.Transform))}
+Chunks                      {(item.Transform is not null ? PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, item.Transform)) : "Item has no transform.")}
 
 Part 6
 -----------------------------------------------------------
@@ -150,7 +150,7 @@ Item id:                    {p7.Id.Value.ToString("X")}
 ";
 	}
 
-	private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveClosed(object? sender, EventArgs e)
 	{
 		// Update on UI thread
 		UiService.Dispatcher.Invoke(() =>
@@ -159,7 +159,7 @@ Item id:                    {p7.Id.Value.ToString("X")}
 		});
 	}
 
-	private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveOpened(object? sender, EventArgs e)
 	{
 		// Update on UI thread
 		UiService.Dispatcher.Invoke(() =>
@@ -168,7 +168,7 @@ Item id:                    {p7.Id.Value.ToString("X")}
 		});
 	}
 
-	private void OnWorkspaceSelectedItemsChanged(Object sender, EventArgs e)
+	private void OnWorkspaceSelectedItemsChanged(object? sender, EventArgs e)
 	{
 		// Update on UI thread
 		UiService.Dispatcher.Invoke(() =>
@@ -188,7 +188,7 @@ Item id:                    {p7.Id.Value.ToString("X")}
 		return sb.ToString();
 	}
 
-	private void PrintDebugInfo(NefsItem item, NefsArchive archive)
+	private void PrintDebugInfo(NefsItem? item, NefsArchive? archive)
 	{
 		this.richTextBox.Text = "";
 

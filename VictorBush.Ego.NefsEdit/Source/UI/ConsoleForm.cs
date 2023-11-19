@@ -10,7 +10,7 @@ namespace VictorBush.Ego.NefsEdit.UI;
 /// </summary>
 public partial class ConsoleForm : DockContent
 {
-	private RichTextWriter writer;
+	private RichTextWriter? writer;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="ConsoleForm"/> class.

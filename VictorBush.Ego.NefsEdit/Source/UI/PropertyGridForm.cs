@@ -29,7 +29,7 @@ public partial class PropertyGridForm : DockContent
 	/// Sets the selected object in the property grid.
 	/// </summary>
 	/// <param name="obj">The object to display in the property grid.</param>
-	public void SetSelectedObject(Object obj)
+	public void SetSelectedObject(object? obj)
 	{
 		this.propertyGrid.SelectedObject = obj;
 	}

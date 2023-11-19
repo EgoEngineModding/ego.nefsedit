@@ -1,5 +1,6 @@
 // See LICENSE.txt for license information.
 
+using System.Diagnostics.CodeAnalysis;
 using System.IO.Abstractions;
 using VictorBush.Ego.NefsEdit.Commands;
 using VictorBush.Ego.NefsLib;
@@ -41,9 +42,9 @@ internal interface INefsEditWorkspace
 	event EventHandler SelectedItemsChanged;
 
 	/// <summary>
-	/// Gets the current open archive.
+	/// Gets the current open archive. Will be null if no archive is open.
 	/// </summary>
-	NefsArchive Archive { get; }
+	NefsArchive? Archive { get; }
 
 	/// <summary>
 	/// Gets a value indicating whether the archive has unsaved modifications.
@@ -51,9 +52,9 @@ internal interface INefsEditWorkspace
 	bool ArchiveIsModified { get; }
 
 	/// <summary>
-	/// Gest the archive file source info.
+	/// Gets the archive file source info. Will be null if no archive is open.
 	/// </summary>
-	NefsArchiveSource ArchiveSource { get; }
+	NefsArchiveSource? ArchiveSource { get; }
 
 	/// <summary>
 	/// Gets a value indicating whether a redo is available.

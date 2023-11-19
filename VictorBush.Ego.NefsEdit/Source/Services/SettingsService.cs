@@ -113,11 +113,6 @@ internal class SettingsService : ISettingsService
 			return false;
 		}
 
-		if (Settings == null)
-		{
-			ResetSettings();
-		}
-
 		Settings.QuickExtractDir = dir;
 		Save();
 		return true;
@@ -143,7 +138,14 @@ internal class SettingsService : ISettingsService
 			using (var reader = FileSystem.File.OpenRead(SettingsFilePath))
 			{
 				var xs = new XmlSerializer(typeof(Settings.Settings));
-				Settings = xs.Deserialize(reader) as Settings.Settings;
+				if (xs.Deserialize(reader) is Settings.Settings settings)
+				{
+					Settings = settings;
+				}
+				else
+				{
+					ResetSettings();
+				}
 			}
 
 			Log.LogInformation($"Settings loaded.");

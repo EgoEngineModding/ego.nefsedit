@@ -20,7 +20,7 @@ internal class UndoBuffer
 	/// <summary>
 	/// Raised when a command is executed (new, undo, or redo).
 	/// </summary>
-	public event EventHandler<NefsEditCommandEventArgs> CommandExecuted;
+	public event EventHandler<NefsEditCommandEventArgs>? CommandExecuted;
 
 	/// <summary>
 	/// Gets a value indicating whether a redo is available.

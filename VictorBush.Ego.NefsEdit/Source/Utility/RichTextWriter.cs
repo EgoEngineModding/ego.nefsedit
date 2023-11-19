@@ -34,7 +34,7 @@ public class RichTextWriter : TextWriter
 	}
 
 	/// <inheritdoc/>
-	public override void Write(string value)
+	public override void Write(string? value)
 	{
 		DoWrite(value);
 	}
@@ -43,7 +43,7 @@ public class RichTextWriter : TextWriter
 	/// Writes the provided value into the RichTextBox.
 	/// </summary>
 	/// <param name="value">The string to write.</param>
-	private void DoWrite(string value)
+	private void DoWrite(string? value)
 	{
 		if (this.textbox.IsHandleCreated)
 		{

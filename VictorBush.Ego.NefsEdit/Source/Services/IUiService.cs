@@ -33,7 +33,7 @@ internal interface IUiService
 	/// <returns>The dialog result.</returns>
 	DialogResult ShowMessageBox(
 		string message,
-		string title = null,
+		string? title = null,
 		MessageBoxButtons buttons = MessageBoxButtons.OK,
 		MessageBoxIcon icon = MessageBoxIcon.None);
 
@@ -44,7 +44,7 @@ internal interface IUiService
 	/// <param name="progressService">The progress service.</param>
 	/// <param name="reader">The nefs reader.</param>
 	/// <returns>The dialog result and the archive source (if applicable).</returns>
-	(DialogResult Result, NefsArchiveSource Source) ShowNefsEditOpenFileDialog(
+	(DialogResult Result, NefsArchiveSource? Source) ShowNefsEditOpenFileDialog(
 		ISettingsService settingsService,
 		IProgressService progressService,
 		INefsReader reader);
@@ -54,7 +54,7 @@ internal interface IUiService
 	/// </summary>
 	/// <param name="filter">Filter for dialog.</param>
 	/// <returns>The dialog result and the file name (if applicable).</returns>
-	(DialogResult Result, string FileName) ShowOpenFileDialog(string filter = null);
+	(DialogResult Result, string FileName) ShowOpenFileDialog(string? filter = null);
 
 	/// <summary>
 	/// Shows a save file dialog.
@@ -62,7 +62,7 @@ internal interface IUiService
 	/// <param name="defaultName">The default file name.</param>
 	/// <param name="filter">Filter for dialog.</param>
 	/// <returns>The dialog result and the file name (if applicable).</returns>
-	(DialogResult Result, string FileName) ShowSaveFileDialog(string defaultName, string filter = null);
+	(DialogResult Result, string FileName) ShowSaveFileDialog(string defaultName, string? filter = null);
 
 	/// <summary>
 	/// Shows the settings dialog.

@@ -19,8 +19,6 @@ internal class UiService : IUiService
 	/// <summary>
 	/// Initializes a new instance of the <see cref="UiService"/> class.
 	/// </summary>
-	/// <param name="dispatcher">The dispatcher for the UI thread.</param>
-	/// <param name="fileSystem">The file system.</param>
 	public UiService(Dispatcher dispatcher, IFileSystem fileSystem, IInjectionDatabaseService injectionDatabaseService)
 	{
 		Dispatcher = dispatcher ?? throw new ArgumentNullException(nameof(dispatcher));
@@ -46,27 +44,25 @@ internal class UiService : IUiService
 	}
 
 	/// <inheritdoc/>
-	public DialogResult ShowMessageBox(String message, String title = null, MessageBoxButtons buttons = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.None)
+	public DialogResult ShowMessageBox(string message, string? title = null, MessageBoxButtons buttons = MessageBoxButtons.OK, MessageBoxIcon icon = MessageBoxIcon.None)
 	{
 		return MessageBox.Show(message, title, buttons, icon);
 	}
 
 	/// <inheritdoc/>
-	public (DialogResult Result, NefsArchiveSource Source) ShowNefsEditOpenFileDialog(
+	public (DialogResult Result, NefsArchiveSource? Source) ShowNefsEditOpenFileDialog(
 		ISettingsService settingsService,
 		IProgressService progressService,
 		INefsReader reader)
 	{
-		using (var dialog = new OpenFileForm(settingsService, this, progressService, reader, FileSystem, this.injectionDatabaseService))
-		{
-			var result = dialog.ShowDialog();
-			var source = dialog.ArchiveSource;
-			return (result, source);
-		}
+		using var dialog = new OpenFileForm(settingsService, this, progressService, reader, FileSystem, this.injectionDatabaseService);
+		var result = dialog.ShowDialog();
+		var source = dialog.ArchiveSource;
+		return (result, source);
 	}
 
 	/// <inheritdoc/>
-	public (DialogResult Result, String FileName) ShowOpenFileDialog(string filter = null)
+	public (DialogResult Result, string FileName) ShowOpenFileDialog(string? filter = null)
 	{
 		using (var dialog = new OpenFileDialog())
 		{
@@ -78,7 +74,7 @@ internal class UiService : IUiService
 	}
 
 	/// <inheritdoc/>
-	public (DialogResult Result, string FileName) ShowSaveFileDialog(string defaultName, string filter = null)
+	public (DialogResult Result, string FileName) ShowSaveFileDialog(string defaultName, string? filter = null)
 	{
 		using (var dialog = new SaveFileDialog())
 		{

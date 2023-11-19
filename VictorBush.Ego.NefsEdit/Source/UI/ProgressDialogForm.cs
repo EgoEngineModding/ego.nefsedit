@@ -59,13 +59,13 @@ internal partial class ProgressDialogForm : Form
 		this.progressBar.Style = style;
 	}
 
-	private void CancelButton_Click(object sender, EventArgs e)
+	private void CancelButton_Click(object? sender, EventArgs e)
 	{
 		/* Set the cancellation token to cancel */
 		this.cancelSource.Cancel();
 	}
 
-	private void OnProgress(object sender, NefsProgressEventArgs e)
+	private void OnProgress(object? sender, NefsProgressEventArgs e)
 	{
 		/* Constrain the progress percentage to appropriate range */
 		var value = Math.Min((int)(e.Progress * 100), this.progressBar.Maximum);

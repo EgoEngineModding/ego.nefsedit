@@ -11,32 +11,32 @@ public class OpenFileDialogState
 	/// <summary>
 	/// [GameDat] - The path to the data file.
 	/// </summary>
-	public string GameDatDataFilePath { get; set; }
+	public string GameDatDataFilePath { get; set; } = "";
 
 	/// <summary>
 	/// [GameDat] - The path to the header file.
 	/// </summary>
-	public string GameDatHeaderFilePath { get; set; }
+	public string GameDatHeaderFilePath { get; set; } = "";
 
 	/// <summary>
 	/// [GameDat] - The primary offset value.
 	/// </summary>
-	public string GameDatPrimaryOffset { get; set; }
+	public string GameDatPrimaryOffset { get; set; } = "";
 
 	/// <summary>
 	/// [GameDat] - The primary size value.
 	/// </summary>
-	public string GameDatPrimarySize { get; set; }
+	public string GameDatPrimarySize { get; set; } = "";
 
 	/// <summary>
 	/// [GameDat] - The secondary offset value.
 	/// </summary>
-	public string GameDatSecondaryOffset { get; set; }
+	public string GameDatSecondaryOffset { get; set; } = "";
 
 	/// <summary>
 	/// [GameDat] - The secondary size value.
 	/// </summary>
-	public string GameDatSecondarySize { get; set; }
+	public string GameDatSecondarySize { get; set; } = "";
 
 	/// <summary>
 	/// Gets or sets which mode the open file dialog was last in.
@@ -46,11 +46,11 @@ public class OpenFileDialogState
 	/// <summary>
 	/// [NeFS] - The path to the data file.
 	/// </summary>
-	public string NefsFilePath { get; set; }
+	public string NefsFilePath { get; set; } = "";
 
-	public string NefsInjectDataFilePath { get; set; }
+	public string NefsInjectDataFilePath { get; set; } = "";
 
-	public string NefsInjectFilePath { get; set; }
+	public string NefsInjectFilePath { get; set; } = "";
 
-	public string HeadlessExePath { get; set; }
+	public string HeadlessExePath { get; set; } = "";
 }

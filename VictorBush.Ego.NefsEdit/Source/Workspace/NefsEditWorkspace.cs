@@ -59,28 +59,28 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 	}
 
 	/// <inheritdoc/>
-	public event EventHandler ArchiveClosed;
+	public event EventHandler? ArchiveClosed;
 
 	/// <inheritdoc/>
-	public event EventHandler ArchiveOpened;
+	public event EventHandler? ArchiveOpened;
 
 	/// <inheritdoc/>
-	public event EventHandler ArchiveSaved;
+	public event EventHandler? ArchiveSaved;
 
 	/// <inheritdoc/>
-	public event EventHandler<NefsEditCommandEventArgs> CommandExecuted;
+	public event EventHandler<NefsEditCommandEventArgs>? CommandExecuted;
 
 	/// <inheritdoc/>
-	public event EventHandler SelectedItemsChanged;
+	public event EventHandler? SelectedItemsChanged;
 
 	/// <inheritdoc/>
-	public NefsArchive Archive { get; private set; }
+	public NefsArchive? Archive { get; private set; }
 
 	/// <inheritdoc/>
 	public bool ArchiveIsModified => UndoBuffer.IsModified;
 
 	/// <inheritdoc/>
-	public NefsArchiveSource ArchiveSource { get; private set; }
+	public NefsArchiveSource? ArchiveSource { get; private set; }
 
 	/// <inheritdoc/>
 	public bool CanRedo => UndoBuffer.CanRedo;
@@ -116,7 +116,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 	/// <inheritdoc/>
 	public async Task<bool> CloseArchiveAsync()
 	{
-		if (Archive == null)
+		if (Archive is null)
 		{
 			// Nothing to close
 			return true;
@@ -125,7 +125,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		// Check if there are pending changes
 		if (ArchiveIsModified)
 		{
-			var fileName = ArchiveSource.FileName;
+			var fileName = ArchiveSource!.FileName;
 			var result = UiService.ShowMessageBox($"Save changes to {fileName}?", null, MessageBoxButtons.YesNoCancel);
 			if (result == DialogResult.Cancel)
 			{
@@ -144,7 +144,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		}
 
 		Log.LogInformation("----------------------------");
-		Log.LogInformation($"Closing archive: {ArchiveSource.FilePath}.");
+		Log.LogInformation($"Closing archive: {ArchiveSource!.FilePath}.");
 
 		// Close archive
 		Archive = null;
@@ -175,6 +175,12 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			return false;
 		}
 
+		if (Archive == null)
+		{
+			UiService.ShowMessageBox("No archive opened.");
+			return false;
+		}
+
 		// Build a list of files to extract (paired with the path where to extract them)
 		var extractionList = new List<(NefsItem Item, string FilePath)>();
 
@@ -182,8 +188,8 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		if (items.Count == 1 && items[0].Type == NefsItemType.File)
 		{
 			/*
-                Extracting a single file
-                */
+			Extracting a single file
+			*/
 			var item = items[0];
 
 			var (result, outputFilePath) = UiService.ShowSaveFileDialog(item.FileName);
@@ -198,8 +204,8 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		else
 		{
 			/*
-                Extracting multiple items or a single directory, show folder browser dialog
-                */
+			Extracting multiple items or a single directory, show folder browser dialog
+			*/
 			var (result, outputDir) = UiService.ShowFolderBrowserDialog("Choose where to extract the items to.");
 			if (result != DialogResult.OK)
 			{
@@ -221,6 +227,12 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 	/// <inheritdoc/>
 	public async Task<bool> ExtractItemsByQuickExtractAsync(IReadOnlyList<NefsItem> items)
 	{
+		if (Archive is null)
+		{
+			Log.LogError("Cannot extract items because no archive is open.");
+			return false;
+		}
+
 		// If the quick extract dir doesn't exist, have user choose one
 		if (!FileSystem.Directory.Exists(SettingsService.QuickExtractDir))
 		{
@@ -241,7 +253,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			// extract option preserves the structure of the nefs archive within the quick extract dir.
 			var path = Archive.Items.GetItemFilePath(item.Id);
 			var fullPath = Path.Combine(baseDir, path);
-			var dir = Path.GetDirectoryName(fullPath);
+			var dir = Path.GetDirectoryName(fullPath) ?? "";
 			extractionList.AddRange(GetExtractionList(item, Archive.Items, dir));
 		}
 
@@ -289,7 +301,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 	public async Task<bool> OpenArchiveByDialogAsync()
 	{
 		(var result, var source) = UiService.ShowNefsEditOpenFileDialog(SettingsService, ProgressService, NefsReader);
-		if (result != DialogResult.OK)
+		if (result != DialogResult.OK || source is null)
 		{
 			return false;
 		}

@@ -27,9 +27,6 @@ internal partial class EditorForm : Form
 	/// <summary>
 	/// Initializes a new instance of the <see cref="EditorForm"/> class.
 	/// </summary>
-	/// <param name="workspace">The workspace to use.</param>
-	/// <param name="uiService">The UI service to use.</param>
-	/// <param name="settingsService">The settings service to use.</param>
 	public EditorForm(
 		ILogger<EditorForm> logger,
 		INefsEditWorkspace workspace,
@@ -174,7 +171,7 @@ internal partial class EditorForm : Form
 		Application.Exit();
 	}
 
-	private void extractRawToToolStripMenuItem_Click(Object sender, EventArgs e)
+	private void extractRawToToolStripMenuItem_Click(object sender, EventArgs e)
 	{
 	}
 
@@ -188,7 +185,7 @@ internal partial class EditorForm : Form
 		await Workspace.ExtractItemsByDialogAsync(Workspace.SelectedItems);
 	}
 
-	private void ItemDebugViewMainMenuItem_Click(Object sender, EventArgs e)
+	private void ItemDebugViewMainMenuItem_Click(object sender, EventArgs e)
 	{
 		this.itemDebugForm.Show();
 		this.itemDebugForm.Focus();
@@ -200,7 +197,7 @@ internal partial class EditorForm : Form
 		this.selectedFilePropertyForm.Focus();
 	}
 
-	private void OnWorkspaceArchiveClosed(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveClosed(object? sender, EventArgs e)
 	{
 		UiService.Dispatcher.Invoke(() =>
 		{
@@ -209,7 +206,7 @@ internal partial class EditorForm : Form
 		});
 	}
 
-	private void OnWorkspaceArchiveOpened(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveOpened(object? sender, EventArgs e)
 	{
 		// Update - must do on UI thread
 		UiService.Dispatcher.Invoke(() =>
@@ -219,7 +216,7 @@ internal partial class EditorForm : Form
 		});
 	}
 
-	private void OnWorkspaceArchiveSaved(Object sender, EventArgs e)
+	private void OnWorkspaceArchiveSaved(object? sender, EventArgs e)
 	{
 		UiService.Dispatcher.Invoke(() =>
 		{
@@ -228,14 +225,14 @@ internal partial class EditorForm : Form
 		});
 	}
 
-	private void OnWorkspaceCommandExecuted(object sender, NefsEditCommandEventArgs e)
+	private void OnWorkspaceCommandExecuted(object? sender, NefsEditCommandEventArgs e)
 	{
 		UpdateTitle();
 		UpdateMenuItems();
 		this.selectedFilePropertyForm.RefreshGrid();
 	}
 
-	private void OnWorkspaceSelectedItemsChanged(Object sender, EventArgs e)
+	private void OnWorkspaceSelectedItemsChanged(object? sender, EventArgs e)
 	{
 		var items = Workspace.SelectedItems;
 
@@ -277,7 +274,7 @@ internal partial class EditorForm : Form
 		await Workspace.OpenArchiveByDialogAsync();
 	}
 
-	private void OptionsMainMenuItem_Click(Object sender, EventArgs e)
+	private void OptionsMainMenuItem_Click(object sender, EventArgs e)
 	{
 		UiService.ShowSettingsDialog(SettingsService);
 	}
@@ -294,14 +291,14 @@ internal partial class EditorForm : Form
 
 	private async void Quit(FormClosingEventArgs e)
 	{
-		if (Workspace.Archive == null || !Workspace.ArchiveIsModified)
+		if (Workspace.Archive is null || !Workspace.ArchiveIsModified)
 		{
 			return;
 		}
 
 		// Archive has been modified; prompt to save before exit
 		var result = UiService.ShowMessageBox(
-			$"Save archive {Workspace.ArchiveSource.FilePath}?", "Save?", MessageBoxButtons.YesNoCancel);
+			$"Save archive {Workspace.ArchiveSource!.FilePath}?", "Save?", MessageBoxButtons.YesNoCancel);
 
 		if (result == DialogResult.Yes)
 		{
@@ -328,7 +325,7 @@ internal partial class EditorForm : Form
 		}
 	}
 
-	private void RedoMainMenuItem_Click(Object sender, EventArgs e)
+	private void RedoMainMenuItem_Click(object sender, EventArgs e)
 	{
 		Workspace.Redo();
 	}
@@ -403,7 +400,7 @@ internal partial class EditorForm : Form
 		this.browseTreeForm.Focus();
 	}
 
-	private void UndoMainMenuItem_Click(Object sender, EventArgs e)
+	private void UndoMainMenuItem_Click(object sender, EventArgs e)
 	{
 		Workspace.Undo();
 	}
@@ -421,7 +418,7 @@ internal partial class EditorForm : Form
 	private void UpdateTitle()
 	{
 		var archive = Workspace.Archive;
-		var archivePath = archive != null ? Workspace.ArchiveSource.FilePath : "";
+		var archivePath = archive != null ? Workspace.ArchiveSource!.FilePath : "";
 		var modifiedStar = Workspace.ArchiveIsModified ? "*" : "";
 		var separator = archive != null ? " - " : "";
 

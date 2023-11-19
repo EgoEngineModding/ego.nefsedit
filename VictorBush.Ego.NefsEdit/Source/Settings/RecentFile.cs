@@ -57,16 +57,16 @@ public sealed record RecentFile
 		}
 	}
 
-	public string GameDatDataFilePath { get; set; }
-	public string GameDatHeaderFilePath { get; set; }
+	public string GameDatDataFilePath { get; set; } = "";
+	public string GameDatHeaderFilePath { get; set; } = "";
 	public long? GameDatPrimaryOffset { get; set; }
 	public int? GameDatPrimarySize { get; set; }
 	public long? GameDatSecondaryOffset { get; set; }
 	public int? GameDatSecondarySize { get; set; }
-	public string NefsInjectDataFilePath { get; set; }
-	public string NefsInjectFilePath { get; set; }
-	public string StandardFilePath { get; set; }
-	public string Type { get; set; }
+	public string NefsInjectDataFilePath { get; set; } = "";
+	public string NefsInjectFilePath { get; set; } = "";
+	public string StandardFilePath { get; set; } = "";
+	public string Type { get; set; } = "";
 
 	public NefsArchiveSource ToArchiveSource()
 	{
@@ -76,7 +76,7 @@ public sealed record RecentFile
 				return NefsArchiveSource.Standard(StandardFilePath);
 
 			case "GameDatSource":
-				return NefsArchiveSource.Headless(GameDatDataFilePath, GameDatHeaderFilePath, GameDatPrimaryOffset.Value, GameDatPrimarySize, GameDatSecondaryOffset.Value, GameDatSecondarySize);
+				return NefsArchiveSource.Headless(GameDatDataFilePath, GameDatHeaderFilePath, GameDatPrimaryOffset!.Value, GameDatPrimarySize, GameDatSecondaryOffset!.Value, GameDatSecondarySize);
 
 			case nameof(NefsInjectSource):
 				return NefsArchiveSource.NefsInject(NefsInjectDataFilePath, NefsInjectFilePath);
