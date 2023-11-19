@@ -133,6 +133,7 @@ public class NefsEditWorkspaceTests
 
 		// Mock user choosing to save before closing
 		MockMessageBox(DialogResult.Yes);
+		MockSaveFileDialog(DialogResult.OK, @"C:\archive.nefs");
 
 		// Mock the save to fail
 		this.nefsWriterMock.Setup(n => n.WriteArchiveAsync(
@@ -184,6 +185,7 @@ public class NefsEditWorkspaceTests
 
 		// Mock user choosing to save before closing
 		MockMessageBox(DialogResult.Yes);
+		MockSaveFileDialog(DialogResult.OK, @"C:\archive.nefs");
 
 		// Mock the save to success
 		this.nefsWriterMock.Setup(n => n.WriteArchiveAsync(
@@ -278,6 +280,7 @@ public class NefsEditWorkspaceTests
 
 		// Mock user choosing to save before closing
 		MockMessageBox(DialogResult.Yes);
+		MockSaveFileDialog(DialogResult.OK, @"C:\archive.nefs");
 
 		// Mock the save to success
 		this.nefsWriterMock.Setup(n => n.WriteArchiveAsync(
@@ -512,5 +515,12 @@ public class NefsEditWorkspaceTests
 			It.IsAny<string>(),
 			It.IsAny<MessageBoxButtons>(),
 			It.IsAny<MessageBoxIcon>())).Returns(result);
+	}
+
+	private void MockSaveFileDialog(DialogResult result, string fileName)
+	{
+		this.uiServiceMock.Setup(u => u.ShowSaveFileDialog(
+			It.IsAny<string>(),
+			It.IsAny<string>())).Returns((result, fileName));
 	}
 }
