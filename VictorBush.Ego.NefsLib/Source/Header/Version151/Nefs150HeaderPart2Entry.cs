@@ -1,6 +1,5 @@
 // See LICENSE.txt for license information.
 
-using VictorBush.Ego.NefsLib.DataTypes;
 using VictorBush.Ego.NefsLib.Item;
 
 namespace VictorBush.Ego.NefsLib.Header.Version151;
@@ -8,22 +7,32 @@ namespace VictorBush.Ego.NefsLib.Header.Version151;
 /// <summary>
 /// An entry in header part 2 for an item in an archive.
 /// </summary>
-public sealed class Nefs151HeaderPart2Entry : INefsHeaderPartEntry
+public sealed class Nefs150HeaderPart2Entry : INefsHeaderPartEntry
 {
+	public static readonly int EntrySize = Nefs150TocSharedEntryInfo.ByteCount;
+	private readonly Nefs150TocSharedEntryInfo data;
+
 	/// <summary>
-	/// Initializes a new instance of the <see cref="Nefs151HeaderPart2Entry"/> class.
+	/// Initializes a new instance of the <see cref="Nefs150HeaderPart2Entry"/> class.
 	/// </summary>
-	internal Nefs151HeaderPart2Entry()
+	/// <param name="data">The underlying data.</param>
+	internal Nefs150HeaderPart2Entry(Nefs150TocSharedEntryInfo? data = null)
 	{
+		this.data = data ?? new Nefs150TocSharedEntryInfo();
 	}
+
+	/// <summary>
+	/// The underlying data.
+	/// </summary>
+	public Nefs150TocSharedEntryInfo Data => this.data;
 
 	/// <summary>
 	/// The id of the directory this item belongs to.
 	/// </summary>
 	public NefsItemId DirectoryId
 	{
-		get => new NefsItemId(Data_DirectoryId.Value);
-		init => Data_DirectoryId.Value = value.Value;
+		get => new(this.data.Parent);
+		init => this.data.Parent = value.Value;
 	}
 
 	/// <summary>
@@ -32,8 +41,8 @@ public sealed class Nefs151HeaderPart2Entry : INefsHeaderPartEntry
 	/// </summary>
 	public NefsItemId SiblingId
 	{
-		get => new NefsItemId(Data_SiblingId.Value);
-		init => Data_SiblingId.Value = value.Value;
+		get => new(this.data.NextSibling);
+		init => this.data.NextSibling = value.Value;
 	}
 
 	/// <summary>
@@ -43,8 +52,8 @@ public sealed class Nefs151HeaderPart2Entry : INefsHeaderPartEntry
 	/// </summary>
 	public NefsItemId FirstChildId
 	{
-		get => new NefsItemId(Data_FirstChildId.Value);
-		init => Data_FirstChildId.Value = value.Value;
+		get => new(this.data.FirstChild);
+		init => this.data.FirstChild = value.Value;
 	}
 
 	/// <summary>
@@ -52,8 +61,8 @@ public sealed class Nefs151HeaderPart2Entry : INefsHeaderPartEntry
 	/// </summary>
 	public uint OffsetIntoPart3
 	{
-		get => Data_OffsetIntoPart3.Value;
-		init => Data_OffsetIntoPart3.Value = value;
+		get => this.data.NameOffset;
+		init => this.data.NameOffset = value;
 	}
 
 	/// <summary>
@@ -61,8 +70,8 @@ public sealed class Nefs151HeaderPart2Entry : INefsHeaderPartEntry
 	/// </summary>
 	public uint ExtractedSize
 	{
-		get => Data_ExtractedSize.Value;
-		init => Data_ExtractedSize.Value = value;
+		get => this.data.Size;
+		init => this.data.Size = value;
 	}
 
 	/// <summary>
@@ -71,8 +80,8 @@ public sealed class Nefs151HeaderPart2Entry : INefsHeaderPartEntry
 	/// </summary>
 	public NefsItemId Id
 	{
-		get => new NefsItemId(Data_Id.Value);
-		init => Data_Id.Value = value.Value;
+		get => new(this.data.FirstDuplicate);
+		init => this.data.FirstDuplicate = value.Value;
 	}
 
 	/// <summary>
@@ -80,30 +89,9 @@ public sealed class Nefs151HeaderPart2Entry : INefsHeaderPartEntry
 	/// </summary>
 	public NefsItemId Id2
 	{
-		get => new NefsItemId(Data_Id2.Value);
-		init => Data_Id2.Value = value.Value;
+		get => new(this.data.PatchedEntry);
+		init => this.data.PatchedEntry = value.Value;
 	}
 
-	public int Size => Nefs151HeaderPart2.EntrySize;
-
-	[FileData]
-	private UInt32Type Data_DirectoryId { get; } = new(0x00);
-
-	[FileData]
-	private UInt32Type Data_SiblingId { get; } = new(0x04);
-
-	[FileData]
-	private UInt32Type Data_FirstChildId { get; } = new(0x08);
-
-	[FileData]
-	private UInt32Type Data_OffsetIntoPart3 { get; } = new(0x0C);
-
-	[FileData]
-	private UInt32Type Data_ExtractedSize { get; } = new(0x10);
-
-	[FileData]
-	private UInt32Type Data_Id { get; } = new(0x14);
-
-	[FileData]
-	private UInt32Type Data_Id2 { get; } = new(0x18);
+	public int Size => EntrySize;
 }

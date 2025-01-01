@@ -13,6 +13,11 @@ public enum NefsVersion
 	Version140 = 0x10400,
 
 	/// <summary>
+	/// Version 1.5.0.
+	/// </summary>
+	Version150 = 0x10500,
+
+	/// <summary>
 	/// Version 1.5.1.
 	/// </summary>
 	Version151 = 0x10501,

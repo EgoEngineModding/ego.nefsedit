@@ -29,7 +29,7 @@ public class UInt8Type : DataType
 	public byte Value { get; set; }
 
 	/// <inheritdoc/>
-	public override byte[] GetBytes() => BitConverter.GetBytes(Value);
+	public override byte[] GetBytes() => [Value];
 
 	/// <inheritdoc/>
 	public override async Task ReadAsync(Stream file, long baseOffset, NefsProgress p)

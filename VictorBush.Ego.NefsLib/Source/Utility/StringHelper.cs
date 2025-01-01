@@ -14,7 +14,7 @@ public static class StringHelper
 	/// </summary>
 	/// <param name="bytes">The bytes to print.</param>
 	/// <returns>The string.</returns>
-	public static string ByteArrayToString(byte[] bytes)
+	public static string ByteArrayToString(ReadOnlySpan<byte> bytes)
 	{
 		if (bytes == null)
 		{

@@ -8,6 +8,11 @@ namespace VictorBush.Ego.NefsLib.Header;
 public interface INefsHeaderIntro
 {
 	/// <summary>
+	/// Whether the file is in little endian format; otherwise, big endian.
+	/// </summary>
+	bool IsLittleEndian { get; }
+
+	/// <summary>
 	/// Whether the header is encrypted.
 	/// </summary>
 	bool IsEncrypted { get; }
@@ -40,7 +45,7 @@ public interface INefsHeaderIntro
 	/// <summary>
 	/// 256-bit AES key stored as a hex string.
 	/// </summary>
-	byte[] AesKeyHexString { get; }
+	ReadOnlySpan<byte> AesKeyHexString { get; }
 
 	/// <summary>
 	/// Gets the AES-256 key for this header.

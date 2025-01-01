@@ -1,6 +1,6 @@
 // See LICENSE.txt for license information.
 
-using VictorBush.Ego.NefsLib.DataTypes;
+using VictorBush.Ego.NefsLib.Header.Version151;
 
 namespace VictorBush.Ego.NefsLib.Header;
 
@@ -9,6 +9,8 @@ namespace VictorBush.Ego.NefsLib.Header;
 /// </summary>
 public sealed class NefsHeaderPart5
 {
+	private readonly Nefs150TocVolumeInfo data;
+
 	/// <summary>
 	/// The size of header part 5.
 	/// </summary>
@@ -17,10 +19,19 @@ public sealed class NefsHeaderPart5
 	/// <summary>
 	/// Initializes a new instance of the <see cref="NefsHeaderPart5"/> class.
 	/// </summary>
-	internal NefsHeaderPart5()
+	internal NefsHeaderPart5(Nefs150TocVolumeInfo? data = null)
 	{
-		FirstDataOffset = Nefs20Header.DataOffsetDefault;
+		this.data = data ?? new Nefs150TocVolumeInfo();
+		if (data is null)
+		{
+			FirstDataOffset = Nefs20Header.DataOffsetDefault;
+		}
 	}
+
+	/// <summary>
+	/// The underlying data.
+	/// </summary>
+	public Nefs150TocVolumeInfo Data => this.data;
 
 	/// <summary>
 	/// Offset into header part 3 for the name of the file containing the item data. For headless archives, it would be
@@ -28,8 +39,8 @@ public sealed class NefsHeaderPart5
 	/// </summary>
 	public uint DataFileNameStringOffset
 	{
-		get => Data0x08_DataFileNameStringOffset.Value;
-		init => Data0x08_DataFileNameStringOffset.Value = value;
+		get => this.data.NameOffset;
+		init => this.data.NameOffset = value;
 	}
 
 	/// <summary>
@@ -37,8 +48,8 @@ public sealed class NefsHeaderPart5
 	/// </summary>
 	public ulong DataSize
 	{
-		get => Data0x00_TotalItemDataSize.Value;
-		init => Data0x00_TotalItemDataSize.Value = value;
+		get => this.data.Size;
+		init => this.data.Size = value;
 	}
 
 	/// <summary>
@@ -46,16 +57,7 @@ public sealed class NefsHeaderPart5
 	/// </summary>
 	public uint FirstDataOffset
 	{
-		get => Data0x0C_FirstDataOffset.Value;
-		init => Data0x0C_FirstDataOffset.Value = value;
+		get => this.data.DataOffset;
+		init => this.data.DataOffset = value;
 	}
-
-	[FileData]
-	private UInt64Type Data0x00_TotalItemDataSize { get; } = new UInt64Type(0x00);
-
-	[FileData]
-	private UInt32Type Data0x08_DataFileNameStringOffset { get; } = new UInt32Type(0x08);
-
-	[FileData]
-	private UInt32Type Data0x0C_FirstDataOffset { get; } = new UInt32Type(0x0C);
 }

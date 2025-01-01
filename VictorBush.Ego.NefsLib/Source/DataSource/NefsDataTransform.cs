@@ -42,6 +42,8 @@ public class NefsDataTransform
 	/// </summary>
 	public uint ChunkSize { get; }
 
+	public bool IsLzssCompressed { get; init; }
+
 	/// <summary>
 	/// Whether data chunks are AES encrypted.
 	/// </summary>
