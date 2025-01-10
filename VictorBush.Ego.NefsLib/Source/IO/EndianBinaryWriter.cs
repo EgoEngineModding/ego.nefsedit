@@ -8,7 +8,7 @@ using VictorBush.Ego.NefsLib.Header;
 
 namespace VictorBush.Ego.NefsLib.IO;
 
-public struct EndianBinaryWriter(Stream stream, bool littleEndian, ResizableBuffer buffer) : IDisposable
+public class EndianBinaryWriter(Stream stream, bool littleEndian, ResizableBuffer buffer) : IDisposable
 {
 	private ResizableBuffer buffer = buffer;
 

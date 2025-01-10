@@ -4,7 +4,7 @@ using System.Buffers;
 
 namespace VictorBush.Ego.NefsLib.IO;
 
-public struct ResizableBuffer : IDisposable
+public class ResizableBuffer : IDisposable
 {
 	private readonly ArrayPool<byte> arrayPool;
 	private byte[] buffer;
