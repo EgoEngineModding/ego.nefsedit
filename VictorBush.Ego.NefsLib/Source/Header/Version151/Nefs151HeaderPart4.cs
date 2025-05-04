@@ -150,6 +150,7 @@ public sealed class Nefs151HeaderPart4 : INefsHeaderPart4
 	{
 		Nefs16HeaderPart4TransformType.Zlib => new NefsDataTransform(chunkSize, true),
 		Nefs16HeaderPart4TransformType.Aes => new NefsDataTransform(chunkSize, false, aes256key),
+		Nefs16HeaderPart4TransformType.Lzss => new NefsDataTransform(chunkSize, false) { IsLzssCompressed = true },
 		Nefs16HeaderPart4TransformType.None => new NefsDataTransform(chunkSize, false),
 		_ => null,
 	};

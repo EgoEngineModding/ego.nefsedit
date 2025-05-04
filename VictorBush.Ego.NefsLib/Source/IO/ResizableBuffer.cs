@@ -19,7 +19,7 @@ public class ResizableBuffer : IDisposable
 	{
 		this.arrayPool = arrayPool;
 		this.buffer = arrayPool.Rent(startingMinimumLength);
-		Memory = this.buffer.AsMemory(0, startingMinimumLength);
+		Memory = this.buffer.AsMemory();
 	}
 
 	public void EnsureLength(int length)
@@ -31,7 +31,7 @@ public class ResizableBuffer : IDisposable
 
 		this.arrayPool.Return(this.buffer);
 		this.buffer = this.arrayPool.Rent(length);
-		Memory = this.buffer.AsMemory(0, length);
+		Memory = this.buffer.AsMemory();
 	}
 
 	public void Dispose()
