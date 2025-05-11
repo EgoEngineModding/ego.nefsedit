@@ -30,7 +30,7 @@ internal static class Program
 	/// <summary>
 	/// Gets the directory where the application exe is located.
 	/// </summary>
-	internal static string ExeDirectory => Path.GetDirectoryName(typeof(Program).Assembly.Location);
+	internal static string ExeDirectory => Application.StartupPath;
 
 	/// <summary>
 	/// Gets the directory used by the application for writing temporary files.
@@ -71,9 +71,7 @@ internal static class Program
 			}).Build();
 
 		// Run application
-		Application.EnableVisualStyles();
-		Application.SetHighDpiMode(HighDpiMode.SystemAware);
-		Application.SetCompatibleTextRenderingDefault(false);
+		ApplicationConfiguration.Initialize();
 		Application.Run(host.Services.GetRequiredService<EditorForm>());
 	}
 }

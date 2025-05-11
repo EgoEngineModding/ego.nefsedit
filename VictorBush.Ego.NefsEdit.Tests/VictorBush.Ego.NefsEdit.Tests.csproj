@@ -2,14 +2,7 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<OutputType>Library</OutputType>
-		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	</PropertyGroup>
-
-	<ItemGroup>
-		<Compile Include="..\SharedAssemblyInfo.cs">
-			<Link>Properties\SharedAssemblyInfo.cs</Link>
-		</Compile>
-	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\VictorBush.Ego.NefsEdit\VictorBush.Ego.NefsEdit.csproj" />
@@ -17,7 +10,6 @@
 
 	<ItemGroup>
 		<PackageReference Include="Microsoft.NET.Test.Sdk" />
-		<PackageReference Include="Microsoft.DotNet.UpgradeAssistant.Extensions.Default.Analyzers" />
 		<PackageReference Include="Moq" />
 		<PackageReference Include="System.IO.Abstractions.TestingHelpers" />
 		<PackageReference Include="xunit" />

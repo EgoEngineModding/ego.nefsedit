@@ -1440,7 +1440,6 @@ public class NefsReader : INefsReader
 	{
 		// Read magic number (first four bytes)
 		stream.Seek(offset, SeekOrigin.Begin);
-		stream.Seek(offset, SeekOrigin.Begin);
 		using var reader = new EndianBinaryReader(stream);
 		var magicNum = await reader.ReadUInt32Async(p.CancellationToken).ConfigureAwait(false);
 		return IsMagicNumber(magicNum, reader.IsLittleEndian);

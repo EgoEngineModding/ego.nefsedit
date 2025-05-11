@@ -45,7 +45,7 @@ public struct NefsItemId : IComparable<NefsItemId>
 	}
 
 	/// <inheritdoc/>
-	public override bool Equals(object obj) => obj is NefsItemId id && id == this;
+	public override bool Equals(object? obj) => obj is NefsItemId id && id == this;
 
 	/// <inheritdoc/>
 	public override int GetHashCode() => Value.GetHashCode();
