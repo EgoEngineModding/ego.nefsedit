@@ -139,6 +139,14 @@ public class NefsWriter : INefsWriter
 		}
 	}
 
+	internal async Task WriteTocEntryAsync<T>(EndianBinaryWriter writer, long offset, T entry, NefsProgress p)
+		where T : unmanaged, INefsTocData<T>
+	{
+		using var t = p.BeginTask(1.0f);
+		writer.BaseStream.Seek(offset, SeekOrigin.Begin);
+		await writer.WriteTocDataAsync(entry, p.CancellationToken).ConfigureAwait(false);
+	}
+
 	internal async Task WriteHeaderPartAsync(Stream stream, long offset, object part, NefsProgress p)
 	{
 		using (var t = p.BeginTask(1.0f))
@@ -481,6 +489,7 @@ public class NefsWriter : INefsWriter
 		// Get table of contents
 		var toc = header.TableOfContents;
 
+		using var writer = new EndianBinaryWriter(stream, true);
 		using (var t = p.BeginTask(weight, "Writing header intro"))
 		{
 			var offset = headerOffset + Nefs20Header.IntroOffset;
@@ -520,7 +529,7 @@ public class NefsWriter : INefsWriter
 		using (var t = p.BeginTask(weight, "Writing header part 5"))
 		{
 			var offset = headerOffset + toc.OffsetToPart5;
-			await WriteHeaderPartAsync(stream, offset, header.Part5, p);
+			await WriteTocEntryAsync(writer, offset, header.Part5.Data, p);
 		}
 
 		using (var t = p.BeginTask(weight, "Writing header part 6"))
@@ -918,6 +927,7 @@ public class NefsWriter : INefsWriter
 		var primaryOffset = NefsInjectHeader.Size;
 		var secondaryOffset = primaryOffset + primarySize;
 
+		using var writer = new EndianBinaryWriter(stream, true);
 		using (p.BeginTask(weight, "Writing NesfInject header"))
 		{
 			nefsInject = new NefsInjectHeader(primaryOffset, primarySize, secondaryOffset, secondarySize);
@@ -968,7 +978,7 @@ public class NefsWriter : INefsWriter
 		using (var t = p.BeginTask(weight, "Writing header part 5"))
 		{
 			var offset = primaryOffset + toc.OffsetToPart5;
-			await WriteHeaderPartAsync(stream, offset, header.Part5, p);
+			await WriteTocEntryAsync(writer, offset, header.Part5.Data, p);
 		}
 
 		using (var t = p.BeginTask(weight, "Writing header part 8"))
@@ -1004,6 +1014,7 @@ public class NefsWriter : INefsWriter
 		var primaryOffset = NefsInjectHeader.Size;
 		var secondaryOffset = primaryOffset + primarySize;
 
+		using var writer = new EndianBinaryWriter(stream, true);
 		using (p.BeginTask(weight, "Writing NesfInject header"))
 		{
 			nefsInject = new NefsInjectHeader(primaryOffset, primarySize, secondaryOffset, secondarySize);
@@ -1049,7 +1060,7 @@ public class NefsWriter : INefsWriter
 		using (var t = p.BeginTask(weight, "Writing header part 5"))
 		{
 			var offset = primaryOffset + toc.OffsetToPart5;
-			await WriteHeaderPartAsync(stream, offset, header.Part5, p);
+			await WriteTocEntryAsync(writer, offset, header.Part5.Data, p);
 		}
 
 		using (var t = p.BeginTask(weight, "Writing header part 8"))

@@ -108,6 +108,20 @@ public class NefsTransformer : INefsTransformer
 				detransformedStream.SetLength(tempStream.Length);
 			}
 
+			if (chunk.Transform.IsLzssCompressed)
+			{
+				var lzss = new LzssDecompress();
+				using var tempStream = new MemoryStream();
+
+				await lzss.DecompressAsync(detransformedStream, tempStream, p.CancellationToken).ConfigureAwait(false);
+				tempStream.Seek(0, SeekOrigin.Begin);
+
+				detransformedStream.Seek(0, SeekOrigin.Begin);
+				await tempStream.CopyToAsync(detransformedStream, p.CancellationToken);
+				detransformedStream.Seek(0, SeekOrigin.Begin);
+				detransformedStream.SetLength(tempStream.Length);
+			}
+
 			// Copy detransformed chunk to output stream
 			var chunkSize = Math.Min(detransformedStream.Length, maxOutputSize);
 			await detransformedStream.CopyPartialAsync(output, chunkSize, p.CancellationToken);

@@ -10,7 +10,7 @@ namespace VictorBush.Ego.NefsLib.Header.Version151;
 /// <summary>
 /// A NeFS archive header.
 /// </summary>
-public sealed class Nefs151Header : INefsHeader
+public sealed class Nefs150Header : INefsHeader
 {
 	private static readonly ILogger Log = NefsLog.GetLogger();
 
@@ -23,12 +23,12 @@ public sealed class Nefs151Header : INefsHeader
 	/// <param name="part3">Header part 3.</param>
 	/// <param name="part4">Header part 4.</param>
 	/// <param name="part5">Header part 5.</param>
-	public Nefs151Header(
-		Nefs151HeaderIntro intro,
+	public Nefs150Header(
+		Nefs150HeaderIntro intro,
 		Nefs150HeaderPart1 part1,
 		Nefs150HeaderPart2 part2,
 		NefsHeaderPart3 part3,
-		Nefs151HeaderPart4 part4,
+		Nefs150HeaderPart4 part4,
 		NefsHeaderPart5 part5)
 	{
 		Intro = intro ?? throw new ArgumentNullException(nameof(intro));
@@ -39,7 +39,7 @@ public sealed class Nefs151Header : INefsHeader
 		Part5 = part5 ?? throw new ArgumentNullException(nameof(part5));
 	}
 
-	public Nefs151HeaderIntro Intro { get; }
+	public Nefs150HeaderIntro Intro { get; }
 
 	/// <inheritdoc/>
 	public bool IsEncrypted => Intro.IsEncrypted;
@@ -47,7 +47,7 @@ public sealed class Nefs151Header : INefsHeader
 	public Nefs150HeaderPart1 Part1 { get; }
 	public Nefs150HeaderPart2 Part2 { get; }
 	public NefsHeaderPart3 Part3 { get; }
-	public Nefs151HeaderPart4 Part4 { get; }
+	public Nefs150HeaderPart4 Part4 { get; }
 	public NefsHeaderPart5 Part5 { get; }
 
 	/// <inheritdoc/>

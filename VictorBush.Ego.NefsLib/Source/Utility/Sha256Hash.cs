@@ -36,7 +36,7 @@ public struct Sha256Hash
 	public static bool operator ==(Sha256Hash a, Sha256Hash b) => a.Equals(b);
 
 	/// <inheritdoc/>
-	public override bool Equals(object obj) => obj is Sha256Hash hash && Value.SequenceEqual(hash.Value);
+	public override bool Equals(object? obj) => obj is Sha256Hash hash && Value.SequenceEqual(hash.Value);
 
 	/// <inheritdoc/>
 	public override int GetHashCode() => Value.GetHashCode();

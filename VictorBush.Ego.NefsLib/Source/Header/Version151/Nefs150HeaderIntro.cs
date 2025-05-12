@@ -1,4 +1,4 @@
-// See LICENSE.txt for license information.
+﻿// See LICENSE.txt for license information.
 
 using System.Text;
 using VictorBush.Ego.NefsLib.Utility;
@@ -8,14 +8,14 @@ namespace VictorBush.Ego.NefsLib.Header.Version151;
 /// <summary>
 /// Header introduction. Contains size, encryption, and verification info.
 /// </summary>
-public record Nefs151HeaderIntro : INefsHeaderIntro, INefsHeaderIntroToc
+public record Nefs150HeaderIntro : INefsHeaderIntro, INefsHeaderIntroToc
 {
-	private readonly Nefs151TocHeader data;
+	private readonly Nefs150TocHeader data;
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="Nefs151HeaderIntro"/> class.
+	/// Initializes a new instance of the <see cref="Nefs150HeaderIntro"/> class.
 	/// </summary>
-	public Nefs151HeaderIntro(Nefs151TocHeader data)
+	public Nefs150HeaderIntro(Nefs150TocHeader data)
 	{
 		this.data = data;
 	}
@@ -131,47 +131,11 @@ public record Nefs151HeaderIntro : INefsHeaderIntro, INefsHeaderIntroToc
 	/// <inheritdoc/>
 	public uint Part4Size => OffsetToPart5 - OffsetToPart4;
 
-	/// <summary>
-	/// Unknown value.
-	/// </summary>
-	public uint Unknown1
-	{
-		get => this.data.Unknown1;
-		init => this.data.Unknown1 = value;
-	}
-
-	/// <summary>
-	/// Unknown value.
-	/// </summary>
-	public uint Unknown2
-	{
-		get => this.data.Unknown2;
-		init => this.data.Unknown2 = value;
-	}
-
-	/// <summary>
-	/// Unknown value.
-	/// </summary>
-	public uint Unknown3
-	{
-		get => this.data.Unknown3;
-		init => this.data.Unknown3 = value;
-	}
-
 	/// <inheritdoc />
 	public ReadOnlySpan<byte> AesKeyHexString
 	{
 		get => this.data.AesKeyBuffer;
 		init => value.CopyTo(this.data.AesKeyBuffer);
-	}
-
-	/// <summary>
-	/// Unknown value.
-	/// </summary>
-	public uint Unknown4
-	{
-		get => this.data.Unknown4;
-		init => this.data.Unknown4 = value;
 	}
 
 	/// <inheritdoc/>

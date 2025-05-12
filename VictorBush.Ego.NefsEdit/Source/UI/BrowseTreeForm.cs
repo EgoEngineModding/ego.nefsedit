@@ -87,8 +87,7 @@ internal partial class BrowseTreeForm : DockContent
 	{
 		if (this.filesListView.SelectedItems.Count > 0)
 		{
-			var item = (NefsItem)this.filesListView.SelectedItems[0].Tag;
-			if (item.Type == NefsItemType.Directory)
+			if (this.filesListView.SelectedItems[0].Tag is NefsItem { Type: NefsItemType.Directory } item)
 			{
 				OpenDirectory(item);
 			}
@@ -117,7 +116,12 @@ internal partial class BrowseTreeForm : DockContent
 
 		foreach (ListViewItem item in this.filesListView.SelectedItems)
 		{
-			selectedNefsItems.Add((NefsItem)item.Tag);
+			if (item.Tag is not NefsItem nefsItem)
+			{
+				continue;
+			}
+
+			selectedNefsItems.Add(nefsItem);
 		}
 
 		// Tell the editor what items are selected

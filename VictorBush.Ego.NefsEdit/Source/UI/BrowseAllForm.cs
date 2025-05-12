@@ -143,7 +143,12 @@ internal partial class BrowseAllForm : DockContent
 
 		foreach (ListViewItem item in this.itemsListView.SelectedItems)
 		{
-			selectedNefsItems.Add((NefsItem)item.Tag);
+			if (item.Tag is not NefsItem nefsItem)
+			{
+				continue;
+			}
+
+			selectedNefsItems.Add(nefsItem);
 		}
 
 		// Tell the editor what items are selected

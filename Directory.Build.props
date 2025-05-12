@@ -2,5 +2,8 @@
 	<PropertyGroup>
 		<LangVersion>latest</LangVersion>
 		<ImplicitUsings>true</ImplicitUsings>
+
+		<Copyright>Copyright © VictorBush 2021</Copyright>
+		<Version>0.7.0</Version>
 	</PropertyGroup>
 </Project>

@@ -13,6 +13,11 @@ public enum Nefs16HeaderPart4TransformType
 	None = 0x0,
 
 	/// <summary>
+	/// Chunk is LZSS compressed.
+	/// </summary>
+	Lzss = 0x1,
+
+	/// <summary>
 	/// Chunk is AES encrypted.
 	/// </summary>
 	Aes = 0x4,

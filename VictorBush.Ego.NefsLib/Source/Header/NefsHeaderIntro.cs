@@ -29,10 +29,10 @@ public record NefsHeaderIntro : INefsHeaderIntro
 	}
 
 	/// <inheritdoc />
-	public byte[] AesKeyHexString
+	public ReadOnlySpan<byte> AesKeyHexString
 	{
 		get => Data0x24_AesKeyHexString.Value;
-		init => Data0x24_AesKeyHexString.Value = value;
+		init => value.CopyTo(Data0x24_AesKeyHexString.Value);
 	}
 
 	/// <summary>
@@ -50,6 +50,9 @@ public record NefsHeaderIntro : INefsHeaderIntro
 		get => Data0x64_HeaderSize.Value;
 		init => Data0x64_HeaderSize.Value = value;
 	}
+
+	/// <inheritdoc />
+	public bool IsLittleEndian { get; init; }
 
 	/// <inheritdoc />
 	public bool IsEncrypted { get; init; }

@@ -332,7 +332,8 @@ public class NefsWriterTests
 
 		using (var ms = new MemoryStream())
 		{
-			await writer.WriteHeaderPartAsync(ms, offset, part5, new NefsProgress());
+			var bw = new EndianBinaryWriter(ms);
+			await writer.WriteTocEntryAsync(bw, offset, part5.Data, new NefsProgress());
 			buffer = ms.ToArray();
 		}
 

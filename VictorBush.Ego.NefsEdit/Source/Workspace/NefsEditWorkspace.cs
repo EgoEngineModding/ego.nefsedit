@@ -341,7 +341,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			return false;
 		}
 
-		var fileSize = FileSystem.FileInfo.FromFileName(fileName).Length;
+		var fileSize = FileSystem.FileInfo.New(fileName).Length;
 		var itemSize = new NefsItemSize((uint)fileSize);
 		var newDataSource = new NefsFileDataSource(fileName, 0, itemSize, false);
 		var cmd = new ReplaceFileCommand(item, item.DataSource, item.State, newDataSource);
