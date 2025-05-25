@@ -25,7 +25,6 @@ public struct NefsItemAttributes
 	/// <param name="v20Unknown0x40">Unknown flag 0x40.</param>
 	/// <param name="v20Unknown0x80">Unknown flag 0x80.</param>
 	/// <param name="part6Volume">Item volume.</param>
-	/// <param name="part6Unknown0x3">Unknown value.</param>
 	public NefsItemAttributes(
 		bool isCacheable = false,
 		bool isDirectory = false,
@@ -41,8 +40,7 @@ public struct NefsItemAttributes
 		bool v20Unknown0x20 = false,
 		bool v20Unknown0x40 = false,
 		bool v20Unknown0x80 = false,
-		ushort part6Volume = 0,
-		byte part6Unknown0x3 = 0)
+		ushort part6Volume = 0)
 	{
 		IsCacheable = isCacheable;
 		IsDirectory = isDirectory;
@@ -59,7 +57,6 @@ public struct NefsItemAttributes
 		V20Unknown0x40 = v20Unknown0x40;
 		V20Unknown0x80 = v20Unknown0x80;
 		Part6Volume = part6Volume;
-		Part6Unknown0x3 = part6Unknown0x3;
 	}
 
 	/// <summary>
@@ -81,11 +78,6 @@ public struct NefsItemAttributes
 	/// A flag indicating whether this item is patched (meaning unknown).
 	/// </summary>
 	public bool IsPatched { get; }
-
-	/// <summary>
-	/// Unknown data (from part 6).
-	/// </summary>
-	public byte Part6Unknown0x3 { get; }
 
 	/// <summary>
 	/// Meaning unknown (from part 6).

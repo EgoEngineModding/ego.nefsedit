@@ -56,7 +56,6 @@ internal static class TestHelpers
 		var attributes = new NefsItemAttributes(isDirectory: true);
 
 		return new NefsItem(
-			Guid.NewGuid(),
 			new NefsItemId(id),
 			fileName,
 			new NefsItemId(dirId),
@@ -83,7 +82,6 @@ internal static class TestHelpers
 
 		var transform = TestTransform;
 		return new NefsItem(
-			Guid.NewGuid(),
 			new NefsItemId(id),
 			fileName,
 			new NefsItemId(dirId),
@@ -121,7 +119,6 @@ internal static class TestHelpers
 		var size = new NefsItemSize(extractedSize, chunks);
 		var dataSource = new NefsFileDataSource(@"C:\source.txt", (long)dataOffset, size, extractedSize != chunkSizes.LastOrDefault());
 		return new NefsItem(
-			Guid.NewGuid(),
 			new NefsItemId(id),
 			fileName,
 			new NefsItemId(dirId),
