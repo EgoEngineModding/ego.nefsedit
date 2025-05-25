@@ -1,7 +1,6 @@
 // See LICENSE.txt for license information.
 
-using VictorBush.Ego.NefsLib.Item;
-using VictorBush.Ego.NefsLib.Progress;
+using VictorBush.Ego.NefsLib.Source.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header;
 
@@ -16,40 +15,34 @@ public interface INefsHeader
 	bool IsEncrypted { get; }
 
 	/// <summary>
-	/// Builds an item object from header data.
+	/// Gets the AES key.
 	/// </summary>
-	/// <param name="part1Index">The index in part 1.</param>
-	/// <param name="dataSourceList">The item list to use as the item data source.</param>
-	/// <returns>A new <see cref="NefsItem"/>.</returns>
-	NefsItem CreateItemInfo(uint part1Index, NefsItemList dataSourceList);
+	byte[] AesKey { get; }
 
 	/// <summary>
-	/// Builds an item object from header data.
+	/// Gets the header hash.
 	/// </summary>
-	/// <param name="guid">The guid of the item.</param>
-	/// <param name="dataSourceList">The item list to use as the item data source.</param>
-	/// <returns>A new <see cref="NefsItem"/>.</returns>
-	NefsItem CreateItemInfo(Guid guid, NefsItemList dataSourceList);
+	Sha256Hash Hash { get; }
 
 	/// <summary>
-	/// Generates a new item list from the header metadata.
+	/// Gets the header size in bytes.
 	/// </summary>
-	/// <param name="dataFilePath">The path to the data file for the item list.</param>
-	/// <param name="p">Progress info.</param>
-	/// <returns>A new <see cref="NefsItemList"/>.</returns>
-	NefsItemList CreateItemList(string dataFilePath, NefsProgress p);
+	uint Size { get; }
 
 	/// <summary>
-	/// Gets the directory id for an item. If the item is in the root directory, the directory id will equal the item's id.
+	/// Gets the data block size.
 	/// </summary>
-	/// <param name="indexPart2">The index into part 2.</param>
-	/// <returns>The directory id.</returns>
-	NefsItemId GetItemDirectoryId(uint indexPart2);
+	uint BlockSize { get; }
 
 	/// <summary>
-	/// Gets the file name of an item.
+	/// Gets the number of entries.
 	/// </summary>
-	/// <param name="indexPart2">The index into part 2.</param>
-	/// <returns>The item's file name.</returns>
-	string GetItemFileName(uint indexPart2);
+	uint NumEntries { get; }
+
+	/// <summary>
+	/// Gets the file name at the given offset.
+	/// </summary>
+	/// <param name="nameOffset">The name offset.</param>
+	/// <returns>The file name.</returns>
+	string GetFileName(uint nameOffset);
 }

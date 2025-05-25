@@ -24,10 +24,10 @@ public class NefsHeaderPart6Tests
 			v16Unknown0x40: true,
 			v16Unknown0x80: true);
 		var item1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456));
-		var item1 = new NefsItem(Guid.NewGuid(), new NefsItemId(0), "file1", new NefsItemId(0), item1DataSource, TestHelpers.TestTransform, item1Attributes);
+		var item1 = new NefsItem(new NefsItemId(0), "file1", new NefsItemId(0), item1DataSource, TestHelpers.TestTransform, item1Attributes);
 		items.Add(item1);
 
-		var p6 = new Nefs16HeaderPart6(items);
+		var p6 = new Nefs160HeaderWriteableEntryTable(items);
 
 		Assert.Equal(0xFF, (byte)p6.EntriesByIndex[0].Flags);
 	}
@@ -47,7 +47,7 @@ public class NefsHeaderPart6Tests
 			v20Unknown0x40: true,
 			v20Unknown0x80: true);
 		var item1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456));
-		var item1 = new NefsItem(Guid.NewGuid(), new NefsItemId(0), "file1", new NefsItemId(0), item1DataSource, TestHelpers.TestTransform, item1Attributes);
+		var item1 = new NefsItem(new NefsItemId(0), "file1", new NefsItemId(0), item1DataSource, TestHelpers.TestTransform, item1Attributes);
 		items.Add(item1);
 
 		var p6 = new Nefs20HeaderPart6(items);
@@ -61,27 +61,24 @@ public class NefsHeaderPart6Tests
 		var items = new NefsItemList(@"C:\archive.nefs");
 
 		var file1Attributes = new NefsItemAttributes(
-			part6Volume: 12,
-			part6Unknown0x3: 14);
+			part6Volume: 12);
 		var file1Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 11, 12, 13 }, TestHelpers.TestTransform);
 		var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, file1Chunks));
-		var file1 = new NefsItem(Guid.NewGuid(), new NefsItemId(0), "file1", new NefsItemId(0), file1DataSource, TestHelpers.TestTransform, file1Attributes);
+		var file1 = new NefsItem(new NefsItemId(0), "file1", new NefsItemId(0), file1DataSource, TestHelpers.TestTransform, file1Attributes);
 		items.Add(file1);
 
 		var file2Attributes = new NefsItemAttributes(
-			part6Volume: 6,
-			part6Unknown0x3: 7);
+			part6Volume: 6);
 		var file2Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 14, 15, 16 }, TestHelpers.TestTransform);
 		var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, file2Chunks));
-		var file2 = new NefsItem(Guid.NewGuid(), new NefsItemId(1), "file2", new NefsItemId(1), file2DataSource, TestHelpers.TestTransform, file2Attributes);
+		var file2 = new NefsItem(new NefsItemId(1), "file2", new NefsItemId(1), file2DataSource, TestHelpers.TestTransform, file2Attributes);
 		items.Add(file2);
 
 		var dir1Attributes = new NefsItemAttributes(
 			isDirectory: true,
-			part6Volume: 1,
-			part6Unknown0x3: 2);
+			part6Volume: 1);
 		var dir1DataSource = new NefsEmptyDataSource();
-		var dir1 = new NefsItem(Guid.NewGuid(), new NefsItemId(2), "dir1", new NefsItemId(2), dir1DataSource, null, dir1Attributes);
+		var dir1 = new NefsItem(new NefsItemId(2), "dir1", new NefsItemId(2), dir1DataSource, null, dir1Attributes);
 		items.Add(dir1);
 
 		var p6 = new Nefs20HeaderPart6(items);
@@ -94,14 +91,12 @@ public class NefsHeaderPart6Tests
 		*/
 
 		Assert.Equal(file1Attributes.Part6Volume, p6.EntriesByGuid[file1.Guid].Volume);
-		Assert.Equal(file1Attributes.Part6Unknown0x3, p6.EntriesByGuid[file1.Guid].Unknown0x3);
 
 		/*
 		file2
 		*/
 
 		Assert.Equal(file2Attributes.Part6Volume, p6.EntriesByGuid[file2.Guid].Volume);
-		Assert.Equal(file2Attributes.Part6Unknown0x3, p6.EntriesByGuid[file2.Guid].Unknown0x3);
 
 		/*
 		dir1
@@ -109,7 +104,6 @@ public class NefsHeaderPart6Tests
 
 		var attributes = p6.EntriesByGuid[dir1.Guid].CreateAttributes();
 		Assert.Equal(dir1Attributes.Part6Volume, p6.EntriesByGuid[dir1.Guid].Volume);
-		Assert.Equal(dir1Attributes.Part6Unknown0x3, p6.EntriesByGuid[dir1.Guid].Unknown0x3);
 		Assert.True(attributes.IsDirectory);
 	}
 

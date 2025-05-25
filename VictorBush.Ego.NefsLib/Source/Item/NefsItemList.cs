@@ -7,8 +7,8 @@ namespace VictorBush.Ego.NefsLib.Item;
 /// </summary>
 public sealed class NefsItemList : ICloneable
 {
-	private readonly Dictionary<Guid, NefsItem> itemsByGuid = new();
-	private readonly SortedDictionary<NefsItemId, ItemContainer> itemsById = new();
+	private readonly Dictionary<NefsItemId, NefsItem> itemsById = new();
+	private readonly SortedDictionary<NefsItemId, ItemContainer> containersById = new();
 	private readonly List<ItemContainer> rootItems = new();
 
 	/// <summary>
@@ -23,7 +23,7 @@ public sealed class NefsItemList : ICloneable
 	/// <summary>
 	/// Gets the number of items in the list.
 	/// </summary>
-	public int Count => this.itemsById.Count;
+	public int Count => this.containersById.Count;
 
 	/// <summary>
 	/// The name of the data file (without directory path, but with extension).
@@ -41,13 +41,18 @@ public sealed class NefsItemList : ICloneable
 	/// <param name="item">The item to add.</param>
 	public void Add(NefsItem item)
 	{
-		// Add to guid lookup
-		this.itemsByGuid.Add(item.Guid, item);
+		ArgumentNullException.ThrowIfNull(item);
+		this.itemsById.Add(item.Id, item);
 
 		// Check if duplicate id
-		if (this.itemsById.ContainsKey(item.Id))
+		if (item.Id != item.FirstDuplicateId)
 		{
-			var existingContainer = this.itemsById[item.Id];
+			if (!this.containersById.TryGetValue(item.FirstDuplicateId, out var existingContainer))
+			{
+				throw new ArgumentException(
+					$"The item's first duplicate id {item.FirstDuplicateId} does not exist. The first duplicate must be added to the list before the next duplicates.");
+			}
+
 			existingContainer.Items.Add(item);
 			return;
 		}
@@ -64,18 +69,17 @@ public sealed class NefsItemList : ICloneable
 		else
 		{
 			// Find parent
-			if (!this.itemsById.ContainsKey(item.DirectoryId))
+			if (!this.containersById.TryGetValue(item.DirectoryId, out var parentContainer))
 			{
 				throw new ArgumentException($"The item's parent id {item.DirectoryId} does not exist. The parent must be added to the list before the child.");
 			}
 
-			var parentContainer = this.itemsById[item.DirectoryId];
 			parentContainer.Children.Add(container);
 			container.Parent = parentContainer;
 		}
 
 		// Add to master list
-		this.itemsById.Add(item.Id, container);
+		this.containersById.Add(item.Id, container);
 	}
 
 	/// <summary>
@@ -83,9 +87,9 @@ public sealed class NefsItemList : ICloneable
 	/// </summary>
 	public void Clear()
 	{
-		this.itemsByGuid.Clear();
-		this.rootItems.Clear();
 		this.itemsById.Clear();
+		this.rootItems.Clear();
+		this.containersById.Clear();
 	}
 
 	/// <summary>
@@ -108,20 +112,10 @@ public sealed class NefsItemList : ICloneable
 	}
 
 	/// <summary>
-	/// Checks if the item list contains an item with the specified Guid.
-	/// </summary>
-	/// <param name="guid">The Guid to check.</param>
-	/// <returns>True if the list contains the item id.</returns>
-	public bool ContainsKey(Guid guid)
-	{
-		return this.itemsByGuid.ContainsKey(guid);
-	}
-
-	/// <summary>
 	/// Enumerates items in order by id.
 	/// </summary>
 	/// <returns>List of items.</returns>
-	public IEnumerable<NefsItem> EnumerateById() => this.itemsById.Values.SelectMany(v => v.Items);
+	public IEnumerable<NefsItem> EnumerateById() => this.containersById.Values.SelectMany(v => v.Items);
 
 	/// <summary>
 	/// Enumerates item in depth-first order based on directory structure, but sorts children by item id.
@@ -162,7 +156,7 @@ public sealed class NefsItemList : ICloneable
 	/// <returns>The items children.</returns>
 	public IEnumerable<NefsItem> EnumerateItemChildren(NefsItemId id)
 	{
-		var item = this.itemsById[id];
+		var item = this.containersById[id];
 		return item.Children.SelectMany(v => v.Items);
 	}
 
@@ -176,13 +170,13 @@ public sealed class NefsItemList : ICloneable
 	}
 
 	/// <summary>
-	/// Gets the item with the specified Guid. Throws an exception if not found.
+	/// Gets the item with the specified id.
 	/// </summary>
-	/// <param name="guid">The guid of the item to get.</param>
-	/// <returns>The item.</returns>
-	public NefsItem GetItem(Guid guid)
+	/// <param name="id">The id of the item to get.</param>
+	/// <returns>The item or null if it does not exist.</returns>
+	public NefsItem? GetItem(NefsItemId id)
 	{
-		return this.itemsByGuid[guid];
+		return this.itemsById[id];
 	}
 
 	/// <summary>
@@ -192,7 +186,7 @@ public sealed class NefsItemList : ICloneable
 	/// <returns>The directory id.</returns>
 	public NefsItemId GetItemDirectoryId(NefsItemId id)
 	{
-		var item = this.itemsById[id];
+		var item = this.containersById[id];
 		if (item.Parent == null)
 		{
 			return id;
@@ -208,7 +202,7 @@ public sealed class NefsItemList : ICloneable
 	/// <returns>The item's file name.</returns>
 	public string GetItemFileName(NefsItemId id)
 	{
-		return this.itemsById[id].Items.First().FileName;
+		return this.containersById[id].Items.First().FileName;
 	}
 
 	/// <summary>
@@ -244,7 +238,7 @@ public sealed class NefsItemList : ICloneable
 	public NefsItemId GetItemFirstChildId(NefsItemId id)
 	{
 		// First child id is based on children items being sorted by id, NOT by file name
-		var item = this.itemsById[id];
+		var item = this.containersById[id];
 		return item.Children.Count > 0 ? item.Children.OrderBy(i => i.Items.First().Id).First().Items.First().Id : id;
 	}
 
@@ -255,7 +249,7 @@ public sealed class NefsItemList : ICloneable
 	/// <returns>The <see cref="NefsItem"/>.</returns>
 	public IReadOnlyList<NefsItem> GetItems(NefsItemId id)
 	{
-		return this.itemsById[id].Items;
+		return this.containersById[id].Items;
 	}
 
 	/// <summary>
@@ -265,7 +259,7 @@ public sealed class NefsItemList : ICloneable
 	/// <returns>The item.</returns>
 	public IReadOnlyList<NefsItem> GetItemsById(NefsItemId id)
 	{
-		return this.itemsById[id].Items;
+		return this.containersById[id].Items;
 	}
 
 	/// <summary>
@@ -278,7 +272,7 @@ public sealed class NefsItemList : ICloneable
 	public NefsItemId GetItemSiblingId(NefsItemId id)
 	{
 		// Sibling id is based on children items being sorted by id, NOT by file name
-		var item = this.itemsById[id];
+		var item = this.containersById[id];
 		var parentList = item.Parent?.Children.OrderBy(i => i.Items.First().Id).Select(i => i.Items.First().Id).ToList()
 			?? this.rootItems.OrderBy(i => i.Items.First().Id).Select(i => i.Items.First().Id).ToList();
 		var itemIndex = parentList.IndexOf(item.Items.First().Id);
@@ -299,13 +293,13 @@ public sealed class NefsItemList : ICloneable
 	/// <param name="id">The id of the item to remove.</param>
 	public void Remove(NefsItemId id)
 	{
-		if (!this.itemsById.ContainsKey(id))
+		if (!this.containersById.ContainsKey(id))
 		{
 			return;
 		}
 
-		var item = this.itemsById[id];
-		this.itemsById.Remove(id);
+		var item = this.containersById[id];
+		this.containersById.Remove(id);
 
 		// Check if in root
 		if (item.Parent == null)

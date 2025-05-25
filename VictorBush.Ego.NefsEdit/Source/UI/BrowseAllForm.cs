@@ -182,53 +182,51 @@ internal partial class BrowseAllForm : DockContent
 			AddSubItem(listItem, "compressedSize", item.CompressedSize.ToString("X"));
 			AddSubItem(listItem, "extractedSize", item.ExtractedSize.ToString("X"));
 
-			if (archive.Header is Nefs20Header h20)
+			if (archive.Header is Nefs200Header h20)
 			{
-				var p1 = h20.Part1.EntriesByGuid[item.Guid];
-				AddSubItem(listItem, "pt1.0x00", p1.OffsetToData.ToString("X"));
-				AddSubItem(listItem, "pt1.0x08", p1.IndexPart2.ToString("X"));
-				AddSubItem(listItem, "pt1.0x0c", p1.IndexPart4.ToString("X"));
-				AddSubItem(listItem, "pt1.0x10", p1.Id.Value.ToString("X"));
+				var p1 = h20.EntryTable.Entries[item.Id.Index];
+				AddSubItem(listItem, "pt1.0x00", p1.Start.ToString("X"));
+				AddSubItem(listItem, "pt1.0x08", p1.SharedInfo.ToString("X"));
+				AddSubItem(listItem, "pt1.0x0c", p1.FirstBlock.ToString("X"));
+				AddSubItem(listItem, "pt1.0x10", p1.NextDuplicate.ToString("X"));
 
-				var p2 = h20.Part2.EntriesByIndex[(int)p1.IndexPart2];
-				AddSubItem(listItem, "pt2.0x00", p2.DirectoryId.Value.ToString("X"));
-				AddSubItem(listItem, "pt2.0x04", p2.FirstChildId.Value.ToString("X"));
-				AddSubItem(listItem, "pt2.0x08", p2.OffsetIntoPart3.ToString("X"));
-				AddSubItem(listItem, "pt2.0x0c", p2.ExtractedSize.ToString("X"));
-				AddSubItem(listItem, "pt2.0x10", p2.Id.Value.ToString("X"));
+				var p2 = h20.SharedEntryInfoTable.Entries[(int)p1.SharedInfo];
+				AddSubItem(listItem, "pt2.0x00", p2.Parent.ToString("X"));
+				AddSubItem(listItem, "pt2.0x04", p2.FirstChild.ToString("X"));
+				AddSubItem(listItem, "pt2.0x08", p2.NameOffset.ToString("X"));
+				AddSubItem(listItem, "pt2.0x0c", p2.Size.ToString("X"));
+				AddSubItem(listItem, "pt2.0x10", p2.FirstDuplicate.ToString("X"));
 
-				var p6 = h20.Part6.EntriesByGuid[item.Guid];
+				var p6 = h20.WriteableEntryTable.Entries[item.Id.Index];
 				AddSubItem(listItem, "pt6.0x00", p6.Volume.ToString("X"));
-				AddSubItem(listItem, "pt6.0x02", ((byte)p6.Flags).ToString("X"));
-				AddSubItem(listItem, "pt6.0x03", p6.Unknown0x3.ToString("X"));
+				AddSubItem(listItem, "pt6.0x02", p6.Flags.ToString("X"));
 
-				var p7 = h20.Part7.EntriesByIndex[(int)p1.IndexPart2];
-				AddSubItem(listItem, "pt7.0x00", p7.SiblingId.Value.ToString("X"));
-				AddSubItem(listItem, "pt7.0x04", p7.Id.Value.ToString("X"));
+				var p7 = h20.WriteableSharedEntryInfo.Entries[(int)p1.SharedInfo];
+				AddSubItem(listItem, "pt7.0x00", p7.NextSibling.ToString("X"));
+				AddSubItem(listItem, "pt7.0x04", p7.PatchedEntry.ToString("X"));
 			}
-			else if (archive.Header is Nefs16Header h16)
+			else if (archive.Header is Nefs160Header h16)
 			{
-				var p1 = h16.Part1.EntriesByGuid[item.Guid];
-				AddSubItem(listItem, "pt1.0x00", p1.OffsetToData.ToString("X"));
-				AddSubItem(listItem, "pt1.0x08", p1.IndexPart2.ToString("X"));
-				AddSubItem(listItem, "pt1.0x0c", p1.IndexPart4.ToString("X"));
-				AddSubItem(listItem, "pt1.0x10", p1.Id.Value.ToString("X"));
+				var p1 = h16.EntryTable.Entries[item.Id.Index];
+				AddSubItem(listItem, "pt1.0x00", p1.Start.ToString("X"));
+				AddSubItem(listItem, "pt1.0x08", p1.SharedInfo.ToString("X"));
+				AddSubItem(listItem, "pt1.0x0c", p1.FirstBlock.ToString("X"));
+				AddSubItem(listItem, "pt1.0x10", p1.NextDuplicate.ToString("X"));
 
-				var p2 = h16.Part2.EntriesByIndex[(int)p1.IndexPart2];
-				AddSubItem(listItem, "pt2.0x00", p2.DirectoryId.Value.ToString("X"));
-				AddSubItem(listItem, "pt2.0x04", p2.FirstChildId.Value.ToString("X"));
-				AddSubItem(listItem, "pt2.0x08", p2.OffsetIntoPart3.ToString("X"));
-				AddSubItem(listItem, "pt2.0x0c", p2.ExtractedSize.ToString("X"));
-				AddSubItem(listItem, "pt2.0x10", p2.Id.Value.ToString("X"));
+				var p2 = h16.SharedEntryInfoTable.Entries[(int)p1.SharedInfo];
+				AddSubItem(listItem, "pt2.0x00", p2.Parent.ToString("X"));
+				AddSubItem(listItem, "pt2.0x04", p2.FirstChild.ToString("X"));
+				AddSubItem(listItem, "pt2.0x08", p2.NameOffset.ToString("X"));
+				AddSubItem(listItem, "pt2.0x0c", p2.Size.ToString("X"));
+				AddSubItem(listItem, "pt2.0x10", p2.FirstDuplicate.ToString("X"));
 
-				var p6 = h16.Part6.EntriesByGuid[item.Guid];
+				var p6 = h16.WriteableEntryTable.Entries[item.Id.Index];
 				AddSubItem(listItem, "pt6.0x00", p6.Volume.ToString("X"));
-				AddSubItem(listItem, "pt6.0x02", ((byte)p6.Flags).ToString("X"));
-				AddSubItem(listItem, "pt6.0x03", p6.Unknown0x3.ToString("X"));
+				AddSubItem(listItem, "pt6.0x02", p6.Flags.ToString("X"));
 
-				var p7 = h16.Part7.EntriesByIndex[(int)p1.IndexPart2];
-				AddSubItem(listItem, "pt7.0x00", p7.SiblingId.Value.ToString("X"));
-				AddSubItem(listItem, "pt7.0x04", p7.Id.Value.ToString("X"));
+				var p7 = h16.WriteableSharedEntryInfo.Entries[(int)p1.SharedInfo];
+				AddSubItem(listItem, "pt7.0x00", p7.NextSibling.ToString("X"));
+				AddSubItem(listItem, "pt7.0x04", p7.PatchedEntry.ToString("X"));
 			}
 
 			if (item.Type == NefsItemType.Directory)

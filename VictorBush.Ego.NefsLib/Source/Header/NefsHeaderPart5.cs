@@ -1,5 +1,6 @@
 // See LICENSE.txt for license information.
 
+using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.Header.Version151;
 
 namespace VictorBush.Ego.NefsLib.Header;
@@ -24,7 +25,7 @@ public sealed class NefsHeaderPart5
 		this.data = data ?? new Nefs150TocVolumeInfo();
 		if (data is null)
 		{
-			FirstDataOffset = Nefs20Header.DataOffsetDefault;
+			FirstDataOffset = Nefs200Header.DataOffsetDefault;
 		}
 	}
 

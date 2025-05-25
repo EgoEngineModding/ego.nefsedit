@@ -12,7 +12,6 @@ public sealed class NefsItem : ICloneable
 	/// <summary>
 	/// Initializes a new instance of the <see cref="NefsItem"/> class.
 	/// </summary>
-	/// <param name="guid">The unique identifier for this item.</param>
 	/// <param name="id">The item id.</param>
 	/// <param name="fileName">The file name within the archive.</param>
 	/// <param name="directoryId">The directory id the item is in.</param>
@@ -21,7 +20,6 @@ public sealed class NefsItem : ICloneable
 	/// <param name="attributes">Additional attributes.</param>
 	/// <param name="state">The item state.</param>
 	public NefsItem(
-		Guid guid,
 		NefsItemId id,
 		string fileName,
 		NefsItemId directoryId,
@@ -29,9 +27,33 @@ public sealed class NefsItem : ICloneable
 		NefsDataTransform? transform,
 		NefsItemAttributes attributes,
 		NefsItemState state = NefsItemState.None)
+		: this(id, id, fileName, directoryId, dataSource, transform, attributes, state)
 	{
-		Guid = guid;
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="NefsItem"/> class.
+	/// </summary>
+	/// <param name="id">The item id.</param>
+	/// <param name="firstDuplicateId">The id of the first duplicate.</param>
+	/// <param name="fileName">The file name within the archive.</param>
+	/// <param name="directoryId">The directory id the item is in.</param>
+	/// <param name="dataSource">The data source for the item's data.</param>
+	/// <param name="transform">The transform that is applied to this item's data. Can be null if no transform.</param>
+	/// <param name="attributes">Additional attributes.</param>
+	/// <param name="state">The item state.</param>
+	public NefsItem(
+		NefsItemId id,
+		NefsItemId firstDuplicateId,
+		string fileName,
+		NefsItemId directoryId,
+		INefsDataSource dataSource,
+		NefsDataTransform? transform,
+		NefsItemAttributes attributes,
+		NefsItemState state = NefsItemState.None)
+	{
 		Id = id;
+		FirstDuplicateId = firstDuplicateId;
 		DirectoryId = directoryId;
 		DataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));
 		State = state;
@@ -79,10 +101,14 @@ public sealed class NefsItem : ICloneable
 	public Guid Guid { get; }
 
 	/// <summary>
-	/// The id of this item. This is not guaranteed to be unique in an archive, there can be items with duplicate id
-	/// values. For a unique identifer, use <see cref="Guid"/>.
+	/// The id of this item.
 	/// </summary>
 	public NefsItemId Id { get; }
+
+	/// <summary>
+	/// The id of the first duplicate.
+	/// </summary>
+	public NefsItemId FirstDuplicateId { get; }
 
 	/// <summary>
 	/// Unknown data in the part 6 entry.
@@ -127,8 +153,8 @@ public sealed class NefsItem : ICloneable
 	public object Clone()
 	{
 		return new NefsItem(
-			Guid,
 			Id,
+			FirstDuplicateId,
 			FileName,
 			DirectoryId,
 			DataSource,

@@ -39,115 +39,112 @@ internal partial class ItemDebugForm : DockContent
 	{
 	}
 
-	private string GetDebugInfoVersion16(NefsItem item, Nefs16Header h, NefsItemList items)
+	private string GetDebugInfoVersion16(NefsItem item, Nefs160Header h, NefsItemList items)
 	{
-		var p1 = h.Part1.EntriesByGuid[item.Guid];
-		var p2 = h.Part2.EntriesByIndex[(int)p1.IndexPart2];
-		var p6 = h.Part6.EntriesByGuid[item.Guid];
-		var p7 = h.Part7.EntriesByIndex[(int)p1.IndexPart2];
-		var numChunks = h.TableOfContents.ComputeNumChunks(p2.ExtractedSize);
-		var chunkSize = h.TableOfContents.BlockSize;
-		var attributes = p6.CreateAttributes();
+		var p1 = h.EntryTable.Entries[item.Id.Index];
+		var p2 = h.SharedEntryInfoTable.Entries[(int)p1.SharedInfo];
+		var p6 = h.WriteableEntryTable.Entries[item.Id.Index];
+		var p7 = h.WriteableSharedEntryInfo.Entries[(int)p1.SharedInfo];
+		var attributes = item.Attributes;
 
-		return $@"Item Info
------------------------------------------------------------
-Item name:                  {item.FileName}
-Item path:                  {items.GetItemFilePath(item.Id)}
+		return $"""
+		        Item Info
+		        -----------------------------------------------------------
+		        Item name:                  {item.FileName}
+		        Item path:                  {items.GetItemFilePath(item.Id)}
 
-Part 1
------------------------------------------------------------
-Offset to data:             {p1.OffsetToData.ToString("X")}
-Index in part 2:            {p1.IndexPart2.ToString("X")}
-Index in part 4:            {p1.IndexPart4.ToString("X")}
-Id:                         {p1.Id.Value.ToString("X")}
+		        Part 1
+		        -----------------------------------------------------------
+		        Offset to data:             {p1.Start.ToString("X")}
+		        Index in part 2:            {p1.SharedInfo.ToString("X")}
+		        Index in part 4:            {p1.FirstBlock.ToString("X")}
+		        Next duplicate:             {p1.NextDuplicate.ToString("X")}
 
-Part 2
------------------------------------------------------------
-Directory id:               {p2.DirectoryId.Value.ToString("X")}
-First child id:             {p2.FirstChildId.Value.ToString("X")}
-Offset in part 3:           {p2.OffsetIntoPart3.ToString("X")}
-Extracted size:             {p2.ExtractedSize.ToString("X")}
-Id:                         {p2.Id.Value.ToString("X")}
+		        Part 2
+		        -----------------------------------------------------------
+		        Directory id:               {p2.Parent.ToString("X")}
+		        First child id:             {p2.FirstChild.ToString("X")}
+		        Offset in part 3:           {p2.NameOffset.ToString("X")}
+		        Extracted size:             {p2.Size.ToString("X")}
+		        First duplicate:            {p2.FirstDuplicate.ToString("X")}
 
-Part 4
------------------------------------------------------------
-{PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, chunkSize, h.Intro.GetAesKey()))}
+		        Part 4
+		        -----------------------------------------------------------
+		        {PrintChunkSizesToString(item.DataSource.Size.Chunks)}
 
-Part 6
------------------------------------------------------------
-0x00:                       {p6.Volume.ToString("X")}
-0x02:                       {((byte)p6.Flags).ToString("X")}
-0x03:                       {p6.Unknown0x3.ToString("X")}
+		        Part 6
+		        -----------------------------------------------------------
+		        0x00:                       {p6.Volume.ToString("X")}
+		        0x02:                       {p6.Flags.ToString("X")}
 
-IsTransformed:              {attributes.V16IsTransformed}
-IsDirectory:                {attributes.IsDirectory}
-IsDuplicated:               {attributes.IsDuplicated}
-IsCacheable:                {attributes.IsCacheable}
-Unknown 0x10:               {attributes.V16Unknown0x10}
-IsPatched:                  {attributes.IsPatched}
-Unknown 0x40:               {attributes.V16Unknown0x40}
-Unknown 0x80:               {attributes.V16Unknown0x80}
+		        IsTransformed:              {attributes.V16IsTransformed}
+		        IsDirectory:                {attributes.IsDirectory}
+		        IsDuplicated:               {attributes.IsDuplicated}
+		        IsCacheable:                {attributes.IsCacheable}
+		        Unknown 0x10:               {attributes.V16Unknown0x10}
+		        IsPatched:                  {attributes.IsPatched}
+		        Unknown 0x40:               {attributes.V16Unknown0x40}
+		        Unknown 0x80:               {attributes.V16Unknown0x80}
 
-Part 7
------------------------------------------------------------
-Sibling id:                 {p7.SiblingId.Value.ToString("X")}
-Item id:                    {p7.Id.Value.ToString("X")}
-";
+		        Part 7
+		        -----------------------------------------------------------
+		        Sibling id:                 {p7.NextSibling.ToString("X")}
+		        Item id:                    {p7.PatchedEntry.ToString("X")}
+		        """;
 	}
 
-	private string GetDebugInfoVersion20(NefsItem item, Nefs20Header h, NefsItemList items)
+	private string GetDebugInfoVersion20(NefsItem item, Nefs200Header h, NefsItemList items)
 	{
-		var p1 = h.Part1.EntriesByGuid[item.Guid];
-		var p2 = h.Part2.EntriesByIndex[(int)p1.IndexPart2];
-		var p6 = h.Part6.EntriesByGuid[item.Guid];
-		var p7 = h.Part7.EntriesByIndex[(int)p1.IndexPart2];
-		var numChunks = h.TableOfContents.ComputeNumChunks(p2.ExtractedSize);
-		var attributes = p6.CreateAttributes();
+		var p1 = h.EntryTable.Entries[item.Id.Index];
+		var p2 = h.SharedEntryInfoTable.Entries[(int)p1.SharedInfo];
+		var p6 = h.WriteableEntryTable.Entries[item.Id.Index];
+		var p7 = h.WriteableSharedEntryInfo.Entries[(int)p1.SharedInfo];
+		var attributes = item.Attributes;
 
-		return $@"Item Info
------------------------------------------------------------
-Item name:                  {item.FileName}
-Item path:                  {items.GetItemFilePath(item.Id)}
+		return $"""
+		        Item Info
+		        -----------------------------------------------------------
+		        Item name:                  {item.FileName}
+		        Item path:                  {items.GetItemFilePath(item.Id)}
 
-Part 1
------------------------------------------------------------
-Offset to data:             {p1.OffsetToData.ToString("X")}
-Index in part 2:            {p1.IndexPart2.ToString("X")}
-Index in part 4:            {p1.IndexPart4.ToString("X")}
-Id:                         {p1.Id.Value.ToString("X")}
+		        Part 1
+		        -----------------------------------------------------------
+		        Offset to data:             {p1.Start.ToString("X")}
+		        Index in part 2:            {p1.SharedInfo.ToString("X")}
+		        Index in part 4:            {p1.FirstBlock.ToString("X")}
+		        Next duplicate:             {p1.NextDuplicate.ToString("X")}
 
-Part 2
------------------------------------------------------------
-Directory id:               {p2.DirectoryId.Value.ToString("X")}
-First child id:             {p2.FirstChildId.Value.ToString("X")}
-Offset in part 3:           {p2.OffsetIntoPart3.ToString("X")}
-Extracted size:             {p2.ExtractedSize.ToString("X")}
-Id:                         {p2.Id.Value.ToString("X")}
+		        Part 2
+		        -----------------------------------------------------------
+		        Directory id:               {p2.Parent.ToString("X")}
+		        First child id:             {p2.FirstChild.ToString("X")}
+		        Offset in part 3:           {p2.NameOffset.ToString("X")}
+		        Extracted size:             {p2.Size.ToString("X")}
+		        First duplicate:            {p2.FirstDuplicate.ToString("X")}
 
-Part 4
------------------------------------------------------------
-Chunks                      {(item.Transform is not null ? PrintChunkSizesToString(h.Part4.CreateChunksList(p1.IndexPart4, numChunks, item.Transform)) : "Item has no transform.")}
+		        Part 4
+		        -----------------------------------------------------------
+		        Chunks                      {(item.Transform is not null ? PrintChunkSizesToString(item.DataSource.Size.Chunks) : "Item has no transform.")}
 
-Part 6
------------------------------------------------------------
-0x00:                       {p6.Volume.ToString("X")}
-0x02:                       {((byte)p6.Flags).ToString("X")}
-0x03:                       {p6.Unknown0x3.ToString("X")}
+		        Part 6
+		        -----------------------------------------------------------
+		        0x00:                       {p6.Volume.ToString("X")}
+		        0x02:                       {p6.Flags.ToString("X")}
 
-IsZlib:                     {attributes.V20IsZlib}
-IsAes:                      {attributes.V20IsAes}
-IsDirectory:                {attributes.IsDirectory}
-IsDuplicated:               {attributes.IsDuplicated}
-Unknown 0x10:               {attributes.V20Unknown0x10}
-Unknown 0x20:               {attributes.V20Unknown0x20}
-Unknown 0x40:               {attributes.V20Unknown0x40}
-Unknown 0x80:               {attributes.V20Unknown0x80}
+		        IsZlib:                     {attributes.V20IsZlib}
+		        IsAes:                      {attributes.V20IsAes}
+		        IsDirectory:                {attributes.IsDirectory}
+		        IsDuplicated:               {attributes.IsDuplicated}
+		        Unknown 0x10:               {attributes.V20Unknown0x10}
+		        Unknown 0x20:               {attributes.V20Unknown0x20}
+		        Unknown 0x40:               {attributes.V20Unknown0x40}
+		        Unknown 0x80:               {attributes.V20Unknown0x80}
 
-Part 7
------------------------------------------------------------
-Sibling id:                 {p7.SiblingId.Value.ToString("X")}
-Item id:                    {p7.Id.Value.ToString("X")}
-";
+		        Part 7
+		        -----------------------------------------------------------
+		        Sibling id:                 {p7.NextSibling.ToString("X")}
+		        Item id:                    {p7.PatchedEntry.ToString("X")}
+		        """;
 	}
 
 	private void OnWorkspaceArchiveClosed(object? sender, EventArgs e)
@@ -177,7 +174,7 @@ Item id:                    {p7.Id.Value.ToString("X")}
 		});
 	}
 
-	private string PrintChunkSizesToString(IList<NefsDataChunk> sizes)
+	private string PrintChunkSizesToString(IReadOnlyList<NefsDataChunk> sizes)
 	{
 		var sb = new StringBuilder();
 		foreach (var s in sizes)
@@ -197,11 +194,11 @@ Item id:                    {p7.Id.Value.ToString("X")}
 			return;
 		}
 
-		if (archive.Header is Nefs20Header h20)
+		if (archive.Header is Nefs200Header h20)
 		{
 			this.richTextBox.Text = GetDebugInfoVersion20(item, h20, archive.Items);
 		}
-		else if (archive.Header is Nefs16Header h16)
+		else if (archive.Header is Nefs160Header h16)
 		{
 			this.richTextBox.Text = GetDebugInfoVersion16(item, h16, archive.Items);
 		}

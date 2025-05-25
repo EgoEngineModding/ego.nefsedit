@@ -53,7 +53,7 @@ public class NefsHeaderPart4Tests
 	[Fact]
 	public void CreateChunksList_FirstItem_ListReturned()
 	{
-		var p4 = new Nefs20HeaderPart4(this.testItems);
+		var p4 = new Nefs200HeaderBlockTable(this.testItems);
 		var expected = this.file1.DataSource.Size.Chunks;
 		var chunks = p4.CreateChunksList(0, (uint)expected.Count, TestHelpers.TestTransform);
 
@@ -70,7 +70,7 @@ public class NefsHeaderPart4Tests
 	[Fact]
 	public void CreateChunksList_SecondItem_ListReturned()
 	{
-		var p4 = new Nefs20HeaderPart4(this.testItems);
+		var p4 = new Nefs200HeaderBlockTable(this.testItems);
 		var expected = this.file2.DataSource.Size.Chunks;
 		var chunks = p4.CreateChunksList(3, (uint)expected.Count, TestHelpers.TestTransform);
 
@@ -87,21 +87,21 @@ public class NefsHeaderPart4Tests
 	[Fact]
 	public void GetIndexForItem_ItemIsDirectory_ZeroReturned()
 	{
-		var p4 = new Nefs20HeaderPart4(this.testItems);
+		var p4 = new Nefs200HeaderBlockTable(this.testItems);
 		Assert.Equal(0U, p4.GetIndexForItem(this.dir1));
 	}
 
 	[Fact]
 	public void GetIndexForItem_ItemIsUncompressed_NegativeOneReturned()
 	{
-		var p4 = new Nefs20HeaderPart4(this.testItems);
+		var p4 = new Nefs200HeaderBlockTable(this.testItems);
 		Assert.Equal(0xFFFFFFFFU, p4.GetIndexForItem(this.file4NotCompressed));
 	}
 
 	[Fact]
 	public void GetIndexForItem_ItemIsValue_IndexReturned()
 	{
-		var p4 = new Nefs20HeaderPart4(this.testItems);
+		var p4 = new Nefs200HeaderBlockTable(this.testItems);
 		Assert.Equal(0U, p4.GetIndexForItem(this.file1));
 		Assert.Equal(3U, p4.GetIndexForItem(this.file2));
 		Assert.Equal(6U, p4.GetIndexForItem(this.file3));
@@ -110,7 +110,7 @@ public class NefsHeaderPart4Tests
 	[Fact]
 	public void NefsHeaderPart4_MultipleItems_EntriesPopulated()
 	{
-		var p4 = new Nefs20HeaderPart4(this.testItems);
+		var p4 = new Nefs200HeaderBlockTable(this.testItems);
 
 		// Dir 1 and file 4 should not have entries. Only compressed files have entries in part 4.
 		Assert.Equal(9, p4.EntriesByIndex.Count);
@@ -138,7 +138,7 @@ public class NefsHeaderPart4Tests
 	public void NefsHeaderPart4_NoItems_EntriesEmpty()
 	{
 		var items = new NefsItemList(@"C:\archive.nefs");
-		var p4 = new Nefs20HeaderPart4(items);
+		var p4 = new Nefs200HeaderBlockTable(items);
 		Assert.Empty(p4.EntriesByIndex);
 		Assert.Equal(0, p4.Size);
 	}

@@ -4,6 +4,7 @@ using System.IO.Abstractions.TestingHelpers;
 using System.Runtime.InteropServices;
 using System.Text;
 using VictorBush.Ego.NefsLib.Header;
+using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Item;
 using VictorBush.Ego.NefsLib.Progress;
@@ -35,8 +36,8 @@ public class NefsWriterTests
 		items.Add(file2);
 		items.Add(dir1);
 
-		var part4 = new Nefs20HeaderPart4(items);
-		var part1 = new NefsHeaderPart1(items, part4);
+		var part4 = new Nefs200HeaderBlockTable(items);
+		var part1 = new Nefs160HeaderEntryTable(items, part4);
 
 		/*
 		Write
@@ -48,7 +49,7 @@ public class NefsWriterTests
 
 		using (var ms = new MemoryStream())
 		{
-			await writer.WriteHeaderPartWithEntriesAsync(ms, offset, part1.EntriesByIndex, new NefsProgress());
+			await writer.WriteHeaderPartWithEntriesAsync(ms, offset, part1.Entries, new NefsProgress());
 			buffer = ms.ToArray();
 		}
 
@@ -76,7 +77,7 @@ public class NefsWriterTests
 		file2
 		*/
 
-		offset += NefsHeaderPart1.EntrySize;
+		offset += Nefs160HeaderEntryTable.EntrySize;
 
 		// Data offset (8 bytes)
 		Assert.Equal(20, BitConverter.ToInt64(buffer, offset + 0));
@@ -94,7 +95,7 @@ public class NefsWriterTests
 		dir1
 		*/
 
-		offset += NefsHeaderPart1.EntrySize;
+		offset += Nefs160HeaderEntryTable.EntrySize;
 
 		// Data offset (8 bytes)
 		Assert.Equal(0, BitConverter.ToInt64(buffer, offset + 0));
@@ -123,7 +124,7 @@ public class NefsWriterTests
 		items.Add(file3);
 
 		var part3 = new NefsHeaderPart3(items);
-		var part2 = new NefsHeaderPart2(items, part3);
+		var part2 = new Nefs160HeaderSharedEntryInfoTable(items, part3);
 
 		/*
 		Write
@@ -166,7 +167,7 @@ public class NefsWriterTests
 		file3
 		*/
 
-		offset += NefsHeaderPart2.EntrySize;
+		offset += Nefs160HeaderSharedEntryInfoTable.EntrySize;
 
 		// Dir id
 		Assert.Equal(2, BitConverter.ToInt32(buffer, offset + 0));
@@ -187,7 +188,7 @@ public class NefsWriterTests
 		file1
 		*/
 
-		offset += NefsHeaderPart2.EntrySize;
+		offset += Nefs160HeaderSharedEntryInfoTable.EntrySize;
 
 		// Dir id
 		Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0));
@@ -208,7 +209,7 @@ public class NefsWriterTests
 		file2
 		*/
 
-		offset += NefsHeaderPart2.EntrySize;
+		offset += Nefs160HeaderSharedEntryInfoTable.EntrySize;
 
 		// Dir id
 		Assert.Equal(1, BitConverter.ToInt32(buffer, offset + 0));
@@ -283,7 +284,7 @@ public class NefsWriterTests
 		items.Add(dir1);
 		items.Add(file3);
 
-		var part4 = new Nefs20HeaderPart4(items);
+		var part4 = new Nefs200HeaderBlockTable(items);
 
 		/*
 		Write
@@ -352,15 +353,15 @@ public class NefsWriterTests
 		var aes = new byte[] { 0xE5, 0x69, 0x65, 0x23, 0xAB, 0xF5, 0x43, 0xFF, 0xC9, 0xDF, 0xB2, 0x2C, 0x64, 0xD1, 0x11, 0x46, 0xE5, 0x9B, 0xAC, 0xC8, 0xAC, 0x8B, 0xA4, 0x15, 0x9E, 0xE0, 0xE2, 0xBB, 0x54, 0x09, 0x0A, 0x6C, 0x99, 0x30, 0xC6, 0xC1, 0x84, 0x3C, 0x90, 0x29, 0x75, 0xB2, 0xB5, 0x5E, 0x3B, 0x7A, 0x06, 0x3D, 0xE1, 0xD2, 0x1F, 0x6F, 0xB7, 0xDC, 0x57, 0x5A, 0xC4, 0x4F, 0x84, 0xCB, 0x13, 0x87, 0xAB, 0xBF };
 		var hash = new byte[] { 0xCB, 0x13, 0x87, 0xAB, 0xBF, 0xD5, 0x45, 0x93, 0x34, 0x0A, 0x50, 0xC1, 0xA8, 0x0A, 0x82, 0x53, 0xF9, 0xD5, 0x46, 0xDA, 0x24, 0xDA, 0xA4, 0xDA, 0x82, 0xEA, 0x9A, 0xB5, 0xBC, 0xD8, 0x6B, 0xFC };
 
-		var intro = new NefsHeaderIntro
+		var intro = new Nefs160HeaderIntro(new Nefs160TocHeaderA())
 		{
 			AesKeyHexString = aes,
 			ExpectedHash = new Sha256Hash(hash),
 			HeaderSize = 12345,
 			NumberOfItems = 9876,
 			NefsVersion = 101,
-			Unknown0x70zlib = 202,
-			Unknown0x78 = 303,
+			UserValue = 202,
+			RandomPadding1 = 303ul << 32,
 		};
 
 		/*
