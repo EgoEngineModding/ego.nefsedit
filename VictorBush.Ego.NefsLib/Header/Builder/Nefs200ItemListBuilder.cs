@@ -4,6 +4,7 @@ using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using VictorBush.Ego.NefsLib.DataSource;
 using VictorBush.Ego.NefsLib.Header.Version160;
+using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.Item;
 
 namespace VictorBush.Ego.NefsLib.Header.Builder;

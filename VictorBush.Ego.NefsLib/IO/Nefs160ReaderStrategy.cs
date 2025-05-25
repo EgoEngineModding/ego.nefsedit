@@ -3,7 +3,6 @@
 using Microsoft.Extensions.Logging;
 using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Version150;
-using VictorBush.Ego.NefsLib.Header.Version151;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.Progress;
 using VictorBush.Ego.NefsLib.Source.Utility;

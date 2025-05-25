@@ -8,7 +8,6 @@ using VictorBush.Ego.NefsLib.ArchiveSource;
 using VictorBush.Ego.NefsLib.DataSource;
 using VictorBush.Ego.NefsLib.DataTypes;
 using VictorBush.Ego.NefsLib.Header;
-using VictorBush.Ego.NefsLib.Header.Version151;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.Item;

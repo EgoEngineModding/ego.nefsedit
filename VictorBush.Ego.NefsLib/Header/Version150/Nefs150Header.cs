@@ -1,10 +1,9 @@
 // See LICENSE.txt for license information.
 
-using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Source.Utility;
 
-namespace VictorBush.Ego.NefsLib.Header.Version151;
+namespace VictorBush.Ego.NefsLib.Header.Version150;
 
 /// <inheritdoc cref="INefsHeader" />
 public sealed class Nefs150Header : INefsHeader

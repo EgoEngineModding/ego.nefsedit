@@ -1,6 +1,6 @@
 // See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsLib.Header;
+namespace VictorBush.Ego.NefsLib.Header.Version200;
 
 /// <summary>
 /// Bitfield flags for part 6 data.

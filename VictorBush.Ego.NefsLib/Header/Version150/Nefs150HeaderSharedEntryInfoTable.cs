@@ -1,9 +1,8 @@
 // See LICENSE.txt for license information.
 
-using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.Item;
 
-namespace VictorBush.Ego.NefsLib.Header.Version151;
+namespace VictorBush.Ego.NefsLib.Header.Version150;
 
 /// <summary>
 /// The shared entry info table.

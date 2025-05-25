@@ -7,6 +7,8 @@ using VictorBush.Ego.NefsEdit.Utility;
 using VictorBush.Ego.NefsEdit.Workspace;
 using VictorBush.Ego.NefsLib;
 using VictorBush.Ego.NefsLib.Header;
+using VictorBush.Ego.NefsLib.Header.Version160;
+using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.Item;
 using WeifenLuo.WinFormsUI.Docking;
 

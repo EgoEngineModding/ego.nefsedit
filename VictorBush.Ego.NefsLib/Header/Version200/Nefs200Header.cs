@@ -1,17 +1,15 @@
 // See LICENSE.txt for license information.
 
 using System.Text;
-using Microsoft.Extensions.Logging;
-using VictorBush.Ego.NefsLib.Header.Version151;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Source.Utility;
 using VictorBush.Ego.NefsLib.Utility;
 
-namespace VictorBush.Ego.NefsLib.Header;
+namespace VictorBush.Ego.NefsLib.Header.Version200;
 
 /// <inheritdoc cref="INefsHeader" />
-public sealed class Nefs160Header : INefsHeader, IFormattable
+public sealed class Nefs200Header : INefsHeader
 {
 	/// <summary>
 	/// Offset to the first data item used in most archives.
@@ -28,15 +26,13 @@ public sealed class Nefs160Header : INefsHeader, IFormattable
 	/// </summary>
 	public const uint IntroOffset = 0x0;
 
-	private static readonly ILogger Log = NefsLog.GetLogger();
-
 	public NefsWriterSettings WriterSettings { get; }
 	public Nefs160TocHeaderA Intro { get; }
-	public Nefs160TocHeaderB TableOfContents { get; }
+	public Nefs200TocHeaderB TableOfContents { get; }
 	public Nefs160HeaderEntryTable EntryTable { get; }
 	public Nefs160HeaderSharedEntryInfoTable SharedEntryInfoTable { get; }
 	public NefsHeaderPart3 Part3 { get; }
-	public Nefs151HeaderBlockTable BlockTable { get; }
+	public Nefs200HeaderBlockTable BlockTable { get; }
 	public NefsHeaderPart5 Part5 { get; }
 	public Nefs160HeaderWriteableEntryTable WriteableEntryTable { get; }
 	public Nefs160HeaderWriteableSharedEntryInfo WriteableSharedEntryInfo { get; }
@@ -55,22 +51,22 @@ public sealed class Nefs160Header : INefsHeader, IFormattable
 	public uint Size => Intro.TocSize;
 
 	/// <inheritdoc />
-	public uint BlockSize => TableOfContents.BlockSize;
+	public uint BlockSize => 0x10000;
 
 	/// <inheritdoc />
 	public uint NumEntries => Intro.NumEntries;
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="Nefs160Header"/> class.
+	/// Initializes a new instance of the <see cref="Nefs200Header"/> class.
 	/// </summary>
-	public Nefs160Header(
+	public Nefs200Header(
 		NefsWriterSettings writerSettings,
 		Nefs160TocHeaderA intro,
-		Nefs160TocHeaderB toc,
+		Nefs200TocHeaderB toc,
 		Nefs160HeaderEntryTable entryTable,
 		Nefs160HeaderSharedEntryInfoTable sharedEntryInfoTable,
 		NefsHeaderPart3 part3,
-		Nefs151HeaderBlockTable blockTable,
+		Nefs200HeaderBlockTable blockTable,
 		NefsHeaderPart5 part5,
 		Nefs160HeaderWriteableEntryTable writeableEntryTable,
 		Nefs160HeaderWriteableSharedEntryInfo writeableSharedEntryInfo,
@@ -189,8 +185,6 @@ public sealed class Nefs160Header : INefsHeader, IFormattable
 		        Offset to Part 8:           {TableOfContents.HashDigestTableStart.ToString("X", formatProvider)}
 		        Num Volumes:                {TableOfContents.NumVolumes.ToString("X", formatProvider)}
 		        Hash Block Size (<< 15):    {TableOfContents.HashBlockSize.ToString("X", formatProvider)}
-		        Block Size (<< 15):         {TableOfContents.BlockSize.ToString("X", formatProvider)}
-		        Split Size (<< 15):         {TableOfContents.SplitSize.ToString("X", formatProvider)}
 		        Random Padding:             {Convert.ToHexString(TableOfContents.RandomPadding)}
 
 		        Entry Table
@@ -207,7 +201,6 @@ public sealed class Nefs160Header : INefsHeader, IFormattable
 		        Block Table
 		        -----------------------------------------------------------
 		        Number of entries:          {BlockTable.Entries.Count.ToString("X", formatProvider)}
-		        Unknown last value:         {BlockTable.UnkownEndValue.ToString("X", formatProvider)}
 
 		        Volume Info Table (Count: 1)
 		        -----------------------------------------------------------

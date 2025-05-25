@@ -1,9 +1,6 @@
 // See LICENSE.txt for license information.
 
-using VictorBush.Ego.NefsLib.Header.Version200;
-using VictorBush.Ego.NefsLib.Item;
-
-namespace VictorBush.Ego.NefsLib.Header;
+namespace VictorBush.Ego.NefsLib.Header.Version200;
 
 /// <summary>
 /// The block table.

@@ -5,6 +5,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Version160;
+using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Item;
 using VictorBush.Ego.NefsLib.Progress;

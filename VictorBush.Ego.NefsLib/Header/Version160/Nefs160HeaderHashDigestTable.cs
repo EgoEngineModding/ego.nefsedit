@@ -1,6 +1,6 @@
 // See LICENSE.txt for license information.
 
-namespace VictorBush.Ego.NefsLib.Header;
+namespace VictorBush.Ego.NefsLib.Header.Version160;
 
 /// <summary>
 /// A list of SHA-256 hashes of the archive's file data. The size of the hashed chunks are typically 0x800000. NeFS

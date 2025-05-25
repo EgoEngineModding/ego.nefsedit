@@ -1,19 +1,14 @@
 // See LICENSE.txt for license information.
 
-using Microsoft.Extensions.Logging;
-using VictorBush.Ego.NefsLib.DataSource;
-using VictorBush.Ego.NefsLib.Header.Version150;
-using VictorBush.Ego.NefsLib.Item;
-
-namespace VictorBush.Ego.NefsLib.Header.Version151;
+namespace VictorBush.Ego.NefsLib.Header.Version150;
 
 /// <summary>
 /// The block table.
 /// </summary>
-public sealed class Nefs151HeaderBlockTable : INefsTocTable<Nefs151TocBlock>
+public sealed class Nefs150HeaderBlockTable : INefsTocTable<Nefs150TocBlock>
 {
 	/// <inheritdoc />
-	public IReadOnlyList<Nefs151TocBlock> Entries { get; }
+	public IReadOnlyList<Nefs150TocBlock> Entries { get; }
 
 	/// <summary>
 	/// There is a 4-byte value at the end of header part 4. Purpose unknown.
@@ -21,11 +16,11 @@ public sealed class Nefs151HeaderBlockTable : INefsTocTable<Nefs151TocBlock>
 	public uint UnkownEndValue { get; }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="Nefs151HeaderBlockTable"/> class.
+	/// Initializes a new instance of the <see cref="Nefs150HeaderBlockTable"/> class.
 	/// </summary>
 	/// <param name="entries">A collection of entries to initialize this object with.</param>
 	/// <param name="unkownEndValue">Last four bytes of part 4.</param>
-	internal Nefs151HeaderBlockTable(IReadOnlyList<Nefs151TocBlock> entries, uint unkownEndValue)
+	internal Nefs150HeaderBlockTable(IReadOnlyList<Nefs150TocBlock> entries, uint unkownEndValue)
 	{
 		Entries = entries;
 		UnkownEndValue = unkownEndValue;
@@ -36,9 +31,9 @@ public sealed class Nefs151HeaderBlockTable : INefsTocTable<Nefs151TocBlock>
 	// /// </summary>
 	// /// <param name="items">The items to initialize from.</param>
 	// /// <param name="unkownEndValue">Last four bytes of part 4.</param>
-	// internal Nefs151HeaderBlockTable(NefsItemList items, uint unkownEndValue)
+	// internal Nefs150HeaderBlockTable(NefsItemList items, uint unkownEndValue)
 	// {
-	// 	this.indexLookup = new Dictionary<Guid, uint>();
+	// 	var entries = new List<Nefs150TocBlock>();
 	// 	UnkownEndValue = unkownEndValue;
 	//
 	// 	var nextStartIdx = 0U;
@@ -51,40 +46,22 @@ public sealed class Nefs151HeaderBlockTable : INefsTocTable<Nefs151TocBlock>
 	// 			continue;
 	// 		}
 	//
-	// 		// Log this start index to item's Guid to allow lookup later
-	// 		this.indexLookup.Add(item.Guid, nextStartIdx);
-	//
 	// 		// Create entry for each data chunk
 	// 		foreach (var chunk in item.DataSource.Size.Chunks)
 	// 		{
 	// 			// Create entry
-	// 			var entry = new Nefs151TocBlock
+	// 			var entry = new Nefs150TocBlock
 	// 			{
-	// 				Checksum = 0x848, // TODO - How to compute this value is unknown. Writing bogus data for now.
 	// 				End = chunk.CumulativeSize,
-	// 				Transformation = GetTransformType(chunk.Transform),
+	// 				Transformation = (uint)GetTransformType(chunk.Transform),
 	// 			};
-	// 			Entries.Add(entry);
 	//
+	// 			entries.Add(entry);
 	// 			nextStartIdx++;
 	// 		}
 	// 	}
-	// }
 	//
-	// /// <inheritdoc/>
-	// public uint GetIndexForItem(NefsItem item)
-	// {
-	// 	// Get index to part 4
-	// 	if (item.Type == NefsItemType.Directory)
-	// 	{
-	// 		// Item is a directory; the index 0
-	// 		return 0;
-	// 	}
-	// 	else
-	// 	{
-	// 		// Get index into part 4
-	// 		return this.indexLookup[item.Guid];
-	// 	}
+	// 	Entries = entries;
 	// }
 	//
 	// private NefsDataTransformType GetTransformType(NefsDataTransform transform)

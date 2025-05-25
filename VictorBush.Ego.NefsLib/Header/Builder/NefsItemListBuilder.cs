@@ -2,7 +2,9 @@
 
 using Microsoft.Extensions.Logging;
 using VictorBush.Ego.NefsLib.DataSource;
-using VictorBush.Ego.NefsLib.Header.Version151;
+using VictorBush.Ego.NefsLib.Header.Version150;
+using VictorBush.Ego.NefsLib.Header.Version160;
+using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.Item;
 using VictorBush.Ego.NefsLib.Progress;
 

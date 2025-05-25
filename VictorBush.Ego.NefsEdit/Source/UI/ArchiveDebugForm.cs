@@ -5,6 +5,8 @@ using VictorBush.Ego.NefsEdit.Workspace;
 using VictorBush.Ego.NefsLib;
 using VictorBush.Ego.NefsLib.ArchiveSource;
 using VictorBush.Ego.NefsLib.Header;
+using VictorBush.Ego.NefsLib.Header.Version160;
+using VictorBush.Ego.NefsLib.Header.Version200;
 using WeifenLuo.WinFormsUI.Docking;
 
 namespace VictorBush.Ego.NefsEdit.UI;
