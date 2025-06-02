@@ -26,10 +26,10 @@ internal abstract class NefsReaderStrategy
 
 		strategy = version switch
 		{
-			NefsVersion.Version150 => new Nefs150ReaderStrategy(),
-			NefsVersion.Version151 => new Nefs151ReaderStrategy(),
-			NefsVersion.Version160 => new Nefs160ReaderStrategy(),
-			NefsVersion.Version200 => new Nefs200ReaderStrategy(),
+			NefsVersion.Version150 => new NefsReaderStrategy150(),
+			NefsVersion.Version151 => new NefsReaderStrategy151(),
+			NefsVersion.Version160 => new NefsReaderStrategy160(),
+			NefsVersion.Version200 => new NefsReaderStrategy200(),
 			_ => throw new NotImplementedException(
 				$"Support for {version.ToPrettyString()} is not implemented.")
 		};

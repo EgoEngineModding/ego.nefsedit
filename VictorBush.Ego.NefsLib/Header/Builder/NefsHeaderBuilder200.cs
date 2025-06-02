@@ -10,25 +10,25 @@ using VictorBush.Ego.NefsLib.Source.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header.Builder;
 
-internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<Nefs200Header>
+internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<NefsHeader200>
 {
-	internal override uint ComputeDataOffset(Nefs200Header sourceHeader, NefsItemList items)
+	internal override uint ComputeDataOffset(NefsHeader200 sourceHeader, NefsItemList items)
 	{
 		var nonDuplicateCount = items.EnumerateById().Count(x => !x.IsDuplicate);
-		var entryTableSize = items.Count * Nefs160TocEntry.ByteCount;
-		var sharedEntryInfoTableSize = nonDuplicateCount * Nefs160TocSharedEntryInfo.ByteCount;
+		var entryTableSize = items.Count * NefsTocEntry160.ByteCount;
+		var sharedEntryInfoTableSize = nonDuplicateCount * NefsTocSharedEntryInfo160.ByteCount;
 		var nameTableSize = items.EnumerateById().Where(x => !x.IsDuplicate).Distinct().Sum(x => x.FileName.Length);
-		var blockTableSize = items.EnumerateById().Where(x => !x.IsDuplicate).Sum(x => x.DataSource.Size.Chunks.Count) * Nefs200TocBlock.ByteCount;
-		var volumeInfoTableSize = sourceHeader.Volumes.Count * Nefs150TocVolumeInfo.ByteCount;
-		var writeableEntryTableSize = items.Count * Nefs160TocEntryWriteable.ByteCount;
-		var writeableSharedEntryInfoTableSize = nonDuplicateCount * Nefs160TocSharedEntryInfoWriteable.ByteCount;
+		var blockTableSize = items.EnumerateById().Where(x => !x.IsDuplicate).Sum(x => x.DataSource.Size.Chunks.Count) * NefsTocBlock200.ByteCount;
+		var volumeInfoTableSize = sourceHeader.Volumes.Count * NefsTocVolumeInfo150.ByteCount;
+		var writeableEntryTableSize = items.Count * NefsTocEntryWriteable160.ByteCount;
+		var writeableSharedEntryInfoTableSize = nonDuplicateCount * NefsTocSharedEntryInfoWriteable160.ByteCount;
 
 		var hashBlockSize = sourceHeader.TableOfContents.HashBlockSize;
 		var dataSize = items.EnumerateById().Sum(x => x.CompressedSize);
 		var numHashDigests = hashBlockSize == 0 ? 0 : (dataSize + hashBlockSize - 1) / hashBlockSize;
-		var hashDigestTableSize = numHashDigests * Nefs160TocHashDigest.ByteCount;
+		var hashDigestTableSize = numHashDigests * NefsTocHashDigest160.ByteCount;
 
-		var sizeSum = Nefs160TocHeaderA.ByteCount + Nefs200TocHeaderB.ByteCount + entryTableSize +
+		var sizeSum = NefsTocHeaderA160.ByteCount + NefsTocHeaderB200.ByteCount + entryTableSize +
 		              sharedEntryInfoTableSize + nameTableSize + blockTableSize + volumeInfoTableSize +
 		              writeableEntryTableSize + writeableSharedEntryInfoTableSize + hashDigestTableSize;
 		var tocSize = StructEx.Align(sizeSum, NefsConstants.IntroSize);
@@ -36,7 +36,7 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<Nefs200Header>
 		return tocFinalEnd;
 	}
 
-	internal override Nefs200Header Build(Nefs200Header sourceHeader, NefsItemList items, NefsProgress p)
+	internal override NefsHeader200 Build(NefsHeader200 sourceHeader, NefsItemList items, NefsProgress p)
 	{
 		p.CancellationToken.ThrowIfCancellationRequested();
 		var entryTable = BuildEntryTable160(items);
@@ -54,21 +54,21 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<Nefs200Header>
 		var hashDigestTable = BuildHashDigestTable160(dataSize, hashBlockSize);
 
 		// Get sizes, offsets and account for alignment where needed
-		var toc = new Nefs200TocHeaderB
+		var toc = new NefsTocHeaderB200
 		{
 			NumVolumes = sourceHeader.TableOfContents.NumVolumes,
 			HashBlockSize = hashBlockSize,
-			EntryTableStart = Convert.ToUInt32(Nefs160TocHeaderA.ByteCount + Nefs200TocHeaderB.ByteCount),
+			EntryTableStart = Convert.ToUInt32(NefsTocHeaderA160.ByteCount + NefsTocHeaderB200.ByteCount),
 			RandomPadding = sourceHeader.TableOfContents.RandomPadding
 		};
 		toc.SharedEntryInfoTableStart = Convert.ToUInt32(toc.EntryTableStart + entryTable.ByteCount());
 		toc.NameTableStart = Convert.ToUInt32(toc.SharedEntryInfoTableStart + sharedEntryInfoTable.ByteCount());
 		toc.BlockTableStart =
-			Convert.ToUInt32(StructEx.Align<Nefs200TocBlock>(toc.NameTableStart + nameTable.Size));
+			Convert.ToUInt32(StructEx.Align<NefsTocBlock200>(toc.NameTableStart + nameTable.Size));
 		toc.VolumeInfoTableStart =
-			Convert.ToUInt32(StructEx.Align<Nefs150TocVolumeInfo>(toc.BlockTableStart + blockTable.ByteCount()));
+			Convert.ToUInt32(StructEx.Align<NefsTocVolumeInfo150>(toc.BlockTableStart + blockTable.ByteCount()));
 		toc.WritableEntryTableStart =
-			Convert.ToUInt32(toc.VolumeInfoTableStart + toc.NumVolumes * Nefs150TocVolumeInfo.ByteCount);
+			Convert.ToUInt32(toc.VolumeInfoTableStart + toc.NumVolumes * NefsTocVolumeInfo150.ByteCount);
 		toc.WritableSharedEntryInfoTableStart =
 			Convert.ToUInt32(toc.WritableEntryTableStart + writeableEntryTable.ByteCount());
 
@@ -94,7 +94,7 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<Nefs200Header>
 			FirstDataOffset = tocFinalEnd,
 		};
 
-		var intro = new Nefs160TocHeaderA
+		var intro = new NefsTocHeaderA160
 		{
 			Magic = NefsConstants.FourCc,
 			Hash = new Sha256Hash(), // will be updated later
@@ -107,13 +107,13 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<Nefs200Header>
 			Unused = sourceHeader.Intro.Unused
 		};
 
-		return new Nefs200Header(sourceHeader.WriterSettings, intro, toc, entryTable, sharedEntryInfoTable, nameTable,
+		return new NefsHeader200(sourceHeader.WriterSettings, intro, toc, entryTable, sharedEntryInfoTable, nameTable,
 			blockTable, p5, writeableEntryTable, writeableSharedEntryInfoTable, hashDigestTable);
 	}
 
-	private static Nefs200HeaderBlockTable Build200BlockTable(NefsItemList items)
+	private static NefsHeaderBlockTable200 Build200BlockTable(NefsItemList items)
 	{
-		var entries = new List<Nefs200TocBlock>(items.Count);
+		var entries = new List<NefsTocBlock200>(items.Count);
 		foreach (var item in items.EnumerateById())
 		{
 			if (item.Type == NefsItemType.Directory || item.DataSource.Size.Chunks.Count == 0 || item.IsDuplicate)
@@ -125,7 +125,7 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<Nefs200Header>
 			// Create entry for each data block
 			foreach (var chunk in item.DataSource.Size.Chunks)
 			{
-				var entry = new Nefs200TocBlock
+				var entry = new NefsTocBlock200
 				{
 					End = chunk.CumulativeSize
 				};
@@ -134,7 +134,7 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<Nefs200Header>
 			}
 		}
 
-		return new Nefs200HeaderBlockTable(entries);
+		return new NefsHeaderBlockTable200(entries);
 	}
 
 	/// <inheritdoc />
@@ -159,12 +159,12 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<Nefs200Header>
 	/// <inheritdoc />
 	protected override ushort GetItemFlags(NefsItem item)
 	{
-		var flags = Nefs200TocEntryFlags.None;
-		flags |= item.Attributes.V20IsZlib ? Nefs200TocEntryFlags.IsZlib : 0;
-		flags |= item.Attributes.V20IsAes ? Nefs200TocEntryFlags.IsAes : 0;
-		flags |= item.Attributes.IsDirectory ? Nefs200TocEntryFlags.IsDirectory : 0;
-		flags |= item.Attributes.IsDuplicated ? Nefs200TocEntryFlags.IsDuplicated : 0;
-		flags |= item.Attributes.IsLastSibling ? Nefs200TocEntryFlags.LastSibling : 0;
+		var flags = NefsTocEntryFlags200.None;
+		flags |= item.Attributes.V20IsZlib ? NefsTocEntryFlags200.IsZlib : 0;
+		flags |= item.Attributes.V20IsAes ? NefsTocEntryFlags200.IsAes : 0;
+		flags |= item.Attributes.IsDirectory ? NefsTocEntryFlags200.IsDirectory : 0;
+		flags |= item.Attributes.IsDuplicated ? NefsTocEntryFlags200.IsDuplicated : 0;
+		flags |= item.Attributes.IsLastSibling ? NefsTocEntryFlags200.LastSibling : 0;
 		return (ushort)flags;
 	}
 }

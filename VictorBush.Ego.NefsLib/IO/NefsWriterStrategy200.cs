@@ -8,10 +8,10 @@ using VictorBush.Ego.NefsLib.Source.Utility;
 
 namespace VictorBush.Ego.NefsLib.IO;
 
-internal class NefsWriterStrategy200 : NefsWriterStrategy160Base<Nefs200Header>
+internal class NefsWriterStrategy200 : NefsWriterStrategy160Base<NefsHeader200>
 {
 	/// <inheritdoc />
-	protected override async Task WriteHeaderAsync(EndianBinaryWriter writer, Nefs200Header header, long primaryOffset,
+	protected override async Task WriteHeaderAsync(EndianBinaryWriter writer, NefsHeader200 header, long primaryOffset,
 		NefsProgress p)
 	{
 		// Calc weight of each task (8 parts + intro + table of contents)
@@ -29,7 +29,7 @@ internal class NefsWriterStrategy200 : NefsWriterStrategy160Base<Nefs200Header>
 
 		using (p.BeginTask(weight, "Writing header intro table of contents"))
 		{
-			var offset = primaryOffset + Nefs160TocHeaderA.ByteCount;
+			var offset = primaryOffset + NefsTocHeaderA160.ByteCount;
 			await WriteTocEntryAsync(writer, offset, toc, p).ConfigureAwait(false);
 		}
 
@@ -94,7 +94,7 @@ internal class NefsWriterStrategy200 : NefsWriterStrategy160Base<Nefs200Header>
 	/// <returns>The async task.</returns>
 	private async Task UpdateHashAsync(
 		EndianBinaryWriter writer,
-		Nefs200Header header,
+		NefsHeader200 header,
 		long primaryOffset,
 		NefsProgress p)
 	{

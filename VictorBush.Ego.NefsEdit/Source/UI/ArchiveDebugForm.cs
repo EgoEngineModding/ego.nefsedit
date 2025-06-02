@@ -67,7 +67,7 @@ Secondary size:             {gameDatSource.SecondarySize?.ToString("X")}";
 		}
 	}
 
-	private string GetDebugInfoVersion16(Nefs160Header h, NefsArchiveSource source)
+	private string GetDebugInfoVersion16(NefsHeader160 h, NefsArchiveSource source)
 	{
 		return $"""
 		        Archive Source
@@ -78,7 +78,7 @@ Secondary size:             {gameDatSource.SecondarySize?.ToString("X")}";
 		        """;
 	}
 
-	private string GetDebugInfoVersion20(Nefs200Header h, NefsArchiveSource source)
+	private string GetDebugInfoVersion20(NefsHeader200 h, NefsArchiveSource source)
 	{
 		return $"""
 		        Archive Source
@@ -125,11 +125,11 @@ Secondary size:             {gameDatSource.SecondarySize?.ToString("X")}";
 			return;
 		}
 
-		if (archive.Header is Nefs200Header h20)
+		if (archive.Header is NefsHeader200 h20)
 		{
 			this.richTextBox.Text = GetDebugInfoVersion20(h20, source);
 		}
-		else if (archive.Header is Nefs160Header h16)
+		else if (archive.Header is NefsHeader160 h16)
 		{
 			this.richTextBox.Text = GetDebugInfoVersion16(h16, source);
 		}

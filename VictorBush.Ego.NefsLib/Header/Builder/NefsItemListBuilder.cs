@@ -19,10 +19,10 @@ internal abstract class NefsItemListBuilder(ILogger logger)
 		var logger = NefsLog.GetLogger();
 		return header switch
 		{
-			Nefs150Header h => new Nefs150ItemListBuilder(h, logger),
-			Nefs151Header h => new Nefs151ItemListBuilder(h, logger),
-			Nefs160Header h => new Nefs160ItemListBuilder(h, logger),
-			Nefs200Header h => new Nefs200ItemListBuilder(h, logger),
+			NefsHeader150 h => new NefsItemListBuilder150(h, logger),
+			NefsHeader151 h => new NefsItemListBuilder151(h, logger),
+			NefsHeader160 h => new NefsItemListBuilder160(h, logger),
+			NefsHeader200 h => new NefsItemListBuilder200(h, logger),
 			_ => throw new ArgumentException($"Header of type {header.GetType().Name} is not supported.")
 		};
 	}

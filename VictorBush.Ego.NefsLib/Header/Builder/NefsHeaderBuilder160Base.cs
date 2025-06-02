@@ -9,16 +9,16 @@ namespace VictorBush.Ego.NefsLib.Header.Builder;
 internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 	where T : INefsHeader
 {
-	protected Nefs160HeaderEntryTable BuildEntryTable160(NefsItemList items)
+	protected NefsHeaderEntryTable160 BuildEntryTable160(NefsItemList items)
 	{
 		var idSharedInfoMap = BuildIdSharedInfoMap(items);
-		var entries = new Nefs160TocEntry[items.Count];
+		var entries = new NefsTocEntry160[items.Count];
 		var firstBlock = 0u;
 
 		// Enumerate this list depth first. This determines the part 2 order. The part 1 entries will be sorted by item id.
 		foreach (var item in items.EnumerateById())
 		{
-			var entry = new Nefs160TocEntry
+			var entry = new NefsTocEntry160
 			{
 				Start = Convert.ToUInt64(item.DataSource.Offset),
 				SharedInfo = GetSharedInfo(item),
@@ -29,7 +29,7 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 			entries[item.Id.Index] = entry;
 		}
 
-		return new Nefs160HeaderEntryTable(entries);
+		return new NefsHeaderEntryTable160(entries);
 
 		uint GetSharedInfo(NefsItem item)
 		{
@@ -52,10 +52,10 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 
 	protected abstract uint GetFirstBlock(NefsItem item, ref uint firstBlock);
 
-	protected static Nefs160HeaderSharedEntryInfoTable BuildSharedEntryInfoTable160(NefsItemList items,
+	protected static NefsHeaderSharedEntryInfoTable160 BuildSharedEntryInfoTable160(NefsItemList items,
 		NefsHeaderPart3 nameTable)
 	{
-		var entries = new List<Nefs160TocSharedEntryInfo>(items.Count);
+		var entries = new List<NefsTocSharedEntryInfo160>(items.Count);
 		foreach (var item in items.EnumerateDepthFirstByName())
 		{
 			if (item.IsDuplicate)
@@ -63,7 +63,7 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 				continue;
 			}
 
-			var entry = new Nefs160TocSharedEntryInfo
+			var entry = new NefsTocSharedEntryInfo160
 			{
 				Parent = item.DirectoryId.Value,
 				FirstChild = items.GetItemFirstChildId(item.Id).Value,
@@ -75,15 +75,15 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 			entries.Add(entry);
 		}
 
-		return new Nefs160HeaderSharedEntryInfoTable(entries);
+		return new NefsHeaderSharedEntryInfoTable160(entries);
 	}
 
-	protected Nefs160HeaderWriteableEntryTable BuildWriteableEntryTable160(NefsItemList items)
+	protected NefsHeaderWriteableEntryTable160 BuildWriteableEntryTable160(NefsItemList items)
 	{
-		var entries = new Nefs160TocEntryWriteable[items.Count];
+		var entries = new NefsTocEntryWriteable160[items.Count];
 		foreach (var item in items.EnumerateById())
 		{
-			var entry = new Nefs160TocEntryWriteable
+			var entry = new NefsTocEntryWriteable160
 			{
 				Flags = GetItemFlags(item),
 				Volume = item.Attributes.Part6Volume,
@@ -92,14 +92,14 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 			entries[item.Id.Index] = entry;
 		}
 
-		return new Nefs160HeaderWriteableEntryTable(entries);
+		return new NefsHeaderWriteableEntryTable160(entries);
 	}
 
 	protected abstract ushort GetItemFlags(NefsItem item);
 
-	protected static Nefs160HeaderWriteableSharedEntryInfoTable BuildWriteableSharedEntryInfoTable160(NefsItemList items)
+	protected static NefsHeaderWriteableSharedEntryInfoTable160 BuildWriteableSharedEntryInfoTable160(NefsItemList items)
 	{
-		var entries = new List<Nefs160TocSharedEntryInfoWriteable>(items.Count);
+		var entries = new List<NefsTocSharedEntryInfoWriteable160>(items.Count);
 		foreach (var item in items.EnumerateDepthFirstByName())
 		{
 			if (item.IsDuplicate)
@@ -107,7 +107,7 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 				continue;
 			}
 
-			var entry = new Nefs160TocSharedEntryInfoWriteable
+			var entry = new NefsTocSharedEntryInfoWriteable160
 			{
 				NextSibling = items.GetItemSiblingId(item.Id).Value,
 				PatchedEntry = item.Id.Value
@@ -116,14 +116,14 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 			entries.Add(entry);
 		}
 
-		return new Nefs160HeaderWriteableSharedEntryInfoTable(entries);
+		return new NefsHeaderWriteableSharedEntryInfoTable160(entries);
 	}
 
-	protected static Nefs160HeaderHashDigestTable BuildHashDigestTable160(ulong dataSize, uint hashBlockSize)
+	protected static NefsHeaderHashDigestTable160 BuildHashDigestTable160(ulong dataSize, uint hashBlockSize)
 	{
 		var numHashDigests = hashBlockSize == 0 ? 0 : (dataSize + hashBlockSize - 1) / hashBlockSize;
 		// Create empty space for now, will update later
-		return new Nefs160HeaderHashDigestTable(new Nefs160TocHashDigest[numHashDigests]);
+		return new NefsHeaderHashDigestTable160(new NefsTocHashDigest160[numHashDigests]);
 	}
 
 	protected static uint GetTransform(NefsDataTransform transform)

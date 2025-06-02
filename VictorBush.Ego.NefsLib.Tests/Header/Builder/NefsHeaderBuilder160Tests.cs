@@ -17,7 +17,7 @@ public class NefsHeaderBuilder160Tests
 	{
 		var items = new NefsItemList(@"C:\archive.nefs");
 		var builder = new NefsHeaderBuilder160();
-		var header = builder.Build(new Nefs160Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader160(), items, new NefsProgress());
 		Assert.Empty(header.SharedEntryInfoTable.Entries);
 	}
 
@@ -48,7 +48,7 @@ public class NefsHeaderBuilder160Tests
 		items.Add(file4);
 
 		var builder = new NefsHeaderBuilder160();
-		var header = builder.Build(new Nefs160Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader160(), items, new NefsProgress());
 		var p2 = header.SharedEntryInfoTable;
 
 		Assert.Equal(4, p2.Entries.Count);
@@ -104,7 +104,7 @@ public class NefsHeaderBuilder160Tests
 	{
 		var items = new NefsItemList(@"C:\archive.nefs");
 		var builder = new NefsHeaderBuilder160();
-		var header = builder.Build(new Nefs160Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader160(), items, new NefsProgress());
 		Assert.Empty(header.WriteableEntryTable.Entries);
 	}
 
@@ -127,7 +127,7 @@ public class NefsHeaderBuilder160Tests
 		items.Add(item1);
 
 		var builder = new NefsHeaderBuilder160();
-		var header = builder.Build(new Nefs160Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader160(), items, new NefsProgress());
 
 		Assert.Equal(0x3F, header.WriteableEntryTable.Entries[0].Flags);
 	}
@@ -159,7 +159,7 @@ public class NefsHeaderBuilder160Tests
 		items.Add(dir1);
 
 		var builder = new NefsHeaderBuilder160();
-		var header = builder.Build(new Nefs160Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader160(), items, new NefsProgress());
 		var p6 = header.WriteableEntryTable;
 
 		Assert.Equal(3, p6.Entries.Count);
@@ -182,7 +182,7 @@ public class NefsHeaderBuilder160Tests
 		*/
 
 		Assert.Equal(dir1Attributes.Part6Volume, p6.Entries[dir1.Id.Index].Volume);
-		Assert.True(((Nefs150TocEntryFlags)p6.Entries[dir1.Id.Index].Flags).HasFlag(Nefs150TocEntryFlags.Directory));
+		Assert.True(((NefsTocEntryFlags150)p6.Entries[dir1.Id.Index].Flags).HasFlag(NefsTocEntryFlags150.Directory));
 	}
 
 	[Fact]
@@ -190,7 +190,7 @@ public class NefsHeaderBuilder160Tests
 	{
 		var items = new NefsItemList(@"C:\archive.nefs");
 		var builder = new NefsHeaderBuilder160();
-		var header = builder.Build(new Nefs160Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader160(), items, new NefsProgress());
 		Assert.Empty(header.WriteableSharedEntryInfoTable.Entries);
 	}
 
@@ -219,7 +219,7 @@ public class NefsHeaderBuilder160Tests
 		items.Add(file3);
 
 		var builder = new NefsHeaderBuilder160();
-		var header = builder.Build(new Nefs160Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader160(), items, new NefsProgress());
 		var p7 = header.WriteableSharedEntryInfoTable;
 
 		Assert.Equal(3, p7.Entries.Count);

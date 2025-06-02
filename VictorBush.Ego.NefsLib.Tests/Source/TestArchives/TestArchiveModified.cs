@@ -54,7 +54,7 @@ internal class TestArchiveModified
 
 	public static string File1Name => "file1.txt";
 
-	public static ulong File1Offset => Nefs200Header.DataOffsetDefault;
+	public static ulong File1Offset => NefsHeader200.DataOffsetDefault;
 
 	public static string File1PathInArchive => File1Name;
 
@@ -168,7 +168,7 @@ internal class TestArchiveModified
 			IsLittleEndian = true
 		};
 		var builder = new NefsHeaderBuilder200();
-		var header = builder.Build(new Nefs200Header { WriterSettings = settings }, items, new NefsProgress());
+		var header = builder.Build(new NefsHeader200 { WriterSettings = settings }, items, new NefsProgress());
 
 		return new NefsArchive(header, items);
 	}

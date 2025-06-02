@@ -41,7 +41,7 @@ internal partial class ItemDebugForm : DockContent
 	{
 	}
 
-	private string GetDebugInfoVersion16(NefsItem item, Nefs160Header h, NefsItemList items)
+	private string GetDebugInfoVersion16(NefsItem item, NefsHeader160 h, NefsItemList items)
 	{
 		var p1 = h.EntryTable.Entries[item.Id.Index];
 		var p2 = h.SharedEntryInfoTable.Entries[(int)p1.SharedInfo];
@@ -93,7 +93,7 @@ internal partial class ItemDebugForm : DockContent
 		        """;
 	}
 
-	private string GetDebugInfoVersion20(NefsItem item, Nefs200Header h, NefsItemList items)
+	private string GetDebugInfoVersion20(NefsItem item, NefsHeader200 h, NefsItemList items)
 	{
 		var p1 = h.EntryTable.Entries[item.Id.Index];
 		var p2 = h.SharedEntryInfoTable.Entries[(int)p1.SharedInfo];
@@ -191,11 +191,11 @@ internal partial class ItemDebugForm : DockContent
 			return;
 		}
 
-		if (archive.Header is Nefs200Header h20)
+		if (archive.Header is NefsHeader200 h20)
 		{
 			this.richTextBox.Text = GetDebugInfoVersion20(item, h20, archive.Items);
 		}
-		else if (archive.Header is Nefs160Header h16)
+		else if (archive.Header is NefsHeader160 h16)
 		{
 			this.richTextBox.Text = GetDebugInfoVersion16(item, h16, archive.Items);
 		}

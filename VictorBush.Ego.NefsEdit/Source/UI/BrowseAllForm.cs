@@ -183,7 +183,7 @@ internal partial class BrowseAllForm : DockContent
 			AddSubItem(listItem, "compressedSize", item.CompressedSize.ToString("X"));
 			AddSubItem(listItem, "extractedSize", item.ExtractedSize.ToString("X"));
 
-			if (archive.Header is Nefs200Header h20)
+			if (archive.Header is NefsHeader200 h20)
 			{
 				var p1 = h20.EntryTable.Entries[item.Id.Index];
 				AddSubItem(listItem, "pt1.0x00", p1.Start.ToString("X"));
@@ -206,7 +206,7 @@ internal partial class BrowseAllForm : DockContent
 				AddSubItem(listItem, "pt7.0x00", p7.NextSibling.ToString("X"));
 				AddSubItem(listItem, "pt7.0x04", p7.PatchedEntry.ToString("X"));
 			}
-			else if (archive.Header is Nefs160Header h16)
+			else if (archive.Header is NefsHeader160 h16)
 			{
 				var p1 = h16.EntryTable.Entries[item.Id.Index];
 				AddSubItem(listItem, "pt1.0x00", p1.Start.ToString("X"));

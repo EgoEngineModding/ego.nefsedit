@@ -27,7 +27,7 @@ public class NefsWriterStrategy200Tests
 		items.Add(file3);
 
 		var builder = new NefsHeaderBuilder200();
-		var header = builder.Build(new Nefs200Header(), items, this.p);
+		var header = builder.Build(new NefsHeader200(), items, this.p);
 		var writer = new NefsWriterStrategy200();
 
 		/*
@@ -65,7 +65,7 @@ public class NefsWriterStrategy200Tests
 		var data0x24_Unknown = new byte[0x5C];
 		data0x24_Unknown[0] = 20;
 
-		var toc = new Nefs200TocHeaderB
+		var toc = new NefsTocHeaderB200
 		{
 			HashBlockSize = 505 << 15,
 			NumVolumes = 404,

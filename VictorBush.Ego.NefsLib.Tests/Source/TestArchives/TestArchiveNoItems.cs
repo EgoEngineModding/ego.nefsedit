@@ -25,7 +25,7 @@ internal class TestArchiveNoItems
 		Assert.Empty(items.EnumerateDepthFirstByName());
 
 		var builder = new NefsHeaderBuilder200();
-		var header = builder.Build(new Nefs200Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader200(), items, new NefsProgress());
 
 		return new NefsArchive(header, items);
 	}

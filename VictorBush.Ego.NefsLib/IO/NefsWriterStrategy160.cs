@@ -5,10 +5,10 @@ using VictorBush.Ego.NefsLib.Progress;
 
 namespace VictorBush.Ego.NefsLib.IO;
 
-internal class NefsWriterStrategy160 : NefsWriterStrategy160Base<Nefs160Header>
+internal class NefsWriterStrategy160 : NefsWriterStrategy160Base<NefsHeader160>
 {
 	/// <inheritdoc />
-	protected override Task WriteHeaderAsync(EndianBinaryWriter writer, Nefs160Header header, long primaryOffset, NefsProgress p)
+	protected override Task WriteHeaderAsync(EndianBinaryWriter writer, NefsHeader160 header, long primaryOffset, NefsProgress p)
 	{
 		throw new NotImplementedException();
 	}

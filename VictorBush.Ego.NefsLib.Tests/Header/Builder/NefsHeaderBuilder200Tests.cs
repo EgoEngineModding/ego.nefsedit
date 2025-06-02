@@ -53,7 +53,7 @@ public class NefsHeaderBuilder200Tests
 	{
 		var items = new NefsItemList(@"C:\archive.nefs");
 		var builder = new NefsHeaderBuilder200();
-		var header = builder.Build(new Nefs200Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader200(), items, new NefsProgress());
 		Assert.Empty(header.EntryTable.Entries);
 	}
 
@@ -79,7 +79,7 @@ public class NefsHeaderBuilder200Tests
 		items.Add(file3);
 
 		var builder = new NefsHeaderBuilder200();
-		var header = builder.Build(new Nefs200Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader200(), items, new NefsProgress());
 		var p1 = header.EntryTable;
 
 		Assert.Equal(4, p1.Entries.Count);
@@ -129,7 +129,7 @@ public class NefsHeaderBuilder200Tests
 	{
 		var items = new NefsItemList(@"C:\archive.nefs");
 		var builder = new NefsHeaderBuilder200();
-		var header = builder.Build(new Nefs200Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader200(), items, new NefsProgress());
 		Assert.Empty(header.BlockTable.Entries);
 		Assert.Equal(0, header.BlockTable.ByteCount());
 	}
@@ -138,7 +138,7 @@ public class NefsHeaderBuilder200Tests
 	public void Build_BlockTable_MultipleItems_EntriesPopulated()
 	{
 		var builder = new NefsHeaderBuilder200();
-		var header = builder.Build(new Nefs200Header(), this.testItems, new NefsProgress());
+		var header = builder.Build(new NefsHeader200(), this.testItems, new NefsProgress());
 		var p4 = header.BlockTable;
 
 		// Dir 1 and file 4 should not have entries. Only compressed files have entries in part 4.
@@ -181,7 +181,7 @@ public class NefsHeaderBuilder200Tests
 		items.Add(item1);
 
 		var builder = new NefsHeaderBuilder200();
-		var header = builder.Build(new Nefs200Header(), items, new NefsProgress());
+		var header = builder.Build(new NefsHeader200(), items, new NefsProgress());
 
 		Assert.Equal(0x1F, header.WriteableEntryTable.Entries[0].Flags);
 	}

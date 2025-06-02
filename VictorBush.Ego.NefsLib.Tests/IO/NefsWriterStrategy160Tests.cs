@@ -28,7 +28,7 @@ public class NefsWriterStrategy160Tests
 		items.Add(dir1);
 
 		var builder = new NefsHeaderBuilder160();
-		var header = builder.Build(new Nefs160Header(), items, this.p);
+		var header = builder.Build(new NefsHeader160(), items, this.p);
 		var writer = new NefsWriterStrategy160();
 
 		/*
@@ -70,7 +70,7 @@ public class NefsWriterStrategy160Tests
 		file2
 		*/
 
-		offset += Nefs160TocEntry.ByteCount;
+		offset += NefsTocEntry160.ByteCount;
 
 		// Data offset (8 bytes)
 		Assert.Equal(20, BitConverter.ToInt64(buffer, offset + 0));
@@ -88,7 +88,7 @@ public class NefsWriterStrategy160Tests
 		dir1
 		*/
 
-		offset += Nefs160TocEntry.ByteCount;
+		offset += NefsTocEntry160.ByteCount;
 
 		// Data offset (8 bytes)
 		Assert.Equal(0, BitConverter.ToInt64(buffer, offset + 0));
@@ -117,7 +117,7 @@ public class NefsWriterStrategy160Tests
 		items.Add(file3);
 
 		var builder = new NefsHeaderBuilder160();
-		var header = builder.Build(new Nefs160Header(), items, this.p);
+		var header = builder.Build(new NefsHeader160(), items, this.p);
 		var writer = new NefsWriterStrategy160();
 
 		/*
@@ -162,7 +162,7 @@ public class NefsWriterStrategy160Tests
 		file3
 		*/
 
-		offset += Nefs160TocSharedEntryInfo.ByteCount;
+		offset += NefsTocSharedEntryInfo160.ByteCount;
 
 		// Dir id
 		Assert.Equal(2, BitConverter.ToInt32(buffer, offset + 0));
@@ -183,7 +183,7 @@ public class NefsWriterStrategy160Tests
 		file1
 		*/
 
-		offset += Nefs160TocSharedEntryInfo.ByteCount;
+		offset += NefsTocSharedEntryInfo160.ByteCount;
 
 		// Dir id
 		Assert.Equal(0, BitConverter.ToInt32(buffer, offset + 0));
@@ -204,7 +204,7 @@ public class NefsWriterStrategy160Tests
 		file2
 		*/
 
-		offset += Nefs160TocSharedEntryInfo.ByteCount;
+		offset += NefsTocSharedEntryInfo160.ByteCount;
 
 		// Dir id
 		Assert.Equal(1, BitConverter.ToInt32(buffer, offset + 0));
@@ -308,7 +308,7 @@ public class NefsWriterStrategy160Tests
 
 		var aesKey = new AesKeyBuffer();
 		aes.CopyTo(aesKey);
-		var intro = new Nefs160TocHeaderA
+		var intro = new NefsTocHeaderA160
 		{
 			AesKey = aesKey,
 			Hash = new Sha256Hash(hash),

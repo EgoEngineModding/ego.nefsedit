@@ -51,7 +51,7 @@ internal class TestArchiveNotModified
 
 	public static string File1Name => "file1.txt";
 
-	public static ulong File1Offset => Nefs200Header.DataOffsetDefault;
+	public static ulong File1Offset => NefsHeader200.DataOffsetDefault;
 
 	public static string File1PathInArchive => File1Name;
 
@@ -158,13 +158,13 @@ internal class TestArchiveNotModified
 
 		var aesKeyBuffer = new AesKeyBuffer();
 		Encoding.ASCII.GetBytes(aesString).CopyTo(aesKeyBuffer);
-		var intro = new Nefs160TocHeaderA
+		var intro = new NefsTocHeaderA160
 		{
 			AesKey = aesKeyBuffer
 		};
 
 		var builder = new NefsHeaderBuilder200();
-		var header = builder.Build(new Nefs200Header { Intro = intro }, items, new NefsProgress());
+		var header = builder.Build(new NefsHeader200 { Intro = intro }, items, new NefsProgress());
 
 		return new NefsArchive(header, items);
 	}

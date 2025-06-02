@@ -90,11 +90,11 @@ public class NefsWriter : INefsWriter
 		{
 			switch (nefs.Header)
 			{
-				case Nefs200Header v20Header:
+				case NefsHeader200 v20Header:
 					// newArchive = await WriteNefsInjectArchiveVersion20Async(dataFile, nefsInjectFile, v20Header, nefs.Items, workDir, p);
 					break;
 
-				case Nefs160Header v16Header:
+				case NefsHeader160 v16Header:
 					// newArchive = await WriteNefsInjectArchiveVersion16Async(dataFile, nefsInjectFile, v16Header, nefs.Items, workDir, p);
 					break;
 
