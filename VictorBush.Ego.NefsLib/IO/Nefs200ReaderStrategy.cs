@@ -1,5 +1,6 @@
 ﻿// See LICENSE.txt for license information.
 
+using System.Diagnostics;
 using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.Header.Version160;
@@ -72,11 +73,11 @@ internal class Nefs200ReaderStrategy : Nefs160ReaderStrategy
 			part6 = await Read160HeaderPart6Async(reader, secondaryOffset + toc.WritableEntryTableStart, numEntries, p);
 		}
 
-		Nefs160HeaderWriteableSharedEntryInfo writeableSharedEntryInfo;
+		Nefs160HeaderWriteableSharedEntryInfoTable writeableSharedEntryInfoTable;
 		using (p.BeginTask(weight, "Reading shared entry info writable table"))
 		{
 			var numEntries = sharedEntryInfoTable.Entries.Count;
-			writeableSharedEntryInfo = await Read160HeaderPart7Async(reader, secondaryOffset + toc.WritableSharedEntryInfoTableStart, numEntries, p);
+			writeableSharedEntryInfoTable = await Read160HeaderPart7Async(reader, secondaryOffset + toc.WritableSharedEntryInfoTableStart, numEntries, p);
 		}
 
 		Nefs160HeaderHashDigestTable hashDigestTable;
@@ -86,7 +87,7 @@ internal class Nefs200ReaderStrategy : Nefs160ReaderStrategy
 			hashDigestTable = await Read160HeaderPart8Async(reader, primaryOffset + toc.HashDigestTableStart, hashBlockSize, part5, p);
 		}
 
-		return new Nefs200Header(detectedSettings, header, toc, entryTable, sharedEntryInfoTable, part3, blockTable, part5, part6, writeableSharedEntryInfo, hashDigestTable);
+		return new Nefs200Header(detectedSettings, header, toc, entryTable, sharedEntryInfoTable, part3, blockTable, part5, part6, writeableSharedEntryInfoTable, hashDigestTable);
 	}
 
 	/// <summary>

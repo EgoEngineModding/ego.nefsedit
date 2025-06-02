@@ -2,11 +2,10 @@
 
 using VictorBush.Ego.NefsLib;
 using VictorBush.Ego.NefsLib.DataSource;
-using VictorBush.Ego.NefsLib.Header;
-using VictorBush.Ego.NefsLib.Header.Version160;
+using VictorBush.Ego.NefsLib.Header.Builder;
 using VictorBush.Ego.NefsLib.Header.Version200;
-using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Item;
+using VictorBush.Ego.NefsLib.Progress;
 
 namespace VictorBush.Ego.NefsEdit.Tests;
 
@@ -41,17 +40,8 @@ internal class TestHelpers
 		var file2 = new NefsItem(new NefsItemId(2), "file2", dir1.Id, file2DataSource, transform, file2Attributes);
 		items.Add(file2);
 
-		var intro = new Nefs160TocHeaderA();
-		var toc = new Nefs200TocHeaderB();
-		var part3 = new NefsHeaderPart3(items);
-		var part4 = new Nefs200HeaderBlockTable(items);
-		var part1 = new Nefs160HeaderEntryTable(items, part4);
-		var part2 = new Nefs160HeaderSharedEntryInfoTable(items, part3);
-		var part5 = new NefsHeaderPart5();
-		var part6 = new Nefs160HeaderWriteableEntryTable(items);
-		var part7 = new Nefs160HeaderWriteableSharedEntryInfo(items);
-		var part8 = new Nefs160HeaderHashDigestTable([]);
-		var header = new Nefs200Header(new NefsWriterSettings(), intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
+		var builder = new NefsHeaderBuilder200();
+		var header = builder.Build(new Nefs200Header(), items, new NefsProgress());
 
 		return new NefsArchive(header, items);
 	}

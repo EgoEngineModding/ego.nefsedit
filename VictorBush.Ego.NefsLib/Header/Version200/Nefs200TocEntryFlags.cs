@@ -34,22 +34,7 @@ public enum Nefs200TocEntryFlags : ushort
 	IsDuplicated = 0x8,
 
 	/// <summary>
-	/// Unknown.
+	/// Indicates if the entry is the last sibling in the directory.
 	/// </summary>
-	Unknown0x10 = 0x10,
-
-	/// <summary>
-	/// Unknown.
-	/// </summary>
-	Unknown0x20 = 0x20,
-
-	/// <summary>
-	/// Unknown.
-	/// </summary>
-	Unknown0x40 = 0x40,
-
-	/// <summary>
-	/// Unknown.
-	/// </summary>
-	Unknown0x80 = 0x80,
+	LastSibling = 0x10,
 }

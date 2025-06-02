@@ -9,7 +9,7 @@ namespace VictorBush.Ego.NefsLib.Header.Builder;
 internal class Nefs151ItemListBuilder(Nefs151Header header, ILogger logger) :
 	Nefs150ItemListBuilderBase<Nefs151Header>(header, logger)
 {
-	protected override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
+	internal override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];

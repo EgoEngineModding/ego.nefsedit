@@ -309,17 +309,10 @@ internal partial class BrowseTreeForm : DockContent
 		}
 
 		// Find the parent directory
-		var parentId = Workspace.Archive.Items.GetItemDirectoryId(Directory.DirectoryId);
-		var parent = Workspace.Archive.Items.GetItems(parentId).First();
-		if (parent == Directory)
-		{
-			// If the parent == the current dir, then display root
-			OpenDirectory(null);
-		}
-		else
-		{
-			OpenDirectory(parent);
-		}
+		var parent = Workspace.Archive.Items.GetItemParent(Directory.Id);
+
+		// If the parent is null, then display root
+		OpenDirectory(parent);
 	}
 
 	/// <summary>

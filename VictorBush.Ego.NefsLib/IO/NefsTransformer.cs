@@ -39,14 +39,19 @@ public class NefsTransformer : INefsTransformer
 		IReadOnlyList<NefsDataChunk> chunks,
 		NefsProgress p)
 	{
-		var numChunks = chunks.Count;
-		var bytesRemaining = extractedSize;
-
 		input.Seek(inputOffset, SeekOrigin.Begin);
 		output.Seek(outputOffset, SeekOrigin.Begin);
 
 		using var t = p.BeginTask(1.0f, $"Detransforming stream");
+		if (chunks.Count == 0)
+		{
+			// Assume data is an untransformed single block
+			await input.CopyPartialAsync(output, extractedSize, p.CancellationToken);
+			return;
+		}
 
+		var numChunks = chunks.Count;
+		var bytesRemaining = extractedSize;
 		for (int i = 0; i < numChunks; i++)
 		{
 			using var st = p.BeginSubTask(1.0f / numChunks, $"Detransforming chunk {i + 1}/{numChunks}...");
@@ -324,17 +329,14 @@ public class NefsTransformer : INefsTransformer
 		}
 	}
 
-	private RijndaelManaged CreateAesManager(byte[] aes256Key)
+	private static Aes CreateAesManager(byte[] aes256Key)
 	{
-		var rijAlg = new RijndaelManaged
-		{
-			KeySize = 256,
-			Key = aes256Key,
-			Mode = CipherMode.ECB,
-			BlockSize = 128,
-			Padding = PaddingMode.Zeros,
-		};
-
-		return rijAlg;
+		var aes = Aes.Create();
+		aes.KeySize = 256;
+		aes.Key = aes256Key;
+		aes.Mode = CipherMode.ECB;
+		aes.BlockSize = 128;
+		aes.Padding = PaddingMode.Zeros;
+		return aes;
 	}
 }

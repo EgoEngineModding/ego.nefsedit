@@ -10,7 +10,17 @@ namespace VictorBush.Ego.NefsLib.Header;
 public interface INefsHeader
 {
 	/// <summary>
-	/// Gets a value indicating whether the header is encrypted.
+	/// Gets the header version.
+	/// </summary>
+	NefsVersion Version { get; }
+
+	/// <summary>
+	/// Gets whether the header is from a little-endian system.
+	/// </summary>
+	bool IsLittleEndian { get; }
+
+	/// <summary>
+	/// Gets whether the header is encrypted.
 	/// </summary>
 	bool IsEncrypted { get; }
 
@@ -38,6 +48,11 @@ public interface INefsHeader
 	/// Gets the number of entries.
 	/// </summary>
 	uint NumEntries { get; }
+
+	/// <summary>
+	/// Gets the volumes described by the header.
+	/// </summary>
+	IReadOnlyList<VolumeInfo> Volumes { get; }
 
 	/// <summary>
 	/// Gets the file name at the given offset.

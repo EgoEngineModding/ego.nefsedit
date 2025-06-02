@@ -12,7 +12,7 @@ namespace VictorBush.Ego.NefsLib.Header.Builder;
 internal class Nefs200ItemListBuilder(Nefs200Header header, ILogger logger)
 	: NefsItemListBuilder<Nefs200Header>(header, logger)
 {
-	protected override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
+	internal override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];
@@ -34,16 +34,15 @@ internal class Nefs200ItemListBuilder(Nefs200Header header, ILogger logger)
 			// Item is a directory
 			dataSource = new NefsEmptyDataSource();
 		}
-		else if (entry.FirstBlock == 0xFFFFFFFFU)
+		else if (entry.FirstBlock == NefsConstants.NoBlocksIndex)
 		{
-			// Item is not compressed
-			transform = new NefsDataTransform(Header.BlockSize, attributes.V20IsZlib, Header.IsEncrypted ? Header.AesKey : null);
+			// Item is not transformed
 			var size = new NefsItemSize(extractedSize);
 			dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
 		}
 		else
 		{
-			transform = new NefsDataTransform(Header.BlockSize, attributes.V20IsZlib, Header.IsEncrypted ? Header.AesKey : null);
+			transform = new NefsDataTransform(Header.BlockSize, attributes.V20IsZlib, attributes.V20IsAes ? Header.AesKey : null);
 			var numBlocks = GetNumBlocks(extractedSize);
 			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, transform);
 			var size = new NefsItemSize(extractedSize, blocks);
@@ -58,18 +57,17 @@ internal class Nefs200ItemListBuilder(Nefs200Header header, ILogger logger)
 
 		static NefsItemAttributes CreateAttributes(Nefs160TocEntryWriteable entry)
 		{
-			Debug.Assert((entry.Flags & 0xFFF0) == 0);
+			Debug.Assert((entry.Flags & 0xFFE0) == 0);
 			var flags = (Nefs200TocEntryFlags)entry.Flags;
 			return new NefsItemAttributes(
 				v20IsZlib: flags.HasFlag(Nefs200TocEntryFlags.IsZlib),
 				v20IsAes: flags.HasFlag(Nefs200TocEntryFlags.IsAes),
 				isDirectory: flags.HasFlag(Nefs200TocEntryFlags.IsDirectory),
 				isDuplicated: flags.HasFlag(Nefs200TocEntryFlags.IsDuplicated),
-				v20Unknown0x10: flags.HasFlag(Nefs200TocEntryFlags.Unknown0x10),
-				v20Unknown0x20: flags.HasFlag(Nefs200TocEntryFlags.Unknown0x20),
-				v20Unknown0x40: flags.HasFlag(Nefs200TocEntryFlags.Unknown0x40),
-				v20Unknown0x80: flags.HasFlag(Nefs200TocEntryFlags.Unknown0x80),
-				part6Volume: entry.Volume);
+				part6Volume: entry.Volume)
+			{
+				IsLastSibling = flags.HasFlag(Nefs200TocEntryFlags.LastSibling)
+			};
 		}
 	}
 

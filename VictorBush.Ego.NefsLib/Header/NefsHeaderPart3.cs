@@ -16,6 +16,15 @@ public sealed class NefsHeaderPart3
 	/// <summary>
 	/// Initializes a new instance of the <see cref="NefsHeaderPart3"/> class.
 	/// </summary>
+	internal NefsHeaderPart3()
+	{
+		// for testing
+		Init(["game.nefs"]);
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="NefsHeaderPart3"/> class.
+	/// </summary>
 	/// <param name="entries">A unique list of strings.</param>
 	internal NefsHeaderPart3(IEnumerable<string> entries)
 	{
@@ -32,7 +41,7 @@ public sealed class NefsHeaderPart3
 		var strings = items.EnumerateById().Select(i => i.FileName)
 			.Append(items.DataFileName)
 			.Distinct()
-			.OrderBy(i => i, StringComparer.OrdinalIgnoreCase);
+			.OrderBy(i => i.ToLowerInvariant(), StringComparer.Ordinal);
 
 		Init(strings);
 	}

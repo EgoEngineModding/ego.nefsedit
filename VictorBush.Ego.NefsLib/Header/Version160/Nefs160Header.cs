@@ -1,7 +1,6 @@
 // See LICENSE.txt for license information.
 
 using System.Text;
-using Microsoft.Extensions.Logging;
 using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Source.Utility;
@@ -12,23 +11,6 @@ namespace VictorBush.Ego.NefsLib.Header.Version160;
 /// <inheritdoc cref="INefsHeader" />
 public sealed class Nefs160Header : INefsHeader, IFormattable
 {
-	/// <summary>
-	/// Offset to the first data item used in most archives.
-	/// </summary>
-	public const uint DataOffsetDefault = 0x10000U;
-
-	/// <summary>
-	/// Offset to the first data item used in large archives where header needs more room.
-	/// </summary>
-	public const uint DataOffsetLarge = 0x50000U;
-
-	/// <summary>
-	/// Offset to the header intro.
-	/// </summary>
-	public const uint IntroOffset = 0x0;
-
-	private static readonly ILogger Log = NefsLog.GetLogger();
-
 	public NefsWriterSettings WriterSettings { get; }
 	public Nefs160TocHeaderA Intro { get; }
 	public Nefs160TocHeaderB TableOfContents { get; }
@@ -38,8 +20,14 @@ public sealed class Nefs160Header : INefsHeader, IFormattable
 	public Nefs151HeaderBlockTable BlockTable { get; }
 	public NefsHeaderPart5 Part5 { get; }
 	public Nefs160HeaderWriteableEntryTable WriteableEntryTable { get; }
-	public Nefs160HeaderWriteableSharedEntryInfo WriteableSharedEntryInfo { get; }
+	public Nefs160HeaderWriteableSharedEntryInfoTable WriteableSharedEntryInfoTable { get; }
 	public Nefs160HeaderHashDigestTable HashDigestTable { get; }
+
+	/// <inheritdoc />
+	public NefsVersion Version => (NefsVersion)Intro.Version;
+
+	/// <inheritdoc />
+	public bool IsLittleEndian => WriterSettings.IsLittleEndian;
 
 	/// <inheritdoc />
 	public bool IsEncrypted => WriterSettings.IsEncrypted;
@@ -59,6 +47,9 @@ public sealed class Nefs160Header : INefsHeader, IFormattable
 	/// <inheritdoc />
 	public uint NumEntries => Intro.NumEntries;
 
+	/// <inheritdoc />
+	public IReadOnlyList<VolumeInfo> Volumes { get; }
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Nefs160Header"/> class.
 	/// </summary>
@@ -72,7 +63,7 @@ public sealed class Nefs160Header : INefsHeader, IFormattable
 		Nefs151HeaderBlockTable blockTable,
 		NefsHeaderPart5 part5,
 		Nefs160HeaderWriteableEntryTable writeableEntryTable,
-		Nefs160HeaderWriteableSharedEntryInfo writeableSharedEntryInfo,
+		Nefs160HeaderWriteableSharedEntryInfoTable writeableSharedEntryInfoTable,
 		Nefs160HeaderHashDigestTable hashDigestTable)
 	{
 		WriterSettings = writerSettings;
@@ -84,8 +75,28 @@ public sealed class Nefs160Header : INefsHeader, IFormattable
 		BlockTable = blockTable ?? throw new ArgumentNullException(nameof(blockTable));
 		Part5 = part5 ?? throw new ArgumentNullException(nameof(part5));
 		WriteableEntryTable = writeableEntryTable ?? throw new ArgumentNullException(nameof(writeableEntryTable));
-		WriteableSharedEntryInfo = writeableSharedEntryInfo ?? throw new ArgumentNullException(nameof(writeableSharedEntryInfo));
+		WriteableSharedEntryInfoTable = writeableSharedEntryInfoTable ?? throw new ArgumentNullException(nameof(writeableSharedEntryInfoTable));
 		HashDigestTable = hashDigestTable ?? throw new ArgumentNullException(nameof(hashDigestTable));
+
+		Volumes =
+		[
+			new VolumeInfo
+			{
+				Name = Part3.FileNamesByOffset[Part5.DataFileNameStringOffset],
+				DataOffset = Part5.FirstDataOffset,
+				Size = Part5.DataSize
+			}
+		];
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="Nefs160Header"/> class.
+	/// </summary>
+	internal Nefs160Header() : this(new NefsWriterSettings(), new Nefs160TocHeaderA(), new Nefs160TocHeaderB(),
+		new Nefs160HeaderEntryTable([]), new Nefs160HeaderSharedEntryInfoTable([]), new NefsHeaderPart3(),
+		new Nefs151HeaderBlockTable([]), new NefsHeaderPart5(), new Nefs160HeaderWriteableEntryTable([]),
+		new Nefs160HeaderWriteableSharedEntryInfoTable([]), new Nefs160HeaderHashDigestTable([]))
+	{
 	}
 
 	/// <inheritdoc/>
@@ -142,7 +153,7 @@ public sealed class Nefs160Header : INefsHeader, IFormattable
 		}
 
 		var headerPart7String = new StringBuilder();
-		foreach (var entry in WriteableSharedEntryInfo.Entries)
+		foreach (var entry in WriteableSharedEntryInfoTable.Entries)
 		{
 			headerPart7String.Append($"0x{entry.NextSibling.ToString("X", formatProvider)}".PadRight(20));
 			headerPart7String.Append($"0x{entry.PatchedEntry.ToString("X", formatProvider)}".PadRight(20));
@@ -206,7 +217,6 @@ public sealed class Nefs160Header : INefsHeader, IFormattable
 		        Block Table
 		        -----------------------------------------------------------
 		        Number of entries:          {BlockTable.Entries.Count.ToString("X", formatProvider)}
-		        Unknown last value:         {BlockTable.UnkownEndValue.ToString("X", formatProvider)}
 
 		        Volume Info Table (Count: 1)
 		        -----------------------------------------------------------
@@ -217,7 +227,7 @@ public sealed class Nefs160Header : INefsHeader, IFormattable
 		        Writeable Entry Table (Count: {WriteableEntryTable.Entries.Count})
 		        -----------------------------------------------------------
 		        {headerPart6String}
-		        Writeable Shared Entry Info Table (Count: {WriteableSharedEntryInfo.Entries.Count})
+		        Writeable Shared Entry Info Table (Count: {WriteableSharedEntryInfoTable.Entries.Count})
 		        -----------------------------------------------------------
 		        {headerPart7String}
 		        Hash Digest Table (Count: {HashDigestTable.Entries.Count})

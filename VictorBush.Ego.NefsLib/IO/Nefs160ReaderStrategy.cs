@@ -120,11 +120,11 @@ internal class Nefs160ReaderStrategy : Nefs151ReaderStrategy
 			writeableEntryTable = await Read160HeaderPart6Async(reader, secondaryOffset + toc.WritableEntryTableStart, numEntries, p);
 		}
 
-		Nefs160HeaderWriteableSharedEntryInfo writeableSharedEntryInfo;
+		Nefs160HeaderWriteableSharedEntryInfoTable writeableSharedEntryInfoTable;
 		using (p.BeginTask(weight, "Reading shared entry info writable table"))
 		{
 			var numEntries = sharedEntryInfoTable.Entries.Count;
-			writeableSharedEntryInfo = await Read160HeaderPart7Async(reader, secondaryOffset + toc.WritableSharedEntryInfoTableStart, numEntries, p);
+			writeableSharedEntryInfoTable = await Read160HeaderPart7Async(reader, secondaryOffset + toc.WritableSharedEntryInfoTableStart, numEntries, p);
 		}
 
 		Nefs160HeaderHashDigestTable hashDigestTable;
@@ -136,7 +136,7 @@ internal class Nefs160ReaderStrategy : Nefs151ReaderStrategy
 		}
 
 		return new Nefs160Header(detectedSettings, header, toc, entryTable, sharedEntryInfoTable, part3, blockTable,
-			part5, writeableEntryTable, writeableSharedEntryInfo, hashDigestTable);
+			part5, writeableEntryTable, writeableSharedEntryInfoTable, hashDigestTable);
 	}
 
 	private static async Task ValidateEncryptedHeaderAsync(Stream stream, long offset, uint headerSize,
@@ -272,13 +272,13 @@ internal class Nefs160ReaderStrategy : Nefs151ReaderStrategy
 	/// <param name="numEntries">Number of entries.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>The loaded header part.</returns>
-	internal static async Task<Nefs160HeaderWriteableSharedEntryInfo> Read160HeaderPart7Async(EndianBinaryReader reader, long offset,
+	internal static async Task<Nefs160HeaderWriteableSharedEntryInfoTable> Read160HeaderPart7Async(EndianBinaryReader reader, long offset,
 		int numEntries, NefsProgress p)
 	{
 		var size = numEntries * Nefs160TocSharedEntryInfoWriteable.ByteCount;
 		var entries = await ReadTocEntriesAsync<Nefs160TocSharedEntryInfoWriteable>(reader, offset, size, p)
 			.ConfigureAwait(false);
-		return new Nefs160HeaderWriteableSharedEntryInfo(entries);
+		return new Nefs160HeaderWriteableSharedEntryInfoTable(entries);
 	}
 
 	/// <summary>

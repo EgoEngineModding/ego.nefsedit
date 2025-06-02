@@ -70,7 +70,6 @@ internal partial class BrowseAllForm : DockContent
 
 				new ColumnHeader() { Name = "pt6.0x00", Text = "Volume [pt6.0x00]" },
 				new ColumnHeader() { Name = "pt6.0x02", Text = "Flags [pt6.0x02]" },
-				new ColumnHeader() { Name = "pt6.0x03", Text = "Unknown [pt6.0x03]" },
 
 				new ColumnHeader() { Name = "pt7.0x00", Text = "Sibling Id [pt7.0x00]" },
 				new ColumnHeader() { Name = "pt7.0x04", Text = "Id [pt7.0x04]" },
@@ -203,7 +202,7 @@ internal partial class BrowseAllForm : DockContent
 				AddSubItem(listItem, "pt6.0x00", p6.Volume.ToString("X"));
 				AddSubItem(listItem, "pt6.0x02", p6.Flags.ToString("X"));
 
-				var p7 = h20.WriteableSharedEntryInfo.Entries[(int)p1.SharedInfo];
+				var p7 = h20.WriteableSharedEntryInfoTable.Entries[(int)p1.SharedInfo];
 				AddSubItem(listItem, "pt7.0x00", p7.NextSibling.ToString("X"));
 				AddSubItem(listItem, "pt7.0x04", p7.PatchedEntry.ToString("X"));
 			}
@@ -226,7 +225,7 @@ internal partial class BrowseAllForm : DockContent
 				AddSubItem(listItem, "pt6.0x00", p6.Volume.ToString("X"));
 				AddSubItem(listItem, "pt6.0x02", p6.Flags.ToString("X"));
 
-				var p7 = h16.WriteableSharedEntryInfo.Entries[(int)p1.SharedInfo];
+				var p7 = h16.WriteableSharedEntryInfoTable.Entries[(int)p1.SharedInfo];
 				AddSubItem(listItem, "pt7.0x00", p7.NextSibling.ToString("X"));
 				AddSubItem(listItem, "pt7.0x04", p7.PatchedEntry.ToString("X"));
 			}

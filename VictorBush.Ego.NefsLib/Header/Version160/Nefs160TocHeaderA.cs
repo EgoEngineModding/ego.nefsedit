@@ -10,7 +10,7 @@ public struct Nefs160TocHeaderA : INefsTocData<Nefs160TocHeaderA>
 {
 	public static int ByteCount { get; } = Unsafe.SizeOf<Nefs160TocHeaderA>();
 
-	public uint Magic;
+	public uint Magic = NefsConstants.FourCc;
 	public Sha256Hash Hash;
 	public AesKeyBuffer AesKey;
 	public uint TocSize;
@@ -34,6 +34,10 @@ public struct Nefs160TocHeaderA : INefsTocData<Nefs160TocHeaderA>
 			var buffer = new Span<byte>(Unsafe.AsPointer(ref this), ByteCount);
 			value.CopyTo(buffer[116..ByteCount]);
 		}
+	}
+
+	public Nefs160TocHeaderA()
+	{
 	}
 
 	public void ReverseEndianness()

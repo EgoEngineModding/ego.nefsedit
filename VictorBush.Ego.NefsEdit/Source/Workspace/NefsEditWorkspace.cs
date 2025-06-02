@@ -449,22 +449,25 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		// Open archive
 		await ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
 		{
-			using (var tt = p.BeginTask(1.0f))
+			try
 			{
-				try
+				using (p.BeginTask(0.9f, "Reading archive"))
 				{
 					Archive = await NefsReader.ReadArchiveAsync(source, p);
 					ArchiveSource = source;
-
-					ArchiveOpened?.Invoke(this, EventArgs.Empty);
-					result = true;
-
-					Log.LogInformation($"Archive opened.");
 				}
-				catch (Exception ex)
+
+				using (p.BeginTask(0.1f, "Preparing UI"))
 				{
-					Log.LogError($"Failed to open archive {source.FilePath}.\r\n{ex.Message}");
+					ArchiveOpened?.Invoke(this, EventArgs.Empty);
 				}
+
+				result = true;
+				Log.LogInformation("Archive opened.");
+			}
+			catch (Exception ex)
+			{
+				Log.LogError(ex, $"Failed to open archive {source.FilePath}.");
 			}
 		}));
 

@@ -35,7 +35,7 @@ internal abstract class NefsItemListBuilder(ILogger logger)
 	/// <param name="entryIndex">The entry index.</param>
 	/// <param name="dataSourceList">The item's data source.</param>
 	/// <returns>A new <see cref="NefsItem"/>.</returns>
-	protected abstract NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList);
+	internal abstract NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList);
 
 	protected abstract NefsDataTransformType GetTransformType(uint blockTransformation);
 }
@@ -47,6 +47,8 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 
 	public override NefsItemList Build(string dataFilePath, NefsProgress p)
 	{
+		var weight = 1f / Header.NumEntries;
+		using var _ = p.BeginTask(1.0f, "Creating items");
 		var items = new NefsItemList(dataFilePath);
 		for (var i = 0; i < Header.NumEntries; ++i)
 		{
@@ -54,6 +56,7 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 
 			try
 			{
+				using var __ = p.BeginSubTask(weight);
 				var item =  BuildItem((uint)i, items);
 				items.Add(item);
 			}
@@ -94,7 +97,9 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 			{
 				Logger.LogError("Found data chunk with unknown transform {BlockTransformation}; aborting.",
 					block.Transformation);
-				return [];
+				// Assume one big untransformed block
+				var lastBlock = GetBlock(firstBlock + numBlocks - 1);
+				return [new NefsDataChunk(lastBlock.End, lastBlock.End, GetTransform(NefsDataTransformType.None)!)];
 			}
 
 			// Create data chunk info

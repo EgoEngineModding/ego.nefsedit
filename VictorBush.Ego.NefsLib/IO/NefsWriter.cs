@@ -1,18 +1,16 @@
 // See LICENSE.txt for license information.
 
+using System.Diagnostics;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
-using System.Security.Cryptography;
-using System.Text;
 using VictorBush.Ego.NefsLib.ArchiveSource;
 using VictorBush.Ego.NefsLib.DataSource;
-using VictorBush.Ego.NefsLib.DataTypes;
 using VictorBush.Ego.NefsLib.Header;
+using VictorBush.Ego.NefsLib.Header.Builder;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.Item;
 using VictorBush.Ego.NefsLib.Progress;
-using VictorBush.Ego.NefsLib.Source.Utility;
 using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.IO;
@@ -60,12 +58,6 @@ public class NefsWriter : INefsWriter
 	{
 		NefsArchive newArchive;
 
-		// Check header version
-		if (nefs.Header is not Nefs200Header header)
-		{
-			throw new NotSupportedException("Can only write v2.0 NeFS files right now.");
-		}
-
 		// Setup temp working directory
 		var workDir = PrepareWorkingDirectory(destFilePath);
 
@@ -73,14 +65,13 @@ public class NefsWriter : INefsWriter
 		var tempFilePath = Path.Combine(workDir, "temp.nefs");
 		using (var file = FileSystem.File.Open(tempFilePath, FileMode.Create))
 		{
-			//newArchive = await WriteArchiveVersion20Async(file, header, nefs.Items, workDir, p);
+			newArchive = await WriteArchiveAsync(file, nefs.Header, nefs.Items, workDir, p);
 		}
 
 		// Copy to final destination
 		FileSystem.File.Copy(tempFilePath, destFilePath, true);
 
-		return (null, NefsArchiveSource.Standard(destFilePath));
-		// return (newArchive, NefsArchiveSource.Standard(destFilePath));
+		return (newArchive, NefsArchiveSource.Standard(destFilePath));
 	}
 
 	/// <inheritdoc/>
@@ -122,68 +113,6 @@ public class NefsWriter : INefsWriter
 	}
 
 	/// <summary>
-	/// Writes the header part to an output stream.
-	/// </summary>
-	/// <param name="stream">The stream to write to.</param>
-	/// <param name="offset">The absolute offset in the stream to write at.</param>
-	/// <param name="part3">The data to write.</param>
-	/// <param name="p">Progress info.</param>
-	/// <returns>An async task.</returns>
-	internal async Task WriteHeaderPart3Async(Stream stream, long offset, NefsHeaderPart3 part3, NefsProgress p)
-	{
-		stream.Seek((long)offset, SeekOrigin.Begin);
-
-		foreach (var entry in part3.FileNames)
-		{
-			var fileNameBytes = Encoding.ASCII.GetBytes(entry);
-			await stream.WriteAsync(fileNameBytes, 0, fileNameBytes.Length, p.CancellationToken);
-
-			// Write null terminator
-			await stream.WriteAsync(new byte[] { 0 }, 0, 1, p.CancellationToken);
-		}
-	}
-
-	internal async Task WriteTocEntryAsync<T>(EndianBinaryWriter writer, long offset, T entry, NefsProgress p)
-		where T : unmanaged, INefsTocData<T>
-	{
-		using var t = p.BeginTask(1.0f);
-		writer.BaseStream.Seek(offset, SeekOrigin.Begin);
-		await writer.WriteTocDataAsync(entry, p.CancellationToken).ConfigureAwait(false);
-	}
-
-	internal async Task WriteTocTableAsync<T>(EndianBinaryWriter writer, long offset, INefsTocTable<T> table,
-		NefsProgress p)
-		where T :  unmanaged, INefsTocData<T>
-	{
-		var weight = 1.0f / table.Entries.Count;
-		writer.BaseStream.Seek(offset, SeekOrigin.Begin);
-		foreach (var entry in table.Entries)
-		{
-			using (p.BeginTask(weight))
-			{
-				await writer.WriteTocDataAsync(entry, p.CancellationToken).ConfigureAwait(false);
-			}
-		}
-	}
-
-	// internal async Task WriteHeaderPartAsync(Stream stream, long offset, object part, NefsProgress p)
-	// {
-	// 	using (var t = p.BeginTask(1.0f))
-	// 	{
-	// 		await FileData.WriteDataAsync(stream, offset, part, p);
-	// 	}
-	// }
-	//
-	// internal async Task WriteHeaderPartWithEntriesAsync(Stream stream, long offset, IEnumerable<INefsHeaderPartEntry> entries, NefsProgress p)
-	// {
-	// 	foreach (var entry in entries)
-	// 	{
-	// 		await FileData.WriteDataAsync(stream, offset, entry, p);
-	// 		offset += entry.Size;
-	// 	}
-	// }
-
-	/// <summary>
 	/// Prepares an item's data to be written to the archive.
 	/// </summary>
 	/// <param name="item">The item to prepare.</param>
@@ -223,8 +152,17 @@ public class NefsWriter : INefsWriter
 		}
 
 		// Compress to temp location if needed
-		if (!item.DataSource.IsTransformed && item.Transform is not null)
+		if (!item.DataSource.IsTransformed)
 		{
+			if (item.Transform is null)
+			{
+				// Take the file as-is and assume it's transformed
+				var directDataSource = new NefsFileDataSource(item.DataSource.FilePath, item.DataSource.Offset,
+					item.DataSource.Size, isTransformed: true);
+				item.UpdateDataSource(directDataSource, NefsItemState.Replaced);
+				return;
+			}
+
 			// Prepare the working directory
 			var filePathInArchive = items.GetItemFilePath(item.Id);
 			var filePathInArchiveHash = HashHelper.HashStringMD5(filePathInArchive);
@@ -255,29 +193,32 @@ public class NefsWriter : INefsWriter
 		string workDir,
 		NefsProgress p)
 	{
-		// Create a new items list - original source list is not modified. The new list is returned that removes deleted
-		// items and has updated metadata for the other items.
-		var items = (NefsItemList)sourceItems.Clone();
-		var itemsToRemove = new List<NefsItem>();
+		// Create a new items list - the original source list is not modified.
+		// The new list is returned that removes deleted items and has updated metadata for the other items.
+		// There may be gaps in ids in case of removing an item. Generate a map to make ids sequential
+		var idIndexMap = new Dictionary<NefsItemId, NefsItemId>();
+		var items = new NefsItemList(sourceItems.DataFilePath);
 
-		foreach (var item in items.EnumerateById())
+		foreach (var sourceItem in sourceItems.EnumerateById())
 		{
-			if (item.State == NefsItemState.Removed)
+			if (sourceItem.State == NefsItemState.Removed)
 			{
 				// Item was deleted; remove item from list
-				itemsToRemove.Add(item);
+				continue;
 			}
-			else
-			{
-				// Compress any new or replaced files and update chunk sizes
-				await PrepareItemAsync(item, workDir, sourceItems, p);
-			}
-		}
 
-		// Remove deleted items
-		foreach (var item in itemsToRemove)
-		{
-			items.Remove(item.Id);
+			var currentId = new NefsItemId(idIndexMap.Count);
+			idIndexMap.Add(sourceItem.Id, currentId);
+			var item = sourceItem with
+			{
+				Id = currentId,
+				DirectoryId = idIndexMap[sourceItem.DirectoryId],
+				FirstDuplicateId = idIndexMap[sourceItem.FirstDuplicateId],
+			};
+
+			// Compress any new or replaced files and update chunk sizes
+			await PrepareItemAsync(item, workDir, sourceItems, p);
+			items.Add(item);
 		}
 
 		// Return the new list
@@ -310,262 +251,68 @@ public class NefsWriter : INefsWriter
 	}
 
 	/// <summary>
-	/// Gets the new expected hash and writes it to the header.
+	/// Writes an archive to the specified stream. A new archive obejct is returned that contains the updated header and
+	/// item metadata.
 	/// </summary>
-	/// <param name="writer">The writer with the stream containing the header.</param>
-	/// <param name="headerOffset">The offset to the header in the stream.</param>
-	/// <param name="header">The header.</param>
+	/// <param name="stream">The stream to write to.</param>
+	/// <param name="sourceHeader">Donor header information.</param>
+	/// <param name="sourceItems">List of items to write. This list is not modified directly.</param>
+	/// <param name="workDir">Temp working directory path.</param>
 	/// <param name="p">Progress info.</param>
-	/// <returns>The async task.</returns>
-	private async Task UpdateHashAsync(
-		EndianBinaryWriter writer,
-		long headerOffset,
-		Nefs200Header header,
+	/// <returns>A new NefsArchive object containing the updated header and item metadata.</returns>
+	private async Task<NefsArchive> WriteArchiveAsync(
+		Stream stream,
+		INefsHeader sourceHeader,
+		NefsItemList sourceItems,
+		string workDir,
 		NefsProgress p)
 	{
-		// The hash is of the entire header except for the expected hash
-		var firstOffset = headerOffset;
-		var secondOffset = firstOffset + 0x24;
-		var headerSize = (int)header.Intro.TocSize;
+		// Setup task weights
+		var taskWeightPrepareItems = 0.45f;
+		var taskWeightWriteItems = 0.45f;
+		var taskWeightHeader = 0.1f;
 
-		// Seek to beginning of header
-		var stream = writer.BaseStream;
-		stream.Seek(firstOffset, SeekOrigin.Begin);
+		// Setup helpers
+		var headerBuilder = NefsHeaderBuilder.Get(sourceHeader.Version);
+		var strategy = NefsWriterStrategy.Get(sourceHeader.Version);
 
-		// Read magic num
-		var dataToHash = new byte[headerSize - 0x20];
-		await stream.ReadExactlyAsync(dataToHash, 0, 4).ConfigureAwait(false);
-
-		// Skip expected hash and read rest of header
-		stream.Seek(secondOffset, SeekOrigin.Begin);
-		await stream.ReadExactlyAsync(dataToHash, 4, headerSize - 0x24).ConfigureAwait(false);
-
-		// Compute the new expected hash
-		var hashOut = SHA256.HashData(dataToHash);
-
-		// Write the intro with the expected hash
-		var intro = header.Intro;
-		intro.Hash = new Sha256Hash(hashOut);
-		// TODO: set hash in header
-		await WriteTocEntryAsync(writer, headerOffset, intro, p).ConfigureAwait(false);
-	}
-
-	// /// <summary>
-	// /// Writes an archive to the specified stream. A new archive obejct is returned that contains the updated header and
-	// /// item metadata.
-	// /// </summary>
-	// /// <param name="stream">The stream to write to.</param>
-	// /// <param name="sourceHeader">Donor header information.</param>
-	// /// <param name="sourceItems">List of items to write. This list is not modified directly.</param>
-	// /// <param name="workDir">Temp working directory path.</param>
-	// /// <param name="p">Progress info.</param>
-	// /// <returns>A new NefsArchive object containing the updated header and item metadata.</returns>
-	// private async Task<NefsArchive> WriteArchiveVersion20Async(
-	// 	Stream stream,
-	// 	Nefs20Header sourceHeader,
-	// 	NefsItemList sourceItems,
-	// 	string workDir,
-	// 	NefsProgress p)
-	// {
-	// 	// Setup task weights
-	// 	var taskWeightPrepareItems = 0.45f;
-	// 	var taskWeightWriteItems = 0.45f;
-	// 	var taskWeightHeader = 0.1f;
-	//
-	// 	// Prepare items for writing
-	// 	NefsItemList items;
-	// 	using (var t = p.BeginTask(taskWeightPrepareItems, "Preparing items"))
-	// 	{
-	// 		items = await PrepareItemsAsync(sourceItems, workDir, p);
-	// 	}
-	//
-	// 	// Determine number of items
-	// 	var numItems = items.Count;
-	//
-	// 	// Update header parts 3 and 4 first (need to know their sizes)
-	// 	var p4 = new Nefs200HeaderBlockTable(items);
-	// 	var p3 = new NefsHeaderPart3(items);
-	//
-	// 	// Compute header size
-	// 	var introSize = Nefs160TocHeaderA.ByteCount;
-	// 	var tocSize = Nefs200TocHeaderB.ByteCount;
-	// 	var p1Size = numItems * Nefs160TocEntry.ByteCount; // TODO : What about duplicates?
-	// 	var p2Size = numItems * Nefs160TocSharedEntryInfo.ByteCount; // TODO : What about duplicates?
-	// 	var p3Size = p3.Size;
-	// 	var p4Size = p4.ByteCount();
-	// 	var p5Size = NefsHeaderPart5.Size;
-	// 	var p6Size = numItems * Nefs160TocEntryWriteable.ByteCount;
-	// 	var p7Size = numItems * Nefs160TocSharedEntryInfoWriteable.ByteCount;
-	// 	var p8Size = sourceHeader.Intro.TocSize - sourceHeader.TableOfContents.HashDigestTableStart;
-	// 	var headerSize = introSize + tocSize + p1Size + p2Size + p3Size + p4Size + p5Size + p6Size + p7Size + p8Size;
-	//
-	// 	// TODO: padding and alignment
-	// 	var p1Offset = (uint)(introSize + tocSize);
-	// 	var p2Offset = p1Offset + (uint)p1Size;
-	// 	var p3Offset = p2Offset + (uint)p2Size;
-	// 	var p4Offset = p3Offset + (uint)p3Size;
-	// 	var p5Offset = p4Offset + (uint)p4Size;
-	// 	var p6Offset = p5Offset + (uint)p5Size;
-	// 	var p7Offset = p6Offset + (uint)p6Size;
-	// 	var p8Offset = p7Offset + (uint)p7Size;
-	//
-	// 	// Determine first data offset. There are two known offset values. If the header is large enough, the second
-	// 	// (larger) offset is used.
-	// 	var firstDataOffset = Nefs20Header.DataOffsetDefault;
-	// 	if (headerSize > firstDataOffset)
-	// 	{
-	// 		firstDataOffset = Nefs20Header.DataOffsetLarge;
-	// 	}
-	//
-	// 	// Write item data
-	// 	long dataSize;
-	// 	using (var t = p.BeginTask(taskWeightWriteItems, "Writing items"))
-	// 	{
-	// 		dataSize = await WriteItemsAsync(stream, items, firstDataOffset, p);
-	// 	}
-	//
-	// 	// Update remaining header data
-	// 	var p1 = new Nefs160HeaderEntryTable(items, p4);
-	// 	var p2 = new Nefs160HeaderSharedEntryInfoTable(items, p3);
-	// 	var p6 = new Nefs160HeaderWriteableEntryTable(items);
-	// 	var p7 = new Nefs160HeaderWriteableSharedEntryInfo(items);
-	//
-	// 	// Compute total archive size
-	// 	var p5 = new NefsHeaderPart5
-	// 	{
-	// 		DataFileNameStringOffset = p3.OffsetsByFileName[items.DataFileName],
-	// 		DataSize = (ulong)dataSize,
-	// 		FirstDataOffset = sourceHeader.Part5.FirstDataOffset,
-	// 	};
-	//
-	// 	// Update header intro
-	// 	var intro = sourceHeader.Intro;
-	// 	{
-	// 		intro.TocSize = (uint)headerSize;
-	// 		intro.NumEntries = (uint)numItems;
-	// 	};
-	//
-	// 	var toc = new Nefs200TocHeaderB
-	// 	{
-	// 		HashBlockSize = sourceHeader.TableOfContents.HashBlockSize,
-	// 		NumVolumes = sourceHeader.TableOfContents.NumVolumes,
-	// 		EntryTableStart = p1Offset,
-	// 		SharedEntryInfoTableStart = p2Offset,
-	// 		NameTableStart = p3Offset,
-	// 		BlockTableStart = p4Offset,
-	// 		VolumeInfoTableStart = p5Offset,
-	// 		WritableEntryTableStart = p6Offset,
-	// 		WritableSharedEntryInfoTableStart = p7Offset,
-	// 		HashDigestTableStart = p8Offset,
-	// 		RandomPadding = sourceHeader.TableOfContents.RandomPadding
-	// 	};
-	//
-	// 	// Part 8 - not writing anything for now
-	// 	var totalCompressedDataSize = p5.FirstDataOffset - p5.DataSize;
-	// 	var hashBlockSize = toc.HashBlockSize > 0 ? toc.HashBlockSize : DefaultHashBlockSize;
-	// 	var numHashes = (int)(totalCompressedDataSize / hashBlockSize);
-	// 	var hashes = new List<Sha256Hash>();
-	// 	for (var i = 0; i < numHashes; ++i)
-	// 	{
-	// 		hashes.Add(new Sha256Hash(new byte[20]));
-	// 	}
-	//
-	// 	var p8 = new Nefs160HeaderHashDigestTable(hashes);
-	//
-	// 	// Create new header object
-	// 	var header = new Nefs20Header(sourceHeader.WriterSettings, intro, toc, p1, p2, p3, p4, p5, p6, p7, p8);
-	//
-	// 	// Write the header
-	// 	using var writer = new EndianBinaryWriter(stream, header.WriterSettings.IsLittleEndian);
-	// 	using (var t = p.BeginTask(taskWeightHeader, "Writing header"))
-	// 	{
-	// 		await WriteHeaderVersion20Async(writer, 0, header, p);
-	// 	}
-	//
-	// 	// Update hash
-	// 	await UpdateHashAsync(writer, 0, header, p);
-	//
-	// 	// Create new archive object
-	// 	return new NefsArchive(header, items);
-	// }
-
-	/// <summary>
-	/// Writes the header to the output stream.
-	/// </summary>
-	/// <param name="writer">The writer to use.</param>
-	/// <param name="headerOffset">The offset into the stream to begin.</param>
-	/// <param name="header">The header to write.</param>
-	/// <param name="p">Progress info.</param>
-	/// <returns>The async task.</returns>
-	private async Task WriteHeaderVersion20Async(EndianBinaryWriter writer, long headerOffset, Nefs200Header header,
-		NefsProgress p)
-	{
-		// Calc weight of each task (8 parts + intro + table of contents)
-		var weight = 1.0f / 10.0f;
-
-		// Get table of contents
-		var toc = header.TableOfContents;
-
-		var stream = writer.BaseStream;
-		using (var t = p.BeginTask(weight, "Writing header intro"))
+		// Prepare items for writing
+		NefsItemList items;
+		using (p.BeginTask(taskWeightPrepareItems, "Preparing items"))
 		{
-			var offset = headerOffset + Nefs200Header.IntroOffset;
-			await WriteTocEntryAsync(writer, offset, header.Intro, p);
+			items = await PrepareItemsAsync(sourceItems, workDir, p);
 		}
 
-		using (var t = p.BeginTask(weight, "Writing header intro table of contents"))
+		// Write item data
+		var dataOffset = headerBuilder.ComputeDataOffset(sourceHeader, items);
+		long dataSize;
+		using (p.BeginTask(taskWeightWriteItems, "Writing items"))
 		{
-			var offset = headerOffset + Nefs160TocHeaderA.ByteCount;
-			await WriteTocEntryAsync(writer, offset, toc, p);
+			dataSize = await WriteItemsAsync(stream, items, dataOffset, p);
 		}
 
-		using (var t = p.BeginTask(weight, "Writing header part 1"))
+		// TODO: update hash digest table
+
+		// Build header
+		var header = headerBuilder.Build(sourceHeader, items, p);
+
+		// Write the header
+		Debug.Assert(header.Volumes[0].DataOffset == dataOffset);
+		Debug.Assert(header.Volumes[0].Size == Convert.ToUInt64(dataSize));
+		using var writer = new EndianBinaryWriter(stream, header.IsLittleEndian);
+		using (p.BeginTask(taskWeightHeader, "Writing header"))
 		{
-			var offset = headerOffset + toc.EntryTableStart;
-			await WriteTocTableAsync(writer, offset, header.EntryTable, p).ConfigureAwait(false);
+			await strategy.WriteHeaderAsync(writer, header, 0, p);
 		}
 
-		using (var t = p.BeginTask(weight, "Writing header part 2"))
+		// TODO: support XOR
+		if (false)
 		{
-			var offset = headerOffset + toc.SharedEntryInfoTableStart;
-			await WriteTocTableAsync(writer, offset, header.SharedEntryInfoTable, p).ConfigureAwait(false);
+			await EncodeXorIntroAsync(writer.BaseStream, 0, p.CancellationToken);
 		}
 
-		using (var t = p.BeginTask(weight, "Writing header part 3"))
-		{
-			var offset = headerOffset + toc.NameTableStart;
-			await WriteHeaderPart3Async(stream, offset, header.Part3, p);
-		}
-
-		using (var t = p.BeginTask(weight, "Writing header part 4"))
-		{
-			var offset = headerOffset + toc.BlockTableStart;
-			await WriteTocTableAsync(writer, offset, header.BlockTable, p).ConfigureAwait(false);
-		}
-
-		using (var t = p.BeginTask(weight, "Writing header part 5"))
-		{
-			var offset = headerOffset + toc.VolumeInfoTableStart;
-			await WriteTocEntryAsync(writer, offset, header.Part5.Data, p);
-		}
-
-		using (var t = p.BeginTask(weight, "Writing header part 6"))
-		{
-			var offset = headerOffset + toc.WritableEntryTableStart;
-			await WriteTocTableAsync(writer, offset, header.WriteableEntryTable, p).ConfigureAwait(false);
-		}
-
-		using (var t = p.BeginTask(weight, "Writing header part 7"))
-		{
-			var offset = headerOffset + toc.WritableSharedEntryInfoTableStart;
-			await WriteTocTableAsync(writer, offset, header.WriteableSharedEntryInfo, p).ConfigureAwait(false);
-		}
-
-		using (var t = p.BeginTask(weight, "Writing header part 8"))
-		{
-			var offset = headerOffset + toc.HashDigestTableStart;
-			await WriteTocTableAsync(writer, offset, header.HashDigestTable, p).ConfigureAwait(false);
-		}
+		// Create new archive object
+		return new NefsArchive(header, items);
 	}
 
 	/// <summary>
@@ -583,6 +330,7 @@ public class NefsWriter : INefsWriter
 		NefsProgress p)
 	{
 		// Deleted items should not be written
+		Debug.Assert(item.State != NefsItemState.Removed);
 		if (item.State == NefsItemState.Removed)
 		{
 			throw new ArgumentException("Trying to write a removed item.", nameof(item));
@@ -601,7 +349,7 @@ public class NefsWriter : INefsWriter
 		}
 
 		// Seek to appropriate offset in destination
-		stream.Seek((long)dataOffset, SeekOrigin.Begin);
+		stream.Seek(dataOffset, SeekOrigin.Begin);
 
 		// Determine data source
 		var srcFile = item.DataSource.FilePath;
@@ -611,7 +359,7 @@ public class NefsWriter : INefsWriter
 		// The data should already be transformed (if needed) by this point
 		if (!item.DataSource.IsTransformed)
 		{
-			throw new InvalidOperationException($"Item data transformation should be handled before calling {nameof(this.WriteItemAsync)}.");
+			throw new InvalidOperationException($"Item data transformation should be handled before calling {nameof(WriteItemAsync)}.");
 		}
 
 		// TODO - This must be for v2 nefs only
@@ -627,7 +375,7 @@ public class NefsWriter : INefsWriter
 		using (var inputFile = FileSystem.File.OpenRead(srcFile))
 		{
 			// Seek source stream to correct offset
-			inputFile.Seek((long)srcOffset, SeekOrigin.Begin);
+			inputFile.Seek(srcOffset, SeekOrigin.Begin);
 
 			// Copy from source to destination
 			await inputFile.CopyPartialAsync(stream, srcSize, p.CancellationToken);
@@ -660,7 +408,7 @@ public class NefsWriter : INefsWriter
 		var i = 1;
 		foreach (var item in items.EnumerateById())
 		{
-			using (var t = p.BeginSubTask(1.0f / items.Count, $"Writing data for item {i}/{items.Count}"))
+			using (p.BeginSubTask(1.0f / items.Count, $"Writing data for item {i}/{items.Count}"))
 			{
 				// Get item
 				var itemOffset = nextDataOffset;

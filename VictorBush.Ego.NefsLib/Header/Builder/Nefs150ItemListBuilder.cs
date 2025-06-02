@@ -10,7 +10,7 @@ internal class Nefs150ItemListBuilder(Nefs150Header header, ILogger logger)
 	: Nefs150ItemListBuilderBase<Nefs150Header>(header, logger)
 {
 	/// <inheritdoc />
-	protected override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
+	internal override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];

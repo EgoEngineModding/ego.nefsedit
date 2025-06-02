@@ -12,7 +12,7 @@ namespace VictorBush.Ego.NefsLib.Header.Builder;
 internal class Nefs160ItemListBuilder(Nefs160Header header, ILogger logger)
 	: NefsItemListBuilder<Nefs160Header>(header, logger)
 {
-	protected override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
+	internal override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];
@@ -36,12 +36,10 @@ internal class Nefs160ItemListBuilder(Nefs160Header header, ILogger logger)
 			var dataOffset = Convert.ToInt64(entry.Start);
 			var extractedSize = sharedEntryInfo.Size;
 
-			// Transform
-			transform = new NefsDataTransform(Header.BlockSize, false, Header.IsEncrypted ? Header.AesKey : null);
-
 			var numBlocks = GetNumBlocks(extractedSize);
-			var chunks = BuildBlockList(entry.FirstBlock, numBlocks, null);
-			var size = new NefsItemSize(extractedSize, chunks);
+			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, null);
+			transform = blocks.FirstOrDefault()?.Transform ?? GetTransform(0);
+			var size = new NefsItemSize(extractedSize, blocks);
 			dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
 		}
 
@@ -60,9 +58,11 @@ internal class Nefs160ItemListBuilder(Nefs160Header header, ILogger logger)
 				isDirectory: flags.HasFlag(Nefs150TocEntryFlags.Directory),
 				isDuplicated: flags.HasFlag(Nefs150TocEntryFlags.Duplicated),
 				isCacheable: flags.HasFlag(Nefs150TocEntryFlags.Cacheable),
-				v16Unknown0x10: flags.HasFlag(Nefs150TocEntryFlags.LastSibling),
 				isPatched: flags.HasFlag(Nefs150TocEntryFlags.Patched),
-				part6Volume: entry.Volume);
+				part6Volume: entry.Volume)
+			{
+				IsLastSibling = flags.HasFlag(Nefs150TocEntryFlags.LastSibling)
+			};
 		}
 	}
 

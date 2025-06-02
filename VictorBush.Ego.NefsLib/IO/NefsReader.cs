@@ -62,10 +62,12 @@ public class NefsReader : INefsReader
 		INefsHeader header;
 		using (var stream = FileSystem.File.OpenRead(filePath))
 		{
-			header = await ReadHeaderAsync(stream, 0, p);
+			using var _ = p.BeginTask(0.9f);
+			header = await ReadHeaderAsync(stream, 0, p).ConfigureAwait(false);
 		}
 
 		// Create items from header
+		using var __ = p.BeginTask(0.1f);
 		var itemsBuilder = NefsItemListBuilder.Create(header);
 		var items = itemsBuilder.Build(filePath, p);
 

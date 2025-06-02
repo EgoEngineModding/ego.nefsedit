@@ -7,7 +7,7 @@ namespace VictorBush.Ego.NefsLib.Item;
 /// <summary>
 /// An item in a NeFS archive (file or directory).
 /// </summary>
-public sealed class NefsItem : ICloneable
+public sealed record NefsItem
 {
 	/// <summary>
 	/// Initializes a new instance of the <see cref="NefsItem"/> class.
@@ -19,7 +19,7 @@ public sealed class NefsItem : ICloneable
 	/// <param name="transform">The transform that is applied to this item's data. Can be null if no transform.</param>
 	/// <param name="attributes">Additional attributes.</param>
 	/// <param name="state">The item state.</param>
-	public NefsItem(
+	internal NefsItem(
 		NefsItemId id,
 		string fileName,
 		NefsItemId directoryId,
@@ -72,7 +72,7 @@ public sealed class NefsItem : ICloneable
 	/// <summary>
 	/// The size of the item's data in the archive.
 	/// </summary>
-	public uint CompressedSize => DataSource?.Size.TransformedSize ?? 0;
+	public uint CompressedSize => DataSource.Size.TransformedSize;
 
 	/// <summary>
 	/// The current data source for this item.
@@ -83,12 +83,12 @@ public sealed class NefsItem : ICloneable
 	/// The id of the directory item this item is in. When the item is in the root directory, the parent id is the same
 	/// as the item's id.
 	/// </summary>
-	public NefsItemId DirectoryId { get; }
+	public NefsItemId DirectoryId { get; init; }
 
 	/// <summary>
 	/// The size of the item's data when extracted from the archive.
 	/// </summary>
-	public uint ExtractedSize => DataSource?.Size.ExtractedSize ?? 0;
+	public uint ExtractedSize => DataSource.Size.ExtractedSize;
 
 	/// <summary>
 	/// The item's file or directory name, depending on type.
@@ -96,39 +96,14 @@ public sealed class NefsItem : ICloneable
 	public string FileName { get; }
 
 	/// <summary>
-	/// A unique identifier for this item.
-	/// </summary>
-	public Guid Guid { get; }
-
-	/// <summary>
 	/// The id of this item.
 	/// </summary>
-	public NefsItemId Id { get; }
+	public NefsItemId Id { get; init; }
 
 	/// <summary>
 	/// The id of the first duplicate.
 	/// </summary>
-	public NefsItemId FirstDuplicateId { get; }
-
-	/// <summary>
-	/// Unknown data in the part 6 entry.
-	/// </summary>
-	public byte Part6Unknown0x00 { get; }
-
-	/// <summary>
-	/// Unknown data in the part 6 entry.
-	/// </summary>
-	public byte Part6Unknown0x01 { get; }
-
-	/// <summary>
-	/// Unknown data in the part 6 entry.
-	/// </summary>
-	public byte Part6Unknown0x02 { get; }
-
-	/// <summary>
-	/// Unknown data in the part 6 entry.
-	/// </summary>
-	public byte Part6Unknown0x03 { get; }
+	public NefsItemId FirstDuplicateId { get; init; }
 
 	/// <summary>
 	/// The modification state of the item. Represents any pending changes to this item. Pending changes are applied
@@ -147,21 +122,9 @@ public sealed class NefsItem : ICloneable
 	public NefsItemType Type => Attributes.IsDirectory ? NefsItemType.Directory : NefsItemType.File;
 
 	/// <summary>
-	/// Clones this item metadata.
+	/// Whether this item is a duplicate of another.
 	/// </summary>
-	/// <returns>A new <see cref="NefsItem"/>.</returns>
-	public object Clone()
-	{
-		return new NefsItem(
-			Id,
-			FirstDuplicateId,
-			FileName,
-			DirectoryId,
-			DataSource,
-			Transform,
-			Attributes,
-			state: State);
-	}
+	public bool IsDuplicate => Id != FirstDuplicateId;
 
 	/// <summary>
 	/// Updates the data source for the item and the item's state. If the data source has changed, the new item data

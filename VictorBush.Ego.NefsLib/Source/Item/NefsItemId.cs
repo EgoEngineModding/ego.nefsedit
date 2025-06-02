@@ -38,12 +38,22 @@ public readonly record struct NefsItemId : IComparable<NefsItemId>
 	/// <inheritdoc/>
 	public int CompareTo(NefsItemId other)
 	{
-		return Value.CompareTo(other.Value);
+		return Index.CompareTo(other.Index);
 	}
 
 	/// <inheritdoc/>
 	public override string ToString()
 	{
-		return Value.ToString();
+		return Index.ToString();
+	}
+
+	public static bool operator >(NefsItemId x, NefsItemId y)
+	{
+		return x.Index > y.Index;
+	}
+
+	public static bool operator <(NefsItemId x, NefsItemId y)
+	{
+		return x.Index < y.Index;
 	}
 }

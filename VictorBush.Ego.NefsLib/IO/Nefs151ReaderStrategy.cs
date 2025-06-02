@@ -109,11 +109,6 @@ internal class Nefs151ReaderStrategy : Nefs150ReaderStrategy
 		int size, NefsProgress p)
 	{
 		var entries = await ReadTocEntriesAsync<Nefs151TocBlock>(reader, offset, size, p).ConfigureAwait(false);
-
-		// TODO: I believe this is padding to reach multiple of EntrySize boundary
-		// Get the unknown last value at the end of part 4
-		var endValue = await reader.ReadUInt32Async(p.CancellationToken).ConfigureAwait(false);
-
-		return new Nefs151HeaderBlockTable(entries, endValue);
+		return new Nefs151HeaderBlockTable(entries);
 	}
 }

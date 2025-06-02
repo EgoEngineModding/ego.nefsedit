@@ -5,7 +5,7 @@ using System.Runtime.CompilerServices;
 
 namespace VictorBush.Ego.NefsLib.Header.Version160;
 
-public struct Nefs160TocEntryWriteable : INefsTocData<Nefs160TocEntryWriteable>
+public record struct Nefs160TocEntryWriteable : INefsTocData<Nefs160TocEntryWriteable>
 {
 	public static int ByteCount { get; } = Unsafe.SizeOf<Nefs160TocEntryWriteable>();
 

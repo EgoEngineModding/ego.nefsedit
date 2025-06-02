@@ -17,6 +17,12 @@ public sealed class Nefs151Header : INefsHeader
 	public NefsHeaderPart5 Part5 { get; }
 
 	/// <inheritdoc />
+	public NefsVersion Version => (NefsVersion)Intro.Version;
+
+	/// <inheritdoc />
+	public bool IsLittleEndian => WriterSettings.IsLittleEndian;
+
+	/// <inheritdoc />
 	public bool IsEncrypted => WriterSettings.IsEncrypted;
 
 	/// <inheritdoc />
@@ -33,6 +39,9 @@ public sealed class Nefs151Header : INefsHeader
 
 	/// <inheritdoc />
 	public uint NumEntries => Intro.NumEntries;
+
+	/// <inheritdoc />
+	public IReadOnlyList<VolumeInfo> Volumes { get; }
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="Nefs151Header"/> class.
@@ -60,6 +69,16 @@ public sealed class Nefs151Header : INefsHeader
 		Part3 = part3 ?? throw new ArgumentNullException(nameof(part3));
 		BlockTable = blockTable ?? throw new ArgumentNullException(nameof(blockTable));
 		Part5 = part5 ?? throw new ArgumentNullException(nameof(part5));
+
+		Volumes =
+		[
+			new VolumeInfo
+			{
+				Name = Part3.FileNamesByOffset[Part5.DataFileNameStringOffset],
+				DataOffset = Part5.FirstDataOffset,
+				Size = Part5.DataSize
+			}
+		];
 	}
 
 	/// <inheritdoc />

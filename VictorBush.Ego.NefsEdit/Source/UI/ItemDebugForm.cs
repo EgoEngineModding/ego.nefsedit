@@ -46,7 +46,7 @@ internal partial class ItemDebugForm : DockContent
 		var p1 = h.EntryTable.Entries[item.Id.Index];
 		var p2 = h.SharedEntryInfoTable.Entries[(int)p1.SharedInfo];
 		var p6 = h.WriteableEntryTable.Entries[item.Id.Index];
-		var p7 = h.WriteableSharedEntryInfo.Entries[(int)p1.SharedInfo];
+		var p7 = h.WriteableSharedEntryInfoTable.Entries[(int)p1.SharedInfo];
 		var attributes = item.Attributes;
 
 		return $"""
@@ -83,10 +83,8 @@ internal partial class ItemDebugForm : DockContent
 		        IsDirectory:                {attributes.IsDirectory}
 		        IsDuplicated:               {attributes.IsDuplicated}
 		        IsCacheable:                {attributes.IsCacheable}
-		        Unknown 0x10:               {attributes.V16Unknown0x10}
+		        IsLastSibling:              {attributes.IsLastSibling}
 		        IsPatched:                  {attributes.IsPatched}
-		        Unknown 0x40:               {attributes.V16Unknown0x40}
-		        Unknown 0x80:               {attributes.V16Unknown0x80}
 
 		        Part 7
 		        -----------------------------------------------------------
@@ -100,7 +98,7 @@ internal partial class ItemDebugForm : DockContent
 		var p1 = h.EntryTable.Entries[item.Id.Index];
 		var p2 = h.SharedEntryInfoTable.Entries[(int)p1.SharedInfo];
 		var p6 = h.WriteableEntryTable.Entries[item.Id.Index];
-		var p7 = h.WriteableSharedEntryInfo.Entries[(int)p1.SharedInfo];
+		var p7 = h.WriteableSharedEntryInfoTable.Entries[(int)p1.SharedInfo];
 		var attributes = item.Attributes;
 
 		return $"""
@@ -137,10 +135,7 @@ internal partial class ItemDebugForm : DockContent
 		        IsAes:                      {attributes.V20IsAes}
 		        IsDirectory:                {attributes.IsDirectory}
 		        IsDuplicated:               {attributes.IsDuplicated}
-		        Unknown 0x10:               {attributes.V20Unknown0x10}
-		        Unknown 0x20:               {attributes.V20Unknown0x20}
-		        Unknown 0x40:               {attributes.V20Unknown0x40}
-		        Unknown 0x80:               {attributes.V20Unknown0x80}
+		        IsLastSibling:              {attributes.IsLastSibling}
 
 		        Part 7
 		        -----------------------------------------------------------
