@@ -20,7 +20,7 @@ internal partial class BrowseTreeForm : DockContent
 {
 	private static readonly ILogger Log = LogHelper.GetLogger();
 
-	private readonly Dictionary<NefsItem, ListViewItem> filesListItems = new Dictionary<NefsItem, ListViewItem>();
+	private readonly Dictionary<NefsItem, ListViewItem> filesListItems = new(ReferenceEqualityComparer.Instance);
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BrowseTreeForm"/> class.
@@ -205,29 +205,41 @@ internal partial class BrowseTreeForm : DockContent
 		});
 	}
 
-	private void OnWorkspaceCommandExecuted(object? sender, Commands.NefsEditCommandEventArgs e)
+	private void OnWorkspaceCommandExecuted(object? sender, NefsEditCommandEventArgs e)
 	{
 		if (e.Command is ReplaceFileCommand replaceCommand)
 		{
-			if (!this.filesListItems.ContainsKey(replaceCommand.Item))
+			if (!this.filesListItems.TryGetValue(replaceCommand.Item, out var listItem))
 			{
-				// An item was replaced, but its not in the current view
+				// An item was replaced, but it's not in the current view
 				return;
 			}
 
-			var listItem = this.filesListItems[replaceCommand.Item];
 			UpdateListItem(listItem);
 		}
 		else if (e.Command is RemoveFileCommand removeCommand)
 		{
-			if (!this.filesListItems.ContainsKey(removeCommand.Item))
+			if (!this.filesListItems.TryGetValue(removeCommand.Item, out var listItem))
 			{
-				// An item was removed, but its not in the current view
+				// An item was removed, but it's not in the current view
 				return;
 			}
 
-			var listItem = this.filesListItems[removeCommand.Item];
 			UpdateListItem(listItem);
+		}
+		else if (e.Command is ReplaceFileDuplicatesCommand replaceDuplicatesCommand)
+		{
+			foreach (var command in replaceDuplicatesCommand.Commands)
+			{
+				OnWorkspaceCommandExecuted(sender, new NefsEditCommandEventArgs(e.Kind, command));
+			}
+		}
+		else if (e.Command is RemoveFileDuplicatesCommand removeDuplicatesCommand)
+		{
+			foreach (var command in removeDuplicatesCommand.Commands)
+			{
+				OnWorkspaceCommandExecuted(sender, new NefsEditCommandEventArgs(e.Kind, command));
+			}
 		}
 	}
 
@@ -309,17 +321,10 @@ internal partial class BrowseTreeForm : DockContent
 		}
 
 		// Find the parent directory
-		var parentId = Workspace.Archive.Items.GetItemDirectoryId(Directory.DirectoryId);
-		var parent = Workspace.Archive.Items.GetItems(parentId).First();
-		if (parent == Directory)
-		{
-			// If the parent == the current dir, then display root
-			OpenDirectory(null);
-		}
-		else
-		{
-			OpenDirectory(parent);
-		}
+		var parent = Workspace.Archive.Items.GetItemParent(Directory.Id);
+
+		// If the parent is null, then display root
+		OpenDirectory(parent);
 	}
 
 	/// <summary>

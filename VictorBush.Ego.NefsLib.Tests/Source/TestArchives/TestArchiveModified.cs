@@ -2,7 +2,12 @@
 
 using VictorBush.Ego.NefsLib.DataSource;
 using VictorBush.Ego.NefsLib.Header;
+using VictorBush.Ego.NefsLib.Header.Builder;
+using VictorBush.Ego.NefsLib.Header.Version160;
+using VictorBush.Ego.NefsLib.Header.Version200;
+using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Item;
+using VictorBush.Ego.NefsLib.Progress;
 using Xunit;
 
 namespace VictorBush.Ego.NefsLib.Tests.TestArchives;
@@ -26,8 +31,6 @@ internal class TestArchiveModified
 
 	public static uint Dir1DirectoryId => Dir1ItemId;
 
-	public static Guid Dir1Guid { get; } = Guid.NewGuid();
-
 	public static uint Dir1ItemId => 1;
 
 	public static string Dir1Name => "dir1";
@@ -47,13 +50,11 @@ internal class TestArchiveModified
 
 	public static uint File1ExtractedSize => 0x27000;
 
-	public static Guid File1Guid { get; } = Guid.NewGuid();
-
 	public static uint File1ItemId => 0;
 
 	public static string File1Name => "file1.txt";
 
-	public static ulong File1Offset => Nefs20Header.DataOffsetDefault;
+	public static ulong File1Offset => NefsHeader200.DefaultBlockSize;
 
 	public static string File1PathInArchive => File1Name;
 
@@ -71,8 +72,6 @@ internal class TestArchiveModified
 	public static uint File2DirectoryId => Dir1ItemId;
 
 	public static uint File2ExtractedSize => 0x26000;
-
-	public static Guid File2Guid { get; } = Guid.NewGuid();
 
 	public static uint File2ItemId => 2;
 
@@ -94,8 +93,6 @@ internal class TestArchiveModified
 	public static uint File3DirectoryId => Dir1ItemId;
 
 	public static uint File3ExtractedSize => 31;
-
-	public static Guid File3Guid { get; } = Guid.NewGuid();
 
 	public static uint File3ItemId => 3;
 
@@ -119,8 +116,6 @@ internal class TestArchiveModified
 	public static uint File4DirectoryId => Dir1ItemId;
 
 	public static uint File4ExtractedSize => 0x29000;
-
-	public static Guid File4Guid { get; } = Guid.NewGuid();
 
 	public static uint File4ItemId => 4;
 
@@ -146,43 +141,34 @@ internal class TestArchiveModified
 		var file1Attributes = new NefsItemAttributes(v20IsZlib: true);
 		var file1Chunks = NefsDataChunk.CreateChunkList(File1ChunkSizes, TestHelpers.TestTransform);
 		var file1DataSource = new NefsItemListDataSource(items, (long)File1Offset, new NefsItemSize(File1ExtractedSize, file1Chunks));
-		var file1 = new NefsItem(File1Guid, new NefsItemId(File1ItemId), File1Name, new NefsItemId(File1DirectoryId), file1DataSource, TestHelpers.TestTransform, file1Attributes);
+		var file1 = new NefsItem(new NefsItemId(File1ItemId), File1Name, new NefsItemId(File1DirectoryId), file1DataSource, TestHelpers.TestTransform, file1Attributes);
 		items.Add(file1);
 
 		var dir1Attributes = new NefsItemAttributes(isDirectory: true);
 		var dir1DataSource = new NefsEmptyDataSource();
-		var dir1 = new NefsItem(Dir1Guid, new NefsItemId(Dir1ItemId), Dir1Name, new NefsItemId(Dir1DirectoryId), dir1DataSource, null, dir1Attributes);
+		var dir1 = new NefsItem(new NefsItemId(Dir1ItemId), Dir1Name, new NefsItemId(Dir1DirectoryId), dir1DataSource, null, dir1Attributes);
 		items.Add(dir1);
 
 		var file2Attributes = new NefsItemAttributes(v20IsZlib: true);
 		var file2Chunks = NefsDataChunk.CreateChunkList(File2ChunkSizes, TestHelpers.TestTransform);
 		var file2DataSource = new NefsItemListDataSource(items, (long)File2Offset, new NefsItemSize(File2ExtractedSize, file2Chunks));
-		var file2 = new NefsItem(File2Guid, new NefsItemId(File2ItemId), File2Name, new NefsItemId(File2DirectoryId), file2DataSource, TestHelpers.TestTransform, file2Attributes);
+		var file2 = new NefsItem(new NefsItemId(File2ItemId), File2Name, new NefsItemId(File2DirectoryId), file2DataSource, TestHelpers.TestTransform, file2Attributes);
 		items.Add(file2);
 
 		var file3Attributes = new NefsItemAttributes(v20IsZlib: true);
 		var file3Chunks = NefsDataChunk.CreateChunkList(File3ChunkSizes, TestHelpers.TestTransform);
 		var file3DataSource = new NefsItemListDataSource(items, (long)File3Offset, new NefsItemSize(File3ExtractedSize, file3Chunks));
-		var file3 = new NefsItem(File3Guid, new NefsItemId(File3ItemId), File3Name, new NefsItemId(File3DirectoryId), file3DataSource, TestHelpers.TestTransform, file3Attributes);
+		var file3 = new NefsItem(new NefsItemId(File3ItemId), File3Name, new NefsItemId(File3DirectoryId), file3DataSource, TestHelpers.TestTransform, file3Attributes);
 		items.Add(file3);
 
 		Assert.Equal((int)NumItems, items.Count);
 
-		var intro = new NefsHeaderIntro
+		var settings = new NefsWriterSettings
 		{
-			NumberOfItems = (uint)items.Count,
+			IsLittleEndian = true
 		};
-
-		var toc = new Nefs20HeaderIntroToc();
-		var part3 = new NefsHeaderPart3(items);
-		var part4 = new Nefs20HeaderPart4(items);
-		var part1 = new NefsHeaderPart1(items, part4);
-		var part2 = new NefsHeaderPart2(items, part3);
-		var part5 = new NefsHeaderPart5();
-		var part6 = new Nefs20HeaderPart6(items);
-		var part7 = new NefsHeaderPart7(items);
-		var part8 = new NefsHeaderPart8(0);
-		var header = new Nefs20Header(intro, toc, part1, part2, part3, part4, part5, part6, part7, part8);
+		var builder = new NefsHeaderBuilder200();
+		var header = builder.Build(new NefsHeader200 { WriterSettings = settings }, items, new NefsProgress());
 
 		return new NefsArchive(header, items);
 	}

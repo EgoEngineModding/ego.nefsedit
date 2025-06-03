@@ -14,30 +14,27 @@ public sealed class NefsItemSize
 	/// </summary>
 	/// <param name="extractedSize">The size of the item's data when extracted from the archive.</param>
 	/// <param name="chunks">
-	/// List of cumulative chunk sizes. If the item is not compressed, this list should only have one entry equal to the
-	/// extracted size.)
+	/// List of cumulative block sizes. If the item does not have blocks this list should be empty.
 	/// </param>
 	public NefsItemSize(uint extractedSize, IReadOnlyList<NefsDataChunk> chunks)
 	{
 		ExtractedSize = extractedSize;
-		Chunks = chunks ?? new List<NefsDataChunk>();
+		Chunks = chunks;
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="NefsItemSize"/> class. This constructor can be used if the item is
-	/// not compressed (i.e., extracted size == compressed size).
+	/// Initializes a new instance of the <see cref="NefsItemSize"/> class. This constructor can be used if the item
+	/// does not have blocks.
 	/// </summary>
 	/// <param name="extractedSize">The size of the item's data when extracted from the archive.</param>
 	public NefsItemSize(uint extractedSize)
 	{
 		ExtractedSize = extractedSize;
-		var transform = new NefsDataTransform(extractedSize);
-		var chunk = new NefsDataChunk(extractedSize, extractedSize, transform);
-		Chunks = new List<NefsDataChunk> { chunk };
+		Chunks = [];
 	}
 
 	/// <summary>
-	/// List of metadata for the item's data chunks (in order).
+	/// List of metadata for the item's data blocks (in order).
 	/// </summary>
 	public IReadOnlyList<NefsDataChunk> Chunks { get; }
 
@@ -49,5 +46,5 @@ public sealed class NefsItemSize
 	/// <summary>
 	/// Gets the size of the data in bytes after transforms (compression, encrypted) have been applied.
 	/// </summary>
-	public uint TransformedSize => Chunks.LastOrDefault()?.CumulativeSize ?? 0;
+	public uint TransformedSize => Chunks.Count == 0 ? ExtractedSize : Chunks[^1].CumulativeSize;
 }

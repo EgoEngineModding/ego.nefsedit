@@ -56,7 +56,6 @@ internal static class TestHelpers
 		var attributes = new NefsItemAttributes(isDirectory: true);
 
 		return new NefsItem(
-			Guid.NewGuid(),
 			new NefsItemId(id),
 			fileName,
 			new NefsItemId(dirId),
@@ -72,20 +71,22 @@ internal static class TestHelpers
 	/// <param name="dirId">The directory id.</param>
 	/// <param name="fileName">The item name.</param>
 	/// <param name="dataSource">The data source.</param>
+	/// <param name="firstDuplicateId">The first duplicate id.</param>
 	/// <returns>The new item.</returns>
 	internal static NefsItem CreateFile(
 		uint id,
 		uint dirId,
 		string fileName,
-		INefsDataSource dataSource)
+		INefsDataSource dataSource,
+		uint? firstDuplicateId = null)
 	{
 		var attributes = new NefsItemAttributes(v20IsZlib: true);
 
 		var transform = TestTransform;
 		return new NefsItem(
-			Guid.NewGuid(),
 			new NefsItemId(id),
-			fileName,
+			new NefsItemId(firstDuplicateId ?? id)
+,			fileName,
 			new NefsItemId(dirId),
 			dataSource,
 			transform,
@@ -121,7 +122,6 @@ internal static class TestHelpers
 		var size = new NefsItemSize(extractedSize, chunks);
 		var dataSource = new NefsFileDataSource(@"C:\source.txt", (long)dataOffset, size, extractedSize != chunkSizes.LastOrDefault());
 		return new NefsItem(
-			Guid.NewGuid(),
 			new NefsItemId(id),
 			fileName,
 			new NefsItemId(dirId),
