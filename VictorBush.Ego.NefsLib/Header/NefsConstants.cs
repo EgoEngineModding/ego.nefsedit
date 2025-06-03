@@ -7,7 +7,15 @@ public static class NefsConstants
 	// NeFS
 	public const uint FourCc = 0x5346654E;
 
+	/// <summary>
+	/// The intro header size. This should match the RSA key size.
+	/// </summary>
 	public const int IntroSize = 128;
+
+	/// <summary>
+	/// The block size for AES.
+	/// </summary>
+	public const int AesBlockSize = 128;
 
 	/// <summary>
 	/// The block index used to denote that there are no blocks for an entry.

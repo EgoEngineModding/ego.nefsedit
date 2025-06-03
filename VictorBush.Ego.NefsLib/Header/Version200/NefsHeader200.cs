@@ -39,7 +39,7 @@ public sealed class NefsHeader200 : INefsHeader
 	public NefsTocHeaderB200 TableOfContents { get; }
 	public NefsHeaderEntryTable160 EntryTable { get; }
 	public NefsHeaderSharedEntryInfoTable160 SharedEntryInfoTable { get; }
-	public NefsHeaderPart3 Part3 { get; }
+	public NefsHeaderNameTable NameTable { get; }
 	public NefsHeaderBlockTable200 BlockTable { get; }
 	public NefsHeaderPart5 Part5 { get; }
 	public NefsHeaderWriteableEntryTable160 WriteableEntryTable { get; }
@@ -86,7 +86,7 @@ public sealed class NefsHeader200 : INefsHeader
 		NefsTocHeaderB200 toc,
 		NefsHeaderEntryTable160 entryTable,
 		NefsHeaderSharedEntryInfoTable160 sharedEntryInfoTable,
-		NefsHeaderPart3 part3,
+		NefsHeaderNameTable nameTable,
 		NefsHeaderBlockTable200 blockTable,
 		NefsHeaderPart5 part5,
 		NefsHeaderWriteableEntryTable160 writeableEntryTable,
@@ -98,7 +98,7 @@ public sealed class NefsHeader200 : INefsHeader
 		TableOfContents = toc;
 		EntryTable = entryTable ?? throw new ArgumentNullException(nameof(entryTable));
 		SharedEntryInfoTable = sharedEntryInfoTable ?? throw new ArgumentNullException(nameof(sharedEntryInfoTable));
-		Part3 = part3 ?? throw new ArgumentNullException(nameof(part3));
+		NameTable = nameTable ?? throw new ArgumentNullException(nameof(nameTable));
 		BlockTable = blockTable ?? throw new ArgumentNullException(nameof(blockTable));
 		Part5 = part5 ?? throw new ArgumentNullException(nameof(part5));
 		WriteableEntryTable = writeableEntryTable ?? throw new ArgumentNullException(nameof(writeableEntryTable));
@@ -109,7 +109,7 @@ public sealed class NefsHeader200 : INefsHeader
 		[
 			new VolumeInfo
 			{
-				Name = Part3.FileNamesByOffset[Part5.DataFileNameStringOffset],
+				Name = NameTable.FileNamesByOffset[Part5.DataFileNameStringOffset],
 				DataOffset = Part5.FirstDataOffset,
 				Size = Part5.DataSize
 			}
@@ -120,7 +120,7 @@ public sealed class NefsHeader200 : INefsHeader
 	/// Initializes a new instance of the <see cref="NefsHeader200"/> class.
 	/// </summary>
 	internal NefsHeader200() : this(new NefsWriterSettings(), new NefsTocHeaderA160(), new NefsTocHeaderB200(),
-		new NefsHeaderEntryTable160([]), new NefsHeaderSharedEntryInfoTable160([]), new NefsHeaderPart3(),
+		new NefsHeaderEntryTable160([]), new NefsHeaderSharedEntryInfoTable160([]), new NefsHeaderNameTable(),
 		new NefsHeaderBlockTable200([]), new NefsHeaderPart5(), new NefsHeaderWriteableEntryTable160([]),
 		new NefsHeaderWriteableSharedEntryInfoTable160([]), new NefsHeaderHashDigestTable160([]))
 	{
@@ -129,7 +129,7 @@ public sealed class NefsHeader200 : INefsHeader
 	/// <inheritdoc/>
 	public string GetFileName(uint nameOffset)
 	{
-		return Part3.FileNamesByOffset[nameOffset];
+		return NameTable.FileNamesByOffset[nameOffset];
 	}
 
 	public string ToString(string? format, IFormatProvider? formatProvider)
@@ -166,7 +166,7 @@ public sealed class NefsHeader200 : INefsHeader
 		}
 
 		var headerPart3String = new StringBuilder();
-		foreach (var s in Part3.FileNames)
+		foreach (var s in NameTable.FileNames)
 		{
 			headerPart3String.AppendLine(s);
 		}

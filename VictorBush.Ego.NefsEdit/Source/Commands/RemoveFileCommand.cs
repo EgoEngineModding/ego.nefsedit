@@ -5,7 +5,7 @@ using VictorBush.Ego.NefsLib.Item;
 namespace VictorBush.Ego.NefsEdit.Commands;
 
 /// <summary>
-/// Command to replace an item's data source.
+/// Command to remove an item from the archive.
 /// </summary>
 internal class RemoveFileCommand : INefsEditCommand
 {
@@ -13,13 +13,10 @@ internal class RemoveFileCommand : INefsEditCommand
 	/// Initializes a new instance of the <see cref="RemoveFileCommand"/> class.
 	/// </summary>
 	/// <param name="item">The item to remove.</param>
-	/// <param name="oldState">The old item state.</param>
-	public RemoveFileCommand(
-		NefsItem item,
-		NefsItemState oldState)
+	public RemoveFileCommand(NefsItem item)
 	{
 		Item = item ?? throw new ArgumentNullException(nameof(item));
-		OldState = oldState;
+		OldState = item.State;
 		NewState = NefsItemState.Removed;
 	}
 

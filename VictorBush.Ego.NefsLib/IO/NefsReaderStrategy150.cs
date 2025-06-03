@@ -15,7 +15,7 @@ internal class NefsReaderStrategy150 : NefsReaderStrategy
 	protected override NefsVersion Version => NefsVersion.Version150;
 
 	/// <inheritdoc />
-	public override async Task<(AesKeyBuffer, uint, uint)> GetAesKeyHeaderSizeAndOffset(EndianBinaryReader reader, long offset,
+	public override async Task<(AesKeyHexBuffer, uint, uint)> GetAesKeyHeaderSizeAndOffset(EndianBinaryReader reader, long offset,
 		CancellationToken token = default)
 	{
 		var header = await ReadHeaderIntroV150Async(reader, offset, token).ConfigureAwait(false);
@@ -23,7 +23,7 @@ internal class NefsReaderStrategy150 : NefsReaderStrategy
 		// This version may have a header of 126 bytes, and 2 were added for the sake of RSA encryption
 		// we'll back up here to overwrite those last 2 bytes with the bytes contained in next AES section
 		// Side-note: last two bytes could be padding and not real data
-		return (header.AesKeyBuffer, header.TocSize, 126);
+		return (header.AesKey, header.TocSize, 126);
 	}
 
 	/// <inheritdoc />
@@ -58,12 +58,12 @@ internal class NefsReaderStrategy150 : NefsReaderStrategy
 			sharedEntryInfoTable = await Read150HeaderPart2Async(reader, primaryOffset + header.SharedEntryInfoTableStart, size, p);
 		}
 
-		NefsHeaderPart3 part3;
+		NefsHeaderNameTable nameTable;
 		var stream = reader.BaseStream;
 		using (p.BeginTask(weight, "Reading name table"))
 		{
 			var size = Convert.ToInt32(header.BlockTableStart - header.NameTableStart);
-			part3 = await ReadHeaderPart3Async(stream, primaryOffset + header.NameTableStart, size, p);
+			nameTable = await ReadHeaderPart3Async(stream, primaryOffset + header.NameTableStart, size, p);
 		}
 
 		NefsHeaderBlockTable150 blockTable;
@@ -80,7 +80,7 @@ internal class NefsReaderStrategy150 : NefsReaderStrategy
 			part5 = await ReadHeaderPart5Async(reader, primaryOffset + header.VolumeInfoTableStart, size, p);
 		}
 
-		return new NefsHeader150(detectedSettings, header, entryTable, sharedEntryInfoTable, part3, blockTable, part5);
+		return new NefsHeader150(detectedSettings, header, entryTable, sharedEntryInfoTable, nameTable, blockTable, part5);
 	}
 
 	public override Task<INefsHeader> ReadHeaderAsync(EndianBinaryReader reader, long primaryOffset, int? primarySize,
@@ -153,12 +153,7 @@ internal class NefsReaderStrategy150 : NefsReaderStrategy
 		NefsHeaderEntryTable150 entryTable, NefsProgress p)
 	{
 		var entries = await ReadTocEntriesAsync<NefsTocBlock150>(reader, offset, size, p).ConfigureAwait(false);
-
-		// TODO: I believe this is padding to reach multiple of EntrySize boundary
-		// Get the unknown last value at the end of part 4
-		var endValue = await reader.ReadUInt32Async(p.CancellationToken).ConfigureAwait(false);
-
-		return new NefsHeaderBlockTable150(entries, endValue);
+		return new NefsHeaderBlockTable150(entries);
 	}
 
 	/// <summary>

@@ -374,7 +374,7 @@ public class NefsReader : INefsReader
 				aes.KeySize = 256;
 				aes.Key = Convert.FromHexString(Encoding.ASCII.GetString(key));
 				aes.Mode = CipherMode.ECB;
-				aes.BlockSize = 128;
+				aes.BlockSize = NefsConstants.AesBlockSize;
 				aes.Padding = PaddingMode.Zeros;
 
 				// Decrypt the data - make sure to leave open the base stream

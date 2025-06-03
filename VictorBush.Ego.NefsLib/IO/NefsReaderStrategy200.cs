@@ -45,11 +45,11 @@ internal class NefsReaderStrategy200 : NefsReaderStrategy160
 			sharedEntryInfoTable = await ReadHeaderPart2Async(reader, primaryOffset + toc.SharedEntryInfoTableStart, size, p);
 		}
 
-		NefsHeaderPart3 part3;
+		NefsHeaderNameTable nameTable;
 		using (p.BeginTask(weight, "Reading name table"))
 		{
 			var size = Convert.ToInt32(toc.BlockTableStart - toc.NameTableStart);
-			part3 = await ReadHeaderPart3Async(reader.BaseStream, primaryOffset + toc.NameTableStart, size, p);
+			nameTable = await ReadHeaderPart3Async(reader.BaseStream, primaryOffset + toc.NameTableStart, size, p);
 		}
 
 		NefsHeaderBlockTable200 blockTable;
@@ -87,7 +87,7 @@ internal class NefsReaderStrategy200 : NefsReaderStrategy160
 			hashDigestTable = await Read160HeaderPart8Async(reader, primaryOffset + toc.HashDigestTableStart, hashBlockSize, part5, p);
 		}
 
-		return new NefsHeader200(detectedSettings, header, toc, entryTable, sharedEntryInfoTable, part3, blockTable, part5, part6, writeableSharedEntryInfoTable, hashDigestTable);
+		return new NefsHeader200(detectedSettings, header, toc, entryTable, sharedEntryInfoTable, nameTable, blockTable, part5, part6, writeableSharedEntryInfoTable, hashDigestTable);
 	}
 
 	/// <summary>

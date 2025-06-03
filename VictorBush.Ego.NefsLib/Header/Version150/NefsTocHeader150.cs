@@ -21,7 +21,7 @@ public struct NefsTocHeader150 : INefsTocData<NefsTocHeader150>
 	public uint NameTableStart;
 	public uint BlockTableStart;
 	public uint VolumeInfoTableStart;
-	public AesKeyBuffer AesKeyBuffer;
+	public AesKeyHexBuffer AesKey;
 
 	public unsafe void ReverseEndianness()
 	{

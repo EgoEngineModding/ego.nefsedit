@@ -48,7 +48,7 @@ internal class NefsWriterStrategy200 : NefsWriterStrategy160Base<NefsHeader200>
 		using (p.BeginTask(weight, "Writing header part 3"))
 		{
 			var offset = primaryOffset + toc.NameTableStart;
-			await WriteHeaderPart3Async(stream, offset, header.Part3, p).ConfigureAwait(false);
+			await WriteHeaderPart3Async(stream, offset, header.NameTable, p).ConfigureAwait(false);
 		}
 
 		using (p.BeginTask(weight, "Writing header part 4"))

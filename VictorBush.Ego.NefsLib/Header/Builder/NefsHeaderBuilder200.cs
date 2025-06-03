@@ -31,7 +31,7 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<NefsHeader200>
 		var sizeSum = NefsTocHeaderA160.ByteCount + NefsTocHeaderB200.ByteCount + entryTableSize +
 		              sharedEntryInfoTableSize + nameTableSize + blockTableSize + volumeInfoTableSize +
 		              writeableEntryTableSize + writeableSharedEntryInfoTableSize + hashDigestTableSize;
-		var tocSize = StructEx.Align(sizeSum, NefsConstants.IntroSize);
+		var tocSize = StructEx.Align(sizeSum, NefsConstants.AesBlockSize);
 		var tocFinalEnd = Convert.ToUInt32(StructEx.Align(tocSize, Convert.ToInt32(sourceHeader.BlockSize)));
 		return tocFinalEnd;
 	}
@@ -40,7 +40,7 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<NefsHeader200>
 	{
 		p.CancellationToken.ThrowIfCancellationRequested();
 		var entryTable = BuildEntryTable160(items);
-		var nameTable = new NefsHeaderPart3(items);
+		var nameTable = new NefsHeaderNameTable(items);
 		p.CancellationToken.ThrowIfCancellationRequested();
 		var sharedEntryInfoTable = BuildSharedEntryInfoTable160(items, nameTable);
 		var blockTable = Build200BlockTable(items);
@@ -84,7 +84,7 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<NefsHeader200>
 		var tocEnd = hashBlockSize > 0
 			? toc.HashDigestTableStart + hashDigestTable.ByteCount()
 			: writeableSharedEntryInfoTableEnd;
-		var tocSize = StructEx.Align(tocEnd, NefsConstants.IntroSize);
+		var tocSize = StructEx.Align(tocEnd, NefsConstants.AesBlockSize);
 		var tocFinalEnd = Convert.ToUInt32(StructEx.Align(tocSize, Convert.ToInt32(sourceHeader.BlockSize)));
 		var p5 = new NefsHeaderPart5
 		{

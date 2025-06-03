@@ -275,25 +275,37 @@ internal partial class BrowseAllForm : DockContent
 	{
 		if (e.Command is ReplaceFileCommand replaceCommand)
 		{
-			if (!this.listItems.ContainsKey(replaceCommand.Item))
+			if (!this.listItems.TryGetValue(replaceCommand.Item, out var listItem))
 			{
-				// An item was replaced, but its not in the current view
+				// An item was replaced, but it's not in the current view
 				return;
 			}
 
-			var listItem = this.listItems[replaceCommand.Item];
 			UpdateListItem(listItem);
 		}
 		else if (e.Command is RemoveFileCommand removeCommand)
 		{
-			if (!this.listItems.ContainsKey(removeCommand.Item))
+			if (!this.listItems.TryGetValue(removeCommand.Item, out var listItem))
 			{
-				// An item was removed, but its not in the current view
+				// An item was removed, but it's not in the current view
 				return;
 			}
 
-			var listItem = this.listItems[removeCommand.Item];
 			UpdateListItem(listItem);
+		}
+		else if (e.Command is ReplaceFileDuplicatesCommand replaceDuplicatesCommand)
+		{
+			foreach (var command in replaceDuplicatesCommand.Commands)
+			{
+				OnWorkspaceCommandExecuted(sender, new NefsEditCommandEventArgs(e.Kind, command));
+			}
+		}
+		else if (e.Command is RemoveFileDuplicatesCommand removeDuplicatesCommand)
+		{
+			foreach (var command in removeDuplicatesCommand.Commands)
+			{
+				OnWorkspaceCommandExecuted(sender, new NefsEditCommandEventArgs(e.Kind, command));
+			}
 		}
 	}
 

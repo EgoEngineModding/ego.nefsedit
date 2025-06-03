@@ -7,35 +7,35 @@ namespace VictorBush.Ego.NefsLib.Header;
 /// <summary>
 /// Header part 3.
 /// </summary>
-public sealed class NefsHeaderPart3
+public sealed class NefsHeaderNameTable
 {
 	private readonly SortedDictionary<uint, string> fileNamesByOffset = new();
 
 	private readonly Dictionary<string, uint> offsetsByFileName = new();
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="NefsHeaderPart3"/> class.
+	/// Initializes a new instance of the <see cref="NefsHeaderNameTable"/> class.
 	/// </summary>
-	internal NefsHeaderPart3()
+	internal NefsHeaderNameTable()
 	{
 		// for testing
 		Init(["game.nefs"]);
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="NefsHeaderPart3"/> class.
+	/// Initializes a new instance of the <see cref="NefsHeaderNameTable"/> class.
 	/// </summary>
 	/// <param name="entries">A unique list of strings.</param>
-	internal NefsHeaderPart3(IEnumerable<string> entries)
+	internal NefsHeaderNameTable(IEnumerable<string> entries)
 	{
 		Init(entries);
 	}
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="NefsHeaderPart3"/> class.
+	/// Initializes a new instance of the <see cref="NefsHeaderNameTable"/> class.
 	/// </summary>
 	/// <param name="items">The list of items in the archive.</param>
-	internal NefsHeaderPart3(NefsItemList items)
+	internal NefsHeaderNameTable(NefsItemList items)
 	{
 		// Add the archive file name to the list and sort strings alphabetically
 		var strings = items.EnumerateById().Select(i => i.FileName)

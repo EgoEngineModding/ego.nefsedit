@@ -156,7 +156,7 @@ internal class TestArchiveNotModified
 
 		Assert.Equal((int)NumItems, items.Count);
 
-		var aesKeyBuffer = new AesKeyBuffer();
+		var aesKeyBuffer = new AesKeyHexBuffer();
 		Encoding.ASCII.GetBytes(aesString).CopyTo(aesKeyBuffer);
 		var intro = new NefsTocHeaderA160
 		{

@@ -4,6 +4,7 @@ using System.IO.Abstractions;
 using System.IO.Compression;
 using System.Security.Cryptography;
 using VictorBush.Ego.NefsLib.DataSource;
+using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Item;
 using VictorBush.Ego.NefsLib.Progress;
 using VictorBush.Ego.NefsLib.Utility;
@@ -335,7 +336,7 @@ public class NefsTransformer : INefsTransformer
 		aes.KeySize = 256;
 		aes.Key = aes256Key;
 		aes.Mode = CipherMode.ECB;
-		aes.BlockSize = 128;
+		aes.BlockSize = NefsConstants.AesBlockSize;
 		aes.Padding = PaddingMode.Zeros;
 		return aes;
 	}

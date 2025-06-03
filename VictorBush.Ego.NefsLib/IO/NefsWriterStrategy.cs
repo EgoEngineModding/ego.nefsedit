@@ -66,14 +66,14 @@ internal abstract class NefsWriterStrategy
 	/// </summary>
 	/// <param name="stream">The stream to write to.</param>
 	/// <param name="offset">The absolute offset in the stream to write at.</param>
-	/// <param name="part3">The data to write.</param>
+	/// <param name="nameTable">The data to write.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>An async task.</returns>
-	internal async Task WriteHeaderPart3Async(Stream stream, long offset, NefsHeaderPart3 part3, NefsProgress p)
+	internal async Task WriteHeaderPart3Async(Stream stream, long offset, NefsHeaderNameTable nameTable, NefsProgress p)
 	{
 		stream.Seek(offset, SeekOrigin.Begin);
 
-		foreach (var entry in part3.FileNames)
+		foreach (var entry in nameTable.FileNames)
 		{
 			var fileNameBytes = Encoding.ASCII.GetBytes(entry);
 			await stream.WriteAsync(fileNameBytes, p.CancellationToken);

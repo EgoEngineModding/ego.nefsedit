@@ -7,7 +7,7 @@ using Xunit;
 
 namespace VictorBush.Ego.NefsLib.Tests.Header;
 
-public class NefsHeaderPart3Tests
+public class NefsHeaderNameTableTests
 {
 	[Fact]
 	public void NefsHeaderPart3_MultipleItems_EntriesPopulated()
@@ -32,7 +32,7 @@ public class NefsHeaderPart3Tests
 		var file3 = TestHelpers.CreateFile(3, dir1.Id.Value, "file3", file3DataSource);
 		items.Add(file3);
 
-		var p3 = new NefsHeaderPart3(items);
+		var p3 = new NefsHeaderNameTable(items);
 
 		Assert.Equal(5, p3.OffsetsByFileName.Count);
 		Assert.Equal(5, p3.FileNamesByOffset.Count);
@@ -68,7 +68,7 @@ public class NefsHeaderPart3Tests
 		var file2 = TestHelpers.CreateFile(1, 1, "foo.dat", file2DataSource);
 		items.Add(file2);
 
-		var p3 = new NefsHeaderPart3(items);
+		var p3 = new NefsHeaderNameTable(items);
 
 		Assert.Equal(3, p3.OffsetsByFileName.Count);
 		Assert.Equal(3, p3.FileNamesByOffset.Count);
@@ -89,7 +89,7 @@ public class NefsHeaderPart3Tests
 	public void NefsHeaderPart3_NoItems_EntriesEmpty()
 	{
 		var items = new NefsItemList(@"C:\archive.nefs");
-		var p3 = new NefsHeaderPart3(items);
+		var p3 = new NefsHeaderNameTable(items);
 		Assert.Single(p3.OffsetsByFileName);
 		Assert.Single(p3.FileNamesByOffset);
 		Assert.Equal(13, (int)p3.Size);

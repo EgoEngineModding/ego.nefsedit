@@ -12,7 +12,7 @@ public struct NefsTocHeaderA160 : INefsTocData<NefsTocHeaderA160>
 
 	public uint Magic = NefsConstants.FourCc;
 	public Sha256Hash Hash;
-	public AesKeyBuffer AesKey;
+	public AesKeyHexBuffer AesKey;
 	public uint TocSize;
 	public uint Version;
 	public uint NumEntries;

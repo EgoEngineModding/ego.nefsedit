@@ -53,7 +53,7 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 	protected abstract uint GetFirstBlock(NefsItem item, ref uint firstBlock);
 
 	protected static NefsHeaderSharedEntryInfoTable160 BuildSharedEntryInfoTable160(NefsItemList items,
-		NefsHeaderPart3 nameTable)
+		NefsHeaderNameTable nameTable)
 	{
 		var entries = new List<NefsTocSharedEntryInfo160>(items.Count);
 		foreach (var item in items.EnumerateDepthFirstByName())

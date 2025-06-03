@@ -24,7 +24,7 @@ public struct NefsTocHeader151 : INefsTocData<NefsTocHeader151>
 	public uint Unknown1;
 	public uint Unknown2;
 	public uint Unknown3;
-	public AesKeyBuffer AesKeyBuffer;
+	public AesKeyHexBuffer AesKey;
 	public uint Unknown4;
 
 	public unsafe void ReverseEndianness()

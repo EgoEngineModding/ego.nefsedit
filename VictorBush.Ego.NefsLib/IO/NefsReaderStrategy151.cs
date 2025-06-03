@@ -12,7 +12,7 @@ internal class NefsReaderStrategy151 : NefsReaderStrategy150
 	protected override NefsVersion Version => NefsVersion.Version151;
 
 	/// <inheritdoc />
-	public override async Task<(AesKeyBuffer, uint, uint)> GetAesKeyHeaderSizeAndOffset(EndianBinaryReader reader,
+	public override async Task<(AesKeyHexBuffer, uint, uint)> GetAesKeyHeaderSizeAndOffset(EndianBinaryReader reader,
 		long offset, CancellationToken token = default)
 	{
 		var header = await ReadHeaderIntroV151Async(reader, offset, token).ConfigureAwait(false);
@@ -20,7 +20,7 @@ internal class NefsReaderStrategy151 : NefsReaderStrategy150
 		// This version may have a header of 126 bytes, and 2 were added for the sake of RSA encryption
 		// we'll back up here to overwrite those last 2 bytes with the bytes contained in next AES section
 		// Side-note: last two bytes could be padding and not real data
-		return (header.AesKeyBuffer, header.TocSize, 126);
+		return (header.AesKey, header.TocSize, 126);
 	}
 
 	/// <inheritdoc />
@@ -52,12 +52,12 @@ internal class NefsReaderStrategy151 : NefsReaderStrategy150
 			sharedEntryInfoTable = await Read150HeaderPart2Async(reader, primaryOffset + header.SharedEntryInfoTableStart, size, p);
 		}
 
-		NefsHeaderPart3 part3;
+		NefsHeaderNameTable nameTable;
 		var stream = reader.BaseStream;
 		using (p.BeginTask(weight, "Reading name table"))
 		{
 			var size = Convert.ToInt32(header.BlockTableStart - header.NameTableStart);
-			part3 = await ReadHeaderPart3Async(stream, primaryOffset + header.NameTableStart, size, p);
+			nameTable = await ReadHeaderPart3Async(stream, primaryOffset + header.NameTableStart, size, p);
 		}
 
 		NefsHeaderBlockTable151 blockTable;
@@ -74,7 +74,7 @@ internal class NefsReaderStrategy151 : NefsReaderStrategy150
 			part5 = await ReadHeaderPart5Async(reader, primaryOffset + header.VolumeInfoTableStart, size, p);
 		}
 
-		return new NefsHeader151(detectedSettings, header, entryTable, sharedEntryInfoTable, part3, blockTable, part5);
+		return new NefsHeader151(detectedSettings, header, entryTable, sharedEntryInfoTable, nameTable, blockTable, part5);
 	}
 
 	/// <summary>

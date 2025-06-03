@@ -61,7 +61,7 @@ public sealed class NefsItemList : ICloneable
 
 			// TODO: validate file name, blocks, etc. are same
 			Debug.Assert(item.Id > item.FirstDuplicateId);
-			existingContainer.Items.Add(item);
+			existingContainer.Duplicates.Add(item);
 			this.itemsById.Add(item.Id, item);
 			return;
 		}
@@ -142,7 +142,7 @@ public sealed class NefsItemList : ICloneable
 		var items = new List<NefsItem>(this.itemsById.Count);
 		foreach (var item in this.rootItems.OrderBy(i => i.Self.Id))
 		{
-			items.AddRange(item.Items);
+			items.AddRange(item.Duplicates);
 			items.AddRange(item.EnumerateDepthFirstById());
 		}
 
@@ -158,7 +158,7 @@ public sealed class NefsItemList : ICloneable
 		var items = new List<NefsItem>(this.itemsById.Count);
 		foreach (var item in this.rootItems.OrderBy(i => i.Self.FileName.ToLowerInvariant(), StringComparer.Ordinal))
 		{
-			items.AddRange(item.Items);
+			items.AddRange(item.Duplicates);
 			items.AddRange(item.EnumerateDepthFirstByName());
 		}
 
@@ -173,7 +173,7 @@ public sealed class NefsItemList : ICloneable
 	public IEnumerable<NefsItem> EnumerateItemChildren(NefsItemId id)
 	{
 		var item = GetItemContainer(id);
-		return item.Children.SelectMany(v => v.Items);
+		return item.Children.SelectMany(v => v.Duplicates);
 	}
 
 	/// <summary>
@@ -182,7 +182,7 @@ public sealed class NefsItemList : ICloneable
 	/// <returns>Items in the root directory.</returns>
 	public IEnumerable<NefsItem> EnumerateRootItems()
 	{
-		return this.rootItems.SelectMany(v => v.Items).OrderBy(i => i.FileName.ToLowerInvariant(), StringComparer.Ordinal);
+		return this.rootItems.SelectMany(v => v.Duplicates).OrderBy(i => i.FileName.ToLowerInvariant(), StringComparer.Ordinal);
 	}
 
 	/// <summary>
@@ -296,9 +296,20 @@ public sealed class NefsItemList : ICloneable
 	public NefsItemId GetItemNextDuplicateId(NefsItemId id)
 	{
 		var item = GetItemContainer(id);
-		var duplicates = item.Items.OrderBy(x => x.Id);
+		var duplicates = item.Duplicates.OrderBy(x => x.Id);
 		var nextDuplicate = duplicates.SkipWhile(x => x.Id < id).Take(2).Last();
 		return nextDuplicate.Id;
+	}
+
+	/// <summary>
+	/// Gets the duplicates of the item, including itself.
+	/// </summary>
+	/// <param name="id">The id of the item.</param>
+	/// <returns>The duplicates including self.</returns>
+	public IReadOnlyList<NefsItem> GetItemDuplicates(NefsItemId id)
+	{
+		var item = GetItemContainer(id);
+		return item.Duplicates;
 	}
 
 	/// <summary>
@@ -351,7 +362,7 @@ public sealed class NefsItemList : ICloneable
 		public ItemContainer(NefsItem self)
 		{
 			Self = self;
-			Items = [self];
+			Duplicates = [self];
 			Children = [];
 		}
 
@@ -361,9 +372,9 @@ public sealed class NefsItemList : ICloneable
 		public List<ItemContainer> Children { get; }
 
 		/// <summary>
-		/// This is a list to handle duplicate items.
+		/// The list of duplicates including self.
 		/// </summary>
-		public List<NefsItem> Items { get; }
+		public List<NefsItem> Duplicates { get; }
 
 		public ItemContainer? Parent { get; set; }
 
@@ -376,7 +387,7 @@ public sealed class NefsItemList : ICloneable
 			var items = new List<NefsItem>();
 			foreach (var child in Children.OrderBy(i => i.Self.Id))
 			{
-				items.AddRange(child.Items);
+				items.AddRange(child.Duplicates);
 				items.AddRange(child.EnumerateDepthFirstById());
 			}
 
@@ -392,7 +403,7 @@ public sealed class NefsItemList : ICloneable
 			var items = new List<NefsItem>();
 			foreach (var child in Children.OrderBy(i => i.Self.FileName.ToLowerInvariant(), StringComparer.Ordinal))
 			{
-				items.AddRange(child.Items);
+				items.AddRange(child.Duplicates);
 				items.AddRange(child.EnumerateDepthFirstByName());
 			}
 

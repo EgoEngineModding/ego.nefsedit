@@ -6,7 +6,7 @@ using System.Text;
 namespace VictorBush.Ego.NefsLib.Header;
 
 [InlineArray(64)]
-public struct AesKeyBuffer
+public struct AesKeyHexBuffer
 {
 	private byte element;
 

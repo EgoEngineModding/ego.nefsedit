@@ -12,7 +12,7 @@ public sealed class NefsHeader151 : INefsHeader
 	public NefsTocHeader151 Intro { get; }
 	public NefsHeaderEntryTable150 EntryTable { get; }
 	public NefsHeaderSharedEntryInfoTable150 SharedEntryInfoTable { get; }
-	public NefsHeaderPart3 Part3 { get; }
+	public NefsHeaderNameTable NameTable { get; }
 	public NefsHeaderBlockTable151 BlockTable { get; }
 	public NefsHeaderPart5 Part5 { get; }
 
@@ -26,7 +26,7 @@ public sealed class NefsHeader151 : INefsHeader
 	public bool IsEncrypted => WriterSettings.IsEncrypted;
 
 	/// <inheritdoc />
-	public byte[] AesKey => Intro.AesKeyBuffer.GetAesKey();
+	public byte[] AesKey => Intro.AesKey.GetAesKey();
 
 	/// <inheritdoc />
 	public Sha256Hash Hash => new();
@@ -50,7 +50,7 @@ public sealed class NefsHeader151 : INefsHeader
 	/// <param name="header">Header intro.</param>
 	/// <param name="entryTable">Header part 1.</param>
 	/// <param name="sharedEntryInfoTable">Header part 2.</param>
-	/// <param name="part3">Header part 3.</param>
+	/// <param name="nameTable">Header part 3.</param>
 	/// <param name="blockTable">Header part 4.</param>
 	/// <param name="part5">Header part 5.</param>
 	public NefsHeader151(
@@ -58,7 +58,7 @@ public sealed class NefsHeader151 : INefsHeader
 		NefsTocHeader151 header,
 		NefsHeaderEntryTable150 entryTable,
 		NefsHeaderSharedEntryInfoTable150 sharedEntryInfoTable,
-		NefsHeaderPart3 part3,
+		NefsHeaderNameTable nameTable,
 		NefsHeaderBlockTable151 blockTable,
 		NefsHeaderPart5 part5)
 	{
@@ -66,7 +66,7 @@ public sealed class NefsHeader151 : INefsHeader
 		Intro = header;
 		EntryTable = entryTable ?? throw new ArgumentNullException(nameof(entryTable));
 		SharedEntryInfoTable = sharedEntryInfoTable ?? throw new ArgumentNullException(nameof(sharedEntryInfoTable));
-		Part3 = part3 ?? throw new ArgumentNullException(nameof(part3));
+		NameTable = nameTable ?? throw new ArgumentNullException(nameof(nameTable));
 		BlockTable = blockTable ?? throw new ArgumentNullException(nameof(blockTable));
 		Part5 = part5 ?? throw new ArgumentNullException(nameof(part5));
 
@@ -74,7 +74,7 @@ public sealed class NefsHeader151 : INefsHeader
 		[
 			new VolumeInfo
 			{
-				Name = Part3.FileNamesByOffset[Part5.DataFileNameStringOffset],
+				Name = NameTable.FileNamesByOffset[Part5.DataFileNameStringOffset],
 				DataOffset = Part5.FirstDataOffset,
 				Size = Part5.DataSize
 			}
@@ -84,6 +84,6 @@ public sealed class NefsHeader151 : INefsHeader
 	/// <inheritdoc />
 	public string GetFileName(uint nameOffset)
 	{
-		return Part3.FileNamesByOffset[nameOffset];
+		return NameTable.FileNamesByOffset[nameOffset];
 	}
 }

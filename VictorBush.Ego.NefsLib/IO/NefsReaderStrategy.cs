@@ -38,7 +38,7 @@ internal abstract class NefsReaderStrategy
 		return strategy;
 	}
 
-	public abstract Task<(AesKeyBuffer, uint, uint)> GetAesKeyHeaderSizeAndOffset(EndianBinaryReader reader, long offset,
+	public abstract Task<(AesKeyHexBuffer, uint, uint)> GetAesKeyHeaderSizeAndOffset(EndianBinaryReader reader, long offset,
 		CancellationToken token = default);
 
 	public abstract Task<INefsHeader> ReadHeaderAsync(
@@ -63,7 +63,7 @@ internal abstract class NefsReaderStrategy
 	/// <param name="size">The size of the header part.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>The loaded header part.</returns>
-	internal static async Task<NefsHeaderPart3> ReadHeaderPart3Async(Stream stream, long offset, int size,
+	internal static async Task<NefsHeaderNameTable> ReadHeaderPart3Async(Stream stream, long offset, int size,
 		NefsProgress p)
 	{
 		var entries = new List<string>();
@@ -71,7 +71,7 @@ internal abstract class NefsReaderStrategy
 		// Validate inputs
 		if (!ValidateHeaderPartStream(stream, offset, size, "3"))
 		{
-			return new NefsHeaderPart3(entries);
+			return new NefsHeaderNameTable(entries);
 		}
 
 		// Read in header part 3
@@ -117,7 +117,7 @@ internal abstract class NefsReaderStrategy
 			nextOffset = nullOffset + 1;
 		}
 
-		return new NefsHeaderPart3(entries);
+		return new NefsHeaderNameTable(entries);
 	}
 
 	/// <summary>
