@@ -16,7 +16,11 @@ public struct AesKeyHexBuffer
 	/// <returns>A byte array with the AES key.</returns>
 	public byte[] GetAesKey()
 	{
-		var asciiKey = Encoding.ASCII.GetString(this);
-		return Convert.FromHexString(asciiKey);
+		return Convert.FromHexString(ToString());
+	}
+
+	public override string ToString()
+	{
+		return Encoding.ASCII.GetString(this);
 	}
 }

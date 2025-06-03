@@ -5,7 +5,7 @@ using VictorBush.Ego.NefsLib.Item;
 namespace VictorBush.Ego.NefsLib.Header;
 
 /// <summary>
-/// Header part 3.
+/// The name table.
 /// </summary>
 public sealed class NefsHeaderNameTable
 {

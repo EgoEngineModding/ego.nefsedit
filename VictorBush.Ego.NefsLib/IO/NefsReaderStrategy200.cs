@@ -59,11 +59,11 @@ internal class NefsReaderStrategy200 : NefsReaderStrategy160
 			blockTable = await ReadHeaderPart4Version20Async(reader, primaryOffset + toc.BlockTableStart, size, p);
 		}
 
-		NefsHeaderPart5 part5;
+		NefsHeaderVolumeInfoTable150 volumeInfoTable;
 		using (p.BeginTask(weight, "Reading volume info table"))
 		{
 			var size = Convert.ToInt32(toc.NumVolumes * NefsTocVolumeInfo150.ByteCount);
-			part5 = await ReadHeaderPart5Async(reader, primaryOffset + toc.VolumeInfoTableStart, size, p);
+			volumeInfoTable = await ReadHeaderPart5Async(reader, primaryOffset + toc.VolumeInfoTableStart, size, p);
 		}
 
 		NefsHeaderWriteableEntryTable160 part6;
@@ -84,10 +84,10 @@ internal class NefsReaderStrategy200 : NefsReaderStrategy160
 		using (p.BeginTask(weight, "Reading hash digest table"))
 		{
 			var hashBlockSize = NefsWriter.DefaultHashBlockSize;
-			hashDigestTable = await Read160HeaderPart8Async(reader, primaryOffset + toc.HashDigestTableStart, hashBlockSize, part5, p);
+			hashDigestTable = await Read160HeaderPart8Async(reader, primaryOffset + toc.HashDigestTableStart, hashBlockSize, volumeInfoTable, p);
 		}
 
-		return new NefsHeader200(detectedSettings, header, toc, entryTable, sharedEntryInfoTable, nameTable, blockTable, part5, part6, writeableSharedEntryInfoTable, hashDigestTable);
+		return new NefsHeader200(detectedSettings, header, toc, entryTable, sharedEntryInfoTable, nameTable, blockTable, volumeInfoTable, part6, writeableSharedEntryInfoTable, hashDigestTable);
 	}
 
 	/// <summary>

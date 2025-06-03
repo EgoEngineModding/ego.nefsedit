@@ -67,14 +67,14 @@ internal class NefsReaderStrategy151 : NefsReaderStrategy150
 			blockTable = await Read151HeaderPart4Async(reader, primaryOffset + header.BlockTableStart, size, p);
 		}
 
-		NefsHeaderPart5 part5;
+		NefsHeaderVolumeInfoTable150 volumeInfoTable;
 		using (p.BeginTask(weight, "Reading volume info table"))
 		{
 			var size = Convert.ToInt32(header.NumVolumes * NefsTocVolumeInfo150.ByteCount);
-			part5 = await ReadHeaderPart5Async(reader, primaryOffset + header.VolumeInfoTableStart, size, p);
+			volumeInfoTable = await ReadHeaderPart5Async(reader, primaryOffset + header.VolumeInfoTableStart, size, p);
 		}
 
-		return new NefsHeader151(detectedSettings, header, entryTable, sharedEntryInfoTable, nameTable, blockTable, part5);
+		return new NefsHeader151(detectedSettings, header, entryTable, sharedEntryInfoTable, nameTable, blockTable, volumeInfoTable);
 	}
 
 	/// <summary>

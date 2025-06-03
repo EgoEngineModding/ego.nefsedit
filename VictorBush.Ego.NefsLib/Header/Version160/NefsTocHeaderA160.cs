@@ -2,7 +2,7 @@
 
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
-using VictorBush.Ego.NefsLib.Source.Utility;
+using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header.Version160;
 

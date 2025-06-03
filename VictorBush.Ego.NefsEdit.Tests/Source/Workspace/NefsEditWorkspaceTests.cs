@@ -47,7 +47,7 @@ public class NefsEditWorkspaceTests
 		// Modify archvie
 		var itemId = new NefsItemId(0);
 		var item = w.Archive.Items.GetItem(itemId);
-		var cmd = new RemoveFileCommand(item, item.State);
+		var cmd = new RemoveFileCommand(item);
 		w.Execute(cmd);
 
 		// Mock user cancelling the request to save before closing
@@ -84,7 +84,7 @@ public class NefsEditWorkspaceTests
 		// Modify archvie
 		var itemId = new NefsItemId(0);
 		var item = w.Archive.Items.GetItem(itemId);
-		var cmd = new RemoveFileCommand(item, item.State);
+		var cmd = new RemoveFileCommand(item);
 		w.Execute(cmd);
 
 		// Mock user choosing NOT to save before closing
@@ -128,7 +128,7 @@ public class NefsEditWorkspaceTests
 		// Modify archvie
 		var itemId = new NefsItemId(0);
 		var item = w.Archive.Items.GetItem(itemId);
-		var cmd = new RemoveFileCommand(item, item.State);
+		var cmd = new RemoveFileCommand(item);
 		w.Execute(cmd);
 
 		// Mock user choosing to save before closing
@@ -180,7 +180,7 @@ public class NefsEditWorkspaceTests
 		// Modify archvie
 		var itemId = new NefsItemId(0);
 		var item = w.Archive.Items.GetItem(itemId);
-		var cmd = new RemoveFileCommand(item, item.State);
+		var cmd = new RemoveFileCommand(item);
 		w.Execute(cmd);
 
 		// Mock user choosing to save before closing
@@ -275,7 +275,7 @@ public class NefsEditWorkspaceTests
 		// Modify archvie
 		var itemId = new NefsItemId(0);
 		var item = w.Archive.Items.GetItem(itemId);
-		var cmd = new RemoveFileCommand(item, item.State);
+		var cmd = new RemoveFileCommand(item);
 		w.Execute(cmd);
 
 		// Mock user choosing to save before closing
@@ -438,7 +438,7 @@ public class NefsEditWorkspaceTests
 		// Modify archvie
 		var itemId = new NefsItemId(0);
 		var item = w.Archive.Items.GetItem(itemId);
-		var cmd = new RemoveFileCommand(item, item.State);
+		var cmd = new RemoveFileCommand(item);
 		w.Execute(cmd);
 
 		// Mock save falied

@@ -3,11 +3,12 @@
 using System.Text;
 using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Builder;
+using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Item;
 using VictorBush.Ego.NefsLib.Progress;
-using VictorBush.Ego.NefsLib.Source.Utility;
+using VictorBush.Ego.NefsLib.Utility;
 using Xunit;
 
 namespace VictorBush.Ego.NefsLib.Tests.IO;
@@ -269,12 +270,15 @@ public class NefsWriterStrategy160Tests
 	[Fact]
 	public async Task WriteHeaderPart5Async_ValidData_Written()
 	{
-		var part5 = new NefsHeaderPart5
-		{
-			DataSize = 1234,
-			DataFileNameStringOffset = 98,
-			FirstDataOffset = 56,
-		};
+		var part5 = new NefsHeaderVolumeInfoTable150(
+		[
+			new NefsTocVolumeInfo150
+			{
+				Size = 1234,
+				NameOffset = 98,
+				DataOffset = 56
+			}
+		]);
 		var writer = new NefsWriterStrategy160();
 
 		/*
@@ -286,8 +290,9 @@ public class NefsWriterStrategy160Tests
 
 		using (var ms = new MemoryStream())
 		{
+			using var _ = this.p.BeginTask(1);
 			using var bw = new EndianBinaryWriter(ms);
-			await writer.WriteTocEntryAsync(bw, offset, part5.Data, this.p);
+			await writer.WriteTocTableAsync(bw, offset, part5, this.p);
 			buffer = ms.ToArray();
 		}
 

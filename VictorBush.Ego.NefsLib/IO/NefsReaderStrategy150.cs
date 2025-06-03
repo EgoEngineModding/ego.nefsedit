@@ -73,14 +73,14 @@ internal class NefsReaderStrategy150 : NefsReaderStrategy
 			blockTable = await Read150HeaderPart4Async(reader, primaryOffset + header.BlockTableStart, size, entryTable, p);
 		}
 
-		NefsHeaderPart5 part5;
+		NefsHeaderVolumeInfoTable150 volumeInfoTable;
 		using (p.BeginTask(weight, "Reading volume info table"))
 		{
 			var size = Convert.ToInt32(header.NumVolumes * NefsTocVolumeInfo150.ByteCount);
-			part5 = await ReadHeaderPart5Async(reader, primaryOffset + header.VolumeInfoTableStart, size, p);
+			volumeInfoTable = await ReadHeaderPart5Async(reader, primaryOffset + header.VolumeInfoTableStart, size, p);
 		}
 
-		return new NefsHeader150(detectedSettings, header, entryTable, sharedEntryInfoTable, nameTable, blockTable, part5);
+		return new NefsHeader150(detectedSettings, header, entryTable, sharedEntryInfoTable, nameTable, blockTable, volumeInfoTable);
 	}
 
 	public override Task<INefsHeader> ReadHeaderAsync(EndianBinaryReader reader, long primaryOffset, int? primarySize,
@@ -164,11 +164,10 @@ internal class NefsReaderStrategy150 : NefsReaderStrategy
 	/// <param name="size">The size of the header part.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>The loaded header part.</returns>
-	internal static async Task<NefsHeaderPart5> ReadHeaderPart5Async(EndianBinaryReader reader, long offset, int size,
+	internal static async Task<NefsHeaderVolumeInfoTable150> ReadHeaderPart5Async(EndianBinaryReader reader, long offset, int size,
 		NefsProgress p)
 	{
-		// TODO: fix reading multiple volumes
 		var entries = await ReadTocEntriesAsync<NefsTocVolumeInfo150>(reader, offset, size, p).ConfigureAwait(false);
-		return entries.Select(x => new NefsHeaderPart5(x)).First();
+		return new NefsHeaderVolumeInfoTable150(entries);
 	}
 }

@@ -5,7 +5,6 @@ using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.Progress;
-using VictorBush.Ego.NefsLib.Source.Utility;
 using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.IO;
@@ -106,11 +105,11 @@ internal class NefsReaderStrategy160 : NefsReaderStrategy151
 			blockTable = await Read151HeaderPart4Async(reader, primaryOffset + toc.BlockTableStart, size, p);
 		}
 
-		NefsHeaderPart5 part5;
+		NefsHeaderVolumeInfoTable150 volumeInfoTable;
 		using (p.BeginTask(weight, "Reading volume info table"))
 		{
 			var size = Convert.ToInt32(toc.NumVolumes * NefsTocVolumeInfo150.ByteCount);
-			part5 = await ReadHeaderPart5Async(reader, primaryOffset + toc.VolumeInfoTableStart, size, p);
+			volumeInfoTable = await ReadHeaderPart5Async(reader, primaryOffset + toc.VolumeInfoTableStart, size, p);
 		}
 
 		NefsHeaderWriteableEntryTable160 writeableEntryTable;
@@ -132,11 +131,11 @@ internal class NefsReaderStrategy160 : NefsReaderStrategy151
 		{
 			// Part 8 must use primary offset because, for split headers, it is contained in the primary header section
 			// (after part 5)
-			hashDigestTable = await Read160HeaderPart8Async(reader, primaryOffset + toc.HashDigestTableStart, toc.HashBlockSize, part5, p);
+			hashDigestTable = await Read160HeaderPart8Async(reader, primaryOffset + toc.HashDigestTableStart, toc.HashBlockSize, volumeInfoTable, p);
 		}
 
 		return new NefsHeader160(detectedSettings, header, toc, entryTable, sharedEntryInfoTable, nameTable, blockTable,
-			part5, writeableEntryTable, writeableSharedEntryInfoTable, hashDigestTable);
+			volumeInfoTable, writeableEntryTable, writeableSharedEntryInfoTable, hashDigestTable);
 	}
 
 	private static async Task ValidateEncryptedHeaderAsync(Stream stream, long offset, uint headerSize,
@@ -287,11 +286,11 @@ internal class NefsReaderStrategy160 : NefsReaderStrategy151
 	/// <param name="reader">The reader to use.</param>
 	/// <param name="offset">The offset to the header part from the beginning of the stream.</param>
 	/// <param name="hashBlockSize">The block size specified by the header used to split up the file data for hashing.</param>
-	/// <param name="part5">Header part 5.</param>
+	/// <param name="volumeInfoTable">Header part 5.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>The loaded header part.</returns>
 	internal static async Task<NefsHeaderHashDigestTable160> Read160HeaderPart8Async(EndianBinaryReader reader, long offset,
-		uint hashBlockSize, NefsHeaderPart5 part5, NefsProgress p)
+		uint hashBlockSize, NefsHeaderVolumeInfoTable150 volumeInfoTable, NefsProgress p)
 	{
 		// Archives can specify a 0 hash block size (use default in this case)
 		if (hashBlockSize == 0)
@@ -299,7 +298,8 @@ internal class NefsReaderStrategy160 : NefsReaderStrategy151
 			hashBlockSize = NefsWriter.DefaultHashBlockSize;
 		}
 
-		var totalCompressedDataSize = part5.DataSize - part5.FirstDataOffset;
+		var volume = volumeInfoTable.Entries[0];
+		var totalCompressedDataSize = volume.Size - volume.DataOffset;
 		var numHashes = (int)((totalCompressedDataSize + hashBlockSize - 1) / hashBlockSize);
 		var size = numHashes * NefsTocHashDigest160.ByteCount;
 		var entries = await ReadTocEntriesAsync<NefsTocHashDigest160>(reader, offset, size, p)

@@ -4,7 +4,7 @@ using System.Security.Cryptography;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.Progress;
-using VictorBush.Ego.NefsLib.Source.Utility;
+using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.IO;
 
@@ -60,7 +60,7 @@ internal class NefsWriterStrategy200 : NefsWriterStrategy160Base<NefsHeader200>
 		using (p.BeginTask(weight, "Writing header part 5"))
 		{
 			var offset = primaryOffset + toc.VolumeInfoTableStart;
-			await WriteTocEntryAsync(writer, offset, header.Part5.Data, p).ConfigureAwait(false);
+			await WriteTocTableAsync(writer, offset, header.VolumeInfoTable, p).ConfigureAwait(false);
 		}
 
 		using (p.BeginTask(weight, "Writing header part 6"))

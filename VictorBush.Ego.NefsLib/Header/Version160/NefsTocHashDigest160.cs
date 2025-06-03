@@ -1,7 +1,7 @@
 ﻿// See LICENSE.txt for license information.
 
 using System.Runtime.CompilerServices;
-using VictorBush.Ego.NefsLib.Source.Utility;
+using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header;
 

@@ -20,8 +20,8 @@ namespace VictorBush.Ego.NefsEdit.UI;
 internal partial class BrowseAllForm : DockContent
 {
 	private static readonly ILogger Log = LogHelper.GetLogger();
-	private readonly Dictionary<NefsItem, ListViewItem> listItems = new Dictionary<NefsItem, ListViewItem>();
-	private readonly ListViewColumnSorter listViewItemSorter = new ListViewColumnSorter();
+	private readonly Dictionary<NefsItem, ListViewItem> listItems = new(ReferenceEqualityComparer.Instance);
+	private readonly ListViewColumnSorter listViewItemSorter = new();
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BrowseAllForm"/> class.

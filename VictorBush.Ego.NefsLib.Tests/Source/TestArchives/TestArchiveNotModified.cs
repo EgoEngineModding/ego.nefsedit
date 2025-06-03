@@ -51,7 +51,7 @@ internal class TestArchiveNotModified
 
 	public static string File1Name => "file1.txt";
 
-	public static ulong File1Offset => NefsHeader200.DataOffsetDefault;
+	public static ulong File1Offset => NefsHeader200.DefaultBlockSize;
 
 	public static string File1PathInArchive => File1Name;
 

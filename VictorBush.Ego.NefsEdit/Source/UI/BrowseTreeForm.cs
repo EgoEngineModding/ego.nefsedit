@@ -20,7 +20,7 @@ internal partial class BrowseTreeForm : DockContent
 {
 	private static readonly ILogger Log = LogHelper.GetLogger();
 
-	private readonly Dictionary<NefsItem, ListViewItem> filesListItems = new Dictionary<NefsItem, ListViewItem>();
+	private readonly Dictionary<NefsItem, ListViewItem> filesListItems = new(ReferenceEqualityComparer.Instance);
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="BrowseTreeForm"/> class.

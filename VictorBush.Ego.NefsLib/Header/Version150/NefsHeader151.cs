@@ -1,7 +1,7 @@
 // See LICENSE.txt for license information.
 
 using VictorBush.Ego.NefsLib.IO;
-using VictorBush.Ego.NefsLib.Source.Utility;
+using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header.Version150;
 
@@ -14,7 +14,7 @@ public sealed class NefsHeader151 : INefsHeader
 	public NefsHeaderSharedEntryInfoTable150 SharedEntryInfoTable { get; }
 	public NefsHeaderNameTable NameTable { get; }
 	public NefsHeaderBlockTable151 BlockTable { get; }
-	public NefsHeaderPart5 Part5 { get; }
+	public NefsHeaderVolumeInfoTable150 VolumeInfoTable { get; }
 
 	/// <inheritdoc />
 	public NefsVersion Version => (NefsVersion)Intro.Version;
@@ -52,7 +52,7 @@ public sealed class NefsHeader151 : INefsHeader
 	/// <param name="sharedEntryInfoTable">Header part 2.</param>
 	/// <param name="nameTable">Header part 3.</param>
 	/// <param name="blockTable">Header part 4.</param>
-	/// <param name="part5">Header part 5.</param>
+	/// <param name="volumeInfoTable">Header part 5.</param>
 	public NefsHeader151(
 		NefsWriterSettings writerSettings,
 		NefsTocHeader151 header,
@@ -60,7 +60,7 @@ public sealed class NefsHeader151 : INefsHeader
 		NefsHeaderSharedEntryInfoTable150 sharedEntryInfoTable,
 		NefsHeaderNameTable nameTable,
 		NefsHeaderBlockTable151 blockTable,
-		NefsHeaderPart5 part5)
+		NefsHeaderVolumeInfoTable150 volumeInfoTable)
 	{
 		WriterSettings = writerSettings;
 		Intro = header;
@@ -68,17 +68,14 @@ public sealed class NefsHeader151 : INefsHeader
 		SharedEntryInfoTable = sharedEntryInfoTable ?? throw new ArgumentNullException(nameof(sharedEntryInfoTable));
 		NameTable = nameTable ?? throw new ArgumentNullException(nameof(nameTable));
 		BlockTable = blockTable ?? throw new ArgumentNullException(nameof(blockTable));
-		Part5 = part5 ?? throw new ArgumentNullException(nameof(part5));
+		VolumeInfoTable = volumeInfoTable ?? throw new ArgumentNullException(nameof(volumeInfoTable));
 
-		Volumes =
-		[
-			new VolumeInfo
-			{
-				Name = NameTable.FileNamesByOffset[Part5.DataFileNameStringOffset],
-				DataOffset = Part5.FirstDataOffset,
-				Size = Part5.DataSize
-			}
-		];
+		Volumes = VolumeInfoTable.Entries.Select(x => new VolumeInfo
+		{
+			Size = x.Size,
+			Name = NameTable.FileNamesByOffset[x.NameOffset],
+			DataOffset = x.DataOffset
+		}).ToArray();
 	}
 
 	/// <inheritdoc />

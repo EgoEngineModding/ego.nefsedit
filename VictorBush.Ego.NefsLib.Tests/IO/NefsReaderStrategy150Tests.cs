@@ -78,8 +78,9 @@ public class NefsReaderStrategy150Tests
 		var part5 = await NefsReaderStrategy150.ReadHeaderPart5Async(endianReader, offset, size, this.p);
 
 		// Verify
-		Assert.Equal((ulong)0x1817161514131211, part5.DataSize);
-		Assert.Equal((uint)0x24232221, part5.DataFileNameStringOffset);
-		Assert.Equal((uint)0x28272625, part5.FirstDataOffset);
+		Assert.Single(part5.Entries);
+		Assert.Equal((ulong)0x1817161514131211, part5.Entries[0].Size);
+		Assert.Equal((uint)0x24232221, part5.Entries[0].NameOffset);
+		Assert.Equal((uint)0x28272625, part5.Entries[0].DataOffset);
 	}
 }

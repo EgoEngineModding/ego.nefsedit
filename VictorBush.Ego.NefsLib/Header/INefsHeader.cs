@@ -1,6 +1,6 @@
 // See LICENSE.txt for license information.
 
-using VictorBush.Ego.NefsLib.Source.Utility;
+using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header;
 

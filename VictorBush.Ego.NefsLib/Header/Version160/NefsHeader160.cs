@@ -3,7 +3,6 @@
 using System.Text;
 using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.IO;
-using VictorBush.Ego.NefsLib.Source.Utility;
 using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header.Version160;
@@ -18,7 +17,7 @@ public sealed class NefsHeader160 : INefsHeader, IFormattable
 	public NefsHeaderSharedEntryInfoTable160 SharedEntryInfoTable { get; }
 	public NefsHeaderNameTable NameTable { get; }
 	public NefsHeaderBlockTable151 BlockTable { get; }
-	public NefsHeaderPart5 Part5 { get; }
+	public NefsHeaderVolumeInfoTable150 VolumeInfoTable { get; }
 	public NefsHeaderWriteableEntryTable160 WriteableEntryTable { get; }
 	public NefsHeaderWriteableSharedEntryInfoTable160 WriteableSharedEntryInfoTable { get; }
 	public NefsHeaderHashDigestTable160 HashDigestTable { get; }
@@ -61,7 +60,7 @@ public sealed class NefsHeader160 : INefsHeader, IFormattable
 		NefsHeaderSharedEntryInfoTable160 sharedEntryInfoTable,
 		NefsHeaderNameTable nameTable,
 		NefsHeaderBlockTable151 blockTable,
-		NefsHeaderPart5 part5,
+		NefsHeaderVolumeInfoTable150 volumeInfoTable,
 		NefsHeaderWriteableEntryTable160 writeableEntryTable,
 		NefsHeaderWriteableSharedEntryInfoTable160 writeableSharedEntryInfoTable,
 		NefsHeaderHashDigestTable160 hashDigestTable)
@@ -73,20 +72,17 @@ public sealed class NefsHeader160 : INefsHeader, IFormattable
 		SharedEntryInfoTable = sharedEntryInfoTable ?? throw new ArgumentNullException(nameof(sharedEntryInfoTable));
 		NameTable = nameTable ?? throw new ArgumentNullException(nameof(nameTable));
 		BlockTable = blockTable ?? throw new ArgumentNullException(nameof(blockTable));
-		Part5 = part5 ?? throw new ArgumentNullException(nameof(part5));
+		VolumeInfoTable = volumeInfoTable ?? throw new ArgumentNullException(nameof(volumeInfoTable));
 		WriteableEntryTable = writeableEntryTable ?? throw new ArgumentNullException(nameof(writeableEntryTable));
 		WriteableSharedEntryInfoTable = writeableSharedEntryInfoTable ?? throw new ArgumentNullException(nameof(writeableSharedEntryInfoTable));
 		HashDigestTable = hashDigestTable ?? throw new ArgumentNullException(nameof(hashDigestTable));
 
-		Volumes =
-		[
-			new VolumeInfo
-			{
-				Name = NameTable.FileNamesByOffset[Part5.DataFileNameStringOffset],
-				DataOffset = Part5.FirstDataOffset,
-				Size = Part5.DataSize
-			}
-		];
+		Volumes = VolumeInfoTable.Entries.Select(x => new VolumeInfo
+		{
+			Size = x.Size,
+			Name = NameTable.FileNamesByOffset[x.NameOffset],
+			DataOffset = x.DataOffset
+		}).ToArray();
 	}
 
 	/// <summary>
@@ -94,7 +90,7 @@ public sealed class NefsHeader160 : INefsHeader, IFormattable
 	/// </summary>
 	internal NefsHeader160() : this(new NefsWriterSettings(), new NefsTocHeaderA160(), new NefsTocHeaderB160(),
 		new NefsHeaderEntryTable160([]), new NefsHeaderSharedEntryInfoTable160([]), new NefsHeaderNameTable(),
-		new NefsHeaderBlockTable151([]), new NefsHeaderPart5(), new NefsHeaderWriteableEntryTable160([]),
+		new NefsHeaderBlockTable151([]), new NefsHeaderVolumeInfoTable150([]), new NefsHeaderWriteableEntryTable160([]),
 		new NefsHeaderWriteableSharedEntryInfoTable160([]), new NefsHeaderHashDigestTable160([]))
 	{
 	}
@@ -135,13 +131,22 @@ public sealed class NefsHeader160 : INefsHeader, IFormattable
 			headerPart2String.Append($"0x{entry.NameOffset.ToString("X", formatProvider)}".PadRight(20));
 			headerPart2String.Append($"0x{entry.Size.ToString("X", formatProvider)}".PadRight(20));
 			headerPart2String.Append($"0x{entry.FirstDuplicate.ToString("X", formatProvider)}".PadRight(20));
-			headerPart1String.AppendLine();
+			headerPart2String.AppendLine();
 		}
 
 		var headerPart3String = new StringBuilder();
 		foreach (var s in NameTable.FileNames)
 		{
 			headerPart3String.AppendLine(s);
+		}
+
+		var volumeInfoTableString = new StringBuilder();
+		foreach (var entry in VolumeInfoTable.Entries)
+		{
+			volumeInfoTableString.Append($"0x{entry.Size.ToString("X", formatProvider)}".PadRight(20));
+			volumeInfoTableString.Append($"0x{entry.NameOffset.ToString("X", formatProvider)}".PadRight(20));
+			volumeInfoTableString.Append($"0x{entry.DataOffset.ToString("X", formatProvider)}".PadRight(20));
+			volumeInfoTableString.AppendLine();
 		}
 
 		var headerPart6String = new StringBuilder();
@@ -163,14 +168,14 @@ public sealed class NefsHeader160 : INefsHeader, IFormattable
 		var headerPart8String = new StringBuilder();
 		foreach (var hash in HashDigestTable.Entries)
 		{
-			headerPart8String.Append(hash);
+			headerPart8String.Append(hash.Data);
 			headerPart8String.AppendLine();
 		}
 
 		return $"""
 		        General Info
 		        -----------------------------------------------------------
-		        Archive Size:               {Part5.DataSize.ToString("X", formatProvider)}
+		        Archive Size:               {VolumeInfoTable.Entries.First().Size.ToString("X", formatProvider)}
 		        Is Header Encrypted?        {WriterSettings.IsEncrypted}
 
 		        Header size:                {Intro.TocSize.ToString("X", formatProvider)}
@@ -179,7 +184,7 @@ public sealed class NefsHeader160 : INefsHeader, IFormattable
 		        -----------------------------------------------------------
 		        Magic Number:               {Intro.Magic.ToString("X", formatProvider)}
 		        Expected SHA-256 hash:      {Intro.Hash}
-		        AES 256 key hex string:     {StringHelper.ByteArrayToString(Intro.AesKey.GetAesKey())}
+		        AES 256 key hex string:     {Intro.AesKey}
 		        Header size:                {Intro.TocSize.ToString("X", formatProvider)}
 		        NeFS version:               {Intro.Version.ToString("X", formatProvider)}
 		        Number of items:            {Intro.NumEntries.ToString("X", formatProvider)}
@@ -218,12 +223,10 @@ public sealed class NefsHeader160 : INefsHeader, IFormattable
 		        -----------------------------------------------------------
 		        Number of entries:          {BlockTable.Entries.Count.ToString("X", formatProvider)}
 
-		        Volume Info Table (Count: 1)
+		        Volume Info Table (Count: {VolumeInfoTable.Entries.Count})
 		        -----------------------------------------------------------
-		        Archive size:               {Part5.DataSize.ToString("X", formatProvider)}
-		        First data offset:          {Part5.FirstDataOffset.ToString("X", formatProvider)}
-		        Archive name string offset: {Part5.DataFileNameStringOffset.ToString("X", formatProvider)}
-
+		        Size        Name Offset        Data Offset
+		        {volumeInfoTableString}
 		        Writeable Entry Table (Count: {WriteableEntryTable.Entries.Count})
 		        -----------------------------------------------------------
 		        {headerPart6String}

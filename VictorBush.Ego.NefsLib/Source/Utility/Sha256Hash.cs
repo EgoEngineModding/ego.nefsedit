@@ -2,7 +2,7 @@
 
 using System.Runtime.CompilerServices;
 
-namespace VictorBush.Ego.NefsLib.Source.Utility;
+namespace VictorBush.Ego.NefsLib.Utility;
 
 /// <summary>
 /// A SHA-256 hash value.

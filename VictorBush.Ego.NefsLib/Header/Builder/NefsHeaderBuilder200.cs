@@ -6,7 +6,7 @@ using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Item;
 using VictorBush.Ego.NefsLib.Progress;
-using VictorBush.Ego.NefsLib.Source.Utility;
+using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header.Builder;
 
@@ -86,13 +86,14 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<NefsHeader200>
 			: writeableSharedEntryInfoTableEnd;
 		var tocSize = StructEx.Align(tocEnd, NefsConstants.AesBlockSize);
 		var tocFinalEnd = Convert.ToUInt32(StructEx.Align(tocSize, Convert.ToInt32(sourceHeader.BlockSize)));
-		var p5 = new NefsHeaderPart5
+		var volume0 = new NefsTocVolumeInfo150
 		{
-			DataFileNameStringOffset = nameTable.OffsetsByFileName[items.DataFileName],
 			// Single-file archives this is the size of the whole file
-			DataSize = tocFinalEnd + dataSize,
-			FirstDataOffset = tocFinalEnd,
+			Size = tocFinalEnd + dataSize,
+			NameOffset = nameTable.OffsetsByFileName[items.DataFileName],
+			DataOffset = tocFinalEnd
 		};
+		var volumeInfoTable = new NefsHeaderVolumeInfoTable150([volume0]);
 
 		var intro = new NefsTocHeaderA160
 		{
@@ -108,7 +109,7 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<NefsHeader200>
 		};
 
 		return new NefsHeader200(sourceHeader.WriterSettings, intro, toc, entryTable, sharedEntryInfoTable, nameTable,
-			blockTable, p5, writeableEntryTable, writeableSharedEntryInfoTable, hashDigestTable);
+			blockTable, volumeInfoTable, writeableEntryTable, writeableSharedEntryInfoTable, hashDigestTable);
 	}
 
 	private static NefsHeaderBlockTable200 Build200BlockTable(NefsItemList items)
