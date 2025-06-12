@@ -19,5 +19,5 @@ public class NefsEmptyDataSource : INefsDataSource
 	public long Offset => 0;
 
 	/// <inheritdoc/>
-	public NefsItemSize Size => new(0, new List<NefsDataChunk>());
+	public NefsItemSize Size => new(0);
 }

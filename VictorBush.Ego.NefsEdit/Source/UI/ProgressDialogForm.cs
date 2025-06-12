@@ -72,10 +72,21 @@ internal partial class ProgressDialogForm : Form
 		value = Math.Max(value, 0);
 
 		/* Update the form controls - must do on UI thread */
-		UiService.Dispatcher.Invoke(() =>
+		if (UiService.Dispatcher.CheckAccess())
+		{
+			Action();
+		}
+		else
+		{
+			UiService.Dispatcher.Invoke(Action);
+		}
+
+		return;
+
+		void Action()
 		{
 			this.progressBar.Value = value;
-			this.statusLabel.Text = $"{e.Message}\r\n{e.SubMessage}";
-		});
+			this.statusLabel.Text = $"{e.Message}{Environment.NewLine}{e.SubMessage}";
+		}
 	}
 }

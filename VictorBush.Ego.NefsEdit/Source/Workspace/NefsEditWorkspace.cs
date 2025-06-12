@@ -321,7 +321,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 	/// <inheritdoc/>
 	public bool ReplaceItemByDialog(NefsItem item)
 	{
-		if (item == null)
+		if (Archive is null || item == null)
 		{
 			Log.LogError($"Cannot replace item. Item is null.");
 			return false;
@@ -344,7 +344,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		var fileSize = FileSystem.FileInfo.New(fileName).Length;
 		var itemSize = new NefsItemSize((uint)fileSize);
 		var newDataSource = new NefsFileDataSource(fileName, 0, itemSize, false);
-		var cmd = new ReplaceFileCommand(item, item.DataSource, item.State, newDataSource);
+		var cmd = new ReplaceFileDuplicatesCommand(Archive.Items.GetItemDuplicates(item.Id), newDataSource);
 		UndoBuffer.Execute(cmd);
 		return true;
 	}
@@ -449,22 +449,25 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		// Open archive
 		await ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
 		{
-			using (var tt = p.BeginTask(1.0f))
+			try
 			{
-				try
+				using (p.BeginTask(0.9f, "Reading archive"))
 				{
 					Archive = await NefsReader.ReadArchiveAsync(source, p);
 					ArchiveSource = source;
-
-					ArchiveOpened?.Invoke(this, EventArgs.Empty);
-					result = true;
-
-					Log.LogInformation($"Archive opened.");
 				}
-				catch (Exception ex)
+
+				using (p.BeginTask(0.1f, "Preparing UI"))
 				{
-					Log.LogError($"Failed to open archive {source.FilePath}.\r\n{ex.Message}");
+					ArchiveOpened?.Invoke(this, EventArgs.Empty);
 				}
+
+				result = true;
+				Log.LogInformation("Archive opened.");
+			}
+			catch (Exception ex)
+			{
+				Log.LogError(ex, $"Failed to open archive {source.FilePath}.");
 			}
 		}));
 

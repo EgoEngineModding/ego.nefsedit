@@ -71,7 +71,7 @@ public sealed class NefsProgress
 	/// <param name="weight">The weight of this task relative to its parent task.</param>
 	/// <param name="subMessage">The status sub-message.</param>
 	/// <returns>The new task.</returns>
-	public NefsProgressTask BeginSubTask(float weight, string subMessage)
+	public NefsProgressTask BeginSubTask(float weight, string? subMessage = null)
 	{
 		return BeginTask(weight, subMessage, true);
 	}
@@ -80,7 +80,7 @@ public sealed class NefsProgress
 	/// Adds a task to the task stack.
 	/// </summary>
 	/// <param name="weight">
-	/// The weight of this task relative to its parent task. The weight is a vlue in the range of [0.0, 1.0].
+	/// The weight of this task relative to its parent task. The weight is a value in the range of [0.0, 1.0].
 	/// </param>
 	/// <returns>The new task.</returns>
 	public NefsProgressTask BeginTask(float weight)
@@ -148,7 +148,7 @@ public sealed class NefsProgress
 
 		if (weight > 1 || weight < 0)
 		{
-			throw new ArgumentOutOfRangeException("Task weight must be in range [0.0, 1.0].");
+			throw new ArgumentOutOfRangeException(nameof(weight), "Task weight must be in range [0.0, 1.0].");
 		}
 
 		if (isSubTask && Tasks.Count == 0)
