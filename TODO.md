@@ -12,3 +12,4 @@
 - Support reading and writing split archives across multiple files
 - Add support for versions 0.1.0, 0.2.0, 1.3.0, 1.4.0
 - Bring back auto-search of nefs headers in game exe
+- Determine behavior for extracting duplicate and removed files

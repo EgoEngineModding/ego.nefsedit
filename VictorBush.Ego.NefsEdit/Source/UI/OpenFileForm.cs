@@ -2,14 +2,12 @@
 
 using Microsoft.Extensions.Logging;
 using System.Globalization;
-using System.IO;
 using System.IO.Abstractions;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.Settings;
 using VictorBush.Ego.NefsEdit.Utility;
 using VictorBush.Ego.NefsLib.ArchiveSource;
 using VictorBush.Ego.NefsLib.IO;
-using VictorBush.Ego.NefsLib.Progress;
 
 namespace VictorBush.Ego.NefsEdit.UI;
 
@@ -23,7 +21,6 @@ internal partial class OpenFileForm : Form
 	private readonly OpenMode openModeHeadless = new OpenMode("Headless");
 	private readonly OpenMode openModeHeadlessCustom = new OpenMode("Headless (Custom)");
 	private readonly OpenMode openModeNefs = new OpenMode("NeFS");
-	private readonly OpenMode openModeNefsInject = new OpenMode("NefsInject");
 	private readonly OpenMode openModeRecent = new OpenMode("Recent");
 
 	/// <summary>
@@ -132,8 +129,6 @@ internal partial class OpenFileForm : Form
 		this.splitPrimarySizeTextBox.Text = SettingsService.OpenFileDialogState.GameDatPrimarySize;
 		this.splitSecondaryOffsetTextBox.Text = SettingsService.OpenFileDialogState.GameDatSecondaryOffset;
 		this.splitSecondarySizeTextBox.Text = SettingsService.OpenFileDialogState.GameDatSecondarySize;
-		this.nefsInjectDataFileTextBox.Text = SettingsService.OpenFileDialogState.NefsInjectDataFilePath;
-		this.nefsInjectFileTextBox.Text = SettingsService.OpenFileDialogState.NefsInjectFilePath;
 		this.headlessGameExeFileTextBox.Text = SettingsService.OpenFileDialogState.HeadlessExePath;
 	}
 
@@ -143,10 +138,6 @@ internal partial class OpenFileForm : Form
 		{
 			// Open NeFS archive
 			this.tablessControl1.SelectedTab = this.nefsTabPage;
-		}
-		else if (this.modeListBox.SelectedItem == this.openModeNefsInject)
-		{
-			this.tablessControl1.SelectedTab = this.nefsInjectTabPage;
 		}
 		else if (this.modeListBox.SelectedItem == this.openModeRecent)
 		{
@@ -182,10 +173,6 @@ internal partial class OpenFileForm : Form
 		if (this.modeListBox.SelectedItem == this.openModeNefs)
 		{
 			source = ValidateStandardSource();
-		}
-		else if (this.modeListBox.SelectedItem == this.openModeNefsInject)
-		{
-			source = ValidateNefsInjectSource();
 		}
 		else if (this.modeListBox.SelectedItem == this.openModeHeadless)
 		{
@@ -224,7 +211,6 @@ internal partial class OpenFileForm : Form
 	{
 		// Setup combo box
 		this.modeListBox.Items.Add(this.openModeNefs);
-		this.modeListBox.Items.Add(this.openModeNefsInject);
 		this.modeListBox.Items.Add(this.openModeHeadless);
 		this.modeListBox.Items.Add(this.openModeHeadlessCustom);
 		this.modeListBox.Items.Add(this.openModeRecent);
@@ -255,8 +241,6 @@ internal partial class OpenFileForm : Form
 		SettingsService.OpenFileDialogState.GameDatPrimarySize = this.splitPrimarySizeTextBox.Text;
 		SettingsService.OpenFileDialogState.GameDatSecondaryOffset = this.splitSecondaryOffsetTextBox.Text;
 		SettingsService.OpenFileDialogState.GameDatSecondarySize = this.splitSecondarySizeTextBox.Text;
-		SettingsService.OpenFileDialogState.NefsInjectDataFilePath = this.nefsInjectDataFileTextBox.Text;
-		SettingsService.OpenFileDialogState.NefsInjectFilePath = this.nefsInjectFileTextBox.Text;
 		SettingsService.OpenFileDialogState.HeadlessExePath = this.headlessGameExeFileTextBox.Text;
 
 		SettingsService.Save();
@@ -386,21 +370,6 @@ internal partial class OpenFileForm : Form
 		return source;
 	}
 
-	private NefsArchiveSource? ValidateNefsInjectSource()
-	{
-		var dataFilePath = this.nefsInjectDataFileTextBox.Text;
-		var headerFilePath = this.nefsInjectFileTextBox.Text;
-		var source = NefsArchiveSource.NefsInject(dataFilePath, headerFilePath);
-
-		if (!ValidateFileExists(source.DataFilePath))
-			return null;
-
-		if (!ValidateFileExists(source.NefsInjectFilePath))
-			return null;
-
-		return source;
-	}
-
 	private NefsArchiveSource? ValidateRecent()
 	{
 		var recent = this.recentListBox.SelectedItem as RecentFile;
@@ -423,13 +392,6 @@ internal partial class OpenFileForm : Form
 				if (!ValidateFileExists(gameDatSource.HeaderFilePath))
 					return null;
 				return gameDatSource;
-
-			case NefsInjectSource nefsInjectSource:
-				if (!ValidateFileExists(nefsInjectSource.NefsInjectFilePath))
-					return null;
-				if (!ValidateFileExists(nefsInjectSource.DataFilePath))
-					return null;
-				return nefsInjectSource;
 
 			default:
 				UiService.ShowMessageBox($"Unknown archive source type.");

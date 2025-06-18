@@ -43,13 +43,6 @@ public sealed record RecentFile
 				GameDatSecondaryOffset = gameDatSource.SecondaryOffset;
 				GameDatSecondarySize = gameDatSource.SecondarySize;
 				Type = "GameDatSource";
-
-				break;
-
-			case NefsInjectSource nefsInjectSource:
-				NefsInjectDataFilePath = nefsInjectSource.DataFilePath;
-				NefsInjectFilePath = nefsInjectSource.NefsInjectFilePath;
-				Type = nameof(NefsInjectSource);
 				break;
 
 			default:
@@ -63,8 +56,6 @@ public sealed record RecentFile
 	public int? GameDatPrimarySize { get; set; }
 	public long? GameDatSecondaryOffset { get; set; }
 	public int? GameDatSecondarySize { get; set; }
-	public string NefsInjectDataFilePath { get; set; } = "";
-	public string NefsInjectFilePath { get; set; } = "";
 	public string StandardFilePath { get; set; } = "";
 	public string Type { get; set; } = "";
 
@@ -77,9 +68,6 @@ public sealed record RecentFile
 
 			case "GameDatSource":
 				return NefsArchiveSource.Headless(GameDatDataFilePath, GameDatHeaderFilePath, GameDatPrimaryOffset!.Value, GameDatPrimarySize, GameDatSecondaryOffset!.Value, GameDatSecondarySize);
-
-			case nameof(NefsInjectSource):
-				return NefsArchiveSource.NefsInject(NefsInjectDataFilePath, NefsInjectFilePath);
 
 			default:
 				throw new InvalidOperationException("Unknown source.");
@@ -96,9 +84,6 @@ public sealed record RecentFile
 
 			case "GameDatSource":
 				return $"[Headless] {Path.GetFileName(GameDatDataFilePath)} [{GameDatPrimaryOffset}|{GameDatSecondaryOffset}]";
-
-			case nameof(NefsInjectSource):
-				return $"[NefsInject] {Path.GetFileName(NefsInjectDataFilePath)}";
 
 			default:
 				return "Unknown source.";

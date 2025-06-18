@@ -35,13 +35,7 @@
             this.fileLabel = new System.Windows.Forms.Label();
             this.nefsFileButton = new System.Windows.Forms.Button();
             this.nefsFileTextBox = new System.Windows.Forms.TextBox();
-            this.nefsInjectTabPage = new System.Windows.Forms.TabPage();
-            this.label1 = new System.Windows.Forms.Label();
-            this.nefsInjectHeaderFileButton = new System.Windows.Forms.Button();
-            this.nefsInjectFileTextBox = new System.Windows.Forms.TextBox();
             this.label2 = new System.Windows.Forms.Label();
-            this.nefsInjectDataFileButton = new System.Windows.Forms.Button();
-            this.nefsInjectDataFileTextBox = new System.Windows.Forms.TextBox();
             this.headlessTabPage = new System.Windows.Forms.TabPage();
             this.gameDatRefreshButton = new System.Windows.Forms.Button();
             this.gameDatFilesLabel = new System.Windows.Forms.Label();
@@ -69,14 +63,13 @@
             this.modeListBox = new System.Windows.Forms.ListBox();
             this.tablessControl1.SuspendLayout();
             this.nefsTabPage.SuspendLayout();
-            this.nefsInjectTabPage.SuspendLayout();
             this.headlessTabPage.SuspendLayout();
             this.headlessCustomTabPage.SuspendLayout();
             this.recentTabPage.SuspendLayout();
             this.SuspendLayout();
-            // 
+            //
             // cancelButton
-            // 
+            //
             this.cancelButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.cancelButton.DialogResult = System.Windows.Forms.DialogResult.Cancel;
             this.cancelButton.Location = new System.Drawing.Point(509, 412);
@@ -86,9 +79,9 @@
             this.cancelButton.TabIndex = 24;
             this.cancelButton.Text = "Cancel";
             this.cancelButton.UseVisualStyleBackColor = true;
-            // 
+            //
             // openButton
-            // 
+            //
             this.openButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
             this.openButton.Location = new System.Drawing.Point(401, 412);
             this.openButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -98,15 +91,14 @@
             this.openButton.Text = "Open";
             this.openButton.UseVisualStyleBackColor = true;
             this.openButton.Click += new System.EventHandler(this.OpenButton_Click);
-            // 
+            //
             // tablessControl1
-            // 
-            this.tablessControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this.tablessControl1.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.tablessControl1.Appearance = System.Windows.Forms.TabAppearance.FlatButtons;
             this.tablessControl1.Controls.Add(this.nefsTabPage);
-            this.tablessControl1.Controls.Add(this.nefsInjectTabPage);
             this.tablessControl1.Controls.Add(this.headlessTabPage);
             this.tablessControl1.Controls.Add(this.headlessCustomTabPage);
             this.tablessControl1.Controls.Add(this.recentTabPage);
@@ -116,9 +108,9 @@
             this.tablessControl1.SelectedIndex = 0;
             this.tablessControl1.Size = new System.Drawing.Size(428, 388);
             this.tablessControl1.TabIndex = 18;
-            // 
+            //
             // nefsTabPage
-            // 
+            //
             this.nefsTabPage.Controls.Add(this.fileLabel);
             this.nefsTabPage.Controls.Add(this.nefsFileButton);
             this.nefsTabPage.Controls.Add(this.nefsFileTextBox);
@@ -130,9 +122,9 @@
             this.nefsTabPage.TabIndex = 0;
             this.nefsTabPage.Text = "NeFS";
             this.nefsTabPage.UseVisualStyleBackColor = true;
-            // 
+            //
             // fileLabel
-            // 
+            //
             this.fileLabel.AutoSize = true;
             this.fileLabel.Location = new System.Drawing.Point(8, 12);
             this.fileLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -140,9 +132,9 @@
             this.fileLabel.Size = new System.Drawing.Size(32, 20);
             this.fileLabel.TabIndex = 0;
             this.fileLabel.Text = "File";
-            // 
+            //
             // nefsFileButton
-            // 
+            //
             this.nefsFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.nefsFileButton.Location = new System.Drawing.Point(371, 34);
             this.nefsFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -152,66 +144,19 @@
             this.nefsFileButton.Text = "...";
             this.nefsFileButton.UseVisualStyleBackColor = true;
             this.nefsFileButton.Click += new System.EventHandler(this.NefsFileButton_Click);
-            // 
+            //
             // nefsFileTextBox
-            // 
-            this.nefsFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this.nefsFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.nefsFileTextBox.Location = new System.Drawing.Point(12, 38);
             this.nefsFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.nefsFileTextBox.Name = "nefsFileTextBox";
             this.nefsFileTextBox.Size = new System.Drawing.Size(349, 27);
             this.nefsFileTextBox.TabIndex = 0;
-            // 
-            // nefsInjectTabPage
-            // 
-            this.nefsInjectTabPage.Controls.Add(this.label1);
-            this.nefsInjectTabPage.Controls.Add(this.nefsInjectHeaderFileButton);
-            this.nefsInjectTabPage.Controls.Add(this.nefsInjectFileTextBox);
-            this.nefsInjectTabPage.Controls.Add(this.label2);
-            this.nefsInjectTabPage.Controls.Add(this.nefsInjectDataFileButton);
-            this.nefsInjectTabPage.Controls.Add(this.nefsInjectDataFileTextBox);
-            this.nefsInjectTabPage.Location = new System.Drawing.Point(4, 32);
-            this.nefsInjectTabPage.Margin = new System.Windows.Forms.Padding(3, 4, 3, 4);
-            this.nefsInjectTabPage.Name = "nefsInjectTabPage";
-            this.nefsInjectTabPage.Size = new System.Drawing.Size(420, 352);
-            this.nefsInjectTabPage.TabIndex = 5;
-            this.nefsInjectTabPage.Text = "NefsInject";
-            this.nefsInjectTabPage.UseVisualStyleBackColor = true;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(9, 82);
-            this.label1.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(100, 20);
-            this.label1.TabIndex = 11;
-            this.label1.Text = "NefsInject file";
-            // 
-            // nefsInjectHeaderFileButton
-            // 
-            this.nefsInjectHeaderFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.nefsInjectHeaderFileButton.Location = new System.Drawing.Point(372, 104);
-            this.nefsInjectHeaderFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nefsInjectHeaderFileButton.Name = "nefsInjectHeaderFileButton";
-            this.nefsInjectHeaderFileButton.Size = new System.Drawing.Size(35, 35);
-            this.nefsInjectHeaderFileButton.TabIndex = 13;
-            this.nefsInjectHeaderFileButton.Text = "...";
-            this.nefsInjectHeaderFileButton.UseVisualStyleBackColor = true;
-            // 
-            // nefsInjectFileTextBox
-            // 
-            this.nefsInjectFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.nefsInjectFileTextBox.Location = new System.Drawing.Point(13, 108);
-            this.nefsInjectFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nefsInjectFileTextBox.Name = "nefsInjectFileTextBox";
-            this.nefsInjectFileTextBox.Size = new System.Drawing.Size(349, 27);
-            this.nefsInjectFileTextBox.TabIndex = 12;
-            // 
+            //
             // label2
-            // 
+            //
             this.label2.AutoSize = true;
             this.label2.Location = new System.Drawing.Point(8, 12);
             this.label2.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -219,30 +164,9 @@
             this.label2.Size = new System.Drawing.Size(269, 20);
             this.label2.TabIndex = 8;
             this.label2.Text = "Data File (i.e., game.dat, game.bin, etc.)";
-            // 
-            // nefsInjectDataFileButton
-            // 
-            this.nefsInjectDataFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
-            this.nefsInjectDataFileButton.Location = new System.Drawing.Point(371, 34);
-            this.nefsInjectDataFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nefsInjectDataFileButton.Name = "nefsInjectDataFileButton";
-            this.nefsInjectDataFileButton.Size = new System.Drawing.Size(35, 35);
-            this.nefsInjectDataFileButton.TabIndex = 10;
-            this.nefsInjectDataFileButton.Text = "...";
-            this.nefsInjectDataFileButton.UseVisualStyleBackColor = true;
-            // 
-            // nefsInjectDataFileTextBox
-            // 
-            this.nefsInjectDataFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.nefsInjectDataFileTextBox.Location = new System.Drawing.Point(12, 38);
-            this.nefsInjectDataFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
-            this.nefsInjectDataFileTextBox.Name = "nefsInjectDataFileTextBox";
-            this.nefsInjectDataFileTextBox.Size = new System.Drawing.Size(349, 27);
-            this.nefsInjectDataFileTextBox.TabIndex = 9;
-            // 
+            //
             // headlessTabPage
-            // 
+            //
             this.headlessTabPage.Controls.Add(this.gameDatRefreshButton);
             this.headlessTabPage.Controls.Add(this.gameDatFilesLabel);
             this.headlessTabPage.Controls.Add(this.gameDatFilesListBox);
@@ -257,9 +181,9 @@
             this.headlessTabPage.TabIndex = 1;
             this.headlessTabPage.Text = "Headless";
             this.headlessTabPage.UseVisualStyleBackColor = true;
-            // 
+            //
             // gameDatRefreshButton
-            // 
+            //
             this.gameDatRefreshButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
             this.gameDatRefreshButton.Location = new System.Drawing.Point(13, 305);
             this.gameDatRefreshButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -269,21 +193,21 @@
             this.gameDatRefreshButton.Text = "Search";
             this.gameDatRefreshButton.UseVisualStyleBackColor = true;
             this.gameDatRefreshButton.Click += new System.EventHandler(this.GameDatRefreshButton_Click);
-            // 
+            //
             // gameDatFilesLabel
-            // 
+            //
             this.gameDatFilesLabel.AutoSize = true;
             this.gameDatFilesLabel.Location = new System.Drawing.Point(13, 80);
             this.gameDatFilesLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.gameDatFilesLabel.Name = "gameDatFilesLabel";
             this.gameDatFilesLabel.Size = new System.Drawing.Size(119, 20);
             this.gameDatFilesLabel.TabIndex = 15;
-            this.gameDatFilesLabel.Text = "Injection Profiles";
-            // 
+            this.gameDatFilesLabel.Text = "Data Files";
+            //
             // gameDatFilesListBox
-            // 
-            this.gameDatFilesListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this.gameDatFilesListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.gameDatFilesListBox.FormattingEnabled = true;
             this.gameDatFilesListBox.ItemHeight = 20;
@@ -292,9 +216,9 @@
             this.gameDatFilesListBox.Name = "gameDatFilesListBox";
             this.gameDatFilesListBox.Size = new System.Drawing.Size(391, 184);
             this.gameDatFilesListBox.TabIndex = 14;
-            // 
+            //
             // gameExeFileButton
-            // 
+            //
             this.gameExeFileButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.gameExeFileButton.Location = new System.Drawing.Point(372, 34);
             this.gameExeFileButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -304,19 +228,19 @@
             this.gameExeFileButton.Text = "...";
             this.gameExeFileButton.UseVisualStyleBackColor = true;
             this.gameExeFileButton.Click += new System.EventHandler(this.GameExeFileButton_Click);
-            // 
+            //
             // headlessGameExeFileTextBox
-            // 
-            this.headlessGameExeFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this.headlessGameExeFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.headlessGameExeFileTextBox.Location = new System.Drawing.Point(13, 38);
             this.headlessGameExeFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.headlessGameExeFileTextBox.Name = "headlessGameExeFileTextBox";
             this.headlessGameExeFileTextBox.Size = new System.Drawing.Size(349, 27);
             this.headlessGameExeFileTextBox.TabIndex = 12;
-            // 
+            //
             // gameExeFileLabel
-            // 
+            //
             this.gameExeFileLabel.AutoSize = true;
             this.gameExeFileLabel.Location = new System.Drawing.Point(9, 12);
             this.gameExeFileLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -324,9 +248,9 @@
             this.gameExeFileLabel.Size = new System.Drawing.Size(124, 20);
             this.gameExeFileLabel.TabIndex = 12;
             this.gameExeFileLabel.Text = "Game Executable";
-            // 
+            //
             // headlessCustomTabPage
-            // 
+            //
             this.headlessCustomTabPage.Controls.Add(this.label6);
             this.headlessCustomTabPage.Controls.Add(this.splitSecondarySizeTextBox);
             this.headlessCustomTabPage.Controls.Add(this.label7);
@@ -349,9 +273,9 @@
             this.headlessCustomTabPage.TabIndex = 4;
             this.headlessCustomTabPage.Text = "Headless (Custom)";
             this.headlessCustomTabPage.UseVisualStyleBackColor = true;
-            // 
+            //
             // label6
-            // 
+            //
             this.label6.AutoSize = true;
             this.label6.Location = new System.Drawing.Point(187, 224);
             this.label6.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -359,17 +283,17 @@
             this.label6.Size = new System.Drawing.Size(109, 20);
             this.label6.TabIndex = 32;
             this.label6.Text = "Secondary Size";
-            // 
+            //
             // splitSecondarySizeTextBox
-            // 
+            //
             this.splitSecondarySizeTextBox.Location = new System.Drawing.Point(191, 250);
             this.splitSecondarySizeTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.splitSecondarySizeTextBox.Name = "splitSecondarySizeTextBox";
             this.splitSecondarySizeTextBox.Size = new System.Drawing.Size(113, 27);
             this.splitSecondarySizeTextBox.TabIndex = 33;
-            // 
+            //
             // label7
-            // 
+            //
             this.label7.AutoSize = true;
             this.label7.Location = new System.Drawing.Point(11, 224);
             this.label7.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -377,17 +301,17 @@
             this.label7.Size = new System.Drawing.Size(162, 20);
             this.label7.TabIndex = 30;
             this.label7.Text = "Secondary Offset (Hex)";
-            // 
+            //
             // splitSecondaryOffsetTextBox
-            // 
+            //
             this.splitSecondaryOffsetTextBox.Location = new System.Drawing.Point(15, 250);
             this.splitSecondaryOffsetTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.splitSecondaryOffsetTextBox.Name = "splitSecondaryOffsetTextBox";
             this.splitSecondaryOffsetTextBox.Size = new System.Drawing.Size(113, 27);
             this.splitSecondaryOffsetTextBox.TabIndex = 31;
-            // 
+            //
             // label5
-            // 
+            //
             this.label5.AutoSize = true;
             this.label5.Location = new System.Drawing.Point(186, 152);
             this.label5.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -395,17 +319,17 @@
             this.label5.Size = new System.Drawing.Size(90, 20);
             this.label5.TabIndex = 28;
             this.label5.Text = "Primary Size";
-            // 
+            //
             // splitPrimarySizeTextBox
-            // 
+            //
             this.splitPrimarySizeTextBox.Location = new System.Drawing.Point(190, 179);
             this.splitPrimarySizeTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.splitPrimarySizeTextBox.Name = "splitPrimarySizeTextBox";
             this.splitPrimarySizeTextBox.Size = new System.Drawing.Size(113, 27);
             this.splitPrimarySizeTextBox.TabIndex = 29;
-            // 
+            //
             // primaryOffsetLabel
-            // 
+            //
             this.primaryOffsetLabel.AutoSize = true;
             this.primaryOffsetLabel.Location = new System.Drawing.Point(10, 152);
             this.primaryOffsetLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -413,17 +337,17 @@
             this.primaryOffsetLabel.Size = new System.Drawing.Size(143, 20);
             this.primaryOffsetLabel.TabIndex = 26;
             this.primaryOffsetLabel.Text = "Primary Offset (Hex)";
-            // 
+            //
             // splitPrimaryOffsetTextBox
-            // 
+            //
             this.splitPrimaryOffsetTextBox.Location = new System.Drawing.Point(14, 179);
             this.splitPrimaryOffsetTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.splitPrimaryOffsetTextBox.Name = "splitPrimaryOffsetTextBox";
             this.splitPrimaryOffsetTextBox.Size = new System.Drawing.Size(113, 27);
             this.splitPrimaryOffsetTextBox.TabIndex = 27;
-            // 
+            //
             // label4
-            // 
+            //
             this.label4.AutoSize = true;
             this.label4.Location = new System.Drawing.Point(9, 82);
             this.label4.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -431,9 +355,9 @@
             this.label4.Size = new System.Drawing.Size(238, 20);
             this.label4.TabIndex = 5;
             this.label4.Text = "Header File (i.e., game executable)";
-            // 
+            //
             // splitHeaderFileBrowseButton
-            // 
+            //
             this.splitHeaderFileBrowseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.splitHeaderFileBrowseButton.Location = new System.Drawing.Point(372, 104);
             this.splitHeaderFileBrowseButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -443,19 +367,19 @@
             this.splitHeaderFileBrowseButton.Text = "...";
             this.splitHeaderFileBrowseButton.UseVisualStyleBackColor = true;
             this.splitHeaderFileBrowseButton.Click += new System.EventHandler(this.splitHeaderFileBrowseButton_Click);
-            // 
+            //
             // splitHeaderFileTextBox
-            // 
-            this.splitHeaderFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this.splitHeaderFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.splitHeaderFileTextBox.Location = new System.Drawing.Point(13, 108);
             this.splitHeaderFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.splitHeaderFileTextBox.Name = "splitHeaderFileTextBox";
             this.splitHeaderFileTextBox.Size = new System.Drawing.Size(349, 27);
             this.splitHeaderFileTextBox.TabIndex = 6;
-            // 
+            //
             // label3
-            // 
+            //
             this.label3.AutoSize = true;
             this.label3.Location = new System.Drawing.Point(8, 12);
             this.label3.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
@@ -463,9 +387,9 @@
             this.label3.Size = new System.Drawing.Size(269, 20);
             this.label3.TabIndex = 2;
             this.label3.Text = "Data File (i.e., game.dat, game.bin, etc.)";
-            // 
+            //
             // splitDataFileBrowseButton
-            // 
+            //
             this.splitDataFileBrowseButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.splitDataFileBrowseButton.Location = new System.Drawing.Point(371, 34);
             this.splitDataFileBrowseButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
@@ -475,19 +399,19 @@
             this.splitDataFileBrowseButton.Text = "...";
             this.splitDataFileBrowseButton.UseVisualStyleBackColor = true;
             this.splitDataFileBrowseButton.Click += new System.EventHandler(this.splitDataFileBrowseButton_Click);
-            // 
+            //
             // splitDataFileTextBox
-            // 
-            this.splitDataFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this.splitDataFileTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.splitDataFileTextBox.Location = new System.Drawing.Point(12, 38);
             this.splitDataFileTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.splitDataFileTextBox.Name = "splitDataFileTextBox";
             this.splitDataFileTextBox.Size = new System.Drawing.Size(349, 27);
             this.splitDataFileTextBox.TabIndex = 3;
-            // 
+            //
             // recentTabPage
-            // 
+            //
             this.recentTabPage.Controls.Add(this.recentListBox);
             this.recentTabPage.Location = new System.Drawing.Point(4, 32);
             this.recentTabPage.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);
@@ -497,11 +421,11 @@
             this.recentTabPage.TabIndex = 3;
             this.recentTabPage.Text = "Recent";
             this.recentTabPage.UseVisualStyleBackColor = true;
-            // 
+            //
             // recentListBox
-            // 
-            this.recentListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
+            //
+            this.recentListBox.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
+            | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.recentListBox.FormattingEnabled = true;
             this.recentListBox.ItemHeight = 20;
@@ -510,10 +434,10 @@
             this.recentListBox.Name = "recentListBox";
             this.recentListBox.Size = new System.Drawing.Size(411, 324);
             this.recentListBox.TabIndex = 26;
-            // 
+            //
             // modeListBox
-            // 
-            this.modeListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            //
+            this.modeListBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom)
             | System.Windows.Forms.AnchorStyles.Left)));
             this.modeListBox.FormattingEnabled = true;
             this.modeListBox.ItemHeight = 20;
@@ -523,9 +447,9 @@
             this.modeListBox.Size = new System.Drawing.Size(171, 384);
             this.modeListBox.TabIndex = 25;
             this.modeListBox.SelectedIndexChanged += new System.EventHandler(this.ModeListBox_SelectedIndexChanged);
-            // 
+            //
             // OpenFileForm
-            // 
+            //
             this.AcceptButton = this.openButton;
             this.AutoScaleDimensions = new System.Drawing.SizeF(8F, 20F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -548,8 +472,6 @@
             this.tablessControl1.ResumeLayout(false);
             this.nefsTabPage.ResumeLayout(false);
             this.nefsTabPage.PerformLayout();
-            this.nefsInjectTabPage.ResumeLayout(false);
-            this.nefsInjectTabPage.PerformLayout();
             this.headlessTabPage.ResumeLayout(false);
             this.headlessTabPage.PerformLayout();
             this.headlessCustomTabPage.ResumeLayout(false);
@@ -593,12 +515,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.Button splitDataFileBrowseButton;
         private System.Windows.Forms.TextBox splitDataFileTextBox;
-        private System.Windows.Forms.TabPage nefsInjectTabPage;
-        private System.Windows.Forms.Label label1;
-        private System.Windows.Forms.Button nefsInjectHeaderFileButton;
-        private System.Windows.Forms.TextBox nefsInjectFileTextBox;
         private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.Button nefsInjectDataFileButton;
-        private System.Windows.Forms.TextBox nefsInjectDataFileTextBox;
     }
 }

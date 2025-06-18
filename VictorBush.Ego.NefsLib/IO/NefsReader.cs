@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
 using VictorBush.Ego.NefsLib.ArchiveSource;
-using VictorBush.Ego.NefsLib.DataTypes;
 using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Builder;
 using VictorBush.Ego.NefsLib.Progress;
@@ -86,9 +85,6 @@ public class NefsReader : INefsReader
 			case HeadlessSource gameDat:
 				return ReadGameDatArchiveAsync(gameDat.FilePath, gameDat.HeaderFilePath, gameDat.PrimaryOffset, gameDat.PrimarySize, gameDat.SecondaryOffset, gameDat.SecondarySize, p);
 
-			case NefsInjectSource nefsInject:
-				return ReadNefsInjectArchiveAsync(nefsInject.FilePath, nefsInject.NefsInjectFilePath, p);
-
 			default:
 				throw new ArgumentException("Unknown source type.");
 		}
@@ -114,36 +110,6 @@ public class NefsReader : INefsReader
 		using (var stream = FileSystem.File.OpenRead(headerFilePath))
 		{
 			header = await ReadSplitHeaderAsync(stream, primaryOffset, primarySize, secondaryOffset, secondarySize, p);
-		}
-
-		// Create items from header
-		var itemsBuilder = NefsItemListBuilder.Create(header);
-		var items = itemsBuilder.Build(dataFilePath, p);
-
-		// Create the archive
-		return new NefsArchive(header, items);
-	}
-
-	public async Task<NefsArchive> ReadNefsInjectArchiveAsync(string dataFilePath, string nefsInjectFilePath, NefsProgress p)
-	{
-		if (!FileSystem.File.Exists(nefsInjectFilePath))
-		{
-			throw new FileNotFoundException($"File not found: {nefsInjectFilePath}.");
-		}
-
-		INefsHeader header;
-		using (var stream = FileSystem.File.OpenRead(nefsInjectFilePath))
-		{
-			NefsInjectHeader nefsInject;
-			using (p.BeginTask(0.1f, "Reading NefsInject header"))
-			{
-				nefsInject = await ReadNefsInjectHeaderAsync(stream, 0, p);
-			}
-
-			using (p.BeginTask(0.9f, "Reading Nefs header"))
-			{
-				header = await ReadSplitHeaderAsync(stream, nefsInject.PrimaryOffset, nefsInject.PrimarySize, nefsInject.SecondaryOffset, nefsInject.SecondarySize, p);
-			}
 		}
 
 		// Create items from header
@@ -402,13 +368,6 @@ public class NefsReader : INefsReader
 				readResult.IsLittleEndian);
 			return await strategy.ReadHeaderAsync(reader, offset, writerSettings, p).ConfigureAwait(false);
 		}
-	}
-
-	internal async Task<NefsInjectHeader> ReadNefsInjectHeaderAsync(Stream stream, long offset, NefsProgress p)
-	{
-		var nefsInject = new NefsInjectHeader();
-		await FileData.ReadDataAsync(stream, offset, nefsInject, p);
-		return nefsInject;
 	}
 
 	internal async Task<INefsHeader> ReadSplitHeaderAsync(
