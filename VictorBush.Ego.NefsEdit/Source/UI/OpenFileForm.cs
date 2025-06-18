@@ -4,7 +4,6 @@ using Microsoft.Extensions.Logging;
 using System.Globalization;
 using System.IO;
 using System.IO.Abstractions;
-using VictorBush.Ego.NefsCommon.InjectionDatabase;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.Settings;
 using VictorBush.Ego.NefsEdit.Utility;
@@ -26,7 +25,6 @@ internal partial class OpenFileForm : Form
 	private readonly OpenMode openModeNefs = new OpenMode("NeFS");
 	private readonly OpenMode openModeNefsInject = new OpenMode("NefsInject");
 	private readonly OpenMode openModeRecent = new OpenMode("Recent");
-	private readonly IInjectionDatabaseService injectionDatabaseService;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="OpenFileForm"/> class.
@@ -36,14 +34,12 @@ internal partial class OpenFileForm : Form
 	/// <param name="progressService">Progress service.</param>
 	/// <param name="reader">Nefs reader.</param>
 	/// <param name="fileSystem">The file system.</param>
-	/// <param name="injectionDatabaseService"></param>
 	public OpenFileForm(
 		ISettingsService settingsService,
 		IUiService uiService,
 		IProgressService progressService,
 		INefsReader reader,
-		IFileSystem fileSystem,
-		IInjectionDatabaseService injectionDatabaseService)
+		IFileSystem fileSystem)
 	{
 		InitializeComponent();
 		SettingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
@@ -51,7 +47,6 @@ internal partial class OpenFileForm : Form
 		ProgressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
 		Reader = reader ?? throw new ArgumentNullException(nameof(reader));
 		FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-		this.injectionDatabaseService = injectionDatabaseService;
 	}
 
 	/// <summary>
@@ -83,37 +78,8 @@ internal partial class OpenFileForm : Form
 
 	private async Task<List<HeadlessSource>> FindInjectionProfiles(string gameExePath)
 	{
-		if (!FileSystem.File.Exists(gameExePath))
-		{
-			UiService.ShowMessageBox($"Cannot find executable file: {gameExePath}.");
-			return new List<HeadlessSource>();
-		}
-
-		var md5 = Md5Utility.Compute(gameExePath);
-		var gameExeFileName = Path.GetFileName(gameExePath);
-		var profile = await this.injectionDatabaseService.FindExeProfileAsync(gameExeFileName, md5);
-		if (profile == null)
-		{
-			Log.LogError($"No executable profile found for {gameExePath} with MD5 {md5}.");
-			UiService.ShowMessageBox($"No executable profile found for {gameExeFileName}.");
-			return new List<HeadlessSource>();
-		}
-
-		if (profile.InjectionProfiles is null || profile.InjectionProfiles.Count == 0)
-		{
-			Log.LogError($"Executable profile for {gameExePath} with MD5 {md5} has no injection profiles.");
-			UiService.ShowMessageBox($"Executable profile for {gameExeFileName} has no injection profiles.");
-			return new List<HeadlessSource>();
-		}
-
-		return profile.InjectionProfiles.Select(x => NefsArchiveSource.Headless(
-			Path.Combine(Path.GetDirectoryName(gameExePath)!, x.DataFile!),
-			gameExePath,
-			(long)x.PrimaryOffset!.Value,
-			(int)x.PrimarySize!.Value,
-			(long)x.SecondaryOffset!.Value,
-			(int)x.SecondarySize!.Value))
-			.ToList();
+		// Will be used to bring back auto-search at some point
+		throw new NotImplementedException();
 	}
 
 	private async void GameDatRefreshButton_Click(Object sender, EventArgs e)

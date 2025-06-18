@@ -1,7 +1,6 @@
 // See LICENSE.txt for license information.
 
 using Microsoft.Extensions.Logging;
-using VictorBush.Ego.NefsCommon.InjectionDatabase;
 using VictorBush.Ego.NefsEdit.Commands;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.Workspace;
@@ -15,7 +14,6 @@ namespace VictorBush.Ego.NefsEdit.UI;
 internal partial class EditorForm : Form
 {
 	private readonly ILogger<EditorForm> logger;
-	private readonly IInjectionDatabaseService injectionDatabaseService;
 	private readonly IProgressService progressService;
 	private ArchiveDebugForm archiveDebugForm;
 	private BrowseAllForm browseAllForm;
@@ -32,13 +30,11 @@ internal partial class EditorForm : Form
 		INefsEditWorkspace workspace,
 		IUiService uiService,
 		ISettingsService settingsService,
-		IInjectionDatabaseService injectionDatabaseService,
 		IProgressService progressService)
 	{
 		InitializeComponent();
 		UiService = uiService ?? throw new ArgumentNullException(nameof(uiService));
 		SettingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
-		this.injectionDatabaseService = injectionDatabaseService ?? throw new ArgumentNullException(nameof(injectionDatabaseService));
 		this.progressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
 		this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
 		Workspace = workspace ?? throw new ArgumentNullException(nameof(workspace));
@@ -131,38 +127,6 @@ internal partial class EditorForm : Form
 
 		// Load settings
 		SettingsService.Load();
-
-		// Check for database update
-		if (SettingsService.CheckForDatabaseUpdatesOnStartup)
-		{
-			this.logger.LogInformation("Checking for injection database update.");
-
-			UiService.Dispatcher.InvokeAsync(async () =>
-			{
-				try
-				{
-					var update = await this.injectionDatabaseService.CheckForDatabaseUpdateAsync();
-					if (update is null)
-					{
-						this.logger.LogInformation("No injection database update found.");
-						return;
-					}
-
-					var result = UiService.ShowMessageBox("A new injection database is available. Download now?", "Database Update Available", MessageBoxButtons.YesNo);
-					if (result != DialogResult.Yes)
-					{
-						return;
-					}
-
-					await this.progressService.RunModalTaskAsync(progress => this.injectionDatabaseService.UpdateDatabaseAsync(update));
-					this.logger.LogInformation($"Injection database updates to version {update.DbVersion}.");
-				}
-				catch (Exception ex)
-				{
-					this.logger.LogError(ex, "Failed to check for injection database update.");
-				}
-			});
-		}
 	}
 
 	private void ExitToolStripMenuItem_Click(object sender, EventArgs e)

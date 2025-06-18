@@ -19,7 +19,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\VictorBush.Ego.NefsCommon\VictorBush.Ego.NefsCommon.InjectionDatabase\VictorBush.Ego.NefsCommon.InjectionDatabase.csproj" />
     <ProjectReference Include="..\VictorBush.Ego.NefsLib\VictorBush.Ego.NefsLib.csproj" />
   </ItemGroup>
   <ItemGroup>
