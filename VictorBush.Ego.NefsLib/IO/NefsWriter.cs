@@ -7,8 +7,6 @@ using VictorBush.Ego.NefsLib.ArchiveSource;
 using VictorBush.Ego.NefsLib.DataSource;
 using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Builder;
-using VictorBush.Ego.NefsLib.Header.Version160;
-using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.Item;
 using VictorBush.Ego.NefsLib.Progress;
 using VictorBush.Ego.NefsLib.Utility;
@@ -72,44 +70,6 @@ public class NefsWriter : INefsWriter
 		FileSystem.File.Copy(tempFilePath, destFilePath, true);
 
 		return (newArchive, NefsArchiveSource.Standard(destFilePath));
-	}
-
-	/// <inheritdoc/>
-	public async Task<(NefsArchive Archive, NefsArchiveSource Source)> WriteNefsInjectArchiveAsync(string dataFilePath, string nefsInjectFilePath, NefsArchive nefs, NefsProgress p)
-	{
-		NefsArchive newArchive;
-
-		// Setup temp working directory
-		var workDir = PrepareWorkingDirectory(dataFilePath);
-
-		// Write to temp file
-		var tempDataFilePath = Path.Combine(workDir, "temp.dat");
-		var tempNefsInjectFilePath = Path.Combine(workDir, "temp.dat.nefsinject");
-		using (var dataFile = FileSystem.File.Open(tempDataFilePath, FileMode.Create))
-		using (var nefsInjectFile = FileSystem.File.Open(tempNefsInjectFilePath, FileMode.Create))
-		{
-			switch (nefs.Header)
-			{
-				case NefsHeader200 v20Header:
-					// newArchive = await WriteNefsInjectArchiveVersion20Async(dataFile, nefsInjectFile, v20Header, nefs.Items, workDir, p);
-					break;
-
-				case NefsHeader160 v16Header:
-					// newArchive = await WriteNefsInjectArchiveVersion16Async(dataFile, nefsInjectFile, v16Header, nefs.Items, workDir, p);
-					break;
-
-				default:
-					throw new NotSupportedException("Unsupported archive version.");
-			}
-		}
-
-		// Copy to final destination
-		FileSystem.File.Copy(tempDataFilePath, dataFilePath, true);
-		FileSystem.File.Copy(tempNefsInjectFilePath, nefsInjectFilePath, true);
-
-		var source = NefsArchiveSource.NefsInject(dataFilePath, nefsInjectFilePath);
-		return (null, source);
-		// return (newArchive, source);
 	}
 
 	/// <summary>

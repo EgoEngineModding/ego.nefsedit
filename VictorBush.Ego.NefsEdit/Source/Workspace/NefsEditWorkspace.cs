@@ -282,9 +282,6 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			case HeadlessSource gameDatSource:
 				return await OpenGameDatArchiveAsync(gameDatSource);
 
-			case NefsInjectSource nefsInjectSource:
-				return await OpenNefsInjectArchiveAsync(nefsInjectSource);
-
 			default:
 				throw new ArgumentException("Unknown archive source type.");
 		}
@@ -410,10 +407,9 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			case StandardSource _:
 				return await DoSaveStandardArchiveAsync(path);
 
-			case NefsInjectSource _:
 			case HeadlessSource _:
-				var nefsInjectFilePath = path + ".nefsinject";
-				return await DoSaveNefsInjectArchiveAsync(path, nefsInjectFilePath);
+				UiService.ShowMessageBox("Saving executable header archives is not supported.", icon: MessageBoxIcon.Error);
+				return false;
 
 			default:
 				throw new ArgumentException("Unknown archive source type.");
@@ -468,55 +464,6 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			catch (Exception ex)
 			{
 				Log.LogError(ex, $"Failed to open archive {source.FilePath}.");
-			}
-		}));
-
-		return result;
-	}
-
-	private async Task<bool> DoSaveNefsInjectArchiveAsync(string dataFilePath, string nefsInjectFilePath)
-	{
-		if (Archive == null)
-		{
-			Log.LogError("Failed to save archive: no archive open.");
-			return false;
-		}
-
-		// Currently don't support saving encrypted archives
-		if (Archive.Header.IsEncrypted)
-		{
-			UiService.ShowMessageBox("Saving encrypted archives is not supported.", icon: MessageBoxIcon.Error);
-			return false;
-		}
-
-		Log.LogInformation("----------------------------");
-		Log.LogInformation($"Writing NefsInject archive.");
-		Log.LogInformation($"Data file: {dataFilePath}.");
-		Log.LogInformation($"NefsInject file: {nefsInjectFilePath}.");
-		var result = false;
-
-		// Save archive
-		await ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
-		{
-			using (var tt = p.BeginTask(1.0f))
-			{
-				// Save archive
-				try
-				{
-					var (archive, source) = await NefsWriter.WriteNefsInjectArchiveAsync(dataFilePath, nefsInjectFilePath, Archive, p);
-					Archive = archive;
-					ArchiveSource = source;
-					UndoBuffer.MarkAsSaved();
-
-					ArchiveSaved?.Invoke(this, EventArgs.Empty);
-					result = true;
-
-					Log.LogInformation($"Archive saved.");
-				}
-				catch (Exception ex)
-				{
-					Log.LogError($"Failed to saved archive {dataFilePath}.\r\n{ex.Message}");
-				}
 			}
 		}));
 
@@ -687,27 +634,6 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		if (!FileSystem.File.Exists(source.HeaderFilePath))
 		{
 			Log.LogError($"Header file not found: {source.HeaderFilePath}.");
-			return false;
-		}
-
-		return await DoOpenArchiveAsync(source);
-	}
-
-	private async Task<bool> OpenNefsInjectArchiveAsync(NefsInjectSource source)
-	{
-		Log.LogInformation("----------------------------");
-		Log.LogInformation($"Opening archive: {source.DataFilePath}");
-		Log.LogInformation($"NefsInject file: {source.NefsInjectFilePath}");
-
-		if (!FileSystem.File.Exists(source.DataFilePath))
-		{
-			Log.LogError($"File not found: {source.DataFilePath}.");
-			return false;
-		}
-
-		if (!FileSystem.File.Exists(source.NefsInjectFilePath))
-		{
-			Log.LogError($"File not found: {source.NefsInjectFilePath}.");
 			return false;
 		}
 

@@ -40,16 +40,6 @@ public abstract class NefsArchiveSource
 	}
 
 	/// <summary>
-	/// Similar to a headless archive, but the header sections are stored in the NefsInject format.
-	/// </summary>
-	/// <param name="dataFilePath">Path of the data file.</param>
-	/// <param name="nefsInjectFilePath">Path of the NefsInject file.</param>
-	public static NefsInjectSource NefsInject(string dataFilePath, string nefsInjectFilePath)
-	{
-		return new NefsInjectSource(dataFilePath, nefsInjectFilePath);
-	}
-
-	/// <summary>
 	/// Header and file data are both stored in the same file.
 	/// </summary>
 	/// <param name="filePath">Path of the archive file.</param>

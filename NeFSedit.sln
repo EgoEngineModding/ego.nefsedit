@@ -22,10 +22,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VictorBush.Ego.NefsLib.Test
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VictorBush.Ego.NefsEdit.Tests", "VictorBush.Ego.NefsEdit.Tests\VictorBush.Ego.NefsEdit.Tests.csproj", "{40723AAF-DC4B-4DFE-BE01-90C562C7E298}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VictorBush.Ego.NefsCommon.InjectionDatabase.Tests", "VictorBush.Ego.NefsCommon\VictorBush.Ego.NefsCommon.InjectionDatabase.Tests\VictorBush.Ego.NefsCommon.InjectionDatabase.Tests.csproj", "{181257C0-BBE9-408C-B3EF-3BD12E0F7AF3}"
-EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "VictorBush.Ego.NefsCommon.InjectionDatabase", "VictorBush.Ego.NefsCommon\VictorBush.Ego.NefsCommon.InjectionDatabase\VictorBush.Ego.NefsCommon.InjectionDatabase.csproj", "{D9336E22-6F6C-43F3-A5A5-71C0C81B85EE}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -48,14 +44,6 @@ Global
 		{40723AAF-DC4B-4DFE-BE01-90C562C7E298}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40723AAF-DC4B-4DFE-BE01-90C562C7E298}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40723AAF-DC4B-4DFE-BE01-90C562C7E298}.Release|Any CPU.Build.0 = Release|Any CPU
-		{181257C0-BBE9-408C-B3EF-3BD12E0F7AF3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{181257C0-BBE9-408C-B3EF-3BD12E0F7AF3}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{181257C0-BBE9-408C-B3EF-3BD12E0F7AF3}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{181257C0-BBE9-408C-B3EF-3BD12E0F7AF3}.Release|Any CPU.Build.0 = Release|Any CPU
-		{D9336E22-6F6C-43F3-A5A5-71C0C81B85EE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{D9336E22-6F6C-43F3-A5A5-71C0C81B85EE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{D9336E22-6F6C-43F3-A5A5-71C0C81B85EE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{D9336E22-6F6C-43F3-A5A5-71C0C81B85EE}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

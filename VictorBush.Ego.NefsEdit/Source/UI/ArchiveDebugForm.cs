@@ -4,7 +4,6 @@ using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.Workspace;
 using VictorBush.Ego.NefsLib;
 using VictorBush.Ego.NefsLib.ArchiveSource;
-using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.Header.Version200;
 using WeifenLuo.WinFormsUI.Docking;
@@ -47,11 +46,6 @@ internal partial class ArchiveDebugForm : DockContent
 				return $@"Standard NeFS archive.
 Archive file:               {standardSource.FilePath}
 Header offset:              0";
-
-			case NefsInjectSource nefsInjectSource:
-				return $@"NefsInject archive.
-Data file:                  {nefsInjectSource.DataFilePath}
-NefsInject file:            {nefsInjectSource.NefsInjectFilePath}";
 
 			case HeadlessSource gameDatSource:
 				return $@"GameDat archive.

@@ -48,9 +48,5 @@ public class OpenFileDialogState
 	/// </summary>
 	public string NefsFilePath { get; set; } = "";
 
-	public string NefsInjectDataFilePath { get; set; } = "";
-
-	public string NefsInjectFilePath { get; set; } = "";
-
 	public string HeadlessExePath { get; set; } = "";
 }

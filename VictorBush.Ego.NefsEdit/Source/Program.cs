@@ -6,7 +6,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Serilog;
-using VictorBush.Ego.NefsCommon.InjectionDatabase;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.UI;
 using VictorBush.Ego.NefsEdit.Utility;
@@ -66,8 +65,6 @@ internal static class Program
 				x.AddSingleton<INefsReader, NefsReader>();
 				x.AddSingleton<INefsWriter>(x => new NefsWriter(TempDirectory, x.GetRequiredService<IFileSystem>(), x.GetRequiredService<INefsTransformer>()));
 				x.AddSingleton<INefsEditWorkspace, NefsEditWorkspace>();
-				x.AddSingleton<IFileDownloader, FileDownloader>();
-				x.AddSingleton<IInjectionDatabaseService, InjectionDatabaseService>();
 			}).Build();
 
 		// Run application

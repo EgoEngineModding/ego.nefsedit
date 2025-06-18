@@ -2,15 +2,12 @@
 
 using Microsoft.Extensions.Logging;
 using System.Globalization;
-using System.IO;
 using System.IO.Abstractions;
-using VictorBush.Ego.NefsCommon.InjectionDatabase;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.Settings;
 using VictorBush.Ego.NefsEdit.Utility;
 using VictorBush.Ego.NefsLib.ArchiveSource;
 using VictorBush.Ego.NefsLib.IO;
-using VictorBush.Ego.NefsLib.Progress;
 
 namespace VictorBush.Ego.NefsEdit.UI;
 
@@ -24,9 +21,7 @@ internal partial class OpenFileForm : Form
 	private readonly OpenMode openModeHeadless = new OpenMode("Headless");
 	private readonly OpenMode openModeHeadlessCustom = new OpenMode("Headless (Custom)");
 	private readonly OpenMode openModeNefs = new OpenMode("NeFS");
-	private readonly OpenMode openModeNefsInject = new OpenMode("NefsInject");
 	private readonly OpenMode openModeRecent = new OpenMode("Recent");
-	private readonly IInjectionDatabaseService injectionDatabaseService;
 
 	/// <summary>
 	/// Initializes a new instance of the <see cref="OpenFileForm"/> class.
@@ -36,14 +31,12 @@ internal partial class OpenFileForm : Form
 	/// <param name="progressService">Progress service.</param>
 	/// <param name="reader">Nefs reader.</param>
 	/// <param name="fileSystem">The file system.</param>
-	/// <param name="injectionDatabaseService"></param>
 	public OpenFileForm(
 		ISettingsService settingsService,
 		IUiService uiService,
 		IProgressService progressService,
 		INefsReader reader,
-		IFileSystem fileSystem,
-		IInjectionDatabaseService injectionDatabaseService)
+		IFileSystem fileSystem)
 	{
 		InitializeComponent();
 		SettingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
@@ -51,7 +44,6 @@ internal partial class OpenFileForm : Form
 		ProgressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
 		Reader = reader ?? throw new ArgumentNullException(nameof(reader));
 		FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
-		this.injectionDatabaseService = injectionDatabaseService;
 	}
 
 	/// <summary>
@@ -83,37 +75,8 @@ internal partial class OpenFileForm : Form
 
 	private async Task<List<HeadlessSource>> FindInjectionProfiles(string gameExePath)
 	{
-		if (!FileSystem.File.Exists(gameExePath))
-		{
-			UiService.ShowMessageBox($"Cannot find executable file: {gameExePath}.");
-			return new List<HeadlessSource>();
-		}
-
-		var md5 = Md5Utility.Compute(gameExePath);
-		var gameExeFileName = Path.GetFileName(gameExePath);
-		var profile = await this.injectionDatabaseService.FindExeProfileAsync(gameExeFileName, md5);
-		if (profile == null)
-		{
-			Log.LogError($"No executable profile found for {gameExePath} with MD5 {md5}.");
-			UiService.ShowMessageBox($"No executable profile found for {gameExeFileName}.");
-			return new List<HeadlessSource>();
-		}
-
-		if (profile.InjectionProfiles is null || profile.InjectionProfiles.Count == 0)
-		{
-			Log.LogError($"Executable profile for {gameExePath} with MD5 {md5} has no injection profiles.");
-			UiService.ShowMessageBox($"Executable profile for {gameExeFileName} has no injection profiles.");
-			return new List<HeadlessSource>();
-		}
-
-		return profile.InjectionProfiles.Select(x => NefsArchiveSource.Headless(
-			Path.Combine(Path.GetDirectoryName(gameExePath)!, x.DataFile!),
-			gameExePath,
-			(long)x.PrimaryOffset!.Value,
-			(int)x.PrimarySize!.Value,
-			(long)x.SecondaryOffset!.Value,
-			(int)x.SecondarySize!.Value))
-			.ToList();
+		// Will be used to bring back auto-search at some point
+		throw new NotImplementedException();
 	}
 
 	private async void GameDatRefreshButton_Click(Object sender, EventArgs e)
@@ -166,8 +129,6 @@ internal partial class OpenFileForm : Form
 		this.splitPrimarySizeTextBox.Text = SettingsService.OpenFileDialogState.GameDatPrimarySize;
 		this.splitSecondaryOffsetTextBox.Text = SettingsService.OpenFileDialogState.GameDatSecondaryOffset;
 		this.splitSecondarySizeTextBox.Text = SettingsService.OpenFileDialogState.GameDatSecondarySize;
-		this.nefsInjectDataFileTextBox.Text = SettingsService.OpenFileDialogState.NefsInjectDataFilePath;
-		this.nefsInjectFileTextBox.Text = SettingsService.OpenFileDialogState.NefsInjectFilePath;
 		this.headlessGameExeFileTextBox.Text = SettingsService.OpenFileDialogState.HeadlessExePath;
 	}
 
@@ -177,10 +138,6 @@ internal partial class OpenFileForm : Form
 		{
 			// Open NeFS archive
 			this.tablessControl1.SelectedTab = this.nefsTabPage;
-		}
-		else if (this.modeListBox.SelectedItem == this.openModeNefsInject)
-		{
-			this.tablessControl1.SelectedTab = this.nefsInjectTabPage;
 		}
 		else if (this.modeListBox.SelectedItem == this.openModeRecent)
 		{
@@ -216,10 +173,6 @@ internal partial class OpenFileForm : Form
 		if (this.modeListBox.SelectedItem == this.openModeNefs)
 		{
 			source = ValidateStandardSource();
-		}
-		else if (this.modeListBox.SelectedItem == this.openModeNefsInject)
-		{
-			source = ValidateNefsInjectSource();
 		}
 		else if (this.modeListBox.SelectedItem == this.openModeHeadless)
 		{
@@ -258,7 +211,6 @@ internal partial class OpenFileForm : Form
 	{
 		// Setup combo box
 		this.modeListBox.Items.Add(this.openModeNefs);
-		this.modeListBox.Items.Add(this.openModeNefsInject);
 		this.modeListBox.Items.Add(this.openModeHeadless);
 		this.modeListBox.Items.Add(this.openModeHeadlessCustom);
 		this.modeListBox.Items.Add(this.openModeRecent);
@@ -289,8 +241,6 @@ internal partial class OpenFileForm : Form
 		SettingsService.OpenFileDialogState.GameDatPrimarySize = this.splitPrimarySizeTextBox.Text;
 		SettingsService.OpenFileDialogState.GameDatSecondaryOffset = this.splitSecondaryOffsetTextBox.Text;
 		SettingsService.OpenFileDialogState.GameDatSecondarySize = this.splitSecondarySizeTextBox.Text;
-		SettingsService.OpenFileDialogState.NefsInjectDataFilePath = this.nefsInjectDataFileTextBox.Text;
-		SettingsService.OpenFileDialogState.NefsInjectFilePath = this.nefsInjectFileTextBox.Text;
 		SettingsService.OpenFileDialogState.HeadlessExePath = this.headlessGameExeFileTextBox.Text;
 
 		SettingsService.Save();
@@ -420,21 +370,6 @@ internal partial class OpenFileForm : Form
 		return source;
 	}
 
-	private NefsArchiveSource? ValidateNefsInjectSource()
-	{
-		var dataFilePath = this.nefsInjectDataFileTextBox.Text;
-		var headerFilePath = this.nefsInjectFileTextBox.Text;
-		var source = NefsArchiveSource.NefsInject(dataFilePath, headerFilePath);
-
-		if (!ValidateFileExists(source.DataFilePath))
-			return null;
-
-		if (!ValidateFileExists(source.NefsInjectFilePath))
-			return null;
-
-		return source;
-	}
-
 	private NefsArchiveSource? ValidateRecent()
 	{
 		var recent = this.recentListBox.SelectedItem as RecentFile;
@@ -457,13 +392,6 @@ internal partial class OpenFileForm : Form
 				if (!ValidateFileExists(gameDatSource.HeaderFilePath))
 					return null;
 				return gameDatSource;
-
-			case NefsInjectSource nefsInjectSource:
-				if (!ValidateFileExists(nefsInjectSource.NefsInjectFilePath))
-					return null;
-				if (!ValidateFileExists(nefsInjectSource.DataFilePath))
-					return null;
-				return nefsInjectSource;
 
 			default:
 				UiService.ShowMessageBox($"Unknown archive source type.");
