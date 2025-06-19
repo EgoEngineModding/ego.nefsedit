@@ -78,7 +78,7 @@ public sealed class NefsHeaderNameTable
 		foreach (var s in strings)
 		{
 			this.fileNamesByOffset.Add((uint)offset, s);
-			this.offsetsByFileName.Add(s, (uint)offset);
+			this.offsetsByFileName.TryAdd(s, (uint)offset);
 
 			// Increase offset by string length plus a null terminator
 			offset += s.Length + 1;

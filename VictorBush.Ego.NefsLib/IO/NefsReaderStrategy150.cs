@@ -3,6 +3,7 @@
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using VictorBush.Ego.NefsLib.Header;
+using VictorBush.Ego.NefsLib.Header.Version010;
 using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.Progress;
 
@@ -66,11 +67,12 @@ internal class NefsReaderStrategy150 : NefsReaderStrategy
 			nameTable = await ReadHeaderPart3Async(stream, primaryOffset + header.NameTableStart, size, p);
 		}
 
-		NefsHeaderBlockTable150 blockTable;
+		NefsHeaderBlockTable010 blockTable;
 		using (p.BeginTask(weight, "Reading block table"))
 		{
 			var size = Convert.ToInt32(header.VolumeInfoTableStart - header.BlockTableStart);
-			blockTable = await Read150HeaderPart4Async(reader, primaryOffset + header.BlockTableStart, size, entryTable, p);
+			blockTable = await ReadTocTableAsync<NefsHeaderBlockTable010, NefsTocBlock010>(reader,
+				primaryOffset + header.BlockTableStart, size, p);
 		}
 
 		NefsHeaderVolumeInfoTable150 volumeInfoTable;
@@ -138,22 +140,6 @@ internal class NefsReaderStrategy150 : NefsReaderStrategy
 		var entries = await ReadTocEntriesAsync<NefsTocSharedEntryInfo150>(reader, offset, size, p).ConfigureAwait(false);
 		Debug.Assert(entries.All(x => x.FirstDuplicate == x.PatchedEntry));
 		return new NefsHeaderSharedEntryInfoTable150(entries);
-	}
-
-	/// <summary>
-	/// Reads 1.5.0 header part 4 from an input stream.
-	/// </summary>
-	/// <param name="reader">The reader to use.</param>
-	/// <param name="offset">The offset to the header part from the beginning of the stream.</param>
-	/// <param name="size">The size of the header part.</param>
-	/// <param name="entryTable">Header part 1.</param>
-	/// <param name="p">Progress info.</param>
-	/// <returns>The loaded header part.</returns>
-	protected async Task<NefsHeaderBlockTable150> Read150HeaderPart4Async(EndianBinaryReader reader, long offset, int size,
-		NefsHeaderEntryTable150 entryTable, NefsProgress p)
-	{
-		var entries = await ReadTocEntriesAsync<NefsTocBlock150>(reader, offset, size, p).ConfigureAwait(false);
-		return new NefsHeaderBlockTable150(entries);
 	}
 
 	/// <summary>

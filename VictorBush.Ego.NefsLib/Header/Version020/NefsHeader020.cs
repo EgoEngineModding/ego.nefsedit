@@ -4,18 +4,18 @@ using VictorBush.Ego.NefsLib.Header.Version010;
 using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Utility;
 
-namespace VictorBush.Ego.NefsLib.Header.Version150;
+namespace VictorBush.Ego.NefsLib.Header.Version020;
 
 /// <inheritdoc cref="INefsHeader" />
-public sealed class NefsHeader150 : INefsHeader
+public sealed class NefsHeader020 : INefsHeader
 {
 	public NefsWriterSettings WriterSettings { get; }
-	public NefsTocHeader150 Intro { get; }
-	public NefsHeaderEntryTable150 EntryTable { get; }
-	public NefsHeaderSharedEntryInfoTable150 SharedEntryInfoTable { get; }
+	public NefsTocHeader020 Intro { get; }
+	public NefsHeaderEntryTable010 EntryTable { get; }
+	public NefsHeaderLinkTable010 LinkTable { get; }
 	public NefsHeaderNameTable NameTable { get; }
 	public NefsHeaderBlockTable010 BlockTable { get; }
-	public NefsHeaderVolumeInfoTable150 VolumeInfoTable { get; }
+	public NefsHeaderVolumeSizeTable010 VolumeSizeTable { get; }
 
 	/// <inheritdoc />
 	public NefsVersion Version => (NefsVersion)Intro.Version;
@@ -39,36 +39,36 @@ public sealed class NefsHeader150 : INefsHeader
 	public uint BlockSize => Intro.BlockSize;
 
 	/// <inheritdoc />
-	public uint NumEntries => Intro.NumEntries;
+	public uint NumEntries => (uint)EntryTable.Entries.Count;
 
 	/// <inheritdoc />
 	public IReadOnlyList<VolumeInfo> Volumes { get; }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="NefsHeader151"/> class.
+	/// Initializes a new instance of the <see cref="NefsHeader020"/> class.
 	/// </summary>
-	public NefsHeader150(
+	public NefsHeader020(
 		NefsWriterSettings writerSettings,
-		NefsTocHeader150 header,
-		NefsHeaderEntryTable150 entryTable,
-		NefsHeaderSharedEntryInfoTable150 sharedEntryInfoTable,
+		NefsTocHeader020 header,
+		NefsHeaderEntryTable010 entryTable,
+		NefsHeaderLinkTable010 sharedEntryInfoTable,
 		NefsHeaderNameTable nameTable,
 		NefsHeaderBlockTable010 blockTable,
-		NefsHeaderVolumeInfoTable150 volumeInfoTable)
+		NefsHeaderVolumeSizeTable010 volumeInfoTable)
 	{
 		WriterSettings = writerSettings;
 		Intro = header;
-		EntryTable = entryTable ?? throw new ArgumentNullException(nameof(entryTable));
-		SharedEntryInfoTable = sharedEntryInfoTable ?? throw new ArgumentNullException(nameof(sharedEntryInfoTable));
-		NameTable = nameTable ?? throw new ArgumentNullException(nameof(nameTable));
-		BlockTable = blockTable ?? throw new ArgumentNullException(nameof(blockTable));
-		VolumeInfoTable = volumeInfoTable ?? throw new ArgumentNullException(nameof(volumeInfoTable));
+		EntryTable = entryTable;
+		LinkTable = sharedEntryInfoTable;
+		NameTable = nameTable;
+		BlockTable = blockTable;
+		VolumeSizeTable = volumeInfoTable;
 
-		Volumes = VolumeInfoTable.Entries.Select(x => new VolumeInfo
+		Volumes = VolumeSizeTable.Entries.Select(x => new VolumeInfo
 		{
 			Size = x.Size,
-			Name = NameTable.FileNamesByOffset[x.NameOffset],
-			DataOffset = x.DataOffset
+			Name = string.Empty,
+			DataOffset = Intro.TocSize
 		}).ToArray();
 	}
 

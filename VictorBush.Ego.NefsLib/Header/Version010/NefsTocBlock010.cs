@@ -3,11 +3,12 @@
 using System.Buffers.Binary;
 using System.Runtime.CompilerServices;
 
-namespace VictorBush.Ego.NefsLib.Header.Version150;
+namespace VictorBush.Ego.NefsLib.Header.Version010;
 
-public struct NefsTocBlock150 : INefsTocData<NefsTocBlock150>
+public struct NefsTocBlock010 : INefsTocData<NefsTocBlock010>
 {
-	public static int ByteCount { get; } = Unsafe.SizeOf<NefsTocBlock150>();
+	/// <inheritdoc />
+	public static int ByteCount { get; } = Unsafe.SizeOf<NefsTocBlock010>();
 
 	public uint End;
 	public uint Transformation;
