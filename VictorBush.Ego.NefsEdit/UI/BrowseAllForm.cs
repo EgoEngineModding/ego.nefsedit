@@ -9,6 +9,7 @@ using VictorBush.Ego.NefsLib;
 using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Version010;
 using VictorBush.Ego.NefsLib.Header.Version020;
+using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.Item;
@@ -230,6 +231,48 @@ internal partial class BrowseAllForm : DockContent
 				var p7 = h16.WriteableSharedEntryInfoTable.Entries[(int)p1.SharedInfo];
 				AddSubItem(listItem, "pt7.0x00", p7.NextSibling.ToString("X"));
 				AddSubItem(listItem, "pt7.0x04", p7.PatchedEntry.ToString("X"));
+			}
+			else if (archive.Header is NefsHeader151 h151)
+			{
+				var p1 = h151.EntryTable.Entries[item.Id.Index];
+				AddSubItem(listItem, "pt1.0x00", p1.Start.ToString("X"));
+				AddSubItem(listItem, "pt1.0x08", p1.SharedInfo.ToString("X"));
+				AddSubItem(listItem, "pt1.0x0c", p1.FirstBlock.ToString("X"));
+				AddSubItem(listItem, "pt1.0x10", p1.NextDuplicate.ToString("X"));
+
+				var p2 = h151.SharedEntryInfoTable.Entries[(int)p1.SharedInfo];
+				AddSubItem(listItem, "pt2.0x00", p2.Parent.ToString("X"));
+				AddSubItem(listItem, "pt2.0x04", p2.FirstChild.ToString("X"));
+				AddSubItem(listItem, "pt2.0x08", p2.NameOffset.ToString("X"));
+				AddSubItem(listItem, "pt2.0x0c", p2.Size.ToString("X"));
+				AddSubItem(listItem, "pt2.0x10", p2.FirstDuplicate.ToString("X"));
+
+				AddSubItem(listItem, "pt6.0x00", p1.Volume.ToString("X"));
+				AddSubItem(listItem, "pt6.0x02", p1.Flags.ToString("X"));
+
+				AddSubItem(listItem, "pt7.0x00", p2.NextSibling.ToString("X"));
+				AddSubItem(listItem, "pt7.0x04", p2.PatchedEntry.ToString("X"));
+			}
+			else if (archive.Header is NefsHeader150 h150)
+			{
+				var p1 = h150.EntryTable.Entries[item.Id.Index];
+				AddSubItem(listItem, "pt1.0x00", p1.Start.ToString("X"));
+				AddSubItem(listItem, "pt1.0x08", p1.SharedInfo.ToString("X"));
+				AddSubItem(listItem, "pt1.0x0c", p1.FirstBlock.ToString("X"));
+				AddSubItem(listItem, "pt1.0x10", p1.NextDuplicate.ToString("X"));
+
+				var p2 = h150.SharedEntryInfoTable.Entries[(int)p1.SharedInfo];
+				AddSubItem(listItem, "pt2.0x00", p2.Parent.ToString("X"));
+				AddSubItem(listItem, "pt2.0x04", p2.FirstChild.ToString("X"));
+				AddSubItem(listItem, "pt2.0x08", p2.NameOffset.ToString("X"));
+				AddSubItem(listItem, "pt2.0x0c", p2.Size.ToString("X"));
+				AddSubItem(listItem, "pt2.0x10", p2.FirstDuplicate.ToString("X"));
+
+				AddSubItem(listItem, "pt6.0x00", p1.Volume.ToString("X"));
+				AddSubItem(listItem, "pt6.0x02", p1.Flags.ToString("X"));
+
+				AddSubItem(listItem, "pt7.0x00", p2.NextSibling.ToString("X"));
+				AddSubItem(listItem, "pt7.0x04", p2.PatchedEntry.ToString("X"));
 			}
 			else if (archive.Header is NefsHeader020 h020)
 			{

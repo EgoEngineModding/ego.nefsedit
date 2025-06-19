@@ -1,5 +1,6 @@
 // See LICENSE.txt for license information.
 
+using VictorBush.Ego.NefsLib.Header.Version010;
 using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Utility;
 
@@ -13,7 +14,7 @@ public sealed class NefsHeader150 : INefsHeader
 	public NefsHeaderEntryTable150 EntryTable { get; }
 	public NefsHeaderSharedEntryInfoTable150 SharedEntryInfoTable { get; }
 	public NefsHeaderNameTable NameTable { get; }
-	public NefsHeaderBlockTable150 BlockTable { get; }
+	public NefsHeaderBlockTable010 BlockTable { get; }
 	public NefsHeaderVolumeInfoTable150 VolumeInfoTable { get; }
 
 	/// <inheritdoc />
@@ -52,7 +53,7 @@ public sealed class NefsHeader150 : INefsHeader
 		NefsHeaderEntryTable150 entryTable,
 		NefsHeaderSharedEntryInfoTable150 sharedEntryInfoTable,
 		NefsHeaderNameTable nameTable,
-		NefsHeaderBlockTable150 blockTable,
+		NefsHeaderBlockTable010 blockTable,
 		NefsHeaderVolumeInfoTable150 volumeInfoTable)
 	{
 		WriterSettings = writerSettings;
