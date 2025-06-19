@@ -23,6 +23,19 @@ public interface INefsTocTable<T> where T : unmanaged, INefsTocData<T>
 	static int EntryByteCount => T.ByteCount;
 }
 
+/// <summary>
+/// A table in the NeFS table of contents header.
+/// </summary>
+public interface INefsTocTable<T, TData> : INefsTocTable<TData>
+	where T : INefsTocTable<T, TData>
+	where TData : unmanaged, INefsTocData<TData>
+{
+	/// <summary>
+	/// Creates a table with the given entries.
+	/// </summary>
+	internal static abstract T Create(IReadOnlyList<TData> entries);
+}
+
 public static class NefsTocTableExtensions
 {
 	/// <summary>

@@ -26,6 +26,8 @@ internal abstract class NefsReaderStrategy
 
 		strategy = version switch
 		{
+			NefsVersion.Version010 => new NefsReaderStrategy010(),
+			NefsVersion.Version020 => new NefsReaderStrategy020(),
 			NefsVersion.Version150 => new NefsReaderStrategy150(),
 			NefsVersion.Version151 => new NefsReaderStrategy151(),
 			NefsVersion.Version160 => new NefsReaderStrategy160(),
@@ -121,6 +123,58 @@ internal abstract class NefsReaderStrategy
 	}
 
 	/// <summary>
+	/// Reads the data from an input stream.
+	/// </summary>
+	/// <param name="reader">The reader to use.</param>
+	/// <param name="offset">The offset to the data from the beginning of the stream.</param>
+	/// <param name="token">The cancellation token.</param>
+	/// <returns>The loaded data.</returns>
+	protected static async Task<T> ReadTocDataAsync<T>(
+		EndianBinaryReader reader,
+		long offset,
+		CancellationToken token = default)
+		where T : unmanaged, INefsTocData<T>
+	{
+		reader.BaseStream.Seek(offset, SeekOrigin.Begin);
+		var header = await reader.ReadTocDataAsync<T>(token).ConfigureAwait(false);
+		return header;
+	}
+
+	/// <summary>
+	/// Reads the table from an input stream.
+	/// </summary>
+	/// <param name="reader">The reader to use.</param>
+	/// <param name="offset">The offset to the table from the beginning of the stream.</param>
+	/// <param name="size">The size of the table.</param>
+	/// <param name="p">Progress info.</param>
+	/// <returns>The loaded table.</returns>
+	internal static async ValueTask<T> ReadTocTableAsync<T, TData>(EndianBinaryReader reader, long offset,
+		int size, NefsProgress p)
+		where T : INefsTocTable<T, TData>
+		where TData :  unmanaged, INefsTocData<TData>
+	{
+		var entries = await ReadTocEntriesAsync<TData>(reader, offset, size, p).ConfigureAwait(false);
+		return T.Create(entries);
+	}
+
+	/// <summary>
+	/// Reads the table from an input stream.
+	/// </summary>
+	/// <param name="reader">The reader to use.</param>
+	/// <param name="offset">The offset to the table from the beginning of the stream.</param>
+	/// <param name="size">The size of the table.</param>
+	/// <param name="p">Progress info.</param>
+	/// <returns>The loaded table.</returns>
+	internal static async ValueTask<T> ReadTocTableZeroStopAsync<T, TData>(EndianBinaryReader reader, long offset,
+		int size, NefsProgress p)
+		where T : INefsTocTable<T, TData>
+		where TData :  unmanaged, INefsTocData<TData>
+	{
+		var entries = await ReadTocEntriesZeroStopAsync<TData>(reader, offset, size, p).ConfigureAwait(false);
+		return T.Create(entries);
+	}
+
+	/// <summary>
 	/// Reads ToC entries from an input stream.
 	/// </summary>
 	/// <param name="reader">The reader to use.</param>
@@ -152,6 +206,47 @@ internal abstract class NefsReaderStrategy
 			}
 		}
 
+		return entries;
+	}
+
+	/// <summary>
+	/// Reads ToC entries from an input stream.
+	/// </summary>
+	/// <param name="reader">The reader to use.</param>
+	/// <param name="offset">The offset to the header part from the beginning of the stream.</param>
+	/// <param name="size">The size of the header part.</param>
+	/// <param name="p">Progress info.</param>
+	/// <returns>The ToC entries.</returns>
+	protected static async ValueTask<List<T>> ReadTocEntriesZeroStopAsync<T>(EndianBinaryReader reader, long offset,
+		int size, NefsProgress p)
+		where T : unmanaged, INefsTocData<T>
+	{
+		var stream = reader.BaseStream;
+
+		// Validate inputs
+		if (!ValidateHeaderPartStream(stream, offset, size, typeof(T).Name))
+		{
+			return [];
+		}
+
+		// Get entries
+		stream.Seek(offset, SeekOrigin.Begin);
+		var zeroEntry = default(T);
+		var numEntries = size / T.ByteCount;
+		var entries = new List<T>(numEntries);
+		while (true)
+		{
+			using var _ = p.BeginTask(1.0f / numEntries);
+			var entry = await reader.ReadTocDataAsync<T>(p.CancellationToken).ConfigureAwait(false);
+			if (entry.Equals(zeroEntry))
+			{
+				break;
+			}
+
+			entries.Add(entry);
+		}
+
+		using var __ = p.BeginTask((numEntries - entries.Count) / (float)numEntries);
 		return entries;
 	}
 
