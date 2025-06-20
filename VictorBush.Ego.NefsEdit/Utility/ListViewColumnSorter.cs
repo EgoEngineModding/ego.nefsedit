@@ -14,11 +14,6 @@ namespace VictorBush.Ego.NefsEdit.Utility;
 public class ListViewColumnSorter : IComparer
 {
 	/// <summary>
-	/// Case insensitive comparer object.
-	/// </summary>
-	private readonly CaseInsensitiveComparer objectCompare;
-
-	/// <summary>
 	/// Initializes a new instance of the <see cref="ListViewColumnSorter"/> class.
 	/// </summary>
 	public ListViewColumnSorter()
@@ -28,9 +23,6 @@ public class ListViewColumnSorter : IComparer
 
 		// Initialize the sort order to 'none'
 		Order = SortOrder.None;
-
-		// Initialize the CaseInsensitiveComparer object
-		this.objectCompare = new CaseInsensitiveComparer(System.Globalization.CultureInfo.InvariantCulture);
 	}
 
 	/// <summary>
@@ -68,7 +60,7 @@ public class ListViewColumnSorter : IComparer
 		if (uint.TryParse(xText, NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var xInt)
 			&& uint.TryParse(yText, NumberStyles.HexNumber, NumberFormatInfo.InvariantInfo, out var yInt))
 		{
-			compareResult = this.objectCompare.Compare(xInt, yInt);
+			compareResult = xInt.CompareTo(yInt);
 		}
 		else
 		{

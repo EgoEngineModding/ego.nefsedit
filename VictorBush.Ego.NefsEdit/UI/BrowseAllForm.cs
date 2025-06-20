@@ -328,8 +328,9 @@ internal partial class BrowseAllForm : DockContent
 			}
 
 			this.listItems.Add(item, listItem);
-			this.itemsListView.Items.Add(listItem);
 		}
+
+		this.itemsListView.Items.AddRange(this.listItems.Values.ToArray());
 	}
 
 	private void OnWorkspaceArchiveClosed(object? sender, EventArgs e)
