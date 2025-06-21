@@ -54,7 +54,7 @@ public sealed class NefsHeader020 : INefsHeader
 		NefsHeaderLinkTable010 sharedEntryInfoTable,
 		NefsHeaderNameTable nameTable,
 		NefsHeaderBlockTable010 blockTable,
-		NefsHeaderVolumeSizeTable010 volumeInfoTable)
+		NefsHeaderVolumeSizeTable010 volumeSizeTable)
 	{
 		WriterSettings = writerSettings;
 		Intro = header;
@@ -62,7 +62,7 @@ public sealed class NefsHeader020 : INefsHeader
 		LinkTable = sharedEntryInfoTable;
 		NameTable = nameTable;
 		BlockTable = blockTable;
-		VolumeSizeTable = volumeInfoTable;
+		VolumeSizeTable = volumeSizeTable;
 
 		Volumes = VolumeSizeTable.Entries.Select(x => new VolumeInfo
 		{

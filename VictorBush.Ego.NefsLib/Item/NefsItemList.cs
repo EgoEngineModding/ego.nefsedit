@@ -54,16 +54,15 @@ public sealed class NefsItemList : ICloneable
 					$"The item's first duplicate id {item.FirstDuplicateId} does not exist. The first duplicate must be added to the list before the next duplicates.");
 			}
 
-			if (existingContainer.Self.Type is not NefsItemType.File)
+			// 1.3.0 has folder duplicates. handle them as normal for now and only treat files specially
+			if (existingContainer.Self.Type is NefsItemType.File)
 			{
-				throw new ArgumentException("The item's primary duplicate must be a file.", nameof(item));
+				// TODO: validate file name, blocks, etc. are same
+				Debug.Assert(item.Id > item.FirstDuplicateId);
+				existingContainer.Duplicates.Add(item);
+				this.itemsById.Add(item.Id, item);
+				return;
 			}
-
-			// TODO: validate file name, blocks, etc. are same
-			Debug.Assert(item.Id > item.FirstDuplicateId);
-			existingContainer.Duplicates.Add(item);
-			this.itemsById.Add(item.Id, item);
-			return;
 		}
 
 		// Create a container for the item

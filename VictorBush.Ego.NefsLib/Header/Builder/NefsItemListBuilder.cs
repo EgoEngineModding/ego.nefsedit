@@ -4,6 +4,7 @@ using Microsoft.Extensions.Logging;
 using VictorBush.Ego.NefsLib.DataSource;
 using VictorBush.Ego.NefsLib.Header.Version010;
 using VictorBush.Ego.NefsLib.Header.Version020;
+using VictorBush.Ego.NefsLib.Header.Version130;
 using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.Header.Version200;
@@ -23,6 +24,7 @@ internal abstract class NefsItemListBuilder(ILogger logger)
 		{
 			NefsHeader010 h => new NefsItemListBuilder010(h, logger),
 			NefsHeader020 h => new NefsItemListBuilder020(h, logger),
+			NefsHeader130 h => new NefsItemListBuilder130(h, logger),
 			NefsHeader150 h => new NefsItemListBuilder150(h, logger),
 			NefsHeader151 h => new NefsItemListBuilder151(h, logger),
 			NefsHeader160 h => new NefsItemListBuilder160(h, logger),

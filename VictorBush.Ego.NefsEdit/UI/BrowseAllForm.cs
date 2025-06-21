@@ -9,6 +9,7 @@ using VictorBush.Ego.NefsLib;
 using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Version010;
 using VictorBush.Ego.NefsLib.Header.Version020;
+using VictorBush.Ego.NefsLib.Header.Version130;
 using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.Header.Version200;
@@ -273,6 +274,27 @@ internal partial class BrowseAllForm : DockContent
 
 				AddSubItem(listItem, "pt7.0x00", p2.NextSibling.ToString("X"));
 				AddSubItem(listItem, "pt7.0x04", p2.PatchedEntry.ToString("X"));
+			}
+			else if (archive.Header is NefsHeader130 h130)
+			{
+				var p1 = h130.EntryTable.Entries[item.Id.Index];
+				AddSubItem(listItem, "pt1.0x00", p1.Start.ToString("X"));
+				AddSubItem(listItem, "pt1.0x08", p1.LinkOffset.ToString("X"));
+				AddSubItem(listItem, "pt1.0x0c", p1.FirstBlock.ToString("X"));
+				AddSubItem(listItem, "pt1.0x10", string.Empty);
+
+				var p2 = h130.LinkTable.GetEntryByOffset(p1.LinkOffset);
+				AddSubItem(listItem, "pt2.0x00", p2.ParentOffset.ToString("X"));
+				AddSubItem(listItem, "pt2.0x04", p2.FirstChildOffset.ToString("X"));
+				AddSubItem(listItem, "pt2.0x08", p2.NameOffset.ToString("X"));
+				AddSubItem(listItem, "pt2.0x0c", p1.Size.ToString("X"));
+				AddSubItem(listItem, "pt2.0x10", string.Empty);
+
+				AddSubItem(listItem, "pt6.0x00", p1.Volume.ToString("X"));
+				AddSubItem(listItem, "pt6.0x02", p1.Flags.ToString("X"));
+
+				AddSubItem(listItem, "pt7.0x00", p2.NextSiblingOffset.ToString("X"));
+				AddSubItem(listItem, "pt7.0x04", string.Empty);
 			}
 			else if (archive.Header is NefsHeader020 h020)
 			{
