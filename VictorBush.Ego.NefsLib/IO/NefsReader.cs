@@ -366,7 +366,10 @@ public class NefsReader : INefsReader
 
 			var writerSettings = new NefsWriterSettings(readResult.IsEncrypted, readResult.IsXorEncoded,
 				readResult.IsLittleEndian);
-			return await strategy.ReadHeaderAsync(reader, offset, writerSettings, p).ConfigureAwait(false);
+			var header = await strategy.ReadHeaderAsync(reader, offset, writerSettings, p).ConfigureAwait(false);
+			Log.LogInformation("Header references volumes: {volumes}",
+				string.Join(", ", header.Volumes.Select(x => x.Name)));
+			return header;
 		}
 	}
 

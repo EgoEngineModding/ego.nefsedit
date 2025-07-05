@@ -22,9 +22,10 @@ public class SplitFileStreamTests
 	public void Reads()
 	{
 		const int splitSize = 3;
+		const int dataOffset = 10;
 		var buffer = Enumerable.Range(0, 25).Select(x => (byte)x).ToArray();
 		SetupFile(splitSize, buffer);
-		var volumeSource = new NefsVolumeSource(FilePath, 0, splitSize);
+		var volumeSource = new NefsVolumeSource(FilePath, dataOffset, splitSize);
 
 		using var sut = new SplitFileStream(volumeSource, this.fileSystem,
 			new FileStreamOptions { Mode = FileMode.Open, Access = FileAccess.Read });
@@ -35,8 +36,8 @@ public class SplitFileStreamTests
 		var actual = ms.ToArray();
 
 		// Verify
-		Assert.Equal(buffer.Length, sut.Position);
-		Assert.Equal(buffer.Length, sut.Length);
+		Assert.Equal(buffer.Length + dataOffset, sut.Position);
+		Assert.Equal(buffer.Length + dataOffset, sut.Length);
 		Assert.Equal(buffer, actual);
 	}
 
@@ -44,68 +45,76 @@ public class SplitFileStreamTests
 	public void Seeks()
 	{
 		const int splitSize = 3;
+		const int dataOffset = 10;
 		var buffer = Enumerable.Range(0, 25).Select(x => (byte)x).ToArray();
 		SetupFile(splitSize, buffer);
-		var volumeSource = new NefsVolumeSource(FilePath, 0, splitSize);
+		var volumeSource = new NefsVolumeSource(FilePath, dataOffset, splitSize);
 
 		using var sut = new SplitFileStream(volumeSource, this.fileSystem,
 			new FileStreamOptions { Mode = FileMode.Open, Access = FileAccess.Read });
 
 		// Seek
-		sut.Seek(buffer.Length - 1, SeekOrigin.Begin);
+		sut.Seek(buffer.Length - 1 + dataOffset, SeekOrigin.Begin);
 
 		// Verify
-		Assert.Equal(buffer.Length - 1, sut.Position);
-		Assert.Equal(buffer.Length, sut.Length);
+		Assert.Equal(buffer.Length - 1 + dataOffset, sut.Position);
+		Assert.Equal(buffer.Length + dataOffset, sut.Length);
 
 		// Seek
 		sut.Seek(-2, SeekOrigin.End);
 
 		// Verify
-		Assert.Equal(buffer.Length - 2, sut.Position);
-		Assert.Equal(buffer.Length, sut.Length);
+		Assert.Equal(buffer.Length - 2 + dataOffset, sut.Position);
+		Assert.Equal(buffer.Length + dataOffset, sut.Length);
 
 		// Seek
 		sut.Seek(1, SeekOrigin.Current);
 
 		// Verify
-		Assert.Equal(buffer.Length - 1, sut.Position);
-		Assert.Equal(buffer.Length, sut.Length);
+		Assert.Equal(buffer.Length - 1 + dataOffset, sut.Position);
+		Assert.Equal(buffer.Length + dataOffset, sut.Length);
 	}
 
 	[Fact]
 	public void SeeksBeyondLength()
 	{
 		const int splitSize = 3;
+		const int dataOffset = 10;
 		var buffer = Enumerable.Range(0, 25).Select(x => (byte)x).ToArray();
+		var fileCount = (buffer.Length + splitSize - 1) / splitSize;
 		SetupFile(splitSize, buffer);
-		var volumeSource = new NefsVolumeSource(FilePath, 0, splitSize);
+		var volumeSource = new NefsVolumeSource(FilePath, dataOffset, splitSize);
 
 		using var sut = new SplitFileStream(volumeSource, this.fileSystem,
 			new FileStreamOptions { Mode = FileMode.OpenOrCreate, Access = FileAccess.Write });
 
 		// Seek
-		sut.Seek(1, SeekOrigin.End);
+		sut.Seek(splitSize, SeekOrigin.End);
 
 		// Verify
-		Assert.Equal(buffer.Length + 1, sut.Position);
-		Assert.Equal(buffer.Length, sut.Length);
+		Assert.Equal(buffer.Length + splitSize + dataOffset, sut.Position);
+		Assert.Equal(buffer.Length + splitSize + dataOffset - 1, sut.Length); // MemS doesn't adjust length like FileS
+		Assert.Equal(fileCount + 1,
+			this.fileSystem.Directory.EnumerateFiles(TempDir, "*", SearchOption.AllDirectories).Count());
 
 		// Write
 		sut.WriteByte(0);
 
 		// Verify
-		Assert.Equal(buffer.Length + 2, sut.Position);
-		Assert.Equal(buffer.Length + 2, sut.Length);
+		Assert.Equal(buffer.Length + splitSize + dataOffset + 1, sut.Position);
+		Assert.Equal(buffer.Length + splitSize + dataOffset + 1, sut.Length);
+		Assert.Equal(fileCount + 1,
+			this.fileSystem.Directory.EnumerateFiles(TempDir, "*", SearchOption.AllDirectories).Count());
 	}
 
 	[Fact]
 	public void Writes()
 	{
 		const int splitSize = 3;
+		const int dataOffset = 10;
 		var buffer = Enumerable.Range(0, 25).Select(x => (byte)x).ToArray();
 		var fileCount = (buffer.Length + splitSize - 1) / splitSize;
-		var volumeSource = new NefsVolumeSource(FilePath, 0, splitSize);
+		var volumeSource = new NefsVolumeSource(FilePath, dataOffset, splitSize);
 
 		using var sut = new SplitFileStream(volumeSource, this.fileSystem,
 			new FileStreamOptions { Mode = FileMode.OpenOrCreate, Access = FileAccess.Write });
@@ -116,8 +125,8 @@ public class SplitFileStreamTests
 		var actual = ReadFile();
 
 		// Verify
-		Assert.Equal(buffer.Length, sut.Position);
-		Assert.Equal(buffer.Length, sut.Length);
+		Assert.Equal(buffer.Length + dataOffset, sut.Position);
+		Assert.Equal(buffer.Length + dataOffset, sut.Length);
 		Assert.Equal(buffer, actual);
 		Assert.Equal(fileCount,
 			this.fileSystem.Directory.EnumerateFiles(TempDir, "*", SearchOption.AllDirectories).Count());

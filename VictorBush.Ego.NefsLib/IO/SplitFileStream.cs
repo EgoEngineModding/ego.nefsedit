@@ -219,7 +219,7 @@ internal class SplitFileStream : Stream
 			UpdateFileStream(targetFileNumber);
 		}
 
-		this.currentStream.Seek(pos - this.fileStartPosition, SeekOrigin.Begin);
+		this.currentStream.Seek(pos - this.volume.DataOffset - this.fileStartPosition, SeekOrigin.Begin);
 		return Position;
 	}
 
