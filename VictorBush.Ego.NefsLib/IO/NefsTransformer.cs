@@ -162,6 +162,18 @@ public class NefsTransformer : INefsTransformer
 		}
 	}
 
+	/// <inheritdoc />
+	public async Task DetransformAsync(INefsDataSource dataSource, string outputFile, long outputOffset, NefsProgress p)
+	{
+		using (p.BeginTask(1.0f))
+		using (var inputStream = FileSystem.OpenRead(dataSource))
+		using (var outputStream = FileSystem.File.OpenWrite(outputFile))
+		{
+			await DetransformAsync(inputStream, dataSource.Offset, outputStream, outputOffset,
+				dataSource.Size.ExtractedSize, dataSource.Size.Chunks, p);
+		}
+	}
+
 	/// <inheritdoc/>
 	public async Task<NefsItemSize> TransformAsync(
 		Stream input,
@@ -294,7 +306,11 @@ public class NefsTransformer : INefsTransformer
 		NefsDataTransform transform,
 		NefsProgress p)
 	{
-		return await TransformFileAsync(input.FilePath, outputFile, transform, p);
+		using (var inputStream = FileSystem.OpenRead(input))
+		using (var outputStream = FileSystem.File.OpenWrite(outputFile))
+		{
+			return await TransformAsync(inputStream, 0, (uint)inputStream.Length, outputStream, 0, transform, p);
+		}
 	}
 
 	/// <inheritdoc/>

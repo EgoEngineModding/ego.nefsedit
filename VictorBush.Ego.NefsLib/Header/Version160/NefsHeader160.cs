@@ -44,6 +44,9 @@ public sealed class NefsHeader160 : INefsHeader, IFormattable
 	public uint BlockSize => TableOfContents.BlockSize;
 
 	/// <inheritdoc />
+	public uint SplitSize => TableOfContents.SplitSize;
+
+	/// <inheritdoc />
 	public uint NumEntries => Intro.NumEntries;
 
 	/// <inheritdoc />

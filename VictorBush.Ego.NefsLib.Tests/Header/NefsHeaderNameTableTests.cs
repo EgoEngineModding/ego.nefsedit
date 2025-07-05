@@ -3,6 +3,7 @@
 using VictorBush.Ego.NefsLib.DataSource;
 using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Item;
+using VictorBush.Ego.NefsLib.Tests.DataSource;
 using Xunit;
 
 namespace VictorBush.Ego.NefsLib.Tests.Header;

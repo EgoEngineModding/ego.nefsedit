@@ -1,8 +1,10 @@
 ﻿// See LICENSE.txt for license information.
 
+using System.IO.Abstractions;
+using VictorBush.Ego.NefsLib.DataSource;
 using VictorBush.Ego.NefsLib.Item;
 
-namespace VictorBush.Ego.NefsLib.DataSource;
+namespace VictorBush.Ego.NefsLib.Tests.DataSource;
 
 /// <summary>
 /// Defines an item data source from an existing archive. The item list defines the path to the file that contains the
@@ -48,4 +50,16 @@ public class NefsItemListDataSource : INefsDataSource
 
 	/// <inheritdoc/>
 	public NefsItemSize Size { get; }
+
+	/// <inheritdoc />
+	public Stream OpenRead(IFileSystem fileSystem)
+	{
+		return fileSystem.File.OpenRead(FilePath);
+	}
+
+	/// <inheritdoc />
+	public bool Exists(IFileSystem fileSystem)
+	{
+		return fileSystem.File.Exists(FilePath);
+	}
 }

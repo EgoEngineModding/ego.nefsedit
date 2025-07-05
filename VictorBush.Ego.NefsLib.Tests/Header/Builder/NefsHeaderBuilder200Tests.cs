@@ -6,6 +6,7 @@ using VictorBush.Ego.NefsLib.Header.Builder;
 using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.Item;
 using VictorBush.Ego.NefsLib.Progress;
+using VictorBush.Ego.NefsLib.Tests.DataSource;
 using Xunit;
 
 namespace VictorBush.Ego.NefsLib.Tests.Header.Builder;

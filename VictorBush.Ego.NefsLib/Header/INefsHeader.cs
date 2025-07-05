@@ -45,6 +45,11 @@ public interface INefsHeader
 	uint BlockSize { get; }
 
 	/// <summary>
+	/// Gets the data file split size.
+	/// </summary>
+	uint SplitSize { get; }
+
+	/// <summary>
 	/// Gets the number of entries.
 	/// </summary>
 	uint NumEntries { get; }

@@ -58,16 +58,19 @@ public class NefsWriter : INefsWriter
 
 		// Setup temp working directory
 		var workDir = PrepareWorkingDirectory(destFilePath);
+		var fileName = Path.GetFileName(destFilePath);
 
 		// Write to temp file
-		var tempFilePath = Path.Combine(workDir, "temp.nefs");
-		using (var file = FileSystem.File.Open(tempFilePath, FileMode.Create))
-		{
-			newArchive = await WriteArchiveAsync(file, nefs.Header, nefs.Items, workDir, p);
-		}
+		var tempFilePath = Path.Combine(workDir, fileName);
+		newArchive = await WriteArchiveAsync(tempFilePath, nefs.Header, nefs.Items, workDir, p);
 
 		// Copy to final destination
-		FileSystem.File.Copy(tempFilePath, destFilePath, true);
+		var destDir = Path.GetDirectoryName(destFilePath) ?? string.Empty;
+		foreach (var file in FileSystem.Directory.EnumerateFiles(workDir, "*", SearchOption.TopDirectoryOnly))
+		{
+			var fileDest = Path.Combine(destDir, Path.GetFileName(file));
+			FileSystem.File.Copy(file, fileDest, true);
+		}
 
 		return (newArchive, NefsArchiveSource.Standard(destFilePath));
 	}
@@ -106,7 +109,7 @@ public class NefsWriter : INefsWriter
 		}
 
 		// Make sure the new file still exists
-		if (!FileSystem.File.Exists(item.DataSource.FilePath))
+		if (!FileSystem.Exists(item.DataSource))
 		{
 			throw new IOException($"Cannot find source file {item.DataSource.FilePath}.");
 		}
@@ -211,17 +214,17 @@ public class NefsWriter : INefsWriter
 	}
 
 	/// <summary>
-	/// Writes an archive to the specified stream. A new archive obejct is returned that contains the updated header and
+	/// Writes an archive to the specified stream. A new archive object is returned that contains the updated header and
 	/// item metadata.
 	/// </summary>
-	/// <param name="stream">The stream to write to.</param>
+	/// <param name="filePath">The volume file path.</param>
 	/// <param name="sourceHeader">Donor header information.</param>
 	/// <param name="sourceItems">List of items to write. This list is not modified directly.</param>
 	/// <param name="workDir">Temp working directory path.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>A new NefsArchive object containing the updated header and item metadata.</returns>
 	private async Task<NefsArchive> WriteArchiveAsync(
-		Stream stream,
+		string filePath,
 		INefsHeader sourceHeader,
 		NefsItemList sourceItems,
 		string workDir,
@@ -243,12 +246,24 @@ public class NefsWriter : INefsWriter
 			items = await PrepareItemsAsync(sourceItems, workDir, p);
 		}
 
-		// Write item data
+		// Prepare streams
 		var dataOffset = headerBuilder.ComputeDataOffset(sourceHeader, items);
+		var volumeSource = new NefsVolumeSource(filePath, dataOffset, sourceHeader.SplitSize);
+		using Stream dataStream = !volumeSource.IsSplit
+			? FileSystem.File.OpenWrite(filePath)
+			: new SplitFileStream(volumeSource, FileSystem, new FileStreamOptions
+			{
+				Mode = FileMode.OpenOrCreate,
+				Access = FileAccess.ReadWrite,
+				Share = FileShare.None
+			});
+		using var headerStream = !volumeSource.IsSplit ? dataStream : FileSystem.File.OpenWrite(filePath);
+
+		// Write item data
 		long dataSize;
 		using (p.BeginTask(taskWeightWriteItems, "Writing items"))
 		{
-			dataSize = await WriteItemsAsync(stream, items, dataOffset, p);
+			dataSize = await WriteItemsAsync(dataStream, items, volumeSource, p);
 		}
 
 		// TODO: update hash digest table
@@ -259,7 +274,7 @@ public class NefsWriter : INefsWriter
 		// Write the header
 		Debug.Assert(header.Volumes[0].DataOffset == dataOffset);
 		Debug.Assert(header.Volumes[0].Size == Convert.ToUInt64(dataSize));
-		using var writer = new EndianBinaryWriter(stream, header.IsLittleEndian);
+		using var writer = new EndianBinaryWriter(headerStream, header.IsLittleEndian);
 		using (p.BeginTask(taskWeightHeader, "Writing header"))
 		{
 			await strategy.WriteHeaderAsync(writer, header, 0, p);
@@ -303,7 +318,7 @@ public class NefsWriter : INefsWriter
 		}
 
 		// Check if source file exists
-		if (!FileSystem.File.Exists(item.DataSource.FilePath))
+		if (!FileSystem.Exists(item.DataSource))
 		{
 			throw new IOException($"Cannot find source file {item.DataSource.FilePath}, skipping");
 		}
@@ -312,7 +327,6 @@ public class NefsWriter : INefsWriter
 		stream.Seek(dataOffset, SeekOrigin.Begin);
 
 		// Determine data source
-		var srcFile = item.DataSource.FilePath;
 		var srcOffset = item.DataSource.Offset;
 		var srcSize = item.DataSource.Size.TransformedSize;
 
@@ -332,7 +346,7 @@ public class NefsWriter : INefsWriter
 		//}
 
 		// Copy data from data source to the destination stream
-		using (var inputFile = FileSystem.File.OpenRead(srcFile))
+		using (var inputFile = FileSystem.OpenRead(item.DataSource))
 		{
 			// Seek source stream to correct offset
 			inputFile.Seek(srcOffset, SeekOrigin.Begin);
@@ -350,19 +364,19 @@ public class NefsWriter : INefsWriter
 	/// </summary>
 	/// <param name="stream">The stream to write to.</param>
 	/// <param name="items">List of items to write.</param>
-	/// <param name="firstDataOffset">The offset from the beginning of the stream to write the first data.</param>
+	/// <param name="volumeSource">The volume source.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>The offset to the end of the last data written.</returns>
 	private async Task<long> WriteItemsAsync(
 		Stream stream,
 		NefsItemList items,
-		long firstDataOffset,
+		NefsVolumeSource volumeSource,
 		NefsProgress p)
 	{
-		var nextDataOffset = firstDataOffset;
+		var nextDataOffset = (long)volumeSource.DataOffset;
 
 		// Prepare stream
-		stream.Seek(firstDataOffset, SeekOrigin.Begin);
+		stream.Seek(volumeSource.DataOffset, SeekOrigin.Begin);
 
 		// Update item info and write out item data
 		var i = 1;
@@ -383,8 +397,8 @@ public class NefsWriter : INefsWriter
 				// Write out item data
 				nextDataOffset = await WriteItemAsync(stream, itemOffset, item, p);
 
-				// Update item data source to point to the newly written data
-				var dataSource = new NefsItemListDataSource(items, itemOffset, itemSize);
+				// Update data source to point to the newly written data
+				var dataSource = new NefsVolumeDataSource(volumeSource, itemOffset, itemSize);
 				item.UpdateDataSource(dataSource, NefsItemState.None);
 			}
 

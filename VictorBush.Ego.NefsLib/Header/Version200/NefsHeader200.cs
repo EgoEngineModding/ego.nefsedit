@@ -58,6 +58,9 @@ public sealed class NefsHeader200 : INefsHeader
 	public uint BlockSize => DefaultBlockSize;
 
 	/// <inheritdoc />
+	public uint SplitSize => 0;
+
+	/// <inheritdoc />
 	public uint NumEntries => Intro.NumEntries;
 
 	/// <inheritdoc />

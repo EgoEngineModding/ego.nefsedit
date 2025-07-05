@@ -1,5 +1,6 @@
 ﻿// See LICENSE.txt for license information.
 
+using System.IO.Abstractions;
 using VictorBush.Ego.NefsLib.Item;
 
 namespace VictorBush.Ego.NefsLib.DataSource;
@@ -37,4 +38,16 @@ public class NefsFileDataSource : INefsDataSource
 
 	/// <inheritdoc/>
 	public NefsItemSize Size { get; }
+
+	/// <inheritdoc />
+	public Stream OpenRead(IFileSystem fileSystem)
+	{
+		return fileSystem.File.OpenRead(FilePath);
+	}
+
+	/// <inheritdoc />
+	public bool Exists(IFileSystem fileSystem)
+	{
+		return fileSystem.File.Exists(FilePath);
+	}
 }

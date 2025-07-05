@@ -15,7 +15,7 @@ public class NefsItemTests
 	{
 		var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
 		var builder = new NefsItemListBuilder200((NefsHeader200)nefs.Header, NefsLog.GetLogger());
-		var item = builder.BuildItem(TestArchiveNotModified.File3ItemId, nefs.Items);
+		var item = builder.BuildItem(TestArchiveNotModified.File3ItemId, nefs.Source());
 		item.UpdateState(NefsItemState.Replaced);
 
 		var clone = item with {};

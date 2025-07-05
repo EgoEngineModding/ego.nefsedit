@@ -39,6 +39,9 @@ public sealed class NefsHeader020 : INefsHeader
 	public uint BlockSize => Intro.BlockSize;
 
 	/// <inheritdoc />
+	public uint SplitSize => 0;
+
+	/// <inheritdoc />
 	public uint NumEntries => (uint)EntryTable.Entries.Count;
 
 	/// <inheritdoc />

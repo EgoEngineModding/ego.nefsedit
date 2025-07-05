@@ -92,7 +92,7 @@ internal class NefsReaderStrategy130 : NefsReaderStrategy
 		NefsHeaderNameTable volumeNameTable;
 		using (p.BeginTask(weight, "Reading volume name table"))
 		{
-			var size = Convert.ToInt32(header.TocSize - header.VolumeNameTableStart);
+			var size = Convert.ToInt32(stream.Length - header.VolumeNameTableStart);
 			volumeNameTable = await ReadHeaderPart3Async(stream, primaryOffset + header.VolumeNameTableStart, size, p,
 				count: (int)header.NumVolumes);
 		}

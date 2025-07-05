@@ -12,7 +12,7 @@ namespace VictorBush.Ego.NefsLib.Header.Builder;
 internal class NefsItemListBuilder160(NefsHeader160 header, ILogger logger)
 	: NefsItemListBuilder<NefsHeader160>(header, logger)
 {
-	internal override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
+	internal override NefsItem BuildItem(uint entryIndex, NefsVolumeSource volume)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];
@@ -40,7 +40,7 @@ internal class NefsItemListBuilder160(NefsHeader160 header, ILogger logger)
 			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, null);
 			transform = blocks.FirstOrDefault()?.Transform ?? GetTransform(0);
 			var size = new NefsItemSize(extractedSize, blocks);
-			dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
+			dataSource = new NefsVolumeDataSource(volume, dataOffset, size);
 		}
 
 		// Create item

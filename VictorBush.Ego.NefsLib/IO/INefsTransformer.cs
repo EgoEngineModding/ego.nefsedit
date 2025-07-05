@@ -66,6 +66,19 @@ public interface INefsTransformer
 		NefsProgress p);
 
 	/// <summary>
+	/// Reverts a transform on an input data source (i.e., extract, unencrypt, etc).
+	/// </summary>
+	/// <param name="dataSource">The source containing the data to detransform.</param>
+	/// <param name="outputFile">The output file path to write to.</param>
+	/// <param name="outputOffset">The absolute offset from the beginning of the output file to write to.</param>
+	/// <param name="p">Progress info.</param>
+	Task DetransformAsync(
+		INefsDataSource dataSource,
+		string outputFile,
+		long outputOffset,
+		NefsProgress p);
+
+	/// <summary>
 	/// Transforms data from an input stream and copies it into the output stream.
 	/// </summary>
 	/// <param name="input">The stream containing data to transform.</param>

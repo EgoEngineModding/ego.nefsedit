@@ -529,13 +529,10 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			}
 
 			// Extract the file
-			await NefsTransformer.DetransformFileAsync(
-				item.DataSource.FilePath,
-				item.DataSource.Offset,
+			await NefsTransformer.DetransformAsync(
+				item.DataSource,
 				outputFilePath,
 				0,
-				item.ExtractedSize,
-				item.DataSource.Size.Chunks,
 				p);
 
 			return true;
