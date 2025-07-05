@@ -29,6 +29,7 @@ internal abstract class NefsReaderStrategy
 			NefsVersion.Version010 => new NefsReaderStrategy010(),
 			NefsVersion.Version020 => new NefsReaderStrategy020(),
 			NefsVersion.Version130 => new NefsReaderStrategy130(),
+			NefsVersion.Version140 => new NefsReaderStrategy140(),
 			NefsVersion.Version150 => new NefsReaderStrategy150(),
 			NefsVersion.Version151 => new NefsReaderStrategy151(),
 			NefsVersion.Version160 => new NefsReaderStrategy160(),

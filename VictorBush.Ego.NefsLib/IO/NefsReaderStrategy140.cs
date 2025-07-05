@@ -4,21 +4,22 @@ using Microsoft.Extensions.Logging;
 using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Version010;
 using VictorBush.Ego.NefsLib.Header.Version130;
+using VictorBush.Ego.NefsLib.Header.Version140;
 using VictorBush.Ego.NefsLib.Progress;
 
 namespace VictorBush.Ego.NefsLib.IO;
 
-internal class NefsReaderStrategy130 : NefsReaderStrategy
+internal class NefsReaderStrategy140 : NefsReaderStrategy
 {
 	private static readonly ILogger Log = NefsLog.GetLogger();
 
-	protected override NefsVersion Version => NefsVersion.Version130;
+	protected override NefsVersion Version => NefsVersion.Version140;
 
 	/// <inheritdoc />
 	public override async Task<(AesKeyHexBuffer, uint, uint)> GetAesKeyHeaderSizeAndOffset(EndianBinaryReader reader, long offset,
 		CancellationToken token = default)
 	{
-		var header = await ReadTocDataAsync<NefsTocHeader130>(reader, offset, token).ConfigureAwait(false);
+		var header = await ReadTocDataAsync<NefsTocHeader140>(reader, offset, token).ConfigureAwait(false);
 		return (header.AesKey, header.TocSize, 126);
 	}
 
@@ -29,15 +30,15 @@ internal class NefsReaderStrategy130 : NefsReaderStrategy
 		NefsWriterSettings detectedSettings,
 		NefsProgress p)
 	{
-		Log.LogInformation("Detected NeFS version 1.3.0.");
+		Log.LogInformation("Detected NeFS version 1.4.0.");
 
-		// Calc weight of each task (7 parts plus header)
-		var weight = 1.0f / 8.0f;
+		// Calc weight of each task (8 parts plus header)
+		var weight = 1.0f / 9.0f;
 
-		NefsTocHeader130 header;
+		NefsTocHeader140 header;
 		using (p.BeginTask(weight, "Reading header"))
 		{
-			header = await ReadTocDataAsync<NefsTocHeader130>(reader, primaryOffset, p.CancellationToken);
+			header = await ReadTocDataAsync<NefsTocHeader140>(reader, primaryOffset, p.CancellationToken);
 		}
 
 		NefsHeaderEntryTable010 entryTable;
@@ -92,18 +93,27 @@ internal class NefsReaderStrategy130 : NefsReaderStrategy
 		NefsHeaderNameTable volumeNameTable;
 		using (p.BeginTask(weight, "Reading volume name table"))
 		{
-			var size = Convert.ToInt32(stream.Length - header.VolumeNameTableStart);
+			var size = Convert.ToInt32(header.VolumeDataStartTableStart - header.VolumeNameTableStart);
 			volumeNameTable = await ReadHeaderPart3Async(stream, primaryOffset + header.VolumeNameTableStart, size, p,
 				count: (int)header.NumVolumes);
 		}
 
-		return new NefsHeader130(detectedSettings, header, entryTable, linkTable, nameTable, blockTable,
-			volumeSizeTable, volumeNameStartTable, volumeNameTable);
+		NefsHeaderVolumeDataStartTable140 volumeDataStartTable;
+		using (p.BeginTask(weight, "Reading volume data start table"))
+		{
+			var size = Convert.ToInt32(header.NumVolumes * NefsTocVolumeDataStart140.ByteCount);
+			volumeDataStartTable =
+				await ReadTocTableAsync<NefsHeaderVolumeDataStartTable140, NefsTocVolumeDataStart140>(reader,
+					primaryOffset + header.VolumeDataStartTableStart, size, p);
+		}
+
+		return new NefsHeader140(detectedSettings, header, entryTable, linkTable, nameTable, blockTable,
+			volumeSizeTable, volumeNameStartTable, volumeNameTable, volumeDataStartTable);
 	}
 
 	public override Task<INefsHeader> ReadHeaderAsync(EndianBinaryReader reader, long primaryOffset, int? primarySize,
 		long secondaryOffset, int? secondarySize, NefsProgress p)
 	{
-		throw new InvalidOperationException("NeFS version 1.3.0 does not support separated headers.");
+		throw new InvalidOperationException("NeFS version 1.4.0 does not support separated headers.");
 	}
 }

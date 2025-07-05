@@ -3,7 +3,7 @@
 namespace VictorBush.Ego.NefsLib.Header.Version130;
 
 /// <summary>
-/// The volume size table.
+/// The volume name start table.
 /// </summary>
 public sealed class NefsHeaderVolumeNameStartTable130 : NefsTocTable<NefsTocVolumeNameStart130>,
 	INefsTocTable<NefsHeaderVolumeNameStartTable130, NefsTocVolumeNameStart130>

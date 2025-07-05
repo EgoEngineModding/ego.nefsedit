@@ -1,111 +1,27 @@
 ﻿// See LICENSE.txt for license information.
 
-using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using VictorBush.Ego.NefsLib.DataSource;
-using VictorBush.Ego.NefsLib.Header.Version010;
 using VictorBush.Ego.NefsLib.Header.Version130;
 using VictorBush.Ego.NefsLib.Item;
 
 namespace VictorBush.Ego.NefsLib.Header.Builder;
 
 internal class NefsItemListBuilder130(NefsHeader130 header, ILogger logger)
-	: NefsItemListBuilder<NefsHeader130>(header, logger)
+	: NefsItemListBuilder010Base<NefsHeader130>(header, logger)
 {
+	/// <inheritdoc />
 	internal override NefsItem BuildItem(uint entryIndex, NefsVolumeSource volume)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];
 		var link = Header.LinkTable.GetEntryByOffset(entry.LinkOffset);
-
-		// Gather attributes
-		var attributes = CreateAttributes(entry);
-
-		// Data source
-		INefsDataSource dataSource;
-		NefsDataTransform? transform = null;
-		if (attributes.IsDirectory)
-		{
-			// Item is a directory
-			dataSource = new NefsEmptyDataSource();
-		}
-		else
-		{
-			// Offset and size
-			var dataOffset = Convert.ToInt64(entry.Start);
-			var extractedSize = entry.Size;
-
-			var numBlocks = GetNumBlocks(extractedSize);
-			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, null);
-			transform = blocks.FirstOrDefault()?.Transform ?? GetTransform(0);
-			var size = new NefsItemSize(extractedSize, blocks);
-			dataSource = new NefsVolumeDataSource(volume, dataOffset, size);
-		}
-
-		// Create item
-		var duplicateId = new NefsItemId(GetFirstDuplicateIndex(id.Index, ref entry, Header.EntryTable.Entries));
-		var parentId = new NefsItemId(link.ParentOffset / (uint)NefsTocEntry010.ByteCount);
-		var fileName = Header.GetFileName(link.NameOffset);
-		return new NefsItem(id, duplicateId, fileName, parentId, dataSource, transform, attributes);
-
-		static NefsItemAttributes CreateAttributes(NefsTocEntry010 entry)
-		{
-			Debug.Assert((entry.Flags & 0xFFE0) == 0);
-			var flags = (NefsTocEntryFlags010)entry.Flags;
-			return new NefsItemAttributes(
-				v16IsTransformed: flags.HasFlag(NefsTocEntryFlags010.Transformed),
-				isDirectory: flags.HasFlag(NefsTocEntryFlags010.Directory),
-				isDuplicated: flags.HasFlag(NefsTocEntryFlags010.Duplicated),
-				isCacheable: flags.HasFlag(NefsTocEntryFlags010.Cacheable),
-				isPatched: false,
-				part6Volume: Convert.ToUInt16(entry.Volume))
-			{
-				IsLastSibling = false
-			};
-		}
-
-		static int GetFirstDuplicateIndex(int index, ref NefsTocEntry010 entry, IReadOnlyList<NefsTocEntry010> entries)
-		{
-			const uint duplicateMask = 0x0C;
-			var duplicateFlags = entry.Flags & duplicateMask;
-			if (duplicateFlags is 0 or 8)
-			{
-				return index;
-			}
-
-			for (var i = index - 1; i >= 0; --i)
-			{
-				var prevEntry = entries[i];
-				if (prevEntry.LinkOffset != entry.LinkOffset)
-				{
-					break;
-				}
-
-				var prevDuplicateFlags = prevEntry.Flags & duplicateMask;
-				if (prevDuplicateFlags is 8)
-				{
-					return i;
-				}
-			}
-
-			throw new InvalidDataException("Invalid duplicate data.");
-		}
+		return BuildItem(id, entry, link, Header.EntryTable.Entries, volume);
 	}
 
 	protected override (uint End, uint Transformation) GetBlock(uint blockIndex)
 	{
 		var block = Header.BlockTable.Entries[Convert.ToInt32(blockIndex)];
 		return (block.End, block.Transformation);
-	}
-
-	protected override NefsDataTransformType GetTransformType(uint blockTransformation)
-	{
-		return blockTransformation switch
-		{
-			0 => NefsDataTransformType.None,
-			1 => NefsDataTransformType.Lzss,
-			4 => NefsDataTransformType.Aes,
-			_ => (NefsDataTransformType)(-1)
-		};
 	}
 }
