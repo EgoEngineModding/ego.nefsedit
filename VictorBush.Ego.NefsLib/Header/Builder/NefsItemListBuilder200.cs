@@ -63,10 +63,10 @@ internal class NefsItemListBuilder200(NefsHeader200 header, ILogger logger)
 				v20IsZlib: flags.HasFlag(NefsTocEntryFlags200.IsZlib),
 				v20IsAes: flags.HasFlag(NefsTocEntryFlags200.IsAes),
 				isDirectory: flags.HasFlag(NefsTocEntryFlags200.IsDirectory),
-				isDuplicated: flags.HasFlag(NefsTocEntryFlags200.IsDuplicated),
-				part6Volume: entry.Volume)
+				isDuplicated: flags.HasFlag(NefsTocEntryFlags200.IsDuplicated))
 			{
-				IsLastSibling = flags.HasFlag(NefsTocEntryFlags200.LastSibling)
+				IsLastSibling = flags.HasFlag(NefsTocEntryFlags200.LastSibling),
+				Volume = entry.Volume
 			};
 		}
 	}

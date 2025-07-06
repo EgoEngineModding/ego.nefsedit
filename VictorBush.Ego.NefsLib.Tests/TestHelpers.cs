@@ -114,8 +114,8 @@ internal static class TestHelpers
 		NefsItemType type)
 	{
 		var attributes = new NefsItemAttributes(
-			isDirectory: type == NefsItemType.Directory,
-			v16IsTransformed: true);
+			isDirectory: type == NefsItemType.Directory)
+			{ IsTransformed = true };
 
 		var transform = TestTransform;
 		var chunks = NefsDataChunk.CreateChunkList(chunkSizes, transform);

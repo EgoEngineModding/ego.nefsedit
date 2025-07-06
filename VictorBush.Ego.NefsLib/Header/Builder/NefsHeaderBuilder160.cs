@@ -159,7 +159,7 @@ internal class NefsHeaderBuilder160 : NefsHeaderBuilder160Base<NefsHeader160>
 	protected override ushort GetItemFlags(NefsItem item)
 	{
 		var flags = NefsTocEntryFlags150.None;
-		flags |= item.Attributes.V16IsTransformed ? NefsTocEntryFlags150.Transformed : 0;
+		flags |= item.Attributes.IsTransformed ? NefsTocEntryFlags150.Transformed : 0;
 		flags |= item.Attributes.IsDirectory ? NefsTocEntryFlags150.Directory : 0;
 		flags |= item.Attributes.IsDuplicated ? NefsTocEntryFlags150.Duplicated : 0;
 		flags |= item.Attributes.IsCacheable ? NefsTocEntryFlags150.Cacheable : 0;

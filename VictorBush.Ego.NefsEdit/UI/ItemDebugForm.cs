@@ -79,7 +79,7 @@ internal partial class ItemDebugForm : DockContent
 		        0x00:                       {p6.Volume.ToString("X")}
 		        0x02:                       {p6.Flags.ToString("X")}
 
-		        IsTransformed:              {attributes.V16IsTransformed}
+		        IsTransformed:              {attributes.IsTransformed}
 		        IsDirectory:                {attributes.IsDirectory}
 		        IsDuplicated:               {attributes.IsDuplicated}
 		        IsCacheable:                {attributes.IsCacheable}

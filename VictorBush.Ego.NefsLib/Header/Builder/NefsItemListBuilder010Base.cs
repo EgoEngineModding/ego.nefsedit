@@ -37,7 +37,7 @@ internal abstract class NefsItemListBuilder010Base<T>(T header, ILogger logger)
 			var extractedSize = entry.Size;
 
 			var numBlocks = GetNumBlocks(extractedSize);
-			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, null);
+			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, attributes.IsTransformed ? null : GetTransform(0));
 			transform = blocks.FirstOrDefault()?.Transform ?? GetTransform(0);
 			var size = new NefsItemSize(extractedSize, blocks);
 			dataSource = new NefsVolumeDataSource(volumes[(int)entry.Volume], dataOffset, size);
@@ -54,14 +54,14 @@ internal abstract class NefsItemListBuilder010Base<T>(T header, ILogger logger)
 			Debug.Assert((entry.Flags & 0xFFE0) == 0);
 			var flags = (NefsTocEntryFlags010)entry.Flags;
 			return new NefsItemAttributes(
-				v16IsTransformed: flags.HasFlag(NefsTocEntryFlags010.Transformed),
 				isDirectory: flags.HasFlag(NefsTocEntryFlags010.Directory),
 				isDuplicated: flags.HasFlag(NefsTocEntryFlags010.Duplicated),
 				isCacheable: flags.HasFlag(NefsTocEntryFlags010.Cacheable),
-				isPatched: false,
-				part6Volume: Convert.ToUInt16(entry.Volume))
+				isPatched: false)
 			{
-				IsLastSibling = false
+				IsTransformed = flags.HasFlag(NefsTocEntryFlags010.Transformed),
+				IsLastSibling = false,
+				Volume = Convert.ToUInt16(entry.Volume)
 			};
 		}
 
