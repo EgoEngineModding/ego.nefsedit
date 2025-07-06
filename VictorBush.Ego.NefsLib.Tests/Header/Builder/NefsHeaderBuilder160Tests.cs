@@ -27,12 +27,12 @@ public class NefsHeaderBuilder160Tests
 		var items = new NefsItemList(@"C:\archive.nefs");
 
 		var file1Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 11, 12, 13 }, TestHelpers.TestTransform);
-		var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, file1Chunks));
+		var file1DataSource = new NefsVolumeDataSource(items, 123, new NefsItemSize(456, file1Chunks));
 		var file1 = TestHelpers.CreateFile(0, 0, "file1", file1DataSource);
 		items.Add(file1);
 
 		var file2Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 14, 15, 16 }, TestHelpers.TestTransform);
-		var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, file2Chunks));
+		var file2DataSource = new NefsVolumeDataSource(items, 456, new NefsItemSize(789, file2Chunks));
 		var file2 = TestHelpers.CreateFile(1, 1, "file2", file2DataSource);
 		items.Add(file2);
 
@@ -40,7 +40,7 @@ public class NefsHeaderBuilder160Tests
 		items.Add(dir1);
 
 		var file3Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 22, 23, 24 }, TestHelpers.TestTransform);
-		var file3DataSource = new NefsItemListDataSource(items, 222, new NefsItemSize(333, file3Chunks));
+		var file3DataSource = new NefsVolumeDataSource(items, 222, new NefsItemSize(333, file3Chunks));
 		var file3 = TestHelpers.CreateFile(3, dir1.Id.Value, "file3", file3DataSource);
 		items.Add(file3);
 
@@ -114,15 +114,15 @@ public class NefsHeaderBuilder160Tests
 		var items = new NefsItemList(@"C:\archive.nefs");
 
 		var item1Attributes = new NefsItemAttributes(
-			v16IsTransformed: true,
 			isDirectory: true,
 			isDuplicated: true,
 			isCacheable: true,
 			isPatched: true)
 		{
+			IsTransformed = true,
 			IsLastSibling = true
 		};
-		var item1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456));
+		var item1DataSource = new NefsVolumeDataSource(items, 123, new NefsItemSize(456));
 		var item1 = new NefsItem(new NefsItemId(0), "file1", new NefsItemId(0), item1DataSource, TestHelpers.TestTransform, item1Attributes);
 		items.Add(item1);
 
@@ -137,23 +137,23 @@ public class NefsHeaderBuilder160Tests
 	{
 		var items = new NefsItemList(@"C:\archive.nefs");
 
-		var file1Attributes = new NefsItemAttributes(
-			part6Volume: 12);
+		var file1Attributes = new NefsItemAttributes
+			{ Volume = 12};
 		var file1Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 11, 12, 13 }, TestHelpers.TestTransform);
-		var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, file1Chunks));
+		var file1DataSource = new NefsVolumeDataSource(items, 123, new NefsItemSize(456, file1Chunks));
 		var file1 = new NefsItem(new NefsItemId(0), "file1", new NefsItemId(0), file1DataSource, TestHelpers.TestTransform, file1Attributes);
 		items.Add(file1);
 
-		var file2Attributes = new NefsItemAttributes(
-			part6Volume: 6);
+		var file2Attributes = new NefsItemAttributes
+			{ Volume = 6 };
 		var file2Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 14, 15, 16 }, TestHelpers.TestTransform);
-		var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, file2Chunks));
+		var file2DataSource = new NefsVolumeDataSource(items, 456, new NefsItemSize(789, file2Chunks));
 		var file2 = new NefsItem(new NefsItemId(1), "file2", new NefsItemId(1), file2DataSource, TestHelpers.TestTransform, file2Attributes);
 		items.Add(file2);
 
 		var dir1Attributes = new NefsItemAttributes(
-			isDirectory: true,
-			part6Volume: 1);
+			isDirectory: true)
+			{ Volume = 1 };
 		var dir1DataSource = new NefsEmptyDataSource();
 		var dir1 = new NefsItem(new NefsItemId(2), "dir1", new NefsItemId(2), dir1DataSource, null, dir1Attributes);
 		items.Add(dir1);
@@ -169,19 +169,19 @@ public class NefsHeaderBuilder160Tests
 		file1
 		*/
 
-		Assert.Equal(file1Attributes.Part6Volume, p6.Entries[file1.Id.Index].Volume);
+		Assert.Equal(file1Attributes.Volume, p6.Entries[file1.Id.Index].Volume);
 
 		/*
 		file2
 		*/
 
-		Assert.Equal(file2Attributes.Part6Volume, p6.Entries[file2.Id.Index].Volume);
+		Assert.Equal(file2Attributes.Volume, p6.Entries[file2.Id.Index].Volume);
 
 		/*
 		dir1
 		*/
 
-		Assert.Equal(dir1Attributes.Part6Volume, p6.Entries[dir1.Id.Index].Volume);
+		Assert.Equal(dir1Attributes.Volume, p6.Entries[dir1.Id.Index].Volume);
 		Assert.True(((NefsTocEntryFlags150)p6.Entries[dir1.Id.Index].Flags).HasFlag(NefsTocEntryFlags150.Directory));
 	}
 
@@ -201,13 +201,13 @@ public class NefsHeaderBuilder160Tests
 
 		var file1Id = new NefsItemId(0);
 		var file1Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 11, 12, 13 }, TestHelpers.TestTransform);
-		var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, file1Chunks));
+		var file1DataSource = new NefsVolumeDataSource(items, 123, new NefsItemSize(456, file1Chunks));
 		var file1 = TestHelpers.CreateFile(file1Id.Value, file1Id.Value, "file1", file1DataSource);
 		items.Add(file1);
 
 		var file2Id = new NefsItemId(1);
 		var file2Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 14, 15, 16 }, TestHelpers.TestTransform);
-		var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, file2Chunks));
+		var file2DataSource = new NefsVolumeDataSource(items, 456, new NefsItemSize(789, file2Chunks));
 		var file2 = TestHelpers.CreateFile(file2Id.Value, file2Id.Value, "file2", file2DataSource);
 		items.Add(file2);
 

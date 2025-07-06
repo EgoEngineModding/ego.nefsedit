@@ -12,7 +12,8 @@ namespace VictorBush.Ego.NefsLib.Header.Builder;
 internal class NefsItemListBuilder200(NefsHeader200 header, ILogger logger)
 	: NefsItemListBuilder<NefsHeader200>(header, logger)
 {
-	internal override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
+	/// <inheritdoc />
+	internal override NefsItem BuildItem(uint entryIndex, NefsItemList itemList)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];
@@ -38,7 +39,7 @@ internal class NefsItemListBuilder200(NefsHeader200 header, ILogger logger)
 		{
 			// Item is not transformed
 			var size = new NefsItemSize(extractedSize);
-			dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
+			dataSource = new NefsVolumeDataSource(itemList.Volumes[entryWritable.Volume], dataOffset, size);
 		}
 		else
 		{
@@ -46,7 +47,7 @@ internal class NefsItemListBuilder200(NefsHeader200 header, ILogger logger)
 			var numBlocks = GetNumBlocks(extractedSize);
 			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, transform);
 			var size = new NefsItemSize(extractedSize, blocks);
-			dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
+			dataSource = new NefsVolumeDataSource(itemList.Volumes[entryWritable.Volume], dataOffset, size);
 		}
 
 		// Create item
@@ -63,20 +64,22 @@ internal class NefsItemListBuilder200(NefsHeader200 header, ILogger logger)
 				v20IsZlib: flags.HasFlag(NefsTocEntryFlags200.IsZlib),
 				v20IsAes: flags.HasFlag(NefsTocEntryFlags200.IsAes),
 				isDirectory: flags.HasFlag(NefsTocEntryFlags200.IsDirectory),
-				isDuplicated: flags.HasFlag(NefsTocEntryFlags200.IsDuplicated),
-				part6Volume: entry.Volume)
+				isDuplicated: flags.HasFlag(NefsTocEntryFlags200.IsDuplicated))
 			{
-				IsLastSibling = flags.HasFlag(NefsTocEntryFlags200.LastSibling)
+				IsLastSibling = flags.HasFlag(NefsTocEntryFlags200.LastSibling),
+				Volume = entry.Volume
 			};
 		}
 	}
 
+	/// <inheritdoc />
 	protected override (uint End, uint Transformation) GetBlock(uint blockIndex)
 	{
 		var block = Header.BlockTable.Entries[Convert.ToInt32(blockIndex)];
 		return (block.End, uint.MaxValue);
 	}
 
+	/// <inheritdoc />
 	protected override NefsDataTransformType GetTransformType(uint blockTransformation)
 	{
 		// Blocks don't have transforms in this version

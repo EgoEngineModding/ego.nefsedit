@@ -1,5 +1,6 @@
 ﻿// See LICENSE.txt for license information.
 
+using System.IO.Abstractions;
 using VictorBush.Ego.NefsLib.Item;
 
 namespace VictorBush.Ego.NefsLib.DataSource;
@@ -20,4 +21,16 @@ public class NefsEmptyDataSource : INefsDataSource
 
 	/// <inheritdoc/>
 	public NefsItemSize Size => new(0);
+
+	/// <inheritdoc />
+	public Stream OpenRead(IFileSystem fileSystem)
+	{
+		throw new NotSupportedException("Empty data source cannot be opened.");
+	}
+
+	/// <inheritdoc />
+	public bool Exists(IFileSystem fileSystem)
+	{
+		return false;
+	}
 }

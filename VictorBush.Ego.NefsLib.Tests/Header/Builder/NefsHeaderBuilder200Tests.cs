@@ -24,12 +24,12 @@ public class NefsHeaderBuilder200Tests
 		var items = new NefsItemList(@"C:\archive.nefs");
 
 		var file1Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 1, 11, 21 }, TestHelpers.TestTransform);
-		var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, file1Chunks));
+		var file1DataSource = new NefsVolumeDataSource(items, 123, new NefsItemSize(456, file1Chunks));
 		this.file1 = TestHelpers.CreateFile(0, 0, "file1", file1DataSource);
 		items.Add(this.file1);
 
 		var file2Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 2, 22, 52 }, TestHelpers.TestTransform);
-		var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, file2Chunks));
+		var file2DataSource = new NefsVolumeDataSource(items, 456, new NefsItemSize(789, file2Chunks));
 		this.file2 = TestHelpers.CreateFile(1, 1, "file2", file2DataSource);
 		items.Add(this.file2);
 
@@ -37,11 +37,11 @@ public class NefsHeaderBuilder200Tests
 		items.Add(this.dir1);
 
 		var file3Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 3, 13, 23 }, TestHelpers.TestTransform);
-		var file3DataSource = new NefsItemListDataSource(items, 222, new NefsItemSize(333, file3Chunks));
+		var file3DataSource = new NefsVolumeDataSource(items, 222, new NefsItemSize(333, file3Chunks));
 		this.file3 = TestHelpers.CreateFile(3, this.dir1.Id.Value, "file3", file3DataSource);
 		items.Add(this.file3);
 
-		var file4DataSource = new NefsItemListDataSource(items, 777, new NefsItemSize(444));
+		var file4DataSource = new NefsVolumeDataSource(items, 777, new NefsItemSize(444));
 		this.file4NotCompressed = TestHelpers.CreateFile(4, this.dir1.Id.Value, "file4", file4DataSource);
 		items.Add(this.file4NotCompressed);
 
@@ -63,12 +63,12 @@ public class NefsHeaderBuilder200Tests
 		var items = new NefsItemList(@"C:\archive.nefs");
 
 		var file1Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 11, 12, 13 }, TestHelpers.TestTransform);
-		var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, file1Chunks));
+		var file1DataSource = new NefsVolumeDataSource(items, 123, new NefsItemSize(456, file1Chunks));
 		var file1 = TestHelpers.CreateFile(0, 0, "file1", file1DataSource);
 		items.Add(file1);
 
 		var file2Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 14, 15, 16 }, TestHelpers.TestTransform);
-		var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, file2Chunks));
+		var file2DataSource = new NefsVolumeDataSource(items, 456, new NefsItemSize(789, file2Chunks));
 		var file2 = TestHelpers.CreateFile(1, 1, "file2", file2DataSource);
 		items.Add(file2);
 
@@ -176,7 +176,7 @@ public class NefsHeaderBuilder200Tests
 		{
 			IsLastSibling = true
 		};
-		var item1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456));
+		var item1DataSource = new NefsVolumeDataSource(items, 123, new NefsItemSize(456));
 		var item1 = new NefsItem(new NefsItemId(0), "file1", new NefsItemId(0), item1DataSource, TestHelpers.TestTransform, item1Attributes);
 		items.Add(item1);
 

@@ -127,7 +127,7 @@ internal class TestArchiveNotModified
 
 		var file1Attributes = new NefsItemAttributes(v20IsZlib: true);
 		var file1Chunks = NefsDataChunk.CreateChunkList(File1ChunkSizes, TestHelpers.TestTransform);
-		var file1DataSource = new NefsItemListDataSource(items, (long)File1Offset, new NefsItemSize(File1ExtractedSize, file1Chunks));
+		var file1DataSource = new NefsVolumeDataSource(items, (long)File1Offset, new NefsItemSize(File1ExtractedSize, file1Chunks));
 		var file1 = new NefsItem(new NefsItemId(File1ItemId), File1Name, new NefsItemId(File1DirectoryId), file1DataSource, TestHelpers.TestTransform, file1Attributes);
 		items.Add(file1);
 
@@ -138,19 +138,19 @@ internal class TestArchiveNotModified
 
 		var file2Attributes = new NefsItemAttributes(v20IsZlib: true);
 		var file2Chunks = NefsDataChunk.CreateChunkList(File2ChunkSizes, TestHelpers.TestTransform);
-		var file2DataSource = new NefsItemListDataSource(items, (long)File2Offset, new NefsItemSize(File2ExtractedSize, file2Chunks));
+		var file2DataSource = new NefsVolumeDataSource(items, (long)File2Offset, new NefsItemSize(File2ExtractedSize, file2Chunks));
 		var file2 = new NefsItem(new NefsItemId(File2ItemId), File2Name, new NefsItemId(File2DirectoryId), file2DataSource, TestHelpers.TestTransform, file2Attributes);
 		items.Add(file2);
 
 		var file3Attributes = new NefsItemAttributes();
 		var file3Transform = new NefsDataTransform(File3ExtractedSize);
 		var file3Chunks = NefsDataChunk.CreateChunkList(File3ChunkSizes, file3Transform);
-		var file3DataSource = new NefsItemListDataSource(items, (long)File3Offset, new NefsItemSize(File3ExtractedSize, file3Chunks));
+		var file3DataSource = new NefsVolumeDataSource(items, (long)File3Offset, new NefsItemSize(File3ExtractedSize, file3Chunks));
 		var file3 = new NefsItem(new NefsItemId(File3ItemId), File3Name, new NefsItemId(File3DirectoryId), file3DataSource, file3Transform, file3Attributes);
 		items.Add(file3);
 
 		var file4Attributes = new NefsItemAttributes(v20IsZlib: true);
-		var file4DataSource = new NefsItemListDataSource(items, (long)File4Offset, new NefsItemSize(File4ExtractedSize));
+		var file4DataSource = new NefsVolumeDataSource(items, (long)File4Offset, new NefsItemSize(File4ExtractedSize));
 		var file4 = new NefsItem(new NefsItemId(File4ItemId), File4Name, new NefsItemId(File4DirectoryId), file4DataSource, null, file4Attributes);
 		items.Add(file4);
 

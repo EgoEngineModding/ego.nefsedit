@@ -80,7 +80,7 @@ public sealed record RecentFile
 		switch (Type)
 		{
 			case nameof(StandardSource):
-				return $"{Path.GetFileName(StandardFilePath)}";
+				return $"{Path.GetFileName(StandardFilePath)} [{Path.GetDirectoryName(StandardFilePath)}]";
 
 			case "GameDatSource":
 				return $"[Headless] {Path.GetFileName(GameDatDataFilePath)} [{GameDatPrimaryOffset}|{GameDatSecondaryOffset}]";

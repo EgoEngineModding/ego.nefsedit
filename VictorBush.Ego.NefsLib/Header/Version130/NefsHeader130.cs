@@ -1,20 +1,23 @@
 // See LICENSE.txt for license information.
 
+using VictorBush.Ego.NefsLib.Header.Version010;
 using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Utility;
 
-namespace VictorBush.Ego.NefsLib.Header.Version010;
+namespace VictorBush.Ego.NefsLib.Header.Version130;
 
 /// <inheritdoc cref="INefsHeader" />
-public sealed class NefsHeader010 : INefsHeader
+public sealed class NefsHeader130 : INefsHeader
 {
 	public NefsWriterSettings WriterSettings { get; }
-	public NefsTocHeader010 Intro { get; }
+	public NefsTocHeader130 Intro { get; }
 	public NefsHeaderEntryTable010 EntryTable { get; }
 	public NefsHeaderLinkTable010 LinkTable { get; }
 	public NefsHeaderNameTable NameTable { get; }
 	public NefsHeaderBlockTable010 BlockTable { get; }
 	public NefsHeaderVolumeSizeTable010 VolumeSizeTable { get; }
+	public NefsHeaderVolumeNameStartTable130 VolumeNameStartTable { get; }
+	public NefsHeaderNameTable VolumeNameTable { get; }
 
 	/// <inheritdoc />
 	public NefsVersion Version => (NefsVersion)Intro.Version;
@@ -26,7 +29,7 @@ public sealed class NefsHeader010 : INefsHeader
 	public bool IsEncrypted => WriterSettings.IsEncrypted;
 
 	/// <inheritdoc />
-	public byte[] AesKey => [];
+	public byte[] AesKey => Intro.AesKey.GetAesKey();
 
 	/// <inheritdoc />
 	public Sha256Hash Hash => new();
@@ -38,7 +41,7 @@ public sealed class NefsHeader010 : INefsHeader
 	public uint BlockSize => Intro.BlockSize;
 
 	/// <inheritdoc />
-	public uint SplitSize => 0;
+	public uint SplitSize => Intro.SplitSize;
 
 	/// <inheritdoc />
 	public uint NumEntries => (uint)EntryTable.Entries.Count;
@@ -47,16 +50,18 @@ public sealed class NefsHeader010 : INefsHeader
 	public IReadOnlyList<VolumeInfo> Volumes { get; }
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="NefsHeader010"/> class.
+	/// Initializes a new instance of the <see cref="NefsHeader130"/> class.
 	/// </summary>
-	public NefsHeader010(
+	public NefsHeader130(
 		NefsWriterSettings writerSettings,
-		NefsTocHeader010 header,
+		NefsTocHeader130 header,
 		NefsHeaderEntryTable010 entryTable,
 		NefsHeaderLinkTable010 sharedEntryInfoTable,
 		NefsHeaderNameTable nameTable,
 		NefsHeaderBlockTable010 blockTable,
-		NefsHeaderVolumeSizeTable010 volumeSizeTable)
+		NefsHeaderVolumeSizeTable010 volumeSizeTable,
+		NefsHeaderVolumeNameStartTable130 volumeNameStartTable,
+		NefsHeaderNameTable volumeNameTable)
 	{
 		WriterSettings = writerSettings;
 		Intro = header;
@@ -65,13 +70,27 @@ public sealed class NefsHeader010 : INefsHeader
 		NameTable = nameTable;
 		BlockTable = blockTable;
 		VolumeSizeTable = volumeSizeTable;
+		VolumeNameStartTable = volumeNameStartTable;
+		VolumeNameTable = volumeNameTable;
 
-		Volumes = VolumeSizeTable.Entries.Select((x, i) => new VolumeInfo
+		var volumes = new VolumeInfo[Intro.NumVolumes];
+		Volumes = volumes;
+		for (var i = 0; i < volumes.Length; ++i)
 		{
-			Size = x.Size,
-			Name = i.ToString(),
-			DataOffset = i == 0 ? Intro.TocSize : 0
-		}).ToArray();
+			// Perhaps a bug in CM's code?
+			var nameStart = volumeNameStartTable.Entries[i].Start;
+			if (!VolumeNameTable.FileNamesByOffset.TryGetValue(nameStart, out var name))
+			{
+				name = VolumeNameTable.FileNamesByOffset[nameStart - 1];
+			}
+
+			volumes[i] = new VolumeInfo
+			{
+				Size = VolumeSizeTable.Entries[i].Size,
+				Name = name,
+				DataOffset = i == 0 ? Intro.TocSize : 0
+			};
+		}
 	}
 
 	/// <inheritdoc />

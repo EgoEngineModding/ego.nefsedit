@@ -10,14 +10,15 @@ internal class NefsItemListBuilder150(NefsHeader150 header, ILogger logger)
 	: NefsItemListBuilder150Base<NefsHeader150>(header, logger)
 {
 	/// <inheritdoc />
-	internal override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
+	internal override NefsItem BuildItem(uint entryIndex, NefsItemList itemList)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];
 		var sharedEntryInfo = Header.SharedEntryInfoTable.Entries[Convert.ToInt32(entry.SharedInfo)];
-		return BuildItem(id, entry, sharedEntryInfo, dataSourceList);
+		return BuildItem(id, entry, sharedEntryInfo, itemList);
 	}
 
+	/// <inheritdoc />
 	protected override (uint End, uint Transformation) GetBlock(uint blockIndex)
 	{
 		var block = Header.BlockTable.Entries[Convert.ToInt32(blockIndex)];

@@ -428,6 +428,7 @@
             | System.Windows.Forms.AnchorStyles.Left)
             | System.Windows.Forms.AnchorStyles.Right)));
             this.recentListBox.FormattingEnabled = true;
+            this.recentListBox.HorizontalScrollbar = true;
             this.recentListBox.ItemHeight = 20;
             this.recentListBox.Location = new System.Drawing.Point(5, 6);
             this.recentListBox.Margin = new System.Windows.Forms.Padding(3, 2, 3, 2);

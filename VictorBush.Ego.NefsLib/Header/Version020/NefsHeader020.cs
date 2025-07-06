@@ -39,6 +39,9 @@ public sealed class NefsHeader020 : INefsHeader
 	public uint BlockSize => Intro.BlockSize;
 
 	/// <inheritdoc />
+	public uint SplitSize => 0;
+
+	/// <inheritdoc />
 	public uint NumEntries => (uint)EntryTable.Entries.Count;
 
 	/// <inheritdoc />
@@ -54,7 +57,7 @@ public sealed class NefsHeader020 : INefsHeader
 		NefsHeaderLinkTable010 sharedEntryInfoTable,
 		NefsHeaderNameTable nameTable,
 		NefsHeaderBlockTable010 blockTable,
-		NefsHeaderVolumeSizeTable010 volumeInfoTable)
+		NefsHeaderVolumeSizeTable010 volumeSizeTable)
 	{
 		WriterSettings = writerSettings;
 		Intro = header;
@@ -62,13 +65,13 @@ public sealed class NefsHeader020 : INefsHeader
 		LinkTable = sharedEntryInfoTable;
 		NameTable = nameTable;
 		BlockTable = blockTable;
-		VolumeSizeTable = volumeInfoTable;
+		VolumeSizeTable = volumeSizeTable;
 
-		Volumes = VolumeSizeTable.Entries.Select(x => new VolumeInfo
+		Volumes = VolumeSizeTable.Entries.Select((x, i) => new VolumeInfo
 		{
 			Size = x.Size,
-			Name = string.Empty,
-			DataOffset = Intro.TocSize
+			Name = i.ToString(),
+			DataOffset = i == 0 ? Intro.TocSize : 0
 		}).ToArray();
 	}
 

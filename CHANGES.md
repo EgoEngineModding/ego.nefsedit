@@ -1,5 +1,10 @@
 # Changelog
 
+## Unreleased
+- Added support for reading NeFS versions 0.1.0, 0.2.0, 1.3.0, 1.4.0, 1.5.0, 1.5.1
+- Added support for reading split data and multiple volume archives
+- Added support for reading big-endian NeFS headers
+
 ## Version 0.6.0
 - Added support for NeFS version 1.6.
 - Added recent files list and improved open file dialog.
@@ -12,9 +17,9 @@
 - Added ability to close an archive.
 - Added archive and item debug output views.
 - Fixed "Extract To" to extract directly to the location specified.
-- Fixed/improved intepretation of various NeFS header fields.
+- Fixed/improved interpretation of various NeFS header fields.
 - Replaced Archive Details pane with an Archive Debug view.
-- Refactored NefsEdit and NefsLib substantially. 
+- Refactored NefsEdit and NefsLib substantially.
 - Improved application/library separation.
 - Added various unit tests.
 - Switched to Serilog for logging.

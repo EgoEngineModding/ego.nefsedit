@@ -1,6 +1,7 @@
 // See LICENSE.txt for license information.
 
 using System.Diagnostics;
+using VictorBush.Ego.NefsLib.DataSource;
 
 namespace VictorBush.Ego.NefsLib.Item;
 
@@ -14,13 +15,9 @@ public sealed class NefsItemList : ICloneable
 	private readonly List<ItemContainer> rootItems = [];
 
 	/// <summary>
-	/// Initializes a new instance of the <see cref="NefsItemList"/> class.
+	/// Gets the volume sources that contain the item data.
 	/// </summary>
-	/// <param name="dataFilePath">The path to the file that contains the item data.</param>
-	public NefsItemList(string dataFilePath)
-	{
-		DataFilePath = dataFilePath;
-	}
+	public IReadOnlyList<NefsVolumeSource> Volumes { get; private set; }
 
 	/// <summary>
 	/// Gets the number of items in the list.
@@ -28,14 +25,33 @@ public sealed class NefsItemList : ICloneable
 	public int Count => this.itemsById.Count;
 
 	/// <summary>
-	/// The name of the data file (without directory path, but with extension).
+	/// Initializes a new instance of the <see cref="NefsItemList"/> class.
 	/// </summary>
-	public string DataFileName => Path.GetFileName(DataFilePath);
+	/// <param name="dataFilePath">The path to the file that contains the item data.</param>
+	/// <remarks>Used for testing purposes.</remarks>
+	internal NefsItemList(string dataFilePath) : this([new NefsVolumeSource(dataFilePath, 0, 0)])
+	{
+	}
 
 	/// <summary>
-	/// Gets the path to the file that contains the item data for the archive. Usually this is the NeFS archive file.
+	/// Initializes a new instance of the <see cref="NefsItemList"/> class.
 	/// </summary>
-	public string DataFilePath { get; }
+	/// <param name="volumes">The volume sources that contain the item data.</param>
+	public NefsItemList(IReadOnlyList<NefsVolumeSource> volumes)
+	{
+		ArgumentOutOfRangeException.ThrowIfLessThan(volumes.Count, 1);
+		Volumes = volumes;
+	}
+
+	/// <summary>
+	/// Update the volume sources to the given list.
+	/// </summary>
+	/// <param name="volumes">The volume sources that contain the item data.</param>
+	internal void UpdateVolumes(IReadOnlyList<NefsVolumeSource> volumes)
+	{
+		ArgumentOutOfRangeException.ThrowIfLessThan(volumes.Count, 1);
+		Volumes = volumes;
+	}
 
 	/// <summary>
 	/// Adds the item to this list.
@@ -54,16 +70,15 @@ public sealed class NefsItemList : ICloneable
 					$"The item's first duplicate id {item.FirstDuplicateId} does not exist. The first duplicate must be added to the list before the next duplicates.");
 			}
 
-			if (existingContainer.Self.Type is not NefsItemType.File)
+			// 1.3.0 has folder duplicates. handle them as normal for now and only treat files specially
+			if (existingContainer.Self.Type is NefsItemType.File)
 			{
-				throw new ArgumentException("The item's primary duplicate must be a file.", nameof(item));
+				// TODO: validate file name, blocks, etc. are same
+				Debug.Assert(item.Id > item.FirstDuplicateId);
+				existingContainer.Duplicates.Add(item);
+				this.itemsById.Add(item.Id, item);
+				return;
 			}
-
-			// TODO: validate file name, blocks, etc. are same
-			Debug.Assert(item.Id > item.FirstDuplicateId);
-			existingContainer.Duplicates.Add(item);
-			this.itemsById.Add(item.Id, item);
-			return;
 		}
 
 		// Create a container for the item
@@ -115,7 +130,7 @@ public sealed class NefsItemList : ICloneable
 	public object Clone()
 	{
 		// Create new list
-		var newList = new NefsItemList(DataFilePath);
+		var newList = new NefsItemList(Volumes);
 
 		// Clone each item and add to new list
 		foreach (var item in EnumerateDepthFirstByName())

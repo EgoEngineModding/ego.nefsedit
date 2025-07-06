@@ -12,7 +12,8 @@ namespace VictorBush.Ego.NefsLib.Header.Builder;
 internal class NefsItemListBuilder160(NefsHeader160 header, ILogger logger)
 	: NefsItemListBuilder<NefsHeader160>(header, logger)
 {
-	internal override NefsItem BuildItem(uint entryIndex, NefsItemList dataSourceList)
+	/// <inheritdoc />
+	internal override NefsItem BuildItem(uint entryIndex, NefsItemList itemList)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];
@@ -37,10 +38,10 @@ internal class NefsItemListBuilder160(NefsHeader160 header, ILogger logger)
 			var extractedSize = sharedEntryInfo.Size;
 
 			var numBlocks = GetNumBlocks(extractedSize);
-			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, null);
+			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, attributes.IsTransformed ? null : GetTransform(0));
 			transform = blocks.FirstOrDefault()?.Transform ?? GetTransform(0);
 			var size = new NefsItemSize(extractedSize, blocks);
-			dataSource = new NefsItemListDataSource(dataSourceList, dataOffset, size);
+			dataSource = new NefsVolumeDataSource(itemList.Volumes[entryWritable.Volume], dataOffset, size);
 		}
 
 		// Create item
@@ -54,24 +55,26 @@ internal class NefsItemListBuilder160(NefsHeader160 header, ILogger logger)
 			Debug.Assert((entry.Flags & 0xFFE0) == 0);
 			var flags = (NefsTocEntryFlags150)entry.Flags;
 			return new NefsItemAttributes(
-				v16IsTransformed: flags.HasFlag(NefsTocEntryFlags150.Transformed),
 				isDirectory: flags.HasFlag(NefsTocEntryFlags150.Directory),
 				isDuplicated: flags.HasFlag(NefsTocEntryFlags150.Duplicated),
 				isCacheable: flags.HasFlag(NefsTocEntryFlags150.Cacheable),
-				isPatched: flags.HasFlag(NefsTocEntryFlags150.Patched),
-				part6Volume: entry.Volume)
+				isPatched: flags.HasFlag(NefsTocEntryFlags150.Patched))
 			{
-				IsLastSibling = flags.HasFlag(NefsTocEntryFlags150.LastSibling)
+				IsTransformed = flags.HasFlag(NefsTocEntryFlags150.Transformed),
+				IsLastSibling = flags.HasFlag(NefsTocEntryFlags150.LastSibling),
+				Volume = entry.Volume
 			};
 		}
 	}
 
+	/// <inheritdoc />
 	protected override (uint End, uint Transformation) GetBlock(uint blockIndex)
 	{
 		var block = Header.BlockTable.Entries[Convert.ToInt32(blockIndex)];
 		return (block.End, block.Transformation);
 	}
 
+	/// <inheritdoc />
 	protected override NefsDataTransformType GetTransformType(uint blockTransformation)
 	{
 		return blockTransformation switch

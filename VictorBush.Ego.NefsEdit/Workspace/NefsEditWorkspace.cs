@@ -392,7 +392,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			return false;
 		}
 
-		var fileName = Path.GetFileName(Archive.Items.DataFilePath);
+		var fileName = Path.GetFileName(Archive.Items.Volumes[0].FilePath);
 		var fileExt = Path.GetExtension(fileName);
 		var filter = $"*{fileExt}|*{fileExt}";
 
@@ -485,6 +485,12 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			return false;
 		}
 
+		if (Archive.Header.Volumes.Count > 1)
+		{
+			UiService.ShowMessageBox("Saving archives with 2+ volumes is not implemented.", icon: MessageBoxIcon.Error);
+			return false;
+		}
+
 		Log.LogInformation("----------------------------");
 		Log.LogInformation($"Writing archive: {filePath}.");
 		var result = false;
@@ -529,13 +535,10 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			}
 
 			// Extract the file
-			await NefsTransformer.DetransformFileAsync(
-				item.DataSource.FilePath,
-				item.DataSource.Offset,
+			await NefsTransformer.DetransformAsync(
+				item.DataSource,
 				outputFilePath,
 				0,
-				item.ExtractedSize,
-				item.DataSource.Size.Chunks,
 				p);
 
 			return true;

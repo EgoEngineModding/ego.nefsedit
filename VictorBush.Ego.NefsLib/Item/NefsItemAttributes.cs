@@ -14,28 +14,22 @@ public readonly record struct NefsItemAttributes
 	/// <param name="isDirectory">Indicates if item is directory.</param>
 	/// <param name="isDuplicated">Indicates if item has duplicates.</param>
 	/// <param name="isPatched">Indicates if item is patched.</param>
-	/// <param name="v16IsTransformed">Indicates if item's data has transformations applied.</param>
 	/// <param name="v20IsZlib">Version 2.0 - Indicates if item's data is zlib compressed.</param>
 	/// <param name="v20IsAes">Version 2.0 - Indicates if item's data is AES encrypted.</param>
-	/// <param name="part6Volume">Item volume.</param>
 	public NefsItemAttributes(
 		bool isCacheable = false,
 		bool isDirectory = false,
 		bool isDuplicated = false,
 		bool isPatched = false,
-		bool v16IsTransformed = false,
 		bool v20IsZlib = false,
-		bool v20IsAes = false,
-		ushort part6Volume = 0)
+		bool v20IsAes = false)
 	{
 		IsCacheable = isCacheable;
 		IsDirectory = isDirectory;
 		IsDuplicated = isDuplicated;
 		IsPatched = isPatched;
-		V16IsTransformed = v16IsTransformed;
 		V20IsZlib = v20IsZlib;
 		V20IsAes = v20IsAes;
-		Part6Volume = part6Volume;
 	}
 
 	/// <summary>
@@ -64,14 +58,14 @@ public readonly record struct NefsItemAttributes
 	public bool IsPatched { get; }
 
 	/// <summary>
-	/// Meaning unknown (from part 6).
+	/// The volume containing the item.
 	/// </summary>
-	public ushort Part6Volume { get; }
+	public ushort Volume { get; init; }
 
 	/// <summary>
-	/// Version 1.6 - A flag indicating whether the item's data has transforms applied (compressed, encrypted, etc).
+	/// A flag indicating whether the item's data has transforms applied (compressed, encrypted, etc).
 	/// </summary>
-	public bool V16IsTransformed { get; }
+	public bool IsTransformed { get; init; }
 
 	/// <summary>
 	/// Version 2.0 - indicates whether the item's data is AES encrypted.

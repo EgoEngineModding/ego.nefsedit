@@ -137,7 +137,7 @@ public sealed record NefsItem
 	{
 		if (Type == NefsItemType.Directory)
 		{
-			throw new InvalidOperationException($"Cannot perform {nameof(this.UpdateDataSource)} on a directory.");
+			throw new InvalidOperationException($"Cannot perform {nameof(UpdateDataSource)} on a directory.");
 		}
 
 		DataSource = dataSource ?? throw new ArgumentNullException(nameof(dataSource));

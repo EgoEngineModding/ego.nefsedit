@@ -86,7 +86,7 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 			var entry = new NefsTocEntryWriteable160
 			{
 				Flags = GetItemFlags(item),
-				Volume = item.Attributes.Part6Volume,
+				Volume = item.Attributes.Volume,
 			};
 
 			entries[item.Id.Index] = entry;

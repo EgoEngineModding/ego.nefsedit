@@ -3,10 +3,20 @@
 namespace VictorBush.Ego.NefsLib.DataSource;
 
 /// <summary>
-/// Describes a transformation that is applied to a file before being put in the archive..
+/// Describes a transformation applied to a file before being put in the archive.
 /// </summary>
-public class NefsDataTransform
+public record NefsDataTransform
 {
+	/// <summary>
+	/// Whether the data is transformed.
+	/// </summary>
+	public bool IsTransformed => IsLzssCompressed || IsAesEncrypted || IsZlibCompressed;
+
+	/// <summary>
+	/// Whether the data is LZSS compressed.
+	/// </summary>
+	public bool IsLzssCompressed { get; init; }
+
 	/// <summary>
 	/// Initializes a new instance of the <see cref="NefsDataTransform"/> class.
 	/// </summary>
@@ -41,8 +51,6 @@ public class NefsDataTransform
 	/// The size of chunks to split the input file up into before transforming each chunk.
 	/// </summary>
 	public uint ChunkSize { get; }
-
-	public bool IsLzssCompressed { get; init; }
 
 	/// <summary>
 	/// Whether data chunks are AES encrypted.

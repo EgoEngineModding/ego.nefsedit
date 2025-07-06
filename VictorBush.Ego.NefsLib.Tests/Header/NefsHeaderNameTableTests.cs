@@ -15,12 +15,12 @@ public class NefsHeaderNameTableTests
 		var items = new NefsItemList(@"C:\archive.nefs");
 
 		var file1Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 11, 12, 13 }, TestHelpers.TestTransform);
-		var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, file1Chunks));
+		var file1DataSource = new NefsVolumeDataSource(items, 123, new NefsItemSize(456, file1Chunks));
 		var file1 = TestHelpers.CreateFile(0, 0, "file1", file1DataSource);
 		items.Add(file1);
 
 		var file2Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 14, 15, 16 }, TestHelpers.TestTransform);
-		var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, file2Chunks));
+		var file2DataSource = new NefsVolumeDataSource(items, 456, new NefsItemSize(789, file2Chunks));
 		var file2 = TestHelpers.CreateFile(1, 1, "file2", file2DataSource);
 		items.Add(file2);
 
@@ -28,7 +28,7 @@ public class NefsHeaderNameTableTests
 		items.Add(dir1);
 
 		var file3Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 22, 23, 24 }, TestHelpers.TestTransform);
-		var file3DataSource = new NefsItemListDataSource(items, 222, new NefsItemSize(333, file3Chunks));
+		var file3DataSource = new NefsVolumeDataSource(items, 222, new NefsItemSize(333, file3Chunks));
 		var file3 = TestHelpers.CreateFile(3, dir1.Id.Value, "file3", file3DataSource);
 		items.Add(file3);
 
@@ -59,12 +59,12 @@ public class NefsHeaderNameTableTests
 		var items = new NefsItemList(@"C:\archive.nefs");
 
 		var file1Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 11, 12, 13 }, TestHelpers.TestTransform);
-		var file1DataSource = new NefsItemListDataSource(items, 123, new NefsItemSize(456, file1Chunks));
+		var file1DataSource = new NefsVolumeDataSource(items, 123, new NefsItemSize(456, file1Chunks));
 		var file1 = TestHelpers.CreateFile(0, 0, "foo_bar.dat", file1DataSource);
 		items.Add(file1);
 
 		var file2Chunks = NefsDataChunk.CreateChunkList(new List<uint> { 14, 15, 16 }, TestHelpers.TestTransform);
-		var file2DataSource = new NefsItemListDataSource(items, 456, new NefsItemSize(789, file2Chunks));
+		var file2DataSource = new NefsVolumeDataSource(items, 456, new NefsItemSize(789, file2Chunks));
 		var file2 = TestHelpers.CreateFile(1, 1, "foo.dat", file2DataSource);
 		items.Add(file2);
 

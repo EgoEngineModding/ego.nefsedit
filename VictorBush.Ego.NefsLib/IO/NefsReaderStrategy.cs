@@ -28,6 +28,8 @@ internal abstract class NefsReaderStrategy
 		{
 			NefsVersion.Version010 => new NefsReaderStrategy010(),
 			NefsVersion.Version020 => new NefsReaderStrategy020(),
+			NefsVersion.Version130 => new NefsReaderStrategy130(),
+			NefsVersion.Version140 => new NefsReaderStrategy140(),
 			NefsVersion.Version150 => new NefsReaderStrategy150(),
 			NefsVersion.Version151 => new NefsReaderStrategy151(),
 			NefsVersion.Version160 => new NefsReaderStrategy160(),
@@ -64,9 +66,10 @@ internal abstract class NefsReaderStrategy
 	/// <param name="offset">The offset to the header part from the beginning of the stream.</param>
 	/// <param name="size">The size of the header part.</param>
 	/// <param name="p">Progress info.</param>
+	/// <param name="count">The number of entries, or -1 if unknown.</param>
 	/// <returns>The loaded header part.</returns>
 	internal static async Task<NefsHeaderNameTable> ReadHeaderPart3Async(Stream stream, long offset, int size,
-		NefsProgress p)
+		NefsProgress p, int count = -1)
 	{
 		var entries = new List<string>();
 
@@ -114,6 +117,10 @@ internal abstract class NefsReaderStrategy
 
 			// Record entry
 			entries.Add(str);
+			if (entries.Count == count)
+			{
+				break;
+			}
 
 			// Find next string
 			nextOffset = nullOffset + 1;
@@ -246,7 +253,6 @@ internal abstract class NefsReaderStrategy
 			entries.Add(entry);
 		}
 
-		using var __ = p.BeginTask((numEntries - entries.Count) / (float)numEntries);
 		return entries;
 	}
 

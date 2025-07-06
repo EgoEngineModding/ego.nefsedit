@@ -49,7 +49,7 @@ internal class NefsReaderStrategy020 : NefsReaderStrategy
 		}
 
 		NefsHeaderLinkTable010 linkTable;
-		using (p.BeginTask(weight, "Reading shared entry info table"))
+		using (p.BeginTask(weight, "Reading link table"))
 		{
 			var size = Convert.ToInt32(header.NameTableStart - header.LinkTableStart);
 			linkTable = await ReadTocTableAsync<NefsHeaderLinkTable010, NefsTocLink010>(reader,
@@ -72,15 +72,15 @@ internal class NefsReaderStrategy020 : NefsReaderStrategy
 				primaryOffset + header.BlockTableStart, size, p);
 		}
 
-		NefsHeaderVolumeSizeTable010 volumeInfoTable;
-		using (p.BeginTask(weight, "Reading volume info table"))
+		NefsHeaderVolumeSizeTable010 volumeSizeTable;
+		using (p.BeginTask(weight, "Reading volume size table"))
 		{
 			var size = Convert.ToInt32(header.NumVolumes * NefsTocVolumeSize010.ByteCount);
-			volumeInfoTable = await ReadTocTableAsync<NefsHeaderVolumeSizeTable010, NefsTocVolumeSize010>(reader,
+			volumeSizeTable = await ReadTocTableAsync<NefsHeaderVolumeSizeTable010, NefsTocVolumeSize010>(reader,
 				primaryOffset + header.VolumeSizeTableStart, size, p);
 		}
 
-		return new NefsHeader020(detectedSettings, header, entryTable, linkTable, nameTable, blockTable, volumeInfoTable);
+		return new NefsHeader020(detectedSettings, header, entryTable, linkTable, nameTable, blockTable, volumeSizeTable);
 	}
 
 	public override Task<INefsHeader> ReadHeaderAsync(EndianBinaryReader reader, long primaryOffset, int? primarySize,
