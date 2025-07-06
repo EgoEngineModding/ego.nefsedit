@@ -20,13 +20,12 @@ internal class TestHelpers
 	internal static NefsArchive CreateTestArchive(string filePath)
 	{
 		var items = new NefsItemList(filePath);
-		var volumeSource = new NefsVolumeSource(filePath, 0, 0);
 
 		var transform = new NefsDataTransform(50, true);
 
 		var file1Attributes = new NefsItemAttributes(v20IsZlib: true);
 		var file1Chunks = NefsDataChunk.CreateChunkList(new List<UInt32> { 2, 3, 4 }, transform);
-		var file1DataSource = new NefsVolumeDataSource(volumeSource, 100, new NefsItemSize(20, file1Chunks));
+		var file1DataSource = new NefsVolumeDataSource(items, 100, new NefsItemSize(20, file1Chunks));
 		var file1 = new NefsItem(new NefsItemId(0), "file1", new NefsItemId(0), file1DataSource, transform, file1Attributes);
 		items.Add(file1);
 
@@ -37,7 +36,7 @@ internal class TestHelpers
 
 		var file2Attributes = new NefsItemAttributes(v20IsZlib: true);
 		var file2Chunks = NefsDataChunk.CreateChunkList(new List<UInt32> { 5, 6, 7 }, transform);
-		var file2DataSource = new NefsVolumeDataSource(volumeSource, 104, new NefsItemSize(15, file2Chunks));
+		var file2DataSource = new NefsVolumeDataSource(items, 104, new NefsItemSize(15, file2Chunks));
 		var file2 = new NefsItem(new NefsItemId(2), "file2", dir1.Id, file2DataSource, transform, file2Attributes);
 		items.Add(file2);
 

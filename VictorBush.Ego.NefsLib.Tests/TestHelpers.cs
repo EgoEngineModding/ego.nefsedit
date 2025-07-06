@@ -129,10 +129,4 @@ internal static class TestHelpers
 			transform,
 			attributes);
 	}
-
-	internal static NefsVolumeSource[] Source(this NefsArchive nefs)
-	{
-		var dataOffset = nefs.Header.Volumes.Count > 0 ? nefs.Header.Volumes[0].DataOffset : 0;
-		return [new NefsVolumeSource(nefs.Items.DataFilePath, dataOffset, nefs.Header.SplitSize)];
-	}
 }

@@ -1,14 +1,11 @@
 // See LICENSE.txt for license information.
 
 using VictorBush.Ego.NefsLib.DataSource;
-using VictorBush.Ego.NefsLib.Header;
 using VictorBush.Ego.NefsLib.Header.Builder;
-using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.Header.Version200;
 using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Item;
 using VictorBush.Ego.NefsLib.Progress;
-using VictorBush.Ego.NefsLib.Tests.DataSource;
 using Xunit;
 
 namespace VictorBush.Ego.NefsLib.Tests.TestArchives;
@@ -141,7 +138,7 @@ internal class TestArchiveModified
 
 		var file1Attributes = new NefsItemAttributes(v20IsZlib: true);
 		var file1Chunks = NefsDataChunk.CreateChunkList(File1ChunkSizes, TestHelpers.TestTransform);
-		var file1DataSource = new NefsItemListDataSource(items, (long)File1Offset, new NefsItemSize(File1ExtractedSize, file1Chunks));
+		var file1DataSource = new NefsVolumeDataSource(items, (long)File1Offset, new NefsItemSize(File1ExtractedSize, file1Chunks));
 		var file1 = new NefsItem(new NefsItemId(File1ItemId), File1Name, new NefsItemId(File1DirectoryId), file1DataSource, TestHelpers.TestTransform, file1Attributes);
 		items.Add(file1);
 
@@ -152,13 +149,13 @@ internal class TestArchiveModified
 
 		var file2Attributes = new NefsItemAttributes(v20IsZlib: true);
 		var file2Chunks = NefsDataChunk.CreateChunkList(File2ChunkSizes, TestHelpers.TestTransform);
-		var file2DataSource = new NefsItemListDataSource(items, (long)File2Offset, new NefsItemSize(File2ExtractedSize, file2Chunks));
+		var file2DataSource = new NefsVolumeDataSource(items, (long)File2Offset, new NefsItemSize(File2ExtractedSize, file2Chunks));
 		var file2 = new NefsItem(new NefsItemId(File2ItemId), File2Name, new NefsItemId(File2DirectoryId), file2DataSource, TestHelpers.TestTransform, file2Attributes);
 		items.Add(file2);
 
 		var file3Attributes = new NefsItemAttributes(v20IsZlib: true);
 		var file3Chunks = NefsDataChunk.CreateChunkList(File3ChunkSizes, TestHelpers.TestTransform);
-		var file3DataSource = new NefsItemListDataSource(items, (long)File3Offset, new NefsItemSize(File3ExtractedSize, file3Chunks));
+		var file3DataSource = new NefsVolumeDataSource(items, (long)File3Offset, new NefsItemSize(File3ExtractedSize, file3Chunks));
 		var file3 = new NefsItem(new NefsItemId(File3ItemId), File3Name, new NefsItemId(File3DirectoryId), file3DataSource, TestHelpers.TestTransform, file3Attributes);
 		items.Add(file3);
 

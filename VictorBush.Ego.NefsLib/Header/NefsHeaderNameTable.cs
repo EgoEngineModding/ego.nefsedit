@@ -39,7 +39,7 @@ public sealed class NefsHeaderNameTable
 	{
 		// Add the archive file name to the list and sort strings alphabetically
 		var strings = items.EnumerateById().Select(i => i.FileName)
-			.Append(items.DataFileName)
+			.Concat(items.Volumes.Select(x => Path.GetFileName(x.FilePath)))
 			.Distinct()
 			.OrderBy(i => i.ToLowerInvariant(), StringComparer.Ordinal);
 

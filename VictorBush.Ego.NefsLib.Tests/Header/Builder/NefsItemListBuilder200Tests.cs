@@ -15,7 +15,7 @@ public class NefsItemListBuilder200Tests
 	{
 		var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
 		var builder = new NefsItemListBuilder200((NefsHeader200)nefs.Header, NefsLog.GetLogger());
-		var item = builder.BuildItem(TestArchiveNotModified.File2ItemId, nefs.Source());
+		var item = builder.BuildItem(TestArchiveNotModified.File2ItemId, nefs.Items);
 
 		// File2 is compressed
 		var expected = nefs.Items.GetItem(item.Id);
@@ -42,7 +42,7 @@ public class NefsItemListBuilder200Tests
 	{
 		var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
 		var builder = new NefsItemListBuilder200((NefsHeader200)nefs.Header, NefsLog.GetLogger());
-		var item = builder.BuildItem(TestArchiveNotModified.Dir1ItemId, nefs.Source());
+		var item = builder.BuildItem(TestArchiveNotModified.Dir1ItemId, nefs.Items);
 
 		var expected = nefs.Items.GetItem(item.Id);
 		Assert.Equal(0U, item.CompressedSize);
@@ -66,7 +66,7 @@ public class NefsItemListBuilder200Tests
 	{
 		var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
 		var builder = new NefsItemListBuilder200((NefsHeader200)nefs.Header, NefsLog.GetLogger());
-		var item = builder.BuildItem(TestArchiveNotModified.File3ItemId, nefs.Source());
+		var item = builder.BuildItem(TestArchiveNotModified.File3ItemId, nefs.Items);
 
 		// File3 is not compressed
 		var expected = nefs.Items.GetItem(item.Id);
@@ -94,7 +94,7 @@ public class NefsItemListBuilder200Tests
 	{
 		var nefs = TestArchiveNotModified.Create(@"C:\archive.nefs");
 		var builder = new NefsItemListBuilder200((NefsHeader200)nefs.Header, NefsLog.GetLogger());
-		var item = builder.BuildItem(TestArchiveNotModified.File4ItemId, nefs.Source());
+		var item = builder.BuildItem(TestArchiveNotModified.File4ItemId, nefs.Items);
 
 		// File4 has no blocks
 		var expected = nefs.Items.GetItem(item.Id);

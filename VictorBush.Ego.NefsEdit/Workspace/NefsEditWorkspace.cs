@@ -392,7 +392,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			return false;
 		}
 
-		var fileName = Path.GetFileName(Archive.Items.DataFilePath);
+		var fileName = Path.GetFileName(Archive.Items.Volumes[0].FilePath);
 		var fileExt = Path.GetExtension(fileName);
 		var filter = $"*{fileExt}|*{fileExt}";
 

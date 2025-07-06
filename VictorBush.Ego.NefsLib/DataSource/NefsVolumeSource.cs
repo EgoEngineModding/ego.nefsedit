@@ -2,7 +2,7 @@
 
 namespace VictorBush.Ego.NefsLib.DataSource;
 
-internal class NefsVolumeSource
+public class NefsVolumeSource
 {
 	private const int PrimaryFileNumber = -1;
 	private readonly string baseFilePath;
@@ -33,7 +33,7 @@ internal class NefsVolumeSource
 	/// <param name="filePath">The primary volume file path.</param>
 	/// <param name="dataOffset">The offset to the data in the volume.</param>
 	/// <param name="splitSize">The volume data split size.</param>
-	public NefsVolumeSource(string filePath, uint dataOffset, uint splitSize)
+	internal NefsVolumeSource(string filePath, uint dataOffset, uint splitSize)
 	{
 		FilePath = filePath;
 		DataOffset = dataOffset;
@@ -48,7 +48,7 @@ internal class NefsVolumeSource
 	/// </summary>
 	/// <param name="position">The byte position in the volume.</param>
 	/// <returns>The split file path, or the primary path at the given position.</returns>
-	public string GetPathAtPosition(long position)
+	internal string GetPathAtPosition(long position)
 	{
 		return GetPathAtFileNumber(GetFileNumberAtPosition(position));
 	}
@@ -58,7 +58,7 @@ internal class NefsVolumeSource
 	/// </summary>
 	/// <param name="number">The split file number.</param>
 	/// <returns>The split file number path, or the primary path if number is -1 or not split.</returns>
-	public string GetPathAtFileNumber(int number)
+	internal string GetPathAtFileNumber(int number)
 	{
 		if (!IsSplit || number == PrimaryFileNumber)
 		{
@@ -73,7 +73,7 @@ internal class NefsVolumeSource
 	/// </summary>
 	/// <param name="position">The byte position in the volume.</param>
 	/// <returns>The split file number, or -1 to represent the primary path.</returns>
-	public int GetFileNumberAtPosition(long position)
+	internal int GetFileNumberAtPosition(long position)
 	{
 		return !IsSplit || position < DataOffset
 			? PrimaryFileNumber

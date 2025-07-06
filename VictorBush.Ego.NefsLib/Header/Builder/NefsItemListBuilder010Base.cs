@@ -17,7 +17,7 @@ internal abstract class NefsItemListBuilder010Base<T>(T header, ILogger logger)
 		NefsTocEntry010 entry,
 		NefsTocLink010 link,
 		IReadOnlyList<NefsTocEntry010> entries,
-		IReadOnlyList<NefsVolumeSource> volumes)
+		NefsItemList itemList)
 	{
 		// Gather attributes
 		var attributes = CreateAttributes(entry);
@@ -40,7 +40,7 @@ internal abstract class NefsItemListBuilder010Base<T>(T header, ILogger logger)
 			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, attributes.IsTransformed ? null : GetTransform(0));
 			transform = blocks.FirstOrDefault()?.Transform ?? GetTransform(0);
 			var size = new NefsItemSize(extractedSize, blocks);
-			dataSource = new NefsVolumeDataSource(volumes[(int)entry.Volume], dataOffset, size);
+			dataSource = new NefsVolumeDataSource(itemList.Volumes[(int)entry.Volume], dataOffset, size);
 		}
 
 		// Create item
@@ -93,6 +93,7 @@ internal abstract class NefsItemListBuilder010Base<T>(T header, ILogger logger)
 		}
 	}
 
+	/// <inheritdoc />
 	protected override NefsDataTransformType GetTransformType(uint blockTransformation)
 	{
 		return blockTransformation switch

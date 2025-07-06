@@ -12,7 +12,8 @@ namespace VictorBush.Ego.NefsLib.Header.Builder;
 internal class NefsItemListBuilder200(NefsHeader200 header, ILogger logger)
 	: NefsItemListBuilder<NefsHeader200>(header, logger)
 {
-	internal override NefsItem BuildItem(uint entryIndex, IReadOnlyList<NefsVolumeSource> volumes)
+	/// <inheritdoc />
+	internal override NefsItem BuildItem(uint entryIndex, NefsItemList itemList)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];
@@ -38,7 +39,7 @@ internal class NefsItemListBuilder200(NefsHeader200 header, ILogger logger)
 		{
 			// Item is not transformed
 			var size = new NefsItemSize(extractedSize);
-			dataSource = new NefsVolumeDataSource(volumes[entryWritable.Volume], dataOffset, size);
+			dataSource = new NefsVolumeDataSource(itemList.Volumes[entryWritable.Volume], dataOffset, size);
 		}
 		else
 		{
@@ -46,7 +47,7 @@ internal class NefsItemListBuilder200(NefsHeader200 header, ILogger logger)
 			var numBlocks = GetNumBlocks(extractedSize);
 			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, transform);
 			var size = new NefsItemSize(extractedSize, blocks);
-			dataSource = new NefsVolumeDataSource(volumes[entryWritable.Volume], dataOffset, size);
+			dataSource = new NefsVolumeDataSource(itemList.Volumes[entryWritable.Volume], dataOffset, size);
 		}
 
 		// Create item
@@ -71,12 +72,14 @@ internal class NefsItemListBuilder200(NefsHeader200 header, ILogger logger)
 		}
 	}
 
+	/// <inheritdoc />
 	protected override (uint End, uint Transformation) GetBlock(uint blockIndex)
 	{
 		var block = Header.BlockTable.Entries[Convert.ToInt32(blockIndex)];
 		return (block.End, uint.MaxValue);
 	}
 
+	/// <inheritdoc />
 	protected override NefsDataTransformType GetTransformType(uint blockTransformation)
 	{
 		// Blocks don't have transforms in this version

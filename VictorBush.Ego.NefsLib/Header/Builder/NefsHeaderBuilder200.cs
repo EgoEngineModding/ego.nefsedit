@@ -90,7 +90,7 @@ internal class NefsHeaderBuilder200 : NefsHeaderBuilder160Base<NefsHeader200>
 		{
 			// Single-file archives this is the size of the whole file
 			Size = tocFinalEnd + dataSize,
-			NameOffset = nameTable.OffsetsByFileName[items.DataFileName],
+			NameOffset = nameTable.OffsetsByFileName[Path.GetFileName(items.Volumes[0].FilePath)],
 			DataOffset = tocFinalEnd
 		};
 		var volumeInfoTable = new NefsHeaderVolumeInfoTable150([volume0]);

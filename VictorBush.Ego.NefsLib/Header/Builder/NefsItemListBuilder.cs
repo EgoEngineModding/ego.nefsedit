@@ -41,9 +41,9 @@ internal abstract class NefsItemListBuilder(ILogger logger)
 	/// Builds an item from the header.
 	/// </summary>
 	/// <param name="entryIndex">The entry index.</param>
-	/// <param name="volumes">The volume sources for the item's data.</param>
+	/// <param name="itemList">The item list being built.</param>
 	/// <returns>A new <see cref="NefsItem"/>.</returns>
-	internal abstract NefsItem BuildItem(uint entryIndex, IReadOnlyList<NefsVolumeSource> volumes);
+	internal abstract NefsItem BuildItem(uint entryIndex, NefsItemList itemList);
 
 	protected abstract NefsDataTransformType GetTransformType(uint blockTransformation);
 }
@@ -58,7 +58,7 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 		var weight = 1f / Header.NumEntries;
 		using var _ = p.BeginTask(1.0f, "Creating items");
 		var volumes = BuildVolumeSources(dataFilePath);
-		var items = new NefsItemList(dataFilePath);
+		var items = new NefsItemList(volumes);
 		for (var i = 0; i < Header.NumEntries; ++i)
 		{
 			p.CancellationToken.ThrowIfCancellationRequested();
@@ -66,7 +66,7 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 			try
 			{
 				using var __ = p.BeginSubTask(weight);
-				var item =  BuildItem((uint)i, volumes);
+				var item =  BuildItem((uint)i, items);
 				items.Add(item);
 			}
 			catch (Exception)

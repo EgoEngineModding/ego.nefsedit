@@ -34,6 +34,20 @@ internal class NefsVolumeDataSource : INefsDataSource
 	/// <summary>
 	/// Initializes a new instance of the <see cref="NefsVolumeDataSource"/> class.
 	/// </summary>
+	/// <param name="items">The item list that specifies the file the item's data is stored in.</param>
+	/// <param name="offset">The offset in the source file where the data begins.</param>
+	/// <param name="size">The size of the item's data in bytes.</param>
+	/// <remarks>Used for testing purposes.</remarks>
+	internal NefsVolumeDataSource(
+		NefsItemList items,
+		long offset,
+		NefsItemSize size) : this(items.Volumes[0], offset, size)
+	{
+	}
+
+	/// <summary>
+	/// Initializes a new instance of the <see cref="NefsVolumeDataSource"/> class.
+	/// </summary>
 	/// <param name="volume">The volume that the item's data is stored in.</param>
 	/// <param name="offset">The offset in the source file where the data begins.</param>
 	/// <param name="size">The size of the item's data in bytes.</param>

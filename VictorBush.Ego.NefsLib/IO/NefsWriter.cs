@@ -160,7 +160,7 @@ public class NefsWriter : INefsWriter
 		// The new list is returned that removes deleted items and has updated metadata for the other items.
 		// There may be gaps in ids in case of removing an item. Generate a map to make ids sequential
 		var idIndexMap = new Dictionary<NefsItemId, NefsItemId>();
-		var items = new NefsItemList(sourceItems.DataFilePath);
+		var items = new NefsItemList(sourceItems.Volumes);
 
 		foreach (var sourceItem in sourceItems.EnumerateById())
 		{
@@ -263,6 +263,7 @@ public class NefsWriter : INefsWriter
 		long dataSize;
 		using (p.BeginTask(taskWeightWriteItems, "Writing items"))
 		{
+			items.UpdateVolumes([volumeSource]);
 			dataSize = await WriteItemsAsync(dataStream, items, volumeSource, p);
 		}
 
