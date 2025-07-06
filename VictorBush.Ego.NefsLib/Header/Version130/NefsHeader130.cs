@@ -77,11 +77,18 @@ public sealed class NefsHeader130 : INefsHeader
 		Volumes = volumes;
 		for (var i = 0; i < volumes.Length; ++i)
 		{
+			// Perhaps a bug in CM's code?
+			var nameStart = volumeNameStartTable.Entries[i].Start;
+			if (!VolumeNameTable.FileNamesByOffset.TryGetValue(nameStart, out var name))
+			{
+				name = VolumeNameTable.FileNamesByOffset[nameStart - 1];
+			}
+
 			volumes[i] = new VolumeInfo
 			{
 				Size = VolumeSizeTable.Entries[i].Size,
-				Name = VolumeNameTable.FileNamesByOffset[volumeNameStartTable.Entries[i].Start],
-				DataOffset = Intro.TocSize
+				Name = name,
+				DataOffset = i == 0 ? Intro.TocSize : 0
 			};
 		}
 	}

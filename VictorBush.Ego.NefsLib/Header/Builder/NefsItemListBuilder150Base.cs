@@ -16,7 +16,7 @@ internal abstract class NefsItemListBuilder150Base<T>(T header, ILogger logger)
 		NefsItemId id,
 		NefsTocEntry150 entry,
 		NefsTocSharedEntryInfo150 sharedEntryInfo,
-		NefsVolumeSource volume)
+		IReadOnlyList<NefsVolumeSource> volumes)
 	{
 		// Gather attributes
 		var attributes = CreateAttributes(entry);
@@ -39,7 +39,7 @@ internal abstract class NefsItemListBuilder150Base<T>(T header, ILogger logger)
 			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, null);
 			transform = blocks.FirstOrDefault()?.Transform ?? GetTransform(0);
 			var size = new NefsItemSize(extractedSize, blocks);
-			dataSource = new NefsVolumeDataSource(volume, dataOffset, size);
+			dataSource = new NefsVolumeDataSource(volumes[entry.Volume], dataOffset, size);
 		}
 
 		// Create item

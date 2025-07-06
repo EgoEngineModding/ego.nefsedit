@@ -41,9 +41,9 @@ internal abstract class NefsItemListBuilder(ILogger logger)
 	/// Builds an item from the header.
 	/// </summary>
 	/// <param name="entryIndex">The entry index.</param>
-	/// <param name="volume">The volume source for the item's data.</param>
+	/// <param name="volumes">The volume sources for the item's data.</param>
 	/// <returns>A new <see cref="NefsItem"/>.</returns>
-	internal abstract NefsItem BuildItem(uint entryIndex, NefsVolumeSource volume);
+	internal abstract NefsItem BuildItem(uint entryIndex, IReadOnlyList<NefsVolumeSource> volumes);
 
 	protected abstract NefsDataTransformType GetTransformType(uint blockTransformation);
 }
@@ -57,7 +57,7 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 	{
 		var weight = 1f / Header.NumEntries;
 		using var _ = p.BeginTask(1.0f, "Creating items");
-		var volume = new NefsVolumeSource(dataFilePath, Header.Volumes[0].DataOffset, Header.SplitSize);
+		var volumes = BuildVolumeSources(dataFilePath);
 		var items = new NefsItemList(dataFilePath);
 		for (var i = 0; i < Header.NumEntries; ++i)
 		{
@@ -66,7 +66,7 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 			try
 			{
 				using var __ = p.BeginSubTask(weight);
-				var item =  BuildItem((uint)i, volume);
+				var item =  BuildItem((uint)i, volumes);
 				items.Add(item);
 			}
 			catch (Exception)
@@ -76,6 +76,38 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 		}
 
 		return items;
+	}
+
+	private NefsVolumeSource[] BuildVolumeSources(string dataFilePath)
+	{
+		var volumes = new NefsVolumeSource[Header.Volumes.Count];
+		for (var i = 0; i < volumes.Length; ++i)
+		{
+			var headerVolume = Header.Volumes[i];
+			string filePath;
+			if (i == 0)
+			{
+				filePath = dataFilePath;
+			}
+			else
+			{
+				if (Header.Version is NefsVersion.Version010 or NefsVersion.Version020)
+				{
+					// Version 0.2.0 and earlier don't store file name
+					filePath = dataFilePath[..^7] + i.ToString("D3") + Path.GetExtension(dataFilePath);
+				}
+				else
+				{
+					var volumeDirectory = Path.GetDirectoryName(dataFilePath) ?? string.Empty;
+					filePath = Path.Combine(volumeDirectory, headerVolume.Name);
+				}
+			}
+
+			var volume = new NefsVolumeSource(filePath, headerVolume.DataOffset, Header.SplitSize);
+			volumes[i] = volume;
+		}
+
+		return volumes;
 	}
 
 	/// <summary>

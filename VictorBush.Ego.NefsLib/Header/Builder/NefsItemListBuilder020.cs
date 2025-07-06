@@ -11,12 +11,12 @@ internal class NefsItemListBuilder020(NefsHeader020 header, ILogger logger)
 	: NefsItemListBuilder010Base<NefsHeader020>(header, logger)
 {
 	/// <inheritdoc />
-	internal override NefsItem BuildItem(uint entryIndex, NefsVolumeSource volume)
+	internal override NefsItem BuildItem(uint entryIndex, IReadOnlyList<NefsVolumeSource> volumes)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];
 		var link = Header.LinkTable.GetEntryByOffset(entry.LinkOffset);
-		return BuildItem(id, entry, link, Header.EntryTable.Entries, volume);
+		return BuildItem(id, entry, link, Header.EntryTable.Entries, volumes);
 	}
 
 	protected override (uint End, uint Transformation) GetBlock(uint blockIndex)

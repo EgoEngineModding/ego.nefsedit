@@ -17,7 +17,7 @@ internal abstract class NefsItemListBuilder010Base<T>(T header, ILogger logger)
 		NefsTocEntry010 entry,
 		NefsTocLink010 link,
 		IReadOnlyList<NefsTocEntry010> entries,
-		NefsVolumeSource volume)
+		IReadOnlyList<NefsVolumeSource> volumes)
 	{
 		// Gather attributes
 		var attributes = CreateAttributes(entry);
@@ -40,7 +40,7 @@ internal abstract class NefsItemListBuilder010Base<T>(T header, ILogger logger)
 			var blocks = BuildBlockList(entry.FirstBlock, numBlocks, null);
 			transform = blocks.FirstOrDefault()?.Transform ?? GetTransform(0);
 			var size = new NefsItemSize(extractedSize, blocks);
-			dataSource = new NefsVolumeDataSource(volume, dataOffset, size);
+			dataSource = new NefsVolumeDataSource(volumes[(int)entry.Volume], dataOffset, size);
 		}
 
 		// Create item
@@ -79,7 +79,7 @@ internal abstract class NefsItemListBuilder010Base<T>(T header, ILogger logger)
 				var prevEntry = entries[i];
 				if (prevEntry.LinkOffset != entry.LinkOffset)
 				{
-					break;
+					continue;
 				}
 
 				var prevDuplicateFlags = prevEntry.Flags & duplicateMask;

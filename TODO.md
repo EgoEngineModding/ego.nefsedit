@@ -8,8 +8,7 @@
 - Fix sorting by id in debug view and allow resetting sorting order (https://github.com/victorbush/ego.nefsedit/issues/11).
 - Allow associating .nefs files with the app, and allow opening an archive via command line.
 - Add protection against saving over an archive in a game's directory (or always force a "Save As").
-- Support reading and writing multiple volumes
+- Support writing multiple volumes
 - Support writing split archives across multiple files
-- Add support for versions 1.4.0
 - Bring back auto-search of nefs headers in game exe
 - Determine behavior for extracting duplicate and removed files

@@ -67,11 +67,11 @@ public sealed class NefsHeader020 : INefsHeader
 		BlockTable = blockTable;
 		VolumeSizeTable = volumeSizeTable;
 
-		Volumes = VolumeSizeTable.Entries.Select(x => new VolumeInfo
+		Volumes = VolumeSizeTable.Entries.Select((x, i) => new VolumeInfo
 		{
 			Size = x.Size,
-			Name = string.Empty,
-			DataOffset = Intro.TocSize
+			Name = i.ToString(),
+			DataOffset = i == 0 ? Intro.TocSize : 0
 		}).ToArray();
 	}
 

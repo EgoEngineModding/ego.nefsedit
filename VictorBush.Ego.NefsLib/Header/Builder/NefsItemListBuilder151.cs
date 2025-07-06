@@ -10,12 +10,12 @@ namespace VictorBush.Ego.NefsLib.Header.Builder;
 internal class NefsItemListBuilder151(NefsHeader151 header, ILogger logger) :
 	NefsItemListBuilder150Base<NefsHeader151>(header, logger)
 {
-	internal override NefsItem BuildItem(uint entryIndex, NefsVolumeSource volume)
+	internal override NefsItem BuildItem(uint entryIndex, IReadOnlyList<NefsVolumeSource> volumes)
 	{
 		var id = new NefsItemId(entryIndex);
 		var entry = Header.EntryTable.Entries[id.Index];
 		var sharedEntryInfo = Header.SharedEntryInfoTable.Entries[Convert.ToInt32(entry.SharedInfo)];
-		return BuildItem(id, entry, sharedEntryInfo, volume);
+		return BuildItem(id, entry, sharedEntryInfo, volumes);
 	}
 
 	protected override (uint End, uint Transformation) GetBlock(uint blockIndex)
