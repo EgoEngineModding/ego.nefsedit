@@ -11,6 +11,19 @@ Requires .NET 6.
 - Replace files in an archive.
 - Save archives.
 
+### Supported Versions
+A table showing which app version introduced support for each NeFS archive version.
+
+| NeFS Version | Read | Write |
+|--------------|------|-------|
+| 0.1.0        | 0.7  | ❌     |
+| 0.2.0        | 0.7  | ❌     |
+| 1.3.0        | 0.7  | ❌     |
+| 1.4.0        | 0.7  | ❌     |
+| 1.5.0/1      | 0.7  | ❌     |
+| 1.6.0        | 0.6  | 0.6   |
+| 2.0.0        | 0.1  | 0.1   |
+
 ## Limitations
 - Saving encrypted archives is not supported. This would require access to the private key originally used by the game developers.
 - Saving game.dat files is not supported. The header information for game.dat files is stored in the game executable. Modifying the executable will not be supported.

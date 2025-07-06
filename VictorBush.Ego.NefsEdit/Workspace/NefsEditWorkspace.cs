@@ -487,7 +487,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 
 		if (Archive.Header.Volumes.Count > 1)
 		{
-			UiService.ShowMessageBox("Saving archives with 2+ volumes is not supported.", icon: MessageBoxIcon.Error);
+			UiService.ShowMessageBox("Saving archives with 2+ volumes is not implemented.", icon: MessageBoxIcon.Error);
 			return false;
 		}
 

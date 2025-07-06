@@ -264,7 +264,7 @@ public class NefsWriter : INefsWriter
 		using (p.BeginTask(taskWeightWriteItems, "Writing items"))
 		{
 			items.UpdateVolumes([volumeSource]);
-			dataSize = await WriteItemsAsync(dataStream, items, volumeSource, p);
+			dataSize = await WriteItemsAsync(dataStream, items, p);
 		}
 
 		// TODO: update hash digest table
@@ -365,15 +365,14 @@ public class NefsWriter : INefsWriter
 	/// </summary>
 	/// <param name="stream">The stream to write to.</param>
 	/// <param name="items">List of items to write.</param>
-	/// <param name="volumeSource">The volume source.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>The offset to the end of the last data written.</returns>
 	private async Task<long> WriteItemsAsync(
 		Stream stream,
 		NefsItemList items,
-		NefsVolumeSource volumeSource,
 		NefsProgress p)
 	{
+		var volumeSource = items.Volumes[0];
 		var nextDataOffset = (long)volumeSource.DataOffset;
 
 		// Prepare stream
