@@ -49,9 +49,10 @@ internal class UiService : IUiService
 	public (DialogResult Result, NefsArchiveSource? Source) ShowNefsEditOpenFileDialog(
 		ISettingsService settingsService,
 		IProgressService progressService,
-		INefsReader reader)
+		INefsReader reader,
+		INefsExeHeaderFinder exeHeaderFinder)
 	{
-		using var dialog = new OpenFileForm(settingsService, this, progressService, reader, FileSystem);
+		using var dialog = new OpenFileForm(settingsService, this, progressService, reader, FileSystem, exeHeaderFinder);
 		var result = dialog.ShowDialog();
 		var source = dialog.ArchiveSource;
 		return (result, source);

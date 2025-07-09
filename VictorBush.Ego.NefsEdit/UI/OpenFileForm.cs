@@ -8,6 +8,7 @@ using VictorBush.Ego.NefsEdit.Settings;
 using VictorBush.Ego.NefsEdit.Utility;
 using VictorBush.Ego.NefsLib.ArchiveSource;
 using VictorBush.Ego.NefsLib.IO;
+using VictorBush.Ego.NefsLib.Progress;
 
 namespace VictorBush.Ego.NefsEdit.UI;
 
@@ -31,12 +32,14 @@ internal partial class OpenFileForm : Form
 	/// <param name="progressService">Progress service.</param>
 	/// <param name="reader">Nefs reader.</param>
 	/// <param name="fileSystem">The file system.</param>
+	/// <param name="exeHeaderFinder">The exe header finder.</param>
 	public OpenFileForm(
 		ISettingsService settingsService,
 		IUiService uiService,
 		IProgressService progressService,
 		INefsReader reader,
-		IFileSystem fileSystem)
+		IFileSystem fileSystem,
+		INefsExeHeaderFinder exeHeaderFinder)
 	{
 		InitializeComponent();
 		SettingsService = settingsService ?? throw new ArgumentNullException(nameof(settingsService));
@@ -44,6 +47,7 @@ internal partial class OpenFileForm : Form
 		ProgressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
 		Reader = reader ?? throw new ArgumentNullException(nameof(reader));
 		FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
+		ExeHeaderFinder = exeHeaderFinder;
 	}
 
 	/// <summary>
@@ -52,6 +56,8 @@ internal partial class OpenFileForm : Form
 	public NefsArchiveSource? ArchiveSource { get; private set; }
 
 	private IFileSystem FileSystem { get; }
+
+	private INefsExeHeaderFinder ExeHeaderFinder { get; }
 
 	private IProgressService ProgressService { get; }
 
@@ -73,10 +79,17 @@ internal partial class OpenFileForm : Form
 		return long.TryParse(str, NumberStyles.HexNumber, CultureInfo.InvariantCulture, out result);
 	}
 
-	private async Task<List<HeadlessSource>> FindInjectionProfiles(string gameExePath)
+	private async Task<List<HeadlessSource>> FindExeHeadersAsync(string exePath, string dataDirectory, NefsProgress p)
 	{
-		// Will be used to bring back auto-search at some point
-		throw new NotImplementedException();
+		if (!FileSystem.File.Exists(exePath))
+		{
+			UiService.ShowMessageBox($"Cannot find executable file: {exePath}.");
+			return [];
+		}
+
+		// Search for headers in the exe
+		using var _ = p.BeginTask(1.0f, "Searching for headers");
+		return await ExeHeaderFinder.FindHeadersAsync(exePath, dataDirectory, p);
 	}
 
 	private async void GameDatRefreshButton_Click(Object sender, EventArgs e)
@@ -85,7 +98,8 @@ internal partial class OpenFileForm : Form
 
 		await ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
 		{
-			var files = await FindInjectionProfiles(this.headlessGameExeFileTextBox.Text);
+			var files = await FindExeHeadersAsync(this.headlessGameExeFileTextBox.Text,
+				this.headlessDataDirTextBox.Text, p).ConfigureAwait(false);
 
 			// Update on UI thread
 			UiService.Dispatcher.Invoke(() =>
@@ -101,7 +115,7 @@ internal partial class OpenFileForm : Form
 
 	private void GameExeFileButton_Click(Object sender, EventArgs e)
 	{
-		(var result, var path) = UiService.ShowOpenFileDialog("Executable (*.exe)|*.exe");
+		var (result, path) = UiService.ShowOpenFileDialog("Executable (*.exe)|*.exe;*.elf;*.bin;*");
 		if (result != DialogResult.OK)
 		{
 			return;
@@ -109,6 +123,18 @@ internal partial class OpenFileForm : Form
 
 		this.headlessGameExeFileTextBox.Text = path;
 		this.headlessGameExeFileTextBox.ScrollToEnd();
+	}
+
+	private void HeadlessDataDirButton_Click(Object sender, EventArgs e)
+	{
+		var (result, path) = UiService.ShowFolderBrowserDialog("Choose directory where data files are stored.");
+		if (result != DialogResult.OK)
+		{
+			return;
+		}
+
+		this.headlessDataDirTextBox.Text = path;
+		this.headlessDataDirTextBox.ScrollToEnd();
 	}
 
 	private void LoadSettings()
@@ -130,6 +156,7 @@ internal partial class OpenFileForm : Form
 		this.splitSecondaryOffsetTextBox.Text = SettingsService.OpenFileDialogState.GameDatSecondaryOffset;
 		this.splitSecondarySizeTextBox.Text = SettingsService.OpenFileDialogState.GameDatSecondarySize;
 		this.headlessGameExeFileTextBox.Text = SettingsService.OpenFileDialogState.HeadlessExePath;
+		this.headlessDataDirTextBox.Text = SettingsService.OpenFileDialogState.HeadlessDataDirPath;
 	}
 
 	private void ModeListBox_SelectedIndexChanged(Object sender, EventArgs e)
@@ -242,6 +269,7 @@ internal partial class OpenFileForm : Form
 		SettingsService.OpenFileDialogState.GameDatSecondaryOffset = this.splitSecondaryOffsetTextBox.Text;
 		SettingsService.OpenFileDialogState.GameDatSecondarySize = this.splitSecondarySizeTextBox.Text;
 		SettingsService.OpenFileDialogState.HeadlessExePath = this.headlessGameExeFileTextBox.Text;
+		SettingsService.OpenFileDialogState.HeadlessDataDirPath = this.headlessDataDirTextBox.Text;
 
 		SettingsService.Save();
 	}

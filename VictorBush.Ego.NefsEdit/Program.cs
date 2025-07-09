@@ -64,6 +64,7 @@ internal static class Program
 				x.AddSingleton<INefsTransformer, NefsTransformer>();
 				x.AddSingleton<INefsReader, NefsReader>();
 				x.AddSingleton<INefsWriter>(x => new NefsWriter(TempDirectory, x.GetRequiredService<IFileSystem>(), x.GetRequiredService<INefsTransformer>()));
+				x.AddSingleton<INefsExeHeaderFinder, NefsExeHeaderFinder>();
 				x.AddSingleton<INefsEditWorkspace, NefsEditWorkspace>();
 			}).Build();
 

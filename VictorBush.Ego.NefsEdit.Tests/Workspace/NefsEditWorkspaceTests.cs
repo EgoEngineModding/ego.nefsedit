@@ -25,6 +25,7 @@ public class NefsEditWorkspaceTests
 	private readonly IProgressService progressService = new InvisibleProgressService();
 	private readonly Mock<ISettingsService> settingsServiceMcok = new Mock<ISettingsService>();
 	private readonly Mock<IUiService> uiServiceMock = new Mock<IUiService>();
+	private readonly Mock<INefsExeHeaderFinder> exeHeaderFinderMock = new Mock<INefsExeHeaderFinder>();
 
 	[Fact]
 	public async Task CloseArchiveAsync_ArchiveModifiedAndUserCancels_ArchiveNotClosed()
@@ -505,7 +506,8 @@ public class NefsEditWorkspaceTests
 			this.settingsServiceMcok.Object,
 			this.nefsReaderMock.Object,
 			this.nefsWriterMock.Object,
-			this.nefsCompressorMock.Object);
+			this.nefsCompressorMock.Object,
+			this.exeHeaderFinderMock.Object);
 	}
 
 	private void MockMessageBox(DialogResult result)
