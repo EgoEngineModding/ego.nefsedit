@@ -1,5 +1,9 @@
 // See LICENSE.txt for license information.
 
+using System.Buffers.Binary;
+using System.Runtime.InteropServices;
+using VictorBush.Ego.NefsLib.IO;
+
 namespace VictorBush.Ego.NefsLib.Utility;
 
 /// <summary>
@@ -36,6 +40,7 @@ internal class PeHelper
 	/// Offset in a PE section table to the value that specifies the offset to raw data.
 	/// </summary>
 	public const uint PeSectionRawDataOffset = 20;
+	private const uint PeSectionRawDataSizeOffset = 16;
 
 	/// <summary>
 	/// Size of a PE section table.
@@ -48,57 +53,87 @@ internal class PeHelper
 	public const uint PeSizeOfOptionalHeaderOffset = 0x14;
 
 	/// <summary>
-	/// Gets the offset to a PE section data in an exectuable file.
+	/// Identify whether the stream is the expected file type.
 	/// </summary>
-	/// <param name="exeBytes">The executable.</param>
+	/// <returns>True if the stream is the expected file type.</returns>
+	public static bool Identify(Stream stream)
+	{
+		Span<byte> buffer = stackalloc byte[2];
+		stream.ReadExactly(buffer);
+		var identifier = BinaryPrimitives.ReadUInt16LittleEndian(buffer);
+		stream.Seek(-2, SeekOrigin.Current);
+		return identifier == DosHeaderSignature;
+	}
+
+	/// <summary>
+	/// Gets the offset and size of the section data with the given name.
+	/// </summary>
+	/// <param name="stream">The input stream.</param>
 	/// <param name="sectionName">The section name to get.</param>
-	/// <param name="offset">The output address to section data.</param>
-	/// <returns>Whether the offset was found successfully.</returns>
-	public static bool GetRawOffsetToSection(byte[] exeBytes, string sectionName, out ulong offset)
+	/// <returns>The section data offset and size, or null if it was not found.</returns>
+	public static (ulong Position, ulong Size)? GetSectionDataInfo(
+		Stream stream,
+		string sectionName)
 	{
 		// Verify DOS header stub
-		if (BitConverter.ToUInt16(exeBytes, 0) != DosHeaderSignature)
+		if (!Identify(stream))
 		{
 			throw new ArgumentException("Invalid DOS header signature.");
 		}
 
 		// Get PE header offset
-		var peOffset = BitConverter.ToUInt32(exeBytes, (int)PeOffsetOffset);
+		using var br = new EndianBinaryReader(stream, true);
+		var peOffset = ReadUInt32(br, (int)PeOffsetOffset);
 
 		// Verify PE signature
-		if (BitConverter.ToUInt32(exeBytes, (int)peOffset) != PeHeaderSignature)
+		if (ReadUInt32(br, peOffset) != PeHeaderSignature)
 		{
 			throw new ArgumentException("Invalid PE header signature.");
 		}
 
 		// Get optional header size
-		var optionalHeaderSize = BitConverter.ToUInt16(exeBytes, (int)(peOffset + PeSizeOfOptionalHeaderOffset));
+		var optionalHeaderSize = ReadUInt16(br, peOffset + PeSizeOfOptionalHeaderOffset);
 
 		// Get offset to section table
 		var sectionTableOffset = peOffset + PeOptionalHeaderOffset + optionalHeaderSize;
 
-		// Get nubmer of sections
-		var numSections = BitConverter.ToUInt16(exeBytes, (int)(peOffset + PeNumberOfSectionsOffset));
+		// Get number of sections
+		var numSections = ReadUInt16(br, peOffset + PeNumberOfSectionsOffset);
 
 		// Search for the section name
+		Span<byte> nameBuffer = stackalloc byte[8];
 		for (var i = 0; i < numSections; ++i)
 		{
-			var sectionOffset = sectionTableOffset + (i * PeSectionSize);
+			var sectionHeaderOffset = sectionTableOffset + (i * PeSectionSize);
 
 			// Check section name
-			var thisSectionName = StringHelper.TryReadNullTerminatedAscii(exeBytes, (int)sectionOffset, 8);
+			br.BaseStream.Seek(sectionHeaderOffset, SeekOrigin.Begin);
+			br.BaseStream.ReadExactly(nameBuffer);
+			var thisSectionName = StringHelper.TryReadNullTerminatedAscii(nameBuffer);
 			if (thisSectionName != sectionName)
 			{
 				continue;
 			}
 
-			// Get address
-			offset = BitConverter.ToUInt32(exeBytes, (int)(sectionOffset + PeSectionRawDataOffset));
-			return true;
+			// Get section data info
+			var sectionOffset = ReadUInt32(br, sectionHeaderOffset + PeSectionRawDataOffset);
+			var sectionSize = ReadUInt32(br, sectionHeaderOffset + PeSectionRawDataSizeOffset);
+			return (sectionOffset, sectionSize);
 		}
 
 		// Didn't find it
-		offset = 0;
-		return false;
+		return null;
+	}
+
+	private static ushort ReadUInt16(EndianBinaryReader reader, long offset)
+	{
+		reader.BaseStream.Seek(offset, SeekOrigin.Begin);
+		return reader.ReadUInt16();
+	}
+
+	private static uint ReadUInt32(EndianBinaryReader reader, long offset)
+	{
+		reader.BaseStream.Seek(offset, SeekOrigin.Begin);
+		return reader.ReadUInt32();
 	}
 }

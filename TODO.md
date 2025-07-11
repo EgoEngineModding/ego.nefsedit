@@ -10,5 +10,5 @@
 - Add protection against saving over an archive in a game's directory (or always force a "Save As").
 - Support writing multiple volumes
 - Support writing split archives across multiple files
-- Bring back auto-search of nefs headers in game exe
+- Allow removing files (adjust flags like IsLastSibling)
 - Determine behavior for extracting duplicate and removed files

@@ -34,6 +34,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 	/// <param name="nefsReader">The nefs reader to use.</param>
 	/// <param name="nefsWriter">The nefs wrtier to use.</param>
 	/// <param name="nefsTransformer">The nefs transformer to use.</param>
+	/// <param name="exeHeaderFinder">The exe header finder.</param>
 	public NefsEditWorkspace(
 		IFileSystem fileSystem,
 		IProgressService progressService,
@@ -41,7 +42,8 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		ISettingsService settingsService,
 		INefsReader nefsReader,
 		INefsWriter nefsWriter,
-		INefsTransformer nefsTransformer)
+		INefsTransformer nefsTransformer,
+		INefsExeHeaderFinder exeHeaderFinder)
 	{
 		FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 		ProgressService = progressService ?? throw new ArgumentNullException(nameof(progressService));
@@ -50,6 +52,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		NefsReader = nefsReader ?? throw new ArgumentNullException(nameof(nefsReader));
 		NefsWriter = nefsWriter ?? throw new ArgumentNullException(nameof(nefsWriter));
 		NefsTransformer = nefsTransformer ?? throw new ArgumentNullException(nameof(nefsTransformer));
+		ExeHeaderFinder = exeHeaderFinder;
 
 		Archive = null;
 		ArchiveSource = null;
@@ -101,6 +104,8 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 	public IReadOnlyList<NefsItem> SelectedItems => this.selectedItems;
 
 	private INefsTransformer NefsTransformer { get; }
+
+	private INefsExeHeaderFinder ExeHeaderFinder { get; }
 
 	private IProgressService ProgressService { get; }
 
@@ -297,7 +302,7 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 	/// <inheritdoc/>
 	public async Task<bool> OpenArchiveByDialogAsync()
 	{
-		(var result, var source) = UiService.ShowNefsEditOpenFileDialog(SettingsService, ProgressService, NefsReader);
+		var (result, source) = UiService.ShowNefsEditOpenFileDialog(SettingsService, ProgressService, NefsReader, ExeHeaderFinder);
 		if (result != DialogResult.OK || source is null)
 		{
 			return false;

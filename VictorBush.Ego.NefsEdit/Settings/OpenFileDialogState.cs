@@ -49,4 +49,6 @@ public class OpenFileDialogState
 	public string NefsFilePath { get; set; } = "";
 
 	public string HeadlessExePath { get; set; } = "";
+
+	public string HeadlessDataDirPath { get; set; } = "";
 }

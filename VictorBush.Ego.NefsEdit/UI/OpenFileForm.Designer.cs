@@ -43,6 +43,9 @@
             this.gameExeFileButton = new System.Windows.Forms.Button();
             this.headlessGameExeFileTextBox = new System.Windows.Forms.TextBox();
             this.gameExeFileLabel = new System.Windows.Forms.Label();
+            this.headlessDataDirButton = new System.Windows.Forms.Button();
+            this.headlessDataDirTextBox = new System.Windows.Forms.TextBox();
+            this.headlessDataDirLabel = new System.Windows.Forms.Label();
             this.headlessCustomTabPage = new System.Windows.Forms.TabPage();
             this.label6 = new System.Windows.Forms.Label();
             this.splitSecondarySizeTextBox = new System.Windows.Forms.TextBox();
@@ -173,6 +176,9 @@
             this.headlessTabPage.Controls.Add(this.gameExeFileButton);
             this.headlessTabPage.Controls.Add(this.headlessGameExeFileTextBox);
             this.headlessTabPage.Controls.Add(this.gameExeFileLabel);
+            this.headlessTabPage.Controls.Add(this.headlessDataDirButton);
+            this.headlessTabPage.Controls.Add(this.headlessDataDirTextBox);
+            this.headlessTabPage.Controls.Add(this.headlessDataDirLabel);
             this.headlessTabPage.Location = new System.Drawing.Point(4, 32);
             this.headlessTabPage.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.headlessTabPage.Name = "headlessTabPage";
@@ -197,11 +203,11 @@
             // gameDatFilesLabel
             //
             this.gameDatFilesLabel.AutoSize = true;
-            this.gameDatFilesLabel.Location = new System.Drawing.Point(13, 80);
+            this.gameDatFilesLabel.Location = new System.Drawing.Point(9, 148);
             this.gameDatFilesLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
             this.gameDatFilesLabel.Name = "gameDatFilesLabel";
             this.gameDatFilesLabel.Size = new System.Drawing.Size(119, 20);
-            this.gameDatFilesLabel.TabIndex = 15;
+            this.gameDatFilesLabel.TabIndex = 16;
             this.gameDatFilesLabel.Text = "Data Files";
             //
             // gameDatFilesListBox
@@ -211,11 +217,11 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.gameDatFilesListBox.FormattingEnabled = true;
             this.gameDatFilesListBox.ItemHeight = 20;
-            this.gameDatFilesListBox.Location = new System.Drawing.Point(13, 108);
+            this.gameDatFilesListBox.Location = new System.Drawing.Point(13, 176);
             this.gameDatFilesListBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
             this.gameDatFilesListBox.Name = "gameDatFilesListBox";
-            this.gameDatFilesListBox.Size = new System.Drawing.Size(391, 184);
-            this.gameDatFilesListBox.TabIndex = 14;
+            this.gameDatFilesListBox.Size = new System.Drawing.Size(391, 124);
+            this.gameDatFilesListBox.TabIndex = 16;
             //
             // gameExeFileButton
             //
@@ -248,6 +254,38 @@
             this.gameExeFileLabel.Size = new System.Drawing.Size(124, 20);
             this.gameExeFileLabel.TabIndex = 12;
             this.gameExeFileLabel.Text = "Game Executable";
+            //
+            // headlessDataDirButton
+            //
+            this.headlessDataDirButton.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
+            this.headlessDataDirButton.Location = new System.Drawing.Point(372, 102);
+            this.headlessDataDirButton.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.headlessDataDirButton.Name = "headlessDataDirButton";
+            this.headlessDataDirButton.Size = new System.Drawing.Size(35, 35);
+            this.headlessDataDirButton.TabIndex = 15;
+            this.headlessDataDirButton.Text = "...";
+            this.headlessDataDirButton.UseVisualStyleBackColor = true;
+            this.headlessDataDirButton.Click += new System.EventHandler(this.HeadlessDataDirButton_Click);
+            //
+            // headlessDataDirTextBox
+            //
+            this.headlessDataDirTextBox.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left)
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.headlessDataDirTextBox.Location = new System.Drawing.Point(13, 106);
+            this.headlessDataDirTextBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.headlessDataDirTextBox.Name = "headlessDataDirTextBox";
+            this.headlessDataDirTextBox.Size = new System.Drawing.Size(349, 27);
+            this.headlessDataDirTextBox.TabIndex = 14;
+            //
+            // headlessDataDirLabel
+            //
+            this.headlessDataDirLabel.AutoSize = true;
+            this.headlessDataDirLabel.Location = new System.Drawing.Point(9, 80);
+            this.headlessDataDirLabel.Margin = new System.Windows.Forms.Padding(4, 0, 4, 0);
+            this.headlessDataDirLabel.Name = "headlessDataDirLabel";
+            this.headlessDataDirLabel.Size = new System.Drawing.Size(124, 20);
+            this.headlessDataDirLabel.TabIndex = 14;
+            this.headlessDataDirLabel.Text = "Data Directory";
             //
             // headlessCustomTabPage
             //
@@ -495,6 +533,9 @@
         private System.Windows.Forms.Button gameExeFileButton;
         private System.Windows.Forms.TextBox headlessGameExeFileTextBox;
         private System.Windows.Forms.Label gameExeFileLabel;
+        private System.Windows.Forms.Button headlessDataDirButton;
+        private System.Windows.Forms.TextBox headlessDataDirTextBox;
+        private System.Windows.Forms.Label headlessDataDirLabel;
         private System.Windows.Forms.Label gameDatFilesLabel;
         private System.Windows.Forms.ListBox gameDatFilesListBox;
         private System.Windows.Forms.Button gameDatRefreshButton;

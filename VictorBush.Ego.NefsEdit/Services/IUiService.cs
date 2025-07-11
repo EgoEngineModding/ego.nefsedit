@@ -43,11 +43,13 @@ internal interface IUiService
 	/// <param name="settingsService">The settings service.</param>
 	/// <param name="progressService">The progress service.</param>
 	/// <param name="reader">The nefs reader.</param>
+	/// <param name="exeHeaderFinder">The exe header finder.</param>
 	/// <returns>The dialog result and the archive source (if applicable).</returns>
 	(DialogResult Result, NefsArchiveSource? Source) ShowNefsEditOpenFileDialog(
 		ISettingsService settingsService,
 		IProgressService progressService,
-		INefsReader reader);
+		INefsReader reader,
+		INefsExeHeaderFinder exeHeaderFinder);
 
 	/// <summary>
 	/// Shows an open file dialog.
