@@ -3,8 +3,6 @@
 using System.Buffers.Binary;
 using System.IO.Abstractions;
 using System.Runtime.InteropServices;
-using LibObjectFile.Elf;
-using LibObjectFile.PE;
 using Microsoft.Extensions.Logging;
 using VictorBush.Ego.NefsLib.ArchiveSource;
 using VictorBush.Ego.NefsLib.Header;
@@ -45,18 +43,21 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 		try
 		{
 			using var _ = p.BeginTask(findDataSectionWeight, "Finding '.data' section in exe");
-			if (this.fileSystem.Path.GetExtension(exePath) == ".exe")
+			if (PeHelper.Identify(exeStream))
 			{
-				var peFile = PEFile.Read(exeStream);
-				var dataSection = peFile.Sections.FirstOrDefault(x => x.Name.Name == ".data");
+				var dataSection = PeHelper.GetSectionDataInfo(exeStream, ".data");
 				dataSectionStart = Convert.ToInt64(dataSection?.Position);
 				dataSectionEnd = dataSectionStart + Convert.ToInt64(dataSection?.Size);
 			}
-			else
+			else if (ElfHelper.Identify(exeStream))
 			{
-				// Assume elf, no support for Mach-O
-				var elfFile = ElfFile.Read(exeStream);
-				var dataSection = elfFile.Sections.FirstOrDefault(x => x.Name.Value == ".data");
+				var dataSection = ElfHelper.GetSectionDataInfo(exeStream, ".data");
+				dataSectionStart = Convert.ToInt64(dataSection?.Position);
+				dataSectionEnd = dataSectionStart + Convert.ToInt64(dataSection?.Size);
+			}
+			else if (MachOHelper.Identify(exeStream))
+			{
+				var dataSection = MachOHelper.GetSectionDataInfo(exeStream, "__data");
 				dataSectionStart = Convert.ToInt64(dataSection?.Position);
 				dataSectionEnd = dataSectionStart + Convert.ToInt64(dataSection?.Size);
 			}
@@ -288,7 +289,7 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 		    var nameBytes = new byte[256];
 		    await reader.BaseStream.ReadExactlyAsync(nameBytes, p.CancellationToken).ConfigureAwait(false);
 
-		    return StringHelper.TryReadNullTerminatedAscii(nameBytes, 0, nameBytes.Length);
+		    return StringHelper.TryReadNullTerminatedAscii(nameBytes);
 	    }
 
 	    protected static async ValueTask<T[]> ReadTocEntriesAsync<T>(

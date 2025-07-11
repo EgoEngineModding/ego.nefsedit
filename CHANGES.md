@@ -4,6 +4,7 @@
 - Added support for reading NeFS versions 0.1.0, 0.2.0, 1.3.0, 1.4.0, 1.5.0, 1.5.1
 - Added support for reading split data and multiple volume archives
 - Added support for reading big-endian NeFS headers
+- Improved accuracy of header auto-search in game executables, added support for elf and mach-o (Linux, Mac, PS3 exe)
 
 ## Version 0.6.0
 - Added support for NeFS version 1.6.

@@ -15,7 +15,6 @@
 		</AssemblyAttribute>
 	</ItemGroup>
 	<ItemGroup>
-		<PackageReference Include="LibObjectFile" />
 		<PackageReference Include="Microsoft.Extensions.Logging" />
 		<PackageReference Include="System.Data.DataSetExtensions" />
 		<PackageReference Include="System.IO.Abstractions" />

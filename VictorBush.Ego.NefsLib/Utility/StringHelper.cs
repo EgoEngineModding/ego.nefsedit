@@ -1,5 +1,6 @@
 // See LICENSE.txt for license information.
 
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace VictorBush.Ego.NefsLib.Utility;
@@ -68,30 +69,15 @@ public static class StringHelper
 	/// Tries to read a null terminated ASCII string. If no null-terminator is found, an empty string is returned.
 	/// </summary>
 	/// <param name="bytes">The input bytes.</param>
-	/// <param name="startOffset">Offset into the input array.</param>
-	/// <param name="maxSize">Max number of characters long.</param>
 	/// <returns>The string.</returns>
-	public static string TryReadNullTerminatedAscii(byte[] bytes, int startOffset, int maxSize)
+	public static string TryReadNullTerminatedAscii(ReadOnlySpan<byte> bytes)
 	{
 		// Find the next null terminator
-		var endOffset = startOffset + maxSize;
-		var nullOffset = endOffset;
-		for (var i = startOffset; i < endOffset; ++i)
-		{
-			if (bytes[i] == 0)
-			{
-				nullOffset = i;
-				break;
-			}
-		}
-
-		if (nullOffset == endOffset)
-		{
-			// No null terminator found, assume end of part 3. There can be a few garbage bytes at the end of this part.
-			return "";
-		}
-
-		// Get the string
-		return Encoding.ASCII.GetString(bytes, startOffset, nullOffset - startOffset);
+		var nullOffset = bytes.IndexOf((byte)0);
+		return nullOffset == -1 ?
+			// No null terminator found
+			"" :
+			// Get the string
+			Encoding.ASCII.GetString(bytes[..nullOffset]);
 	}
 }
