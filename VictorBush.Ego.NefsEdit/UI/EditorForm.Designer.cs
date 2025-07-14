@@ -29,6 +29,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 		private void InitializeComponent()
 		{
 			this.components = new System.ComponentModel.Container();
+			System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(EditorForm));
 			this.mainMenuStrip = new MenuStrip();
 			this.fileMainMenuItem = new ToolStripMenuItem();
 			this.openMainMenuItem = new ToolStripMenuItem();
@@ -61,13 +62,13 @@ namespace VictorBush.Ego.NefsEdit.UI
 			this.optionsMainMenuItem = new ToolStripMenuItem();
 			this.helpMainMenuItem = new ToolStripMenuItem();
 			this.aboutMainMenuItem = new ToolStripMenuItem();
+			this.discordToolStripMenuItem = new ToolStripMenuItem();
 			this.vS2005Theme1 = new WeifenLuo.WinFormsUI.Docking.VS2015BlueTheme();
 			this.browserDockPanel = new WeifenLuo.WinFormsUI.Docking.DockPanel();
 			this.itemContextMenuStrip = new ContextMenuStrip(this.components);
 			this.quickExtractContextMenuItem = new ToolStripMenuItem();
 			this.extractToContextMenuItem = new ToolStripMenuItem();
 			this.ReplaceContextMenuItem = new ToolStripMenuItem();
-			this.discordToolStripMenuItem = new ToolStripMenuItem();
 			this.mainMenuStrip.SuspendLayout();
 			this.itemContextMenuStrip.SuspendLayout();
 			SuspendLayout();
@@ -294,6 +295,13 @@ namespace VictorBush.Ego.NefsEdit.UI
 			this.aboutMainMenuItem.Text = "About";
 			this.aboutMainMenuItem.Click += AboutToolStripMenuItem_Click;
 			// 
+			// discordToolStripMenuItem
+			// 
+			this.discordToolStripMenuItem.Name = "discordToolStripMenuItem";
+			this.discordToolStripMenuItem.Size = new Size(63, 20);
+			this.discordToolStripMenuItem.Text = "Discord";
+			this.discordToolStripMenuItem.Click += discordToolStripMenuItem_Click;
+			// 
 			// browserDockPanel
 			// 
 			this.browserDockPanel.Dock = DockStyle.Fill;
@@ -332,13 +340,6 @@ namespace VictorBush.Ego.NefsEdit.UI
 			this.ReplaceContextMenuItem.Text = "Replace...";
 			this.ReplaceContextMenuItem.Click += ReplaceToolStripMenuItem_Click;
 			// 
-			// discordToolStripMenuItem
-			// 
-			this.discordToolStripMenuItem.Name = "discordToolStripMenuItem";
-			this.discordToolStripMenuItem.Size = new Size(63, 20);
-			this.discordToolStripMenuItem.Text = "Discord";
-			this.discordToolStripMenuItem.Click += discordToolStripMenuItem_Click;
-			// 
 			// EditorForm
 			// 
 			AutoScaleDimensions = new SizeF(7F, 16F);
@@ -346,6 +347,7 @@ namespace VictorBush.Ego.NefsEdit.UI
 			ClientSize = new Size(1096, 850);
 			Controls.Add(this.browserDockPanel);
 			Controls.Add(this.mainMenuStrip);
+			Icon = (Icon)resources.GetObject("$this.Icon");
 			Margin = new Padding(3, 2, 3, 2);
 			Name = "EditorForm";
 			StartPosition = FormStartPosition.CenterScreen;
