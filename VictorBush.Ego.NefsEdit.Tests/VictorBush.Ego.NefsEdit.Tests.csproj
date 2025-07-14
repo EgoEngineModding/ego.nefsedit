@@ -2,7 +2,11 @@
 	<PropertyGroup>
 		<TargetFramework>net8.0-windows</TargetFramework>
 		<OutputType>Library</OutputType>
+		<ApplicationIcon>icon.ico</ApplicationIcon>
 	</PropertyGroup>
+	<ItemGroup>
+	  <Content Include="icon.ico" />
+	</ItemGroup>
 
 	<ItemGroup>
 		<ProjectReference Include="..\VictorBush.Ego.NefsEdit\VictorBush.Ego.NefsEdit.csproj" />

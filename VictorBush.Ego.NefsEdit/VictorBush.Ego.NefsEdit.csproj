@@ -8,6 +8,8 @@
     <Nullable>enable</Nullable>
 
 	  <Title>NeFS Edit</Title>
+
+	  <ApplicationIcon>icon.ico</ApplicationIcon>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <CodeAnalysisRuleSet></CodeAnalysisRuleSet>
@@ -31,6 +33,7 @@
     <PackageReference Include="DockPanelSuite.ThemeVS2015" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="icon.ico" />
     <Content Include="Resources\question.ico" />
   </ItemGroup>
 </Project>

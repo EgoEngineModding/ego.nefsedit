@@ -1,6 +1,7 @@
 // See LICENSE.txt for license information.
 
 using Microsoft.Extensions.Logging;
+using System.Diagnostics;
 using VictorBush.Ego.NefsEdit.Commands;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.Workspace;
@@ -387,5 +388,21 @@ internal partial class EditorForm : Form
 		var separator = archive != null ? " - " : "";
 
 		Text = $"{archivePath}{modifiedStar}{separator}NeFS Edit";
+	}
+
+	private void discordToolStripMenuItem_Click(object sender, EventArgs e)
+	{
+		try
+		{
+			System.Diagnostics.Process.Start(new ProcessStartInfo
+			{
+				FileName = "https://discord.gg/pCcZrtCm3G",
+				UseShellExecute = true
+			});
+		}
+		catch (Exception ex)
+		{
+			MessageBox.Show("Unable to open Discord link: " + ex.Message);
+		}
 	}
 }
