@@ -29,8 +29,6 @@ internal class NefsReaderStrategy130 : NefsReaderStrategy
 		NefsWriterSettings detectedSettings,
 		NefsProgress p)
 	{
-		Log.LogInformation("Detected NeFS version 1.3.0.");
-
 		// Calc weight of each task (7 parts plus header)
 		var weight = 1.0f / 8.0f;
 

@@ -27,8 +27,6 @@ internal class NefsReaderStrategy151 : NefsReaderStrategy150
 	public override async Task<INefsHeader> ReadHeaderAsync(EndianBinaryReader reader, long primaryOffset,
 		NefsWriterSettings detectedSettings, NefsProgress p)
 	{
-		Log.LogInformation("Detected NeFS version 1.5.1.");
-
 		// Calc weight of each task (5 parts + header)
 		var weight = 1.0f / 6.0f;
 
