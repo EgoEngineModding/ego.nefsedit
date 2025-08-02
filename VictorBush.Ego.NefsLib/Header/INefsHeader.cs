@@ -1,5 +1,6 @@
 // See LICENSE.txt for license information.
 
+using VictorBush.Ego.NefsLib.IO;
 using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.Header;
@@ -13,6 +14,11 @@ public interface INefsHeader
 	/// Gets the header version.
 	/// </summary>
 	NefsVersion Version { get; }
+
+	/// <summary>
+	/// Gets the writer settings.
+	/// </summary>
+	NefsWriterSettings WriterSettings { get; }
 
 	/// <summary>
 	/// Gets whether the header is from a little-endian system.

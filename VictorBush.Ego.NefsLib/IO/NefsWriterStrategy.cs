@@ -19,6 +19,7 @@ internal abstract class NefsWriterStrategy
 
 		inst = version switch
 		{
+			NefsVersion.Version151 => new NefsWriterStrategy151(),
 			NefsVersion.Version200 => new NefsWriterStrategy200(),
 			_ => throw new NotImplementedException($"Support for {version.ToPrettyString()} is not implemented.")
 		};

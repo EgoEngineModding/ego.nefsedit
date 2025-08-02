@@ -133,7 +133,7 @@ public class NefsWriter : INefsWriter
 			FileSystem.ResetOrCreateDirectory(fileWorkDir);
 
 			// Transform the file
-			var destFilePath = Path.Combine(workDir, "inject.dat");
+			var destFilePath = Path.Combine(fileWorkDir, "inject.dat");
 			var newSize = await Transformer.TransformFileAsync(item.DataSource, destFilePath, item.Transform, p);
 
 			// Update data source to point to the transformed temp file
@@ -249,15 +249,20 @@ public class NefsWriter : INefsWriter
 		// Prepare streams
 		var dataOffset = headerBuilder.ComputeDataOffset(sourceHeader, items);
 		var volumeSource = new NefsVolumeSource(filePath, dataOffset, sourceHeader.SplitSize);
+		const FileMode fileMode = FileMode.OpenOrCreate;
+		const FileAccess fileAccess = FileAccess.ReadWrite;
+		const FileShare fileShare = FileShare.None;
 		using Stream dataStream = !volumeSource.IsSplit
-			? FileSystem.File.OpenWrite(filePath)
+			? FileSystem.File.Open(filePath, fileMode, fileAccess, fileShare)
 			: new SplitFileStream(volumeSource, FileSystem, new FileStreamOptions
 			{
-				Mode = FileMode.OpenOrCreate,
-				Access = FileAccess.ReadWrite,
-				Share = FileShare.None
+				Mode = fileMode,
+				Access = fileAccess,
+				Share = fileShare
 			});
-		using var headerStream = !volumeSource.IsSplit ? dataStream : FileSystem.File.OpenWrite(filePath);
+		using var headerStream = !volumeSource.IsSplit
+			? dataStream
+			: FileSystem.File.Open(filePath, fileMode, fileAccess, fileShare);
 
 		// Write item data
 		long dataSize;
@@ -281,8 +286,7 @@ public class NefsWriter : INefsWriter
 			await strategy.WriteHeaderAsync(writer, header, 0, p);
 		}
 
-		// TODO: support XOR
-		if (false)
+		if (header.WriterSettings.IsXorEncoded)
 		{
 			await EncodeXorIntroAsync(writer.BaseStream, 0, p.CancellationToken);
 		}
