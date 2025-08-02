@@ -1,5 +1,5 @@
 # TODO
-- Checksum in block entries and in 1.5.1 header.
+- Checksum in 1.5.1 header.
 - Computing hashes in hash table.
 - Logging verbosity options (i.e., settings save/lod, etc can be debug). Cleanup info/dbg/wrn/error usage.
 - Save window position, size, pane locations, etc for next startup.

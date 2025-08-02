@@ -208,11 +208,11 @@ public class NefsTransformer : INefsTransformer
 				bytesRemaining -= nextChunkSize;
 
 				// Transform chunk and write to output stream
-				var chunkSize = await TransformChunkAsync(input, (uint)nextChunkSize, output, transform, p);
+				var (chunkSize, checksum) = await TransformChunkAsync(input, (uint)nextChunkSize, output, transform, p);
 				cumulativeChunkSize += chunkSize;
 
 				// Record chunk info
-				var chunk = new NefsDataChunk(chunkSize, cumulativeChunkSize, transform);
+				var chunk = new NefsDataChunk(chunkSize, cumulativeChunkSize, transform) { Checksum = checksum };
 				chunks.Add(chunk);
 			}
 		}
@@ -222,8 +222,7 @@ public class NefsTransformer : INefsTransformer
 	}
 
 	/// <inheritdoc/>
-	public async Task<uint> TransformChunkAsync(
-		Stream input,
+	public async Task<(uint size, ushort checksum)> TransformChunkAsync(Stream input,
 		uint inputChunkSize,
 		Stream output,
 		NefsDataTransform transform,
@@ -235,6 +234,12 @@ public class NefsTransformer : INefsTransformer
 		// Copy raw chunk to temp stream
 		await input.CopyPartialAsync(transformedStream, inputChunkSize, p.CancellationToken);
 		transformedStream.Seek(0, SeekOrigin.Begin);
+		ushort checksum = 0;
+		if (transform.ComputeChecksum)
+		{
+			checksum = ChecksumCrc32.ComputeCrc16(transformedStream.GetBuffer()
+				.AsSpan(0, Convert.ToInt32(inputChunkSize)));
+		}
 
 		try
 		{
@@ -268,11 +273,16 @@ public class NefsTransformer : INefsTransformer
 				transformedStream.SetLength(tempStream.Length);
 			}
 
+			if (transform.IsLzssCompressed)
+			{
+				throw new NotImplementedException("LZSS compression is not implemented.");
+			}
+
 			// Copy transformed chunk to output stream
 			await transformedStream.CopyToAsync(output, p.CancellationToken);
 
 			// Return size of transformed chunk
-			return (uint)transformedStream.Length;
+			return ((uint)transformedStream.Length, checksum);
 		}
 		finally
 		{

@@ -53,6 +53,8 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 {
 	protected T Header { get; } = header;
 
+	protected virtual bool SupportsBlockChecksum => false;
+
 	public override NefsItemList Build(string dataFilePath, NefsProgress p)
 	{
 		var weight = 1f / Header.NumEntries;
@@ -144,14 +146,14 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 			}
 
 			// Create data chunk info
-			var chunk = new NefsDataChunk(size, cumulativeSize, transform);
+			var chunk = new NefsDataChunk(size, cumulativeSize, transform) { Checksum = block.Checksum };
 			chunks.Add(chunk);
 		}
 
 		return chunks;
 	}
 
-	protected abstract (uint End, uint Transformation) GetBlock(uint blockIndex);
+	protected abstract (uint End, uint Transformation, ushort Checksum) GetBlock(uint blockIndex);
 
 	protected NefsDataTransform? GetTransform(uint blockTransformation)
 	{
@@ -163,11 +165,14 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 	{
 		return type switch
 		{
-			NefsDataTransformType.Zlib => new NefsDataTransform(Header.BlockSize, true),
-			NefsDataTransformType.Aes => new NefsDataTransform(Header.BlockSize, false, Header.AesKey),
+			NefsDataTransformType.Zlib => new NefsDataTransform(Header.BlockSize, true)
+				{ ComputeChecksum = SupportsBlockChecksum },
+			NefsDataTransformType.Aes => new NefsDataTransform(Header.BlockSize, false, Header.AesKey)
+				{ ComputeChecksum = SupportsBlockChecksum },
 			NefsDataTransformType.Lzss => new NefsDataTransform(Header.BlockSize, false)
-				{ IsLzssCompressed = true },
-			NefsDataTransformType.None => new NefsDataTransform(Header.BlockSize, false),
+				{ ComputeChecksum = SupportsBlockChecksum, IsLzssCompressed = true },
+			NefsDataTransformType.None => new NefsDataTransform(Header.BlockSize, false)
+				{ ComputeChecksum = SupportsBlockChecksum },
 			_ => null,
 		};
 	}

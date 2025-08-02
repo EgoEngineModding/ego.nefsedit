@@ -19,9 +19,9 @@ internal class NefsItemListBuilder020(NefsHeader020 header, ILogger logger)
 	}
 
 	/// <inheritdoc />
-	protected override (uint End, uint Transformation) GetBlock(uint blockIndex)
+	protected override (uint End, uint Transformation, ushort Checksum) GetBlock(uint blockIndex)
 	{
 		var block = Header.BlockTable.Entries[Convert.ToInt32(blockIndex)];
-		return (block.End, block.Transformation);
+		return (block.End, block.Transformation, 0);
 	}
 }

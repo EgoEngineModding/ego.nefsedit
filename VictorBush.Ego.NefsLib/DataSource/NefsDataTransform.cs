@@ -18,6 +18,11 @@ public record NefsDataTransform
 	public bool IsLzssCompressed { get; init; }
 
 	/// <summary>
+	/// Whether the checksum should be computed for the blocks.
+	/// </summary>
+	public bool ComputeChecksum { get; init; }
+
+	/// <summary>
 	/// Initializes a new instance of the <see cref="NefsDataTransform"/> class.
 	/// </summary>
 	/// <param name="chunkSize">The chunk size to use.</param>

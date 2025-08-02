@@ -107,8 +107,7 @@ public interface INefsTransformer
 	/// <param name="transform">The transformation to apply.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>The size (in bytes) of the transformed chunk.</returns>
-	Task<uint> TransformChunkAsync(
-		Stream input,
+	Task<(uint size, ushort checksum)> TransformChunkAsync(Stream input,
 		uint inputChunkSize,
 		Stream output,
 		NefsDataTransform transform,

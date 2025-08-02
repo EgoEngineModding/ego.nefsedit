@@ -36,6 +36,11 @@ public class NefsDataChunk
 	public NefsDataTransform Transform { get; }
 
 	/// <summary>
+	/// The CRC16 checksum.
+	/// </summary>
+	public ushort Checksum { get; init; }
+
+	/// <summary>
 	/// Creats a list of chunks given a list of cumulative chunk sizes.
 	/// </summary>
 	/// <param name="cumulativeSizes">List of cumulative chunk sizes.</param>
