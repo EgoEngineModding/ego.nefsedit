@@ -127,9 +127,7 @@ public class NefsWriter : INefsWriter
 			}
 
 			// Prepare the working directory
-			var filePathInArchive = items.GetItemFilePath(item.Id);
-			var filePathInArchiveHash = HashHelper.HashStringMD5(filePathInArchive);
-			var fileWorkDir = Path.Combine(workDir, filePathInArchiveHash);
+			var fileWorkDir = Path.Combine(workDir, item.Id.ToString());
 			FileSystem.ResetOrCreateDirectory(fileWorkDir);
 
 			// Transform the file

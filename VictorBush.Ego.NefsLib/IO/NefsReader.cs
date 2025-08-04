@@ -392,9 +392,12 @@ public class NefsReader : INefsReader
 		using var reader = new EndianBinaryReader(stream, isLittleEndian);
 		var version = await ReadVersionAsync(reader, primaryOffset, p).ConfigureAwait(false);
 		var strategy = NefsReaderStrategy.Get(version);
+		Log.LogInformation("Detected NeFS {version}.", version.ToPrettyString());
 
 		var header = await strategy.ReadHeaderAsync(reader, primaryOffset, primarySize, secondaryOffset, secondarySize, p)
 			.ConfigureAwait(false);
+		Log.LogInformation("Header references volumes: {volumes}",
+			string.Join(", ", header.Volumes.Select(x => x.Name)));
 		return header;
 	}
 

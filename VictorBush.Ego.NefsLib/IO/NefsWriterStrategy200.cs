@@ -21,104 +21,68 @@ internal class NefsWriterStrategy200 : NefsWriterStrategy160Base<NefsHeader200>
 		var toc = header.TableOfContents;
 
 		var stream = writer.BaseStream;
-		using (p.BeginTask(weight, "Writing header intro"))
+		using (p.BeginTask(weight, "Writing header"))
 		{
 			var offset = primaryOffset;
 			await WriteTocEntryAsync(writer, offset, header.Intro, p).ConfigureAwait(false);
 		}
 
-		using (p.BeginTask(weight, "Writing header intro table of contents"))
+		using (p.BeginTask(weight, "Writing header table of contents"))
 		{
 			var offset = primaryOffset + NefsTocHeaderA160.ByteCount;
 			await WriteTocEntryAsync(writer, offset, toc, p).ConfigureAwait(false);
 		}
 
-		using (p.BeginTask(weight, "Writing header part 1"))
+		using (p.BeginTask(weight, "Writing entry table"))
 		{
 			var offset = primaryOffset + toc.EntryTableStart;
 			await WriteTocTableAsync(writer, offset, header.EntryTable, p).ConfigureAwait(false);
 		}
 
-		using (p.BeginTask(weight, "Writing header part 2"))
+		using (p.BeginTask(weight, "Writing shared entry info table"))
 		{
 			var offset = primaryOffset + toc.SharedEntryInfoTableStart;
 			await WriteTocTableAsync(writer, offset, header.SharedEntryInfoTable, p).ConfigureAwait(false);
 		}
 
-		using (p.BeginTask(weight, "Writing header part 3"))
+		using (p.BeginTask(weight, "Writing name table"))
 		{
 			var offset = primaryOffset + toc.NameTableStart;
 			await WriteHeaderPart3Async(stream, offset, header.NameTable, p).ConfigureAwait(false);
 		}
 
-		using (p.BeginTask(weight, "Writing header part 4"))
+		using (p.BeginTask(weight, "Writing block table"))
 		{
 			var offset = primaryOffset + toc.BlockTableStart;
 			await WriteTocTableAsync(writer, offset, header.BlockTable, p).ConfigureAwait(false);
 		}
 
-		using (p.BeginTask(weight, "Writing header part 5"))
+		using (p.BeginTask(weight, "Writing volume info table"))
 		{
 			var offset = primaryOffset + toc.VolumeInfoTableStart;
 			await WriteTocTableAsync(writer, offset, header.VolumeInfoTable, p).ConfigureAwait(false);
 		}
 
-		using (p.BeginTask(weight, "Writing header part 6"))
+		using (p.BeginTask(weight, "Writing writeable entry table"))
 		{
 			var offset = primaryOffset + toc.WritableEntryTableStart;
 			await WriteTocTableAsync(writer, offset, header.WriteableEntryTable, p).ConfigureAwait(false);
 		}
 
-		using (p.BeginTask(weight, "Writing header part 7"))
+		using (p.BeginTask(weight, "Writing writeable shared entry info table"))
 		{
 			var offset = primaryOffset + toc.WritableSharedEntryInfoTableStart;
 			await WriteTocTableAsync(writer, offset, header.WriteableSharedEntryInfoTable, p).ConfigureAwait(false);
 		}
 
-		using (p.BeginTask(weight, "Writing header part 8"))
+		using (p.BeginTask(weight, "Writing hash digest table"))
 		{
 			var offset = primaryOffset + toc.HashDigestTableStart;
 			await WriteTocTableAsync(writer, offset, header.HashDigestTable, p).ConfigureAwait(false);
 		}
 
-		await UpdateHashAsync(writer, header, primaryOffset, p).ConfigureAwait(false);
-	}
-
-	/// <summary>
-	/// Gets the new expected hash and writes it to the header.
-	/// </summary>
-	/// <param name="writer">The writer with the stream containing the header.</param>
-	/// <param name="header">The header.</param>
-	/// <param name="primaryOffset">The offset to the header in the stream.</param>
-	/// <param name="p">Progress info.</param>
-	/// <returns>The async task.</returns>
-	private async Task UpdateHashAsync(
-		EndianBinaryWriter writer,
-		NefsHeader200 header,
-		long primaryOffset,
-		NefsProgress p)
-	{
-		// The hash is of the entire header except for the expected hash
-		var secondOffset = primaryOffset + 0x24;
-		var headerSize = (int)header.Intro.TocSize;
-
-		// Seek to beginning of header
-		var stream = writer.BaseStream;
-		stream.Seek(primaryOffset, SeekOrigin.Begin);
-
-		// Read magic num
-		var dataToHash = new byte[headerSize - 0x20];
-		await stream.ReadExactlyAsync(dataToHash, 0, 4).ConfigureAwait(false);
-
-		// Skip expected hash and read rest of header
-		stream.Seek(secondOffset, SeekOrigin.Begin);
-		await stream.ReadExactlyAsync(dataToHash, 4, headerSize - 0x24).ConfigureAwait(false);
-
-		// Compute the new expected hash
-		var hashOut = SHA256.HashData(dataToHash);
-
-		// Write the intro with the expected hash
-		header.Hash = new Sha256Hash(hashOut);
+		// Write the intro with the updated hash
+		header.Hash = await ComputeHashAsync(writer, primaryOffset, header.Intro.TocSize, p).ConfigureAwait(false);
 		await WriteTocEntryAsync(writer, primaryOffset, header.Intro, p).ConfigureAwait(false);
 	}
 }

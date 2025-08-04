@@ -10,8 +10,10 @@ namespace VictorBush.Ego.NefsLib.Header.Version160;
 /// <inheritdoc cref="INefsHeader" />
 public sealed class NefsHeader160 : INefsHeader, IFormattable
 {
+	private NefsTocHeaderA160 intro;
+
 	public NefsWriterSettings WriterSettings { get; }
-	public NefsTocHeaderA160 Intro { get; }
+	public NefsTocHeaderA160 Intro => this.intro;
 	public NefsTocHeaderB160 TableOfContents { get; }
 	public NefsHeaderEntryTable160 EntryTable { get; }
 	public NefsHeaderSharedEntryInfoTable160 SharedEntryInfoTable { get; }
@@ -35,7 +37,11 @@ public sealed class NefsHeader160 : INefsHeader, IFormattable
 	public byte[] AesKey => Intro.AesKey.GetAesKey();
 
 	/// <inheritdoc />
-	public Sha256Hash Hash => Intro.Hash;
+	public Sha256Hash Hash
+	{
+		get => Intro.Hash;
+		internal set => this.intro.Hash = value;
+	}
 
 	/// <inheritdoc />
 	public uint Size => Intro.TocSize;
@@ -69,7 +75,7 @@ public sealed class NefsHeader160 : INefsHeader, IFormattable
 		NefsHeaderHashDigestTable160 hashDigestTable)
 	{
 		WriterSettings = writerSettings;
-		Intro = intro;
+		this.intro = intro;
 		TableOfContents = toc;
 		EntryTable = entryTable ?? throw new ArgumentNullException(nameof(entryTable));
 		SharedEntryInfoTable = sharedEntryInfoTable ?? throw new ArgumentNullException(nameof(sharedEntryInfoTable));

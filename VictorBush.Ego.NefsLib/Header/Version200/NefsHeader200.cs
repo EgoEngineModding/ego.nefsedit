@@ -48,7 +48,7 @@ public sealed class NefsHeader200 : INefsHeader
 	public Sha256Hash Hash
 	{
 		get => Intro.Hash;
-		set => this.intro.Hash = value;
+		internal set => this.intro.Hash = value;
 	}
 
 	/// <inheritdoc />

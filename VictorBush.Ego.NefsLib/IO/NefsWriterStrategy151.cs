@@ -18,7 +18,7 @@ internal class NefsWriterStrategy151 : NefsWriterStrategy<NefsHeader151>
 		var intro = header.Intro;
 
 		var stream = writer.BaseStream;
-		using (p.BeginTask(weight, "Writing header intro"))
+		using (p.BeginTask(weight, "Writing header"))
 		{
 			var offset = primaryOffset;
 			await WriteTocEntryAsync(writer, offset, header.Intro, p).ConfigureAwait(false);
