@@ -127,7 +127,20 @@ internal partial class EditorForm : Form
 
 		// Load settings
 		SettingsService.Load();
+
+		this.Shown += EditorForm_FirstShown;
 	}
+
+	// Launch the Open dialog when the editor is first shown
+	private void EditorForm_FirstShown(object sender, EventArgs e)
+	{
+		// Unsubscribe so it only runs once
+		this.Shown -= EditorForm_FirstShown;
+
+		// Simulate the user clicking File > Open
+		openMainMenuItem.PerformClick();
+	}
+
 
 	private void ExitToolStripMenuItem_Click(object sender, EventArgs e)
 	{
