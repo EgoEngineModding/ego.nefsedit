@@ -38,11 +38,12 @@ public class NefsReader : INefsReader
 	{
 		FileSystem = fileSystem ?? throw new ArgumentNullException(nameof(fileSystem));
 		RsaExponent = DefaultRsaExponent;
-		this.rsaKeys = new[]
-		{
+		this.rsaKeys =
+		[
 			DefaultPublicKey, Dirt2PublicKey, F12011PublicKey, Dirt3PublicKey, GridAutosportPublicKey, Grid2PublicKey,
-			DirtShowdownPublicKey, DirtPublicKey, OperationFlashpointPublicKey
-		};
+			DirtShowdownPublicKey, DirtPublicKey, OperationFlashpointPublicKey, F1RaceStarsPublicKey,
+			ToyboxTurbosPublicKey
+		];
 	}
 
 	private IFileSystem FileSystem { get; }
@@ -327,6 +328,7 @@ public class NefsReader : INefsReader
 			using var reader = new EndianBinaryReader(introStream, readResult.IsLittleEndian);
 			var version = await ReadVersionAsync(reader, introOffset, p).ConfigureAwait(false);
 			var strategy = NefsReaderStrategy.Get(version);
+			Log.LogInformation("Detected NeFS {version}.", version.ToPrettyString());
 
 			if (readResult.IsEncrypted)
 			{
@@ -390,9 +392,12 @@ public class NefsReader : INefsReader
 		using var reader = new EndianBinaryReader(stream, isLittleEndian);
 		var version = await ReadVersionAsync(reader, primaryOffset, p).ConfigureAwait(false);
 		var strategy = NefsReaderStrategy.Get(version);
+		Log.LogInformation("Detected NeFS {version}.", version.ToPrettyString());
 
 		var header = await strategy.ReadHeaderAsync(reader, primaryOffset, primarySize, secondaryOffset, secondarySize, p)
 			.ConfigureAwait(false);
+		Log.LogInformation("Header references volumes: {volumes}",
+			string.Join(", ", header.Volumes.Select(x => x.Name)));
 		return header;
 	}
 

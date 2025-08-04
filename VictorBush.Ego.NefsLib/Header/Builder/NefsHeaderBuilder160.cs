@@ -42,7 +42,7 @@ internal class NefsHeaderBuilder160 : NefsHeaderBuilder160Base<NefsHeader160>
 		var nameTable = new NefsHeaderNameTable(items);
 		p.CancellationToken.ThrowIfCancellationRequested();
 		var sharedEntryInfoTable = BuildSharedEntryInfoTable160(items, nameTable);
-		var blockTable = BuildBlockTable151(items);
+		var blockTable = NefsHeaderBuilder151.BuildBlockTable(items);
 		p.CancellationToken.ThrowIfCancellationRequested();
 		var writeableEntryTable = BuildWriteableEntryTable160(items);
 		var writeableSharedEntryInfoTable = BuildWriteableSharedEntryInfoTable160(items);
@@ -102,7 +102,7 @@ internal class NefsHeaderBuilder160 : NefsHeaderBuilder160Base<NefsHeader160>
 			Hash = new Sha256Hash(), // will be updated later
 			AesKey = sourceHeader.Intro.AesKey,
 			TocSize = Convert.ToUInt32(tocSize),
-			Version = (uint)NefsVersion.Version200,
+			Version = (uint)NefsVersion.Version160,
 			NumEntries = (uint)items.Count,
 			UserValue = sourceHeader.Intro.UserValue,
 			RandomPadding = sourceHeader.Intro.RandomPadding,
@@ -113,58 +113,15 @@ internal class NefsHeaderBuilder160 : NefsHeaderBuilder160Base<NefsHeader160>
 			blockTable, volumeInfoTable, writeableEntryTable, writeableSharedEntryInfoTable, hashDigestTable);
 	}
 
-	private static NefsHeaderBlockTable151 BuildBlockTable151(NefsItemList items)
-	{
-		var entries = new List<NefsTocBlock151>(items.Count);
-		foreach (var item in items.EnumerateById())
-		{
-			if (item.Type == NefsItemType.Directory || item.DataSource.Size.Chunks.Count == 0 || item.IsDuplicate)
-			{
-				// Item does not have blocks
-				continue;
-			}
-
-			// Create entry for each data block
-			foreach (var chunk in item.DataSource.Size.Chunks)
-			{
-				var entry = new NefsTocBlock151
-				{
-					End = chunk.CumulativeSize,
-					Transformation = Convert.ToUInt16(GetTransform(chunk.Transform)),
-					Checksum = 0x848 // TODO - How to compute this value is unknown. Writing bogus data for now.
-				};
-
-				entries.Add(entry);
-			}
-		}
-
-		return new NefsHeaderBlockTable151(entries);
-	}
-
 	/// <inheritdoc />
 	protected override uint GetFirstBlock(NefsItem item, ref uint firstBlock)
 	{
-		if (item.Type == NefsItemType.Directory)
-		{
-			return 0;
-		}
-
-		// Item is compressed; get current block, and increment for the next item
-		var current = firstBlock;
-		firstBlock += (uint)item.DataSource.Size.Chunks.Count;
-		return current;
+		return NefsHeaderBuilder151.GetFirstBlock(item, ref firstBlock);
 	}
 
 	/// <inheritdoc />
 	protected override ushort GetItemFlags(NefsItem item)
 	{
-		var flags = NefsTocEntryFlags150.None;
-		flags |= item.Attributes.IsTransformed ? NefsTocEntryFlags150.Transformed : 0;
-		flags |= item.Attributes.IsDirectory ? NefsTocEntryFlags150.Directory : 0;
-		flags |= item.Attributes.IsDuplicated ? NefsTocEntryFlags150.Duplicated : 0;
-		flags |= item.Attributes.IsCacheable ? NefsTocEntryFlags150.Cacheable : 0;
-		flags |= item.Attributes.IsLastSibling ? NefsTocEntryFlags150.LastSibling : 0;
-		flags |= item.Attributes.IsPatched ? NefsTocEntryFlags150.Patched : 0;
-		return (ushort)flags;
+		return NefsHeaderBuilder151.GetItemFlags(item);
 	}
 }

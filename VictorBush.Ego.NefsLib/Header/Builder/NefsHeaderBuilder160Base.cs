@@ -1,6 +1,5 @@
 ﻿// See LICENSE.txt for license information.
 
-using VictorBush.Ego.NefsLib.DataSource;
 using VictorBush.Ego.NefsLib.Header.Version160;
 using VictorBush.Ego.NefsLib.Item;
 
@@ -11,11 +10,11 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 {
 	protected NefsHeaderEntryTable160 BuildEntryTable160(NefsItemList items)
 	{
-		var idSharedInfoMap = BuildIdSharedInfoMap(items);
+		var idSharedInfoMap = NefsHeaderBuilder151.BuildIdSharedInfoMap(items);
 		var entries = new NefsTocEntry160[items.Count];
 		var firstBlock = 0u;
 
-		// Enumerate this list depth first. This determines the part 2 order. The part 1 entries will be sorted by item id.
+		// Enumerate items sorted by id.
 		foreach (var item in items.EnumerateById())
 		{
 			var entry = new NefsTocEntry160
@@ -39,14 +38,6 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 		uint GetFirstBlockLocal(NefsItem item)
 		{
 			return item.IsDuplicate ? entries[item.FirstDuplicateId.Index].FirstBlock : GetFirstBlock(item, ref firstBlock);
-		}
-
-		static Dictionary<NefsItemId, uint> BuildIdSharedInfoMap(NefsItemList items)
-		{
-			return items.EnumerateDepthFirstByName()
-				.Where(x => !x.IsDuplicate)
-				.Select((x, i) => (x, i))
-				.ToDictionary(x => x.x.Id, x => (uint)x.i);
 		}
 	}
 
@@ -124,33 +115,5 @@ internal abstract class NefsHeaderBuilder160Base<T> : NefsHeaderBuilder<T>
 		var numHashDigests = hashBlockSize == 0 ? 0 : (dataSize + hashBlockSize - 1) / hashBlockSize;
 		// Create empty space for now, will update later
 		return new NefsHeaderHashDigestTable160(new NefsTocHashDigest160[numHashDigests]);
-	}
-
-	protected static uint GetTransform(NefsDataTransform transform)
-	{
-		var type = GetTransformType(transform);
-		return type switch
-		{
-			NefsDataTransformType.None => 0,
-			NefsDataTransformType.Lzss => 1,
-			NefsDataTransformType.Aes => 4,
-			NefsDataTransformType.Zlib => 7,
-			_ => throw new NotImplementedException($"Transform type {type} is not implemented"),
-		};
-	}
-
-	private static NefsDataTransformType GetTransformType(NefsDataTransform transform)
-	{
-		if (transform.IsZlibCompressed)
-		{
-			return NefsDataTransformType.Zlib;
-		}
-
-		if (transform.IsAesEncrypted)
-		{
-			return NefsDataTransformType.Aes;
-		}
-
-		return transform.IsLzssCompressed ? NefsDataTransformType.Lzss : NefsDataTransformType.None;
 	}
 }

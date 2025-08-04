@@ -73,6 +73,7 @@ internal abstract class NefsItemListBuilder150Base<T>(T header, ILogger logger)
 			0 => NefsDataTransformType.None,
 			1 => NefsDataTransformType.Lzss,
 			4 => NefsDataTransformType.Aes,
+			7 => NefsDataTransformType.Zlib,
 			_ => (NefsDataTransformType)(-1)
 		};
 	}

@@ -9,7 +9,7 @@ public struct NefsTocHeader151 : INefsTocData<NefsTocHeader151>
 {
 	public static int ByteCount { get; } = Unsafe.SizeOf<NefsTocHeader151>();
 
-	public uint Magic;
+	public uint Magic = NefsConstants.FourCc;
 	public uint TocSize;
 	public uint Version;
 	public uint NumVolumes;
@@ -27,6 +27,10 @@ public struct NefsTocHeader151 : INefsTocData<NefsTocHeader151>
 	public AesKeyHexBuffer AesKey;
 	public uint Unused;
 
+	public NefsTocHeader151()
+	{
+	}
+
 	public unsafe void ReverseEndianness()
 	{
 		var buffer = new Span<uint>(Unsafe.AsPointer(ref this), 15);
@@ -35,6 +39,6 @@ public struct NefsTocHeader151 : INefsTocData<NefsTocHeader151>
 			buffer[i] = BinaryPrimitives.ReverseEndianness(buffer[i]);
 		}
 
-		// Leave Unknown4 alone for now. Not sure if actually part of header
+		// Leave Unused alone since it's not part of header
 	}
 }

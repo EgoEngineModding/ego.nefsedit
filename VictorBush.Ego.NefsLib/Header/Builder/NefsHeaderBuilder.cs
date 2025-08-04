@@ -18,6 +18,7 @@ internal abstract class NefsHeaderBuilder
 
 		inst = version switch
 		{
+			NefsVersion.Version151 => new NefsHeaderBuilder151(),
 			NefsVersion.Version160 => new NefsHeaderBuilder160(),
 			NefsVersion.Version200 => new NefsHeaderBuilder200(),
 			_ => throw new NotImplementedException($"Support for {version.ToPrettyString()} is not implemented.")

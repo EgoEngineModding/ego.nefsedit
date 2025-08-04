@@ -28,8 +28,6 @@ internal class NefsReaderStrategy160 : NefsReaderStrategy151
 	public override async Task<INefsHeader> ReadHeaderAsync(EndianBinaryReader reader, long primaryOffset,
 		NefsWriterSettings detectedSettings, NefsProgress p)
 	{
-		Log.LogInformation("Detected NeFS {Version}.", Version.ToPrettyString());
-
 		var header = await ReadHeaderCoreAsync(reader, primaryOffset, primaryOffset, detectedSettings, p)
 			.ConfigureAwait(false);
 		if (header.IsEncrypted)
