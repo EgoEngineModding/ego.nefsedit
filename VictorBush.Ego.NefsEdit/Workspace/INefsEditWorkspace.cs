@@ -113,6 +113,11 @@ internal interface INefsEditWorkspace
 	Task<bool> ExtractItemsByQuickExtractAsync(IReadOnlyList<NefsItem> items);
 
 	/// <summary>
+	/// Handles the CLI arguments.
+	/// </summary>
+	Task HandleCliArgs();
+
+	/// <summary>
 	/// Opens the specified archive.
 	/// </summary>
 	/// <param name="filePath">File path to the archive to open.</param>

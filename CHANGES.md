@@ -6,6 +6,7 @@
 - Added support for reading big-endian NeFS headers
 - Added support for writing NeFS version 1.5.1, 1.6.0
 - Added ability to search for headers in elf and mach-o executables (Linux, Mac, PS3)
+- Added ability to associate NeFS files with the app
 - Changed executable header auto-search to improve accuracy (at the expense of speed)
 - Changed .NET framework to .NET 8.0
 - Fixed bug where all replaced files would have the same data as the last file that was replaced

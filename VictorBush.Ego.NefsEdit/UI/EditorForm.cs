@@ -127,6 +127,17 @@ internal partial class EditorForm : Form
 
 		// Load settings
 		SettingsService.Load();
+
+		Shown += EditorForm_FirstShown;
+	}
+
+	private async void EditorForm_FirstShown(object? sender, EventArgs e)
+	{
+		// Unsubscribe so it only runs once
+		Shown -= EditorForm_FirstShown;
+
+		// Handle Args
+		await Workspace.HandleCliArgs();
 	}
 
 	private void ExitToolStripMenuItem_Click(object sender, EventArgs e)

@@ -300,6 +300,18 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 	}
 
 	/// <inheritdoc/>
+	public Task HandleCliArgs()
+	{
+		var args = Environment.GetCommandLineArgs();
+		if (args.Length > 1)
+		{
+			return OpenArchiveAsync(args[1]);
+		}
+
+		return OpenArchiveByDialogAsync();
+	}
+
+	/// <inheritdoc/>
 	public async Task<bool> OpenArchiveByDialogAsync()
 	{
 		var (result, source) = UiService.ShowNefsEditOpenFileDialog(SettingsService, ProgressService, NefsReader, ExeHeaderFinder);
@@ -601,22 +613,20 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		NefsItemList itemsList,
 		string outputDir)
 	{
-		var items = new List<(NefsItem, string)>();
-		var children = itemsList.EnumerateItemChildren(item.Id);
 		var path = Path.Combine(outputDir, item.FileName);
-
-		if (item.Type == NefsItemType.Directory)
-		{
-			// Item is directory, add children
-			foreach (var child in children)
-			{
-				items.AddRange(GetExtractionList(child, itemsList, path));
-			}
-		}
-		else
+		if (item.Type is NefsItemType.File)
 		{
 			// Item is file, add self
-			items.Add((item, path));
+			return [(item, path)];
+		}
+
+		// Item is directory, add children. Skip files that are duplicates
+		var items = new List<(NefsItem, string)>();
+		var children = itemsList.EnumerateItemChildren(item.Id)
+			.Where(x => x.Type is NefsItemType.Directory || !x.IsDuplicate);
+		foreach (var child in children)
+		{
+			items.AddRange(GetExtractionList(child, itemsList, path));
 		}
 
 		return items;
