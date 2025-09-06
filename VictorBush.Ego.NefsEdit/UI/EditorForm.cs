@@ -131,14 +131,13 @@ internal partial class EditorForm : Form
 		Shown += EditorForm_FirstShown;
 	}
 
-	// Launch the Open dialog when the editor is first shown
-	private void EditorForm_FirstShown(object? sender, EventArgs e)
+	private async void EditorForm_FirstShown(object? sender, EventArgs e)
 	{
 		// Unsubscribe so it only runs once
 		Shown -= EditorForm_FirstShown;
 
-		// Simulate the user clicking File > Open
-		this.openMainMenuItem.PerformClick();
+		// Handle Args
+		await Workspace.HandleCliArgs();
 	}
 
 	private void ExitToolStripMenuItem_Click(object sender, EventArgs e)

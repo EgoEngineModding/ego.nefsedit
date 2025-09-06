@@ -300,9 +300,25 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 	}
 
 	/// <inheritdoc/>
+	public Task HandleCliArgs()
+	{
+		var args = Environment.GetCommandLineArgs();
+		var nefsFilePath = args.Length > 1 ? args[1] : null;
+		var (result, source) = UiService.ShowNefsEditOpenFileDialog(SettingsService, ProgressService, NefsReader,
+			ExeHeaderFinder, nefsFilePath);
+		if (result != DialogResult.OK || source is null)
+		{
+			return Task.CompletedTask;
+		}
+
+		return OpenArchiveAsync(source);
+	}
+
+	/// <inheritdoc/>
 	public async Task<bool> OpenArchiveByDialogAsync()
 	{
-		var (result, source) = UiService.ShowNefsEditOpenFileDialog(SettingsService, ProgressService, NefsReader, ExeHeaderFinder);
+		var (result, source) =
+			UiService.ShowNefsEditOpenFileDialog(SettingsService, ProgressService, NefsReader, ExeHeaderFinder, null);
 		if (result != DialogResult.OK || source is null)
 		{
 			return false;

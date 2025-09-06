@@ -50,9 +50,15 @@ internal class UiService : IUiService
 		ISettingsService settingsService,
 		IProgressService progressService,
 		INefsReader reader,
-		INefsExeHeaderFinder exeHeaderFinder)
+		INefsExeHeaderFinder exeHeaderFinder,
+		string? nefsFilePath)
 	{
 		using var dialog = new OpenFileForm(settingsService, this, progressService, reader, FileSystem, exeHeaderFinder);
+		if (nefsFilePath is not null)
+		{
+			dialog.SetNefsFilePath(nefsFilePath);
+		}
+
 		var result = dialog.ShowDialog();
 		var source = dialog.ArchiveSource;
 		return (result, source);

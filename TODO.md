@@ -6,7 +6,6 @@
 - Console logging performance issues (https://github.com/victorbush/ego.nefsedit/issues/8).
 - Fix verifying hash for game.dat headers (https://github.com/victorbush/ego.nefsedit/issues/9).
 - Fix sorting by id in debug view and allow resetting sorting order (https://github.com/victorbush/ego.nefsedit/issues/11).
-- Allow associating .nefs files with the app, and allow opening an archive via command line.
 - Add protection against saving over an archive in a game's directory (or always force a "Save As").
 - Support writing multiple volumes
 - Support writing split archives across multiple files
