@@ -67,12 +67,6 @@ internal partial class OpenFileForm : Form
 
 	private IUiService UiService { get; }
 
-	public void SetNefsFilePath(string nefsFilePath)
-	{
-		this.nefsFileTextBox.Text = nefsFilePath;
-		this.nefsFileTextBox.ScrollToEnd();
-	}
-
 	private static bool ParseHexNumberStringToInt(string input, out int result)
 	{
 		var str = input.Replace("0x", "").Replace("&h", "").Trim();
@@ -154,11 +148,7 @@ internal partial class OpenFileForm : Form
 
 		var modeIdx = SettingsService.OpenFileDialogState.LastMode;
 		this.modeListBox.SelectedIndex = modeIdx < this.modeListBox.Items.Count ? modeIdx : 0;
-		if (string.IsNullOrWhiteSpace(this.nefsFileTextBox.Text))
-		{
-			this.nefsFileTextBox.Text = SettingsService.OpenFileDialogState.NefsFilePath;
-		}
-
+		this.nefsFileTextBox.Text = SettingsService.OpenFileDialogState.NefsFilePath;
 		this.splitDataFileTextBox.Text = SettingsService.OpenFileDialogState.GameDatDataFilePath;
 		this.splitHeaderFileTextBox.Text = SettingsService.OpenFileDialogState.GameDatHeaderFilePath;
 		this.splitPrimaryOffsetTextBox.Text = SettingsService.OpenFileDialogState.GameDatPrimaryOffset;

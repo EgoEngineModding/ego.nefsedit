@@ -303,22 +303,18 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 	public Task HandleCliArgs()
 	{
 		var args = Environment.GetCommandLineArgs();
-		var nefsFilePath = args.Length > 1 ? args[1] : null;
-		var (result, source) = UiService.ShowNefsEditOpenFileDialog(SettingsService, ProgressService, NefsReader,
-			ExeHeaderFinder, nefsFilePath);
-		if (result != DialogResult.OK || source is null)
+		if (args.Length > 1)
 		{
-			return Task.CompletedTask;
+			return OpenArchiveAsync(args[1]);
 		}
 
-		return OpenArchiveAsync(source);
+		return OpenArchiveByDialogAsync();
 	}
 
 	/// <inheritdoc/>
 	public async Task<bool> OpenArchiveByDialogAsync()
 	{
-		var (result, source) =
-			UiService.ShowNefsEditOpenFileDialog(SettingsService, ProgressService, NefsReader, ExeHeaderFinder, null);
+		var (result, source) = UiService.ShowNefsEditOpenFileDialog(SettingsService, ProgressService, NefsReader, ExeHeaderFinder);
 		if (result != DialogResult.OK || source is null)
 		{
 			return false;
