@@ -10,4 +10,3 @@
 - Support writing multiple volumes
 - Support writing split archives across multiple files
 - Allow removing files (adjust flags like IsLastSibling)
-- Determine behavior for extracting duplicate and removed files
