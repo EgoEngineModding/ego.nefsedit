@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## Version 0.7.1 - 2025-09-14
 - Fixed mistakenly considering certain archives are split
 - Fixed using the first block's transform for all data blocks
 - Fixed not being able to find headers in newer F1 games with ability to search entire exe rather than just data section
