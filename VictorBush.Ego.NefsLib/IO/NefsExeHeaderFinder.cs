@@ -28,7 +28,8 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 	}
 
 	/// <inheritdoc />
-	public async Task<List<HeadlessSource>> FindHeadersAsync(string exePath, string dataFileDir, NefsProgress p)
+	public async Task<List<HeadlessSource>> FindHeadersAsync(string exePath, string dataFileDir, bool searchEntireExe,
+		NefsProgress p)
 	{
 		const float findDataSectionWeight = 0.25f;
 		const float findFourCcWeight = 0.05f;
@@ -38,34 +39,9 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 		// Load exe into memory
 		var exeBytes = await this.fileSystem.File.ReadAllBytesAsync(exePath).ConfigureAwait(false);
 		await using var exeStream = new MemoryStream(exeBytes);
-		long? dataSectionStart = null;
-		long? dataSectionEnd = null;
-		try
-		{
-			using var _ = p.BeginTask(findDataSectionWeight, "Finding '.data' section in exe");
-			if (PeHelper.Identify(exeStream))
-			{
-				var dataSection = PeHelper.GetSectionDataInfo(exeStream, ".data");
-				dataSectionStart = Convert.ToInt64(dataSection?.Position);
-				dataSectionEnd = dataSectionStart + Convert.ToInt64(dataSection?.Size);
-			}
-			else if (ElfHelper.Identify(exeStream))
-			{
-				var dataSection = ElfHelper.GetSectionDataInfo(exeStream, ".data");
-				dataSectionStart = Convert.ToInt64(dataSection?.Position);
-				dataSectionEnd = dataSectionStart + Convert.ToInt64(dataSection?.Size);
-			}
-			else if (MachOHelper.Identify(exeStream))
-			{
-				var dataSection = MachOHelper.GetSectionDataInfo(exeStream, "__data");
-				dataSectionStart = Convert.ToInt64(dataSection?.Position);
-				dataSectionEnd = dataSectionStart + Convert.ToInt64(dataSection?.Size);
-			}
-		}
-		catch
-		{
-			Log.LogError("Failed to find data section offset; using 0 as offset.");
-		}
+		using var findDataSectionTask = p.BeginTask(findDataSectionWeight, "Finding '.data' section in exe");
+		var (dataSectionStart, dataSectionEnd) = GetDataSectionRange(exeStream, searchEntireExe);
+		findDataSectionTask.Dispose();
 
 		// Search for headers and create strategies for each
 		var strategies = new List<NefsExeHeaderFinderStrategy>();
@@ -104,6 +80,7 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 				// Failed to read header, so assume not a header
 			}
 		}
+
 		fourCcTask.Dispose();
 
 		// Find the writeable data offset
@@ -133,7 +110,7 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 
 				// Find writeable data offset
 				var dataSectionRange = new DataRange(
-					dataSectionStart ?? strategy.FourCcOffset,
+					dataSectionStart ?? 0,
 					dataSectionEnd ?? br.BaseStream.Length);
 				var writeableRange = await strategy
 					.FindWriteableDataOffsetAsync(br, dataSectionRange, foundWriteableRanges, p)
@@ -153,6 +130,7 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 					null);
 				sources.Add(source);
 				foundWriteableRanges.Add(writeableRange);
+				foundWriteableRanges.Sort();
 			}
 			catch (Exception)
 			{
@@ -161,6 +139,44 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 		}
 
 		return sources;
+	}
+
+	private (long? Start, long? End) GetDataSectionRange(MemoryStream exeStream, bool searchEntireExe)
+	{
+		if (searchEntireExe)
+		{
+			return (null, null);
+		}
+
+		long? dataSectionStart = null;
+		long? dataSectionEnd = null;
+		try
+		{
+			if (PeHelper.Identify(exeStream))
+			{
+				var dataSection = PeHelper.GetSectionDataInfo(exeStream, ".data");
+				dataSectionStart = Convert.ToInt64(dataSection?.Position);
+				dataSectionEnd = dataSectionStart + Convert.ToInt64(dataSection?.Size);
+			}
+			else if (ElfHelper.Identify(exeStream))
+			{
+				var dataSection = ElfHelper.GetSectionDataInfo(exeStream, ".data");
+				dataSectionStart = Convert.ToInt64(dataSection?.Position);
+				dataSectionEnd = dataSectionStart + Convert.ToInt64(dataSection?.Size);
+			}
+			else if (MachOHelper.Identify(exeStream))
+			{
+				var dataSection = MachOHelper.GetSectionDataInfo(exeStream, "__data");
+				dataSectionStart = Convert.ToInt64(dataSection?.Position);
+				dataSectionEnd = dataSectionStart + Convert.ToInt64(dataSection?.Size);
+			}
+		}
+		catch
+		{
+			Log.LogError("Failed to find data section offset; using 0 as offset.");
+		}
+
+		return (dataSectionStart, dataSectionEnd);
 	}
 
 	private static List<int> GetFourCcOffsets(byte[] buffer, NefsProgress p)
@@ -251,7 +267,7 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 			    var needAdjust = false;
 			    var start = reader.BaseStream.Position;
 			    var range = new DataRange(start, start + WriteableDataSize);
-			    foreach (var foundWriteableRange in foundWriteableRanges.Order())
+			    foreach (var foundWriteableRange in foundWriteableRanges)
 			    {
 				    if (!foundWriteableRange.Overlaps(range))
 				    {
@@ -292,7 +308,7 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 		    return StringHelper.TryReadNullTerminatedAscii(nameBytes);
 	    }
 
-	    protected static async ValueTask<T[]> ReadTocEntriesAsync<T>(
+	    protected static ValueTask<T[]> ReadTocEntriesAsync<T>(
 		    EndianBinaryReader reader,
 		    long offset,
 		    int size,
@@ -302,17 +318,21 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 		    reader.BaseStream.Seek(offset, SeekOrigin.Begin);
 		    var numEntries = size / T.ByteCount;
 		    var entries = new T[numEntries];
-		    for (var i = 0; i < numEntries; ++i)
-		    {
-			    entries[i] = await reader.ReadTocDataAsync<T>(p.CancellationToken).ConfigureAwait(false);
-		    }
+		    var readTask = reader.ReadTocEntriesAsync(entries.AsMemory(), p.CancellationToken);
+		    return readTask.IsCompletedSuccessfully ? new ValueTask<T[]>(entries) : Awaited(readTask);
 
-		    return entries;
+		    async ValueTask<T[]> Awaited(ValueTask task)
+		    {
+			    await task.ConfigureAwait(false);
+			    return entries;
+		    }
 	    }
     }
 
     private class NefsExeHeaderFinderStrategy160 : NefsExeHeaderFinderStrategy
     {
+	    private static readonly int FlagMask =
+		    Enum.GetValuesAsUnderlyingType<NefsTocEntryFlags150>().Cast<ushort>().Sum(x => x);
 	    private NefsTocHeaderB160 toc;
 	    private IReadOnlyList<NefsTocEntry160> entries;
 	    private IReadOnlyList<NefsTocSharedEntryInfo160> entryInfos;
@@ -344,20 +364,23 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 	    protected override async ValueTask<bool> ValidateWriteableDataAsync(EndianBinaryReader reader, NefsProgress p)
 	    {
 		    var position = reader.BaseStream.Position;
-		    var flagMask = Enum.GetValuesAsUnderlyingType<NefsTocEntryFlags150>().Cast<ushort>().Sum(x => x);
-		    var writeableEntries = new NefsTocEntryWriteable160[this.entries.Count];
+		    var writeableEntries = await ReadTocEntriesAsync<NefsTocEntryWriteable160>(reader,
+				    reader.BaseStream.Position,
+				    Convert.ToInt32(this.entries.Count * NefsTocEntryWriteable160.ByteCount), p)
+			    .ConfigureAwait(false);
 		    for (var i = 0; i < writeableEntries.Length; ++i)
 		    {
 			    p.CancellationToken.ThrowIfCancellationRequested();
-			    var writeableEntry = await reader.ReadTocDataAsync<NefsTocEntryWriteable160>(p.CancellationToken)
-				    .ConfigureAwait(false);
-			    if (writeableEntry.Volume >= this.toc.NumVolumes ||
-			        (writeableEntry.Flags & flagMask) != writeableEntry.Flags)
+			    var writeableEntry = writeableEntries[i];
+			    if (writeableEntry.Volume < this.toc.NumVolumes &&
+			        (writeableEntry.Flags & FlagMask) == writeableEntry.Flags)
 			    {
-				    return false;
+				    continue;
 			    }
 
-			    writeableEntries[i] = writeableEntry;
+			    // setup position for the next read to be just past the first entry
+			    reader.BaseStream.Seek(position + NefsTocEntryWriteable160.ByteCount, SeekOrigin.Begin);
+			    return false;
 		    }
 
 		    var writeableEntryInfos = await ReadTocEntriesAsync<NefsTocSharedEntryInfoWriteable160>(reader,
@@ -396,6 +419,8 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 
     private class NefsExeHeaderFinderStrategy200 : NefsExeHeaderFinderStrategy
     {
+	    private static readonly int FlagMask =
+		    Enum.GetValuesAsUnderlyingType<NefsTocEntryFlags200>().Cast<ushort>().Sum(x => x);
 	    private NefsTocHeaderB200 toc;
 	    private IReadOnlyList<NefsTocEntry160> entries;
 	    private IReadOnlyList<NefsTocSharedEntryInfo160> entryInfos;
@@ -427,20 +452,23 @@ public class NefsExeHeaderFinder : INefsExeHeaderFinder
 	    protected override async ValueTask<bool> ValidateWriteableDataAsync(EndianBinaryReader reader, NefsProgress p)
 	    {
 		    var position = reader.BaseStream.Position;
-		    var flagMask = Enum.GetValuesAsUnderlyingType<NefsTocEntryFlags200>().Cast<ushort>().Sum(x => x);
-		    var writeableEntries = new NefsTocEntryWriteable160[this.entries.Count];
+		    var writeableEntries = await ReadTocEntriesAsync<NefsTocEntryWriteable160>(reader,
+				    reader.BaseStream.Position,
+				    Convert.ToInt32(this.entries.Count * NefsTocEntryWriteable160.ByteCount), p)
+			    .ConfigureAwait(false);
 		    for (var i = 0; i < writeableEntries.Length; ++i)
 		    {
 			    p.CancellationToken.ThrowIfCancellationRequested();
-			    var writeableEntry = await reader.ReadTocDataAsync<NefsTocEntryWriteable160>(p.CancellationToken)
-				    .ConfigureAwait(false);
-			    if (writeableEntry.Volume >= this.toc.NumVolumes ||
-			        (writeableEntry.Flags & flagMask) != writeableEntry.Flags)
+			    var writeableEntry = writeableEntries[i];
+			    if (writeableEntry.Volume < this.toc.NumVolumes &&
+			        (writeableEntry.Flags & FlagMask) == writeableEntry.Flags)
 			    {
-				    return false;
+				    continue;
 			    }
 
-			    writeableEntries[i] = writeableEntry;
+			    // setup position for the next read to be just past the first entry
+			    reader.BaseStream.Seek(position + NefsTocEntryWriteable160.ByteCount, SeekOrigin.Begin);
+			    return false;
 		    }
 
 		    var writeableEntryInfos = await ReadTocEntriesAsync<NefsTocSharedEntryInfoWriteable160>(reader,

@@ -38,6 +38,7 @@
             this.label2 = new System.Windows.Forms.Label();
             this.headlessTabPage = new System.Windows.Forms.TabPage();
             this.gameDatRefreshButton = new System.Windows.Forms.Button();
+            this.headlessSearchEntireExeCheckBox = new System.Windows.Forms.CheckBox();
             this.gameDatFilesLabel = new System.Windows.Forms.Label();
             this.gameDatFilesListBox = new System.Windows.Forms.ListBox();
             this.gameExeFileButton = new System.Windows.Forms.Button();
@@ -171,6 +172,7 @@
             // headlessTabPage
             //
             this.headlessTabPage.Controls.Add(this.gameDatRefreshButton);
+            this.headlessTabPage.Controls.Add(this.headlessSearchEntireExeCheckBox);
             this.headlessTabPage.Controls.Add(this.gameDatFilesLabel);
             this.headlessTabPage.Controls.Add(this.gameDatFilesListBox);
             this.headlessTabPage.Controls.Add(this.gameExeFileButton);
@@ -199,6 +201,16 @@
             this.gameDatRefreshButton.Text = "Search";
             this.gameDatRefreshButton.UseVisualStyleBackColor = true;
             this.gameDatRefreshButton.Click += new System.EventHandler(this.GameDatRefreshButton_Click);
+            //
+            // headlessSearchEntireExeCheckBox
+            //
+            this.headlessSearchEntireExeCheckBox.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left)));
+            this.headlessSearchEntireExeCheckBox.Location = new System.Drawing.Point(123, 305);
+            this.headlessSearchEntireExeCheckBox.Margin = new System.Windows.Forms.Padding(4, 5, 4, 5);
+            this.headlessSearchEntireExeCheckBox.Name = "headlessSearchEntireExeCheckBox";
+            this.headlessSearchEntireExeCheckBox.Size = new System.Drawing.Size(144, 35);
+            this.headlessSearchEntireExeCheckBox.TabIndex = 26;
+            this.headlessSearchEntireExeCheckBox.Text = "Search Entire Exe";
             //
             // gameDatFilesLabel
             //
@@ -538,6 +550,7 @@
         private System.Windows.Forms.Label headlessDataDirLabel;
         private System.Windows.Forms.Label gameDatFilesLabel;
         private System.Windows.Forms.ListBox gameDatFilesListBox;
+        private System.Windows.Forms.CheckBox headlessSearchEntireExeCheckBox;
         private System.Windows.Forms.Button gameDatRefreshButton;
         private System.Windows.Forms.ListBox modeListBox;
         private System.Windows.Forms.TabPage recentTabPage;
