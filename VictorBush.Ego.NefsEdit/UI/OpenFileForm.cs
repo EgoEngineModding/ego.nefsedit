@@ -89,7 +89,8 @@ internal partial class OpenFileForm : Form
 
 		// Search for headers in the exe
 		using var _ = p.BeginTask(1.0f, "Searching for headers");
-		return await ExeHeaderFinder.FindHeadersAsync(exePath, dataDirectory, p);
+		return await ExeHeaderFinder.FindHeadersAsync(exePath, dataDirectory,
+			this.headlessSearchEntireExeCheckBox.Checked, p);
 	}
 
 	private async void GameDatRefreshButton_Click(Object sender, EventArgs e)

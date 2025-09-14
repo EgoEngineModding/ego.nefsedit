@@ -1,6 +1,11 @@
 # Changelog
 
-## Unreleased
+## Version 0.7.1 - 2025-09-14
+- Fixed mistakenly considering certain archives are split
+- Fixed using the first block's transform for all data blocks
+- Fixed not being able to find headers in newer F1 games with ability to search entire exe rather than just data section
+
+## Version 0.7.0 - 2025-09-05
 - Added support for reading NeFS versions 0.1.0, 0.2.0, 1.3.0, 1.4.0, 1.5.0, 1.5.1
 - Added support for reading split data and multiple volume archives
 - Added support for reading big-endian NeFS headers

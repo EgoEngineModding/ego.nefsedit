@@ -9,7 +9,7 @@ using VictorBush.Ego.NefsLib.Header;
 
 namespace VictorBush.Ego.NefsLib.IO;
 
-public class EndianBinaryReader(Stream stream, bool littleEndian, ResizableBuffer buffer) : IDisposable
+public sealed class EndianBinaryReader(Stream stream, bool littleEndian, ResizableBuffer buffer) : IDisposable
 {
 	public Stream BaseStream { get; } = stream;
 
@@ -76,25 +76,84 @@ public class EndianBinaryReader(Stream stream, bool littleEndian, ResizableBuffe
 			: BinaryPrimitives.ReadUInt32BigEndian(buffer.Memory.Span);
 	}
 
-	public async ValueTask<T> ReadTocDataAsync<T>(CancellationToken cancellationToken = default)
+	public ValueTask<T> ReadTocDataAsync<T>(CancellationToken cancellationToken = default)
 		where T : unmanaged, INefsTocData<T>
 	{
 		var size = T.ByteCount;
 		buffer.EnsureLength(size);
 		var buff = buffer.Memory[..size];
 
-		await BaseStream.ReadExactlyAsync(buff, cancellationToken).ConfigureAwait(false);
-		var data = Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(buffer.Memory.Span));
-		if (IsLittleEndian != BitConverter.IsLittleEndian)
+		var readTask = BaseStream.ReadExactlyAsync(buff, cancellationToken);
+		return readTask.IsCompletedSuccessfully
+			? new ValueTask<T>(ProcessData())
+			: Awaited(readTask);
+
+		async ValueTask<T> Awaited(ValueTask task)
 		{
-			data.ReverseEndianness();
+			await task.ConfigureAwait(false);
+			return ProcessData();
+		}
+		T ProcessData()
+		{
+			var data = Unsafe.As<byte, T>(ref MemoryMarshal.GetReference(buffer.Memory.Span));
+			if (IsLittleEndian != BitConverter.IsLittleEndian)
+			{
+				data.ReverseEndianness();
+			}
+
+			return data;
+		}
+	}
+
+	public ValueTask ReadTocEntriesAsync<T>(Memory<T> entryBuffer, CancellationToken cancellationToken = default)
+		where T : unmanaged, INefsTocData<T>
+	{
+		var readTask =
+			BaseStream.ReadExactlyAsync(new CastMemoryManager<T, byte>(entryBuffer).Memory, cancellationToken);
+		if (!readTask.IsCompletedSuccessfully)
+		{
+			return Awaited(readTask);
 		}
 
-		return data;
+		ProcessData();
+		return default;
+
+		async ValueTask Awaited(ValueTask task)
+		{
+			await task.ConfigureAwait(false);
+			ProcessData();
+		}
+		void ProcessData()
+		{
+			if (IsLittleEndian == BitConverter.IsLittleEndian)
+			{
+				return;
+			}
+
+			var entrySpan = entryBuffer.Span;
+			for (var i = 0; i < entryBuffer.Length; ++i)
+			{
+				entrySpan[i].ReverseEndianness();
+			}
+		}
 	}
 
 	public void Dispose()
 	{
 		buffer.Dispose();
 	}
+}
+
+file sealed class CastMemoryManager<TFrom, TTo>(Memory<TFrom> from) : MemoryManager<TTo>
+	where TFrom : unmanaged
+	where TTo : unmanaged
+{
+	public override Span<TTo> GetSpan()
+		=> MemoryMarshal.Cast<TFrom, TTo>(from.Span);
+
+	protected override void Dispose(bool disposing) { }
+	public override MemoryHandle Pin(int elementIndex = 0)
+		=> throw new NotSupportedException();
+	public override void Unpin()
+		=> throw new NotSupportedException();
 }

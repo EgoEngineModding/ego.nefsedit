@@ -14,5 +14,6 @@ public interface INefsExeHeaderFinder
 	/// Find headers within the exe file.
 	/// </summary>
 	/// <returns>The archive source based on the found headers.</returns>
-	Task<List<HeadlessSource>> FindHeadersAsync(string exePath, string dataFileDir, NefsProgress p);
+	Task<List<HeadlessSource>> FindHeadersAsync(string exePath, string dataFileDir, bool searchEntireExe,
+		NefsProgress p);
 }

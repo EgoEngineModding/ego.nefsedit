@@ -1,13 +1,11 @@
 // See LICENSE.txt for license information.
 
 using Microsoft.Extensions.Logging;
-using System.Data;
 using System.IO;
 using VictorBush.Ego.NefsEdit.Commands;
 using VictorBush.Ego.NefsEdit.Services;
 using VictorBush.Ego.NefsEdit.Utility;
 using VictorBush.Ego.NefsEdit.Workspace;
-using VictorBush.Ego.NefsLib;
 using VictorBush.Ego.NefsLib.Item;
 using WeifenLuo.WinFormsUI.Docking;
 
@@ -142,39 +140,38 @@ internal partial class BrowseTreeForm : DockContent
 		this.directoryTreeView.Nodes.Clear();
 
 		var fileName = Path.GetFileName(Workspace.ArchiveSource!.FilePath);
-		var root = this.directoryTreeView.Nodes.Add(fileName);
-
+		var root = new TreeNode(fileName);
+		var idNodeMap = new Dictionary<NefsItemId, TreeNode>(archive.Items.Count);
 		foreach (var item in archive.Items.EnumerateDepthFirstByName())
 		{
-			if (item.Type == NefsItemType.Directory)
+			if (item.Type != NefsItemType.Directory)
 			{
-				if (item.Id == item.DirectoryId)
-				{
-					// This directory is at the root level
-					var newNode = root.Nodes.Add(item.FileName);
-					newNode.Tag = item;
-				}
-				else
-				{
-					// Find this directory's parent directory
-					var parent = (from n in root.DescendantNodes()
-								  where n.Tag != null && ((NefsItem)n.Tag).Id == item.DirectoryId
-								  select n).FirstOrDefault();
+				continue;
+			}
 
-					if (parent == null)
-					{
-						// TODO : FIX THIS ?
-						Log.LogDebug("Could not find parent directory.");
-						continue;
-					}
-
-					var newNode = parent.Nodes.Add(item.FileName);
-					newNode.Tag = item;
+			TreeNode parent;
+			if (item.Id == item.DirectoryId)
+			{
+				// This directory is at the root level
+				parent = root;
+			}
+			else
+			{
+				if (!idNodeMap.TryGetValue(item.DirectoryId, out parent!))
+				{
+					// TODO : FIX THIS ?
+					Log.LogDebug("Could not find parent directory.");
+					continue;
 				}
 			}
+
+			var newNode = parent.Nodes.Add(item.FileName);
+			newNode.Tag = item;
+			idNodeMap.Add(item.Id, newNode);
 		}
 
 		root.Expand();
+		this.directoryTreeView.Nodes.Add(root);
 
 		OpenDirectory(null);
 	}
@@ -308,8 +305,9 @@ internal partial class BrowseTreeForm : DockContent
 			}
 
 			this.filesListItems.Add(item, listItem);
-			this.filesListView.Items.Add(listItem);
 		}
+
+		this.filesListView.Items.AddRange(this.filesListItems.Values.ToArray());
 	}
 
 	private void UpButton_Click(object sender, EventArgs e)

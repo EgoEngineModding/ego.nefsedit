@@ -82,6 +82,18 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 
 	private NefsVolumeSource[] BuildVolumeSources(string dataFilePath)
 	{
+		var splitSize = Header.SplitSize;
+		if (splitSize != 0 && Header.Volumes.Count > 0)
+		{
+			// Sometimes the split size lies. Even though it's >0, the volume is not split
+			// Seen on RD: Grid PS3 BLES-00256 version
+			var fileSize = new FileInfo(dataFilePath).Length;
+			if (fileSize > Header.Volumes[0].DataOffset)
+			{
+				splitSize = 0;
+			}
+		}
+
 		var volumes = new NefsVolumeSource[Header.Volumes.Count];
 		for (var i = 0; i < volumes.Length; ++i)
 		{
@@ -105,7 +117,7 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 				}
 			}
 
-			var volume = new NefsVolumeSource(filePath, headerVolume.DataOffset, Header.SplitSize);
+			var volume = new NefsVolumeSource(filePath, headerVolume.DataOffset, splitSize);
 			volumes[i] = volume;
 		}
 
@@ -135,8 +147,8 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 			}
 
 			// Determine transform
-			transform ??= GetTransform(block.Transformation);
-			if (transform is null)
+			var chunkTransform = transform ?? GetTransform(block.Transformation);
+			if (chunkTransform is null)
 			{
 				Logger.LogError("Found data chunk with unknown transform {BlockTransformation}; aborting.",
 					block.Transformation);
@@ -146,7 +158,7 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 			}
 
 			// Create data chunk info
-			var chunk = new NefsDataChunk(size, cumulativeSize, transform) { Checksum = block.Checksum };
+			var chunk = new NefsDataChunk(size, cumulativeSize, chunkTransform) { Checksum = block.Checksum };
 			chunks.Add(chunk);
 		}
 
