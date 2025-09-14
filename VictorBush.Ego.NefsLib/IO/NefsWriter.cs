@@ -245,8 +245,9 @@ public class NefsWriter : INefsWriter
 		}
 
 		// Prepare streams
+		var splitSize = sourceItems.Volumes.Count > 0 ? sourceItems.Volumes[0].SplitSize : sourceHeader.SplitSize;
 		var dataOffset = headerBuilder.ComputeDataOffset(sourceHeader, items);
-		var volumeSource = new NefsVolumeSource(filePath, dataOffset, sourceHeader.SplitSize);
+		var volumeSource = new NefsVolumeSource(filePath, dataOffset, splitSize);
 		const FileMode fileMode = FileMode.OpenOrCreate;
 		const FileAccess fileAccess = FileAccess.ReadWrite;
 		const FileShare fileShare = FileShare.None;

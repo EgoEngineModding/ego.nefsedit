@@ -1,6 +1,7 @@
 # Changelog
 
 ## Unreleased
+- Fixed mistakenly considering certain archives are split
 - Fixed using the first block's transform for all data blocks
 
 ## Version 0.7.0 - 2025-09-05
