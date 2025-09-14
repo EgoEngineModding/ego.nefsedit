@@ -205,13 +205,7 @@ internal abstract class NefsReaderStrategy
 		stream.Seek(offset, SeekOrigin.Begin);
 		var numEntries = size / T.ByteCount;
 		var entries = new T[numEntries];
-		for (var i = 0; i < numEntries; ++i)
-		{
-			using (p.BeginTask(1.0f / numEntries))
-			{
-				entries[i] = await reader.ReadTocDataAsync<T>(p.CancellationToken).ConfigureAwait(false);
-			}
-		}
+		await reader.ReadTocEntriesAsync<T>(entries, p.CancellationToken).ConfigureAwait(false);
 
 		return entries;
 	}
@@ -224,7 +218,7 @@ internal abstract class NefsReaderStrategy
 	/// <param name="size">The size of the header part.</param>
 	/// <param name="p">Progress info.</param>
 	/// <returns>The ToC entries.</returns>
-	protected static async ValueTask<List<T>> ReadTocEntriesZeroStopAsync<T>(EndianBinaryReader reader, long offset,
+	protected static async ValueTask<T[]> ReadTocEntriesZeroStopAsync<T>(EndianBinaryReader reader, long offset,
 		int size, NefsProgress p)
 		where T : unmanaged, INefsTocData<T>
 	{
@@ -236,24 +230,28 @@ internal abstract class NefsReaderStrategy
 			return [];
 		}
 
-		// Get entries
-		stream.Seek(offset, SeekOrigin.Begin);
+		// Find ending entry
 		var zeroEntry = default(T);
 		var numEntries = size / T.ByteCount;
-		var entries = new List<T>(numEntries);
-		while (true)
+		for (var i = numEntries - 1; i >= 0; --i)
 		{
-			using var _ = p.BeginTask(1.0f / numEntries);
+			var entryPosition = offset + i * T.ByteCount;
+			stream.Seek(entryPosition, SeekOrigin.Begin);
 			var entry = await reader.ReadTocDataAsync<T>(p.CancellationToken).ConfigureAwait(false);
 			if (entry.Equals(zeroEntry))
 			{
-				break;
+				numEntries = i;
+				continue;
 			}
 
-			entries.Add(entry);
+			// Read entries
+			var entries = new T[numEntries];
+			stream.Seek(offset, SeekOrigin.Begin);
+			await reader.ReadTocEntriesAsync<T>(entries, p.CancellationToken).ConfigureAwait(false);
+			return entries;
 		}
 
-		return entries;
+		return [];
 	}
 
 	private static bool ValidateHeaderPartStream(Stream stream, long offset, int size, string part)
