@@ -135,8 +135,8 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 			}
 
 			// Determine transform
-			transform ??= GetTransform(block.Transformation);
-			if (transform is null)
+			var chunkTransform = transform ?? GetTransform(block.Transformation);
+			if (chunkTransform is null)
 			{
 				Logger.LogError("Found data chunk with unknown transform {BlockTransformation}; aborting.",
 					block.Transformation);
@@ -146,7 +146,7 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 			}
 
 			// Create data chunk info
-			var chunk = new NefsDataChunk(size, cumulativeSize, transform) { Checksum = block.Checksum };
+			var chunk = new NefsDataChunk(size, cumulativeSize, chunkTransform) { Checksum = block.Checksum };
 			chunks.Add(chunk);
 		}
 

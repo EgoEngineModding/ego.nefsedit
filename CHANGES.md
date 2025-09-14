@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+- Fixed using the first block's transform for all data blocks
+
+## Version 0.7.0 - 2025-09-05
 - Added support for reading NeFS versions 0.1.0, 0.2.0, 1.3.0, 1.4.0, 1.5.0, 1.5.1
 - Added support for reading split data and multiple volume archives
 - Added support for reading big-endian NeFS headers
