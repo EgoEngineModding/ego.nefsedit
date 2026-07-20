@@ -1,5 +1,8 @@
 # Changelog
 
+## Unreleased
+- Changed .NET framework to .NET 10.0
+
 ## Version 0.7.1 - 2025-09-14
 - Fixed mistakenly considering certain archives are split
 - Fixed using the first block's transform for all data blocks
