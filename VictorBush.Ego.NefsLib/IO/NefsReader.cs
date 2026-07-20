@@ -42,7 +42,7 @@ public class NefsReader : INefsReader
 		[
 			DefaultPublicKey, Dirt2PublicKey, F12011PublicKey, Dirt3PublicKey, GridAutosportPublicKey, Grid2PublicKey,
 			DirtShowdownPublicKey, DirtPublicKey, OperationFlashpointPublicKey, F1RaceStarsPublicKey,
-			ToyboxTurbosPublicKey
+			ToyboxTurbosPublicKey, BodycountPublicKey
 		];
 	}
 
