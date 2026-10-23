@@ -1,5 +1,4 @@
 # TODO
-- Checksum in 1.5.1 header.
 - Computing hashes in hash table.
 - Logging verbosity options (i.e., settings save/lod, etc can be debug). Cleanup info/dbg/wrn/error usage.
 - Save window position, size, pane locations, etc for next startup.
@@ -7,6 +6,7 @@
 - Fix verifying hash for game.dat headers (https://github.com/victorbush/ego.nefsedit/issues/9).
 - Fix sorting by id in debug view and allow resetting sorting order (https://github.com/victorbush/ego.nefsedit/issues/11).
 - Add protection against saving over an archive in a game's directory (or always force a "Save As").
-- Support writing multiple volumes
+- Add block-size padding for the primary volume (required by some PS3 archives).
+- Support rewriting items in secondary volumes (currently only the primary volume is rebuilt; new or replaced items move to volume 0).
 - Support writing split archives across multiple files
 - Allow removing files (adjust flags like IsLastSibling)

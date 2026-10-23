@@ -235,11 +235,6 @@ public class NefsTransformer : INefsTransformer
 		await input.CopyPartialAsync(transformedStream, inputChunkSize, p.CancellationToken);
 		transformedStream.Seek(0, SeekOrigin.Begin);
 		ushort checksum = 0;
-		if (transform.ComputeChecksum)
-		{
-			checksum = ChecksumCrc32.ComputeCrc16(transformedStream.GetBuffer()
-				.AsSpan(0, Convert.ToInt32(inputChunkSize)));
-		}
 
 		try
 		{
@@ -276,6 +271,14 @@ public class NefsTransformer : INefsTransformer
 			if (transform.IsLzssCompressed)
 			{
 				throw new NotImplementedException("LZSS compression is not implemented.");
+			}
+
+			// Compute the checksum over the final (transformed) bytes as they are stored on disk.
+			// The game validates the checksum against the on-disk chunk, not the raw pre-transform data.
+			if (transform.ComputeChecksum)
+			{
+				checksum = ChecksumCrc32.ComputeCrc16(transformedStream.GetBuffer()
+					.AsSpan(0, Convert.ToInt32(transformedStream.Length)));
 			}
 
 			// Copy transformed chunk to output stream

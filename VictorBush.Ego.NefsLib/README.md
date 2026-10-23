@@ -23,6 +23,28 @@ var writer = new NefsWriter(@"C:\temp", fileSystem, compressor);
 archive = await writer.WriteArchiveAsync(@"C:\dest.nefs", archive, progress);
 ```
 
+## Writing multi-volume archives
+
+NeFS 1.5.1 archives can contain more than one volume file. `NefsWriter` rebuilds the primary volume (volume 0) and preserves the other volumes:
+
+- Added or replaced items are assigned to volume 0.
+- Unchanged items in secondary volumes keep their original offsets and data sources.
+- Secondary volume files are copied next to the destination archive.
+- The returned `NefsArchive` is rebound to the destination volume paths, so it can be used for further reads or writes immediately after saving.
+
+Only volume 0 is rebuilt; secondary volumes are not recompressed.
+
+## Checksums
+
+For XOR-encoded NeFS 1.5.1 headers (for example, the PS3 variant), the writer recalculates the header checksum after serializing the TOC. The checksum is a CRC32 over the decoded TOC, excluding the checksum field itself and the final two bytes.
+
+Per-chunk CRC16 values are calculated from the transformed bytes as they are stored on disk, not from the pre-transform input.
+
+### Known limitations
+
+- The writer does not pad the primary volume to `BlockSize`; the output ends at the last compressed byte.
+- Saving encrypted archives and game.dat files is not supported.
+
 ## Design Notes
 
 Below are some general notes on design philosophy for NefsLib.

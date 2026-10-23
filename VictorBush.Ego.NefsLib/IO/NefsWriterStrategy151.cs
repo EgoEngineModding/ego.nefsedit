@@ -2,6 +2,7 @@
 
 using VictorBush.Ego.NefsLib.Header.Version150;
 using VictorBush.Ego.NefsLib.Progress;
+using VictorBush.Ego.NefsLib.Utility;
 
 namespace VictorBush.Ego.NefsLib.IO;
 
@@ -53,5 +54,35 @@ internal class NefsWriterStrategy151 : NefsWriterStrategy<NefsHeader151>
 			var offset = primaryOffset + intro.VolumeInfoTableStart;
 			await WriteTocTableAsync(writer, offset, header.VolumeInfoTable, p).ConfigureAwait(false);
 		}
+
+		// The header checksum is a CRC32 over the decoded table of contents, excluding the checksum
+		// field itself and the final two bytes of the TOC. It is validated by the game on mount.
+		if (header.WriterSettings.IsXorEncoded)
+		{
+			var checksum = await ComputeChecksumAsync(stream, primaryOffset, intro.TocSize, p).ConfigureAwait(false);
+			stream.Seek(primaryOffset + 0x38, SeekOrigin.Begin);
+			await writer.WriteAsync(checksum, p.CancellationToken).ConfigureAwait(false);
+		}
+	}
+
+	private static async Task<uint> ComputeChecksumAsync(Stream stream, long offset, uint tocSize, NefsProgress p)
+	{
+		var buffer = new byte[tocSize];
+		stream.Seek(offset, SeekOrigin.Begin);
+
+		var totalRead = 0;
+		while (totalRead < buffer.Length)
+		{
+			var read = await stream.ReadAsync(buffer.AsMemory(totalRead), p.CancellationToken).ConfigureAwait(false);
+			if (read == 0)
+			{
+				throw new EndOfStreamException("Unexpected end of header while computing checksum.");
+			}
+
+			totalRead += read;
+		}
+
+		var checksum = ChecksumCrc32.ComputeCrc32(0, buffer.AsSpan(0, 0x38));
+		return ChecksumCrc32.ComputeCrc32(checksum, buffer.AsSpan(0x3C, (int)(tocSize - 0x3E)));
 	}
 }

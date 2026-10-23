@@ -67,7 +67,7 @@ public sealed record NefsItem
 	/// <summary>
 	/// Additional item attributes.
 	/// </summary>
-	public NefsItemAttributes Attributes { get; }
+	public NefsItemAttributes Attributes { get; init; }
 
 	/// <summary>
 	/// The size of the item's data in the archive.

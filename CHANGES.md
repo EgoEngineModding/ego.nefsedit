@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+- Added writing multi-volume NeFS 1.5.1 archives. The primary volume is rebuilt; secondary volumes are copied unchanged and item data sources are rebound to the destination paths.
+- Enabled saving archives with two or more volumes in NefsEdit.
+- Added recalculation of the 1.5.1 header checksum for XOR-encoded (PS3) headers.
+- Fixed chunk checksums to be calculated from the transformed bytes stored on disk.
+- Added unit tests covering multi-volume writing and data preservation.
+
 ## Version 0.7.1 - 2025-09-14
 - Fixed mistakenly considering certain archives are split
 - Fixed using the first block's transform for all data blocks

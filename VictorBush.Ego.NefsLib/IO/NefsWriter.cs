@@ -72,6 +72,45 @@ public class NefsWriter : INefsWriter
 			FileSystem.File.Copy(file, fileDest, true);
 		}
 
+		// Co-locate additional volume files with the primary volume file
+		for (var i = 1; i < newArchive.Items.Volumes.Count; ++i)
+		{
+			var srcPath = newArchive.Items.Volumes[i].FilePath;
+			var destVolPath = Path.Combine(destDir, Path.GetFileName(srcPath));
+			if (!string.Equals(srcPath, destVolPath, StringComparison.OrdinalIgnoreCase))
+			{
+				FileSystem.File.Copy(srcPath, destVolPath, true);
+			}
+		}
+
+		// Rebind returned archive volumes and item data sources to destination paths
+		var destVolumes = new NefsVolumeSource[newArchive.Items.Volumes.Count];
+		destVolumes[0] = new NefsVolumeSource(destFilePath, newArchive.Items.Volumes[0].DataOffset, newArchive.Items.Volumes[0].SplitSize);
+		for (var i = 1; i < newArchive.Items.Volumes.Count; ++i)
+		{
+			var destVolPath = Path.Combine(destDir, Path.GetFileName(newArchive.Items.Volumes[i].FilePath));
+			destVolumes[i] = new NefsVolumeSource(destVolPath, newArchive.Items.Volumes[i].DataOffset, newArchive.Items.Volumes[i].SplitSize);
+		}
+
+		newArchive.Items.UpdateVolumes(destVolumes);
+
+		foreach (var item in newArchive.Items.EnumerateById())
+		{
+			if (item.Type == NefsItemType.Directory || item.DataSource is not NefsVolumeDataSource)
+			{
+				continue;
+			}
+
+			var volIndex = item.Attributes.Volume;
+			if (volIndex >= destVolumes.Length)
+			{
+				continue;
+			}
+
+			var newDataSource = new NefsVolumeDataSource(destVolumes[volIndex], item.DataSource.Offset, item.DataSource.Size);
+			item.UpdateDataSource(newDataSource, NefsItemState.None);
+		}
+
 		return (newArchive, NefsArchiveSource.Standard(destFilePath));
 	}
 
@@ -175,6 +214,15 @@ public class NefsWriter : INefsWriter
 				Id = currentId,
 				DirectoryId = idIndexMap[sourceItem.DirectoryId],
 				FirstDuplicateId = idIndexMap[sourceItem.FirstDuplicateId],
+				Attributes = sourceItem.Attributes with
+				{
+					// Any item whose data will be written to the rewritten archive file (volume 0)
+					// must be marked as volume 0. Unchanged items in other volumes are left in place.
+					Volume = sourceItem.Attributes.Volume == 0 || sourceItem.State == NefsItemState.Added ||
+					         sourceItem.State == NefsItemState.Replaced
+						? (ushort)0
+						: sourceItem.Attributes.Volume,
+				},
 			};
 
 			// Compress any new or replaced files and update chunk sizes
@@ -267,7 +315,17 @@ public class NefsWriter : INefsWriter
 		long dataSize;
 		using (p.BeginTask(taskWeightWriteItems, "Writing items"))
 		{
-			items.UpdateVolumes([volumeSource]);
+			// Preserve the source archive's volume list. Only volume 0 is rewritten (its data, header and
+			// tables all live in the destination file). Any other volumes keep their original source files
+			// and item offsets; their items are carried over unchanged.
+			var destVolumes = new NefsVolumeSource[sourceItems.Volumes.Count];
+			destVolumes[0] = volumeSource;
+			for (var i = 1; i < sourceItems.Volumes.Count; ++i)
+			{
+				destVolumes[i] = sourceItems.Volumes[i];
+			}
+
+			items.UpdateVolumes(destVolumes);
 			dataSize = await WriteItemsAsync(dataStream, items, p);
 		}
 
@@ -393,6 +451,13 @@ public class NefsWriter : INefsWriter
 
 				// Nothing to write if item is directory
 				if (item.Type == NefsItemType.Directory)
+				{
+					continue;
+				}
+
+				// Items that live in a different volume are not rewritten; they keep pointing at their
+				// original data source (offset and file are unchanged, since only volume 0 is rewritten).
+				if (item.Attributes.Volume != 0)
 				{
 					continue;
 				}

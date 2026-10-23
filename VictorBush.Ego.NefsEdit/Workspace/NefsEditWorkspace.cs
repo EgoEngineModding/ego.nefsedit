@@ -502,12 +502,6 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			return false;
 		}
 
-		if (Archive.Header.Volumes.Count > 1)
-		{
-			UiService.ShowMessageBox("Saving archives with 2+ volumes is not implemented.", icon: MessageBoxIcon.Error);
-			return false;
-		}
-
 		Log.LogInformation("----------------------------");
 		Log.LogInformation($"Writing archive: {filePath}.");
 		var result = false;

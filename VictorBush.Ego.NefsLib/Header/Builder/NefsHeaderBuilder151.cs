@@ -49,7 +49,8 @@ internal class NefsHeaderBuilder151 : NefsHeaderBuilder<NefsHeader151>
 			SplitSize = sourceHeader.Intro.SplitSize,
 			UserValue = sourceHeader.Intro.UserValue,
 			RandomPadding1 = sourceHeader.Intro.RandomPadding1,
-			Checksum = sourceHeader.Intro.Checksum, // TODO: figure out
+			// Recomputed by the writer after the header is serialized (CRC32 over the decoded TOC).
+			Checksum = sourceHeader.Intro.Checksum,
 			AesKey = sourceHeader.Intro.AesKey,
 			Unused = sourceHeader.Intro.Unused,
 			EntryTableStart = Convert.ToUInt32(NefsTocHeader151.ByteCount)
@@ -67,16 +68,29 @@ internal class NefsHeaderBuilder151 : NefsHeaderBuilder<NefsHeader151>
 		var tocFinalEnd = Convert.ToUInt32(StructEx.Align(tocSize, Convert.ToInt32(sourceHeader.BlockSize)));
 		intro.TocSize = Convert.ToUInt32(tocSize);
 
-		var volumes = new NefsTocVolumeInfo150[items.Count];
-		for (var i = 0; i < items.Count; ++i)
+		var volumes = new NefsTocVolumeInfo150[items.Volumes.Count];
+		for (var i = 0; i < items.Volumes.Count; ++i)
 		{
-			// the first volume includes headers
-			var dataOffset = i == 0 ? tocFinalEnd : 0;
-			var dataSize = items.EnumerateById().Where(x => x.Attributes.Volume == i).Sum(x => x.CompressedSize);
+			uint dataOffset;
+			ulong size;
+			if (i == 0)
+			{
+				// The first volume includes headers; recompute its offset and size
+				dataOffset = tocFinalEnd;
+				var dataSize = items.EnumerateById().Where(x => x.Attributes.Volume == i).Sum(x => x.CompressedSize);
+				size = dataOffset + (ulong)dataSize;
+			}
+			else
+			{
+				// Preserve original volume metadata for untouched volumes (their data is copied in place)
+				dataOffset = sourceHeader.Volumes[i].DataOffset;
+				size = sourceHeader.Volumes[i].Size;
+			}
+
 			volumes[i] = new NefsTocVolumeInfo150
 			{
-				Size = dataOffset + (ulong)dataSize,
-				NameOffset = nameTable.OffsetsByFileName[Path.GetFileName(items.Volumes[0].FilePath)],
+				Size = size,
+				NameOffset = nameTable.OffsetsByFileName[Path.GetFileName(items.Volumes[i].FilePath)],
 				DataOffset = dataOffset
 			};
 		}
@@ -98,7 +112,8 @@ internal class NefsHeaderBuilder151 : NefsHeaderBuilder<NefsHeader151>
 			var entry = new NefsTocEntry150
 			{
 				Start = Convert.ToUInt64(item.DataSource.Offset),
-				Flags = GetItemFlags(item),
+				Flags = GetItemFlags(item,
+					!item.IsDuplicate && items.GetItemSiblingId(item.Id) == item.Id),
 				Volume = item.Attributes.Volume,
 				SharedInfo = GetSharedInfo(item),
 				FirstBlock = GetFirstBlockLocal(item),
@@ -145,12 +160,17 @@ internal class NefsHeaderBuilder151 : NefsHeaderBuilder<NefsHeader151>
 
 	internal static ushort GetItemFlags(NefsItem item)
 	{
+		return GetItemFlags(item, item.Attributes.IsLastSibling);
+	}
+
+	internal static ushort GetItemFlags(NefsItem item, bool isLastSibling)
+	{
 		var flags = NefsTocEntryFlags150.None;
 		flags |= item.Attributes.IsTransformed ? NefsTocEntryFlags150.Transformed : 0;
 		flags |= item.Attributes.IsDirectory ? NefsTocEntryFlags150.Directory : 0;
 		flags |= item.Attributes.IsDuplicated ? NefsTocEntryFlags150.Duplicated : 0;
 		flags |= item.Attributes.IsCacheable ? NefsTocEntryFlags150.Cacheable : 0;
-		flags |= item.Attributes.IsLastSibling ? NefsTocEntryFlags150.LastSibling : 0;
+		flags |= isLastSibling ? NefsTocEntryFlags150.LastSibling : 0;
 		flags |= item.Attributes.IsPatched ? NefsTocEntryFlags150.Patched : 0;
 		return (ushort)flags;
 	}
