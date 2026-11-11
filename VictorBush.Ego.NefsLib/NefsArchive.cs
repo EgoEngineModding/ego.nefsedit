@@ -22,6 +22,12 @@ public sealed class NefsArchive
 	}
 
 	/// <summary>
+	/// Offset of the archive header inside the file. Zero for normal archives; non-zero when the archive does not
+	/// start at the beginning of the file (concatenated or truncated archives).
+	/// </summary>
+	public long BaseOffset { get; init; }
+
+	/// <summary>
 	/// NeFS file header.
 	/// </summary>
 	public INefsHeader Header { get; }

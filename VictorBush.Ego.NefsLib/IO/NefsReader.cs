@@ -53,6 +53,23 @@ public class NefsReader : INefsReader
 	/// <inheritdoc/>
 	public async Task<NefsArchive> ReadArchiveAsync(string filePath, NefsProgress p)
 	{
+		return await ReadArchiveAsync(filePath, 0, true, p).ConfigureAwait(false);
+	}
+
+	/// <summary>
+	/// Reads an archive whose header starts at the given offset in the file.
+	/// </summary>
+	/// <param name="filePath">Path to the archive file.</param>
+	/// <param name="baseOffset">Offset of the header inside the file.</param>
+	/// <param name="p">Progress info.</param>
+	/// <returns>The archive.</returns>
+	public async Task<NefsArchive> ReadArchiveAsync(string filePath, long baseOffset, NefsProgress p)
+	{
+		return await ReadArchiveAsync(filePath, baseOffset, false, p).ConfigureAwait(false);
+	}
+
+	private async Task<NefsArchive> ReadArchiveAsync(string filePath, long baseOffset, bool autoScan, NefsProgress p)
+	{
 		if (!FileSystem.File.Exists(filePath))
 		{
 			throw new FileNotFoundException($"File not found: {filePath}.");
@@ -60,19 +77,37 @@ public class NefsReader : INefsReader
 
 		// Read the header
 		INefsHeader header;
+		var headerOffset = baseOffset;
 		using (var stream = FileSystem.File.OpenRead(filePath))
 		{
 			using var _ = p.BeginTask(0.9f);
-			header = await ReadHeaderAsync(stream, 0, p).ConfigureAwait(false);
+			try
+			{
+				header = await ReadHeaderAsync(stream, headerOffset, p).ConfigureAwait(false);
+			}
+			catch (InvalidDataException) when (autoScan)
+			{
+				// The file does not start with a NeFS header. This happens with concatenated archives and with
+				// files whose beginning is truncated. Look for the first valid header inside the file.
+				Log.LogWarning("No header at offset 0 in {File}. Scanning for the first valid header.", filePath);
+				headerOffset = NefsHeaderScanner.FindFirstHeaderOffset(stream, 0, p.CancellationToken);
+				if (headerOffset < 0)
+				{
+					throw;
+				}
+
+				Log.LogWarning("Opening archive at offset {Offset} (0x{Offset:X}).", headerOffset, headerOffset);
+				header = await ReadHeaderAsync(stream, headerOffset, p).ConfigureAwait(false);
+			}
 		}
 
 		// Create items from header
 		using var __ = p.BeginTask(0.1f);
 		var itemsBuilder = NefsItemListBuilder.Create(header);
-		var items = itemsBuilder.Build(filePath, p);
+		var items = itemsBuilder.Build(filePath, p, headerOffset);
 
 		// Create the archive
-		return new NefsArchive(header, items);
+		return new NefsArchive(header, items) { BaseOffset = headerOffset };
 	}
 
 	/// <inheritdoc/>
