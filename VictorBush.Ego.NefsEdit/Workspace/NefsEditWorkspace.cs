@@ -3,8 +3,10 @@
 using Microsoft.Extensions.Logging;
 using System.IO;
 using System.IO.Abstractions;
+using System.Windows.Forms;
 using VictorBush.Ego.NefsEdit.Commands;
 using VictorBush.Ego.NefsEdit.Services;
+using VictorBush.Ego.NefsEdit.UI;
 using VictorBush.Ego.NefsEdit.Utility;
 using VictorBush.Ego.NefsLib;
 using VictorBush.Ego.NefsLib.ArchiveSource;
@@ -455,9 +457,69 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 		}
 	}
 
+	/// <summary>
+	/// Searches the file for NeFS headers when the file does not start with one.
+	/// Returns an empty list when the archive is a normal one (header at offset 0).
+	/// </summary>
+	private List<ArchiveEntryInfo> ScanHeaders(string filePath, NefsProgress p)
+	{
+		var reader = NefsReader as NefsReader ?? new NefsReader(FileSystem);
+		var found = new List<ArchiveEntryInfo>();
+
+		using var stream = FileSystem.File.OpenRead(filePath);
+		if (NefsHeaderScanner.IsValidHeader(stream, 0))
+		{
+			// Normal archive: nothing to choose.
+			return found;
+		}
+
+		foreach (var offset in NefsHeaderScanner.FindHeaderOffsets(stream, 0, p.CancellationToken))
+		{
+			try
+			{
+				var archive = reader.ReadArchiveAsync(filePath, offset, p).GetAwaiter().GetResult();
+				var name = archive.Header.Volumes.Count > 0 ? archive.Header.Volumes[0].Name : string.Empty;
+				found.Add(new ArchiveEntryInfo(
+					offset,
+					archive.Header.Version.ToString(),
+					archive.Header.NumEntries,
+					string.IsNullOrWhiteSpace(name) ? "(sem nome)" : name));
+			}
+			catch (Exception ex)
+			{
+				found.Add(new ArchiveEntryInfo(offset, "ERRO", 0, ex.Message));
+			}
+		}
+
+		return found;
+	}
+
 	private async Task<bool> DoOpenArchiveAsync(NefsArchiveSource source)
 	{
 		var result = false;
+		var baseOffset = 0L;
+
+		// Files that do not start with a NeFS header (concatenated or truncated archives) need a header search.
+		if (source is StandardSource standard)
+		{
+			var headers = new List<ArchiveEntryInfo>();
+			await ProgressService.RunModalTaskAsync(p => Task.Run(() => headers = ScanHeaders(standard.FilePath, p)));
+
+			if (headers.Count > 1)
+			{
+				using var picker = new ArchivePickerForm(standard.FilePath, headers);
+				if (picker.ShowDialog() != DialogResult.OK)
+				{
+					return false;
+				}
+
+				baseOffset = picker.SelectedOffset;
+			}
+			else if (headers.Count == 1)
+			{
+				baseOffset = headers[0].Offset;
+			}
+		}
 
 		// Open archive
 		await ProgressService.RunModalTaskAsync(p => Task.Run(async () =>
@@ -466,7 +528,15 @@ internal class NefsEditWorkspace : INefsEditWorkspace
 			{
 				using (p.BeginTask(0.9f, "Reading archive"))
 				{
-					Archive = await NefsReader.ReadArchiveAsync(source, p);
+					if (baseOffset > 0 && source is StandardSource standardSource)
+					{
+						Archive = await NefsReader.ReadArchiveAsync(standardSource.FilePath, baseOffset, p);
+					}
+					else
+					{
+						Archive = await NefsReader.ReadArchiveAsync(source, p);
+					}
+
 					ArchiveSource = source;
 				}
 

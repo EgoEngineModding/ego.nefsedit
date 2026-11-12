@@ -19,6 +19,16 @@ public interface INefsReader
 	Task<NefsArchive> ReadArchiveAsync(string filePath, NefsProgress p);
 
 	/// <summary>
+	/// Loads a NeFS archive whose header starts at the given offset in the file. Used for files that contain
+	/// several concatenated archives, or whose beginning is truncated.
+	/// </summary>
+	/// <param name="filePath">File path to the archive.</param>
+	/// <param name="baseOffset">Offset of the archive header inside the file.</param>
+	/// <param name="p">Progress information.</param>
+	/// <returns>The loaded <see cref="NefsArchive"/>.</returns>
+	Task<NefsArchive> ReadArchiveAsync(string filePath, long baseOffset, NefsProgress p);
+
+	/// <summary>
 	/// Reads a NeFS archive from the specified source.
 	/// </summary>
 	/// <param name="source">The archive source.</param>

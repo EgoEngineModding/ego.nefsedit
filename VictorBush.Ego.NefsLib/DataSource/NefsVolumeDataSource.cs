@@ -26,7 +26,17 @@ internal class NefsVolumeDataSource : INefsDataSource
 	public bool IsTransformed => true;
 
 	/// <inheritdoc />
-	public long Offset { get; }
+	public long Offset { get; private set; }
+
+	/// <summary>
+	/// Moves the data offset by the given amount. Used when an archive does not start at offset 0 of its file
+	/// (concatenated / truncated archives).
+	/// </summary>
+	/// <param name="delta">Amount to add to the offset.</param>
+	internal void ShiftOffset(long delta)
+	{
+		Offset += delta;
+	}
 
 	/// <inheritdoc />
 	public NefsItemSize Size { get; }

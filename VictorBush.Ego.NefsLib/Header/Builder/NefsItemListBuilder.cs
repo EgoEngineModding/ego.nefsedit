@@ -35,7 +35,7 @@ internal abstract class NefsItemListBuilder(ILogger logger)
 		};
 	}
 
-	public abstract NefsItemList Build(string dataFilePath, NefsProgress p);
+	public abstract NefsItemList Build(string dataFilePath, NefsProgress p, long baseOffset = 0);
 
 	/// <summary>
 	/// Builds an item from the header.
@@ -55,7 +55,7 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 
 	protected virtual bool SupportsBlockChecksum => false;
 
-	public override NefsItemList Build(string dataFilePath, NefsProgress p)
+	public override NefsItemList Build(string dataFilePath, NefsProgress p, long baseOffset = 0)
 	{
 		var weight = 1f / Header.NumEntries;
 		using var _ = p.BeginTask(1.0f, "Creating items");
@@ -74,6 +74,19 @@ internal abstract class NefsItemListBuilder<T>(T header, ILogger logger) : NefsI
 			catch (Exception)
 			{
 				Logger.LogError($"Failed to create item for entry index {i}, skipping.");
+			}
+		}
+
+		if (baseOffset != 0)
+		{
+			// The archive header was not at offset 0 of the file, so every item data offset must be shifted
+			// by the same amount to point at the right bytes.
+			foreach (var item in items.EnumerateById())
+			{
+				if (item.DataSource is NefsVolumeDataSource volumeDataSource)
+				{
+					volumeDataSource.ShiftOffset(baseOffset);
+				}
 			}
 		}
 

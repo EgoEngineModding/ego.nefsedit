@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+- Added opening NeFS archives that do not start at offset 0 of the file (concatenated archives and files with a truncated/corrupted beginning, e.g. `x360_000.nfs` from DiRT Showdown). The file is scanned for headers, the user picks one when there is more than one, and every item data offset is shifted by the header offset.
+- Added `NefsScan`, a command line tool to scan a file for NeFS headers and to inspect archives in files that need `--at=<offset>` (`scan`, `info`, `list`, `extract`, `grep`, `grepci`, `cmp`, `replace`, `add`).
+
 ## Version 0.7.1 - 2025-09-14
 - Fixed mistakenly considering certain archives are split
 - Fixed using the first block's transform for all data blocks
